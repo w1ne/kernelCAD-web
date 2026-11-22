@@ -1,0 +1,5 @@
+solar-energy/pole-mount-transformer: 1848 tris
+solar-energy/pv-panel-cleaning-robot: 872 tris
+solar-energy/solar-carport-canopy: 1504 tris
+solar-energy/solar-weather-station: 1752 tris
+solar-energy/string-inverter: 1252 tris

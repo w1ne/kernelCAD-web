@@ -1,0 +1,62 @@
+{
+  "workflow": "existing medical sources -> material-specific controls and visible identifying details -> exact clinic/emergency preset exports -> refreshed previews and catalog index -> local lint, integration and static-page checks",
+  "video": "artifacts/catalog-demos/medical-materials-quality-20261106/medical-materials-quality-demo.mp4",
+  "canvas": {
+    "width": 1280,
+    "height": 720
+  },
+  "frames": 6,
+  "durationSeconds": 18,
+  "ffmpeg": "ffmpeg -framerate 1/3 -c:v libx264 -r 24 -pix_fmt yuv420p -crf 24 -movflags +faststart",
+  "invocation": "python3 artifacts/catalog-demos/medical-materials-quality-20261106/capture_medical_materials_demo.py",
+  "variantInvocation": "npx tsx artifacts/catalog-demos/medical-materials-quality-20261106/render_medical_variants.ts",
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts $(python3 -c 'import json; print(\" \".join(x[\"asset\"] for x in json.load(open(\"artifacts/catalog-demos/medical-materials-quality-20261106/material-map.json\"))[\"assets\"]))')",
+  "indexInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "checks": {
+    "commands": {
+      "previewRender": {
+        "exitCode": 0,
+        "invocation": "npx tsx scripts/renderCatalogPreviews.ts $(python3 -c 'import json; print(\" \".join(x[\"asset\"] for x in json.load(open(\"artifacts/catalog-demos/medical-materials-quality-20261106/material-map.json\"))[\"assets\"]))')",
+        "log": "preview-render-output.txt"
+      },
+      "catalogBuild": {
+        "exitCode": 0,
+        "invocation": "npx tsx scripts/buildAssetCatalog.ts",
+        "log": "catalog-build-output.txt"
+      },
+      "qualityGate": {
+        "exitCode": 0,
+        "log": "catalog-quality-output.txt"
+      },
+      "eslint": {
+        "exitCode": 0,
+        "log": "eslint-output.txt"
+      },
+      "catalogIntegration": {
+        "exitCode": 0,
+        "files": 4,
+        "tests": 15,
+        "log": "integration-output.txt"
+      },
+      "localPages": {
+        "exitCode": 0,
+        "invocation": "npm run catalog:pages -- /tmp/medical-materials-catalog-pages-20261106",
+        "log": "local-pages-output.txt",
+        "verifiedOutput": "2390 asset pages + hub; no sitemap.xml or robots.txt"
+      },
+      "presetVariants": {
+        "exitCode": 0,
+        "count": 6,
+        "log": "preset-render-output.txt"
+      }
+    },
+    "initialIntegrationAttempt": {
+      "exitCode": 1,
+      "log": "integration-output-initial-stale-index.txt",
+      "cause": "Erlenmeyer description was corrected after an earlier index build; the source hash mismatch was fixed by rebuilding catalog/index.json before the final passing suite."
+    },
+    "lintSummary": "npx eslint catalog/kits/medical/ passed",
+    "localPagesSummary": "2390 asset pages + hub; no sitemap or robots file emitted"
+  },
+  "provenance": "The six palette images are GLB exports made from the checked-in source and exact indexed presets, then rasterized locally. No live Studio session, deployed behavior or clinical device validation is shown."
+}

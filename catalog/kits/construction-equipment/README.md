@@ -1,0 +1,107 @@
+# Construction Equipment kit
+
+Sixty original low-poly scene props covering road paving and compaction, earthmoving support, concrete placement, formwork and rebar, and site logistics. Each asset exposes two to four material-named color controls and `weathered` / `highVisibility` presets. Cabbed machines separate painted panels, structural steel, rubber and glass; forms, plant and tools use controls for the materials visible in their named components. Triangle budgets remain source-declared and are raised for detailed tracked machines and the pump truck where their silhouettes need the extra parts. Models use generic geometry and are visual scene props, not engineering, equipment-fit, operating or performance specifications.
+
+The 2026-11-06 silhouette refinement improved three existing defaults without changing catalog IDs. The towable tower now has trailer wheels, four stabilizer jacks, a two-section mast and a configurable 2/4/6-head lamp bank. The ride-on trowel has open twin guards, radial blade shoes, a rider seat and paired steering controls, with compact/standard/wide rotor sizes. The batch plant has 2/3/4 tapered aggregate bins, a shared feed conveyor, visible mixer drum, framed silo and configurable silo height. Each retains its `weathered` and `highVisibility` presets and exposes four material controls. The [silhouette refinement demo bundle](../../../artifacts/catalog-demos/construction-equipment-silhouette-20261106/README.md) includes source-driven previews, variant renders, local checks and an inspected MP4. The earlier [quality promotion demo bundle](../../../artifacts/catalog-demos/construction-equipment-quality-promotion-20261104/README.md) retains the source transformation, invocation settings, before/after previews, variant renders, catalog checks and MP4. Source replay and software-rendered scene props do not establish deployment, equipment simulation, operator safety or hardware acceptance.
+
+The earlier [kit creation bundle](../../../artifacts/catalog-demos/construction-equipment-wave-20261102/README.md) retains the original wave generator.
+
+The Nov 11 transit-mixer review moves all six steel wheel rims from the
+equipment-enamel control to `structuralSteelColor`. The cab and drum bands keep
+their equipment paint; tyre rubber and the model's geometry are unchanged. The
+[wheel-material handoff](../../../artifacts/catalog-demos/construction-transit-mixer-wheel-material-review-20261111/README.md)
+records the five-preview ledger, before/after preview, regression test, local
+checks and inspected MP4. The branch is not deployed; this color assignment
+does not make the scene prop an OEM or roadworthiness model.
+
+| id | asset | description | material controls and presets |
+| --- | --- | --- | --- |
+| `track-asphalt-paver` | Tracked asphalt paver | Tracked paving machine with front material hopper, operator canopy, feeder deck and rear screed. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `wheel-asphalt-paver` | Wheeled asphalt paver | Rubber-wheel paving machine with front hopper, raised operator station and adjustable rear screed. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `asphalt-paver-screed` | Asphalt paver screed | Wide finishing screed assembly with center beam, folding wings and adjustment links. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `asphalt-transfer-conveyor` | Road material transfer conveyor | Mobile inclined conveyor with feed hopper, trussed belt frame and transport axle. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `cold-planer-milling-machine` | Cold planer milling machine | Road milling machine with enclosed cutter housing, operator canopy and crawler undercarriage. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `road-reclaimer` | Road reclaimer | Road reclamation machine with high-clearance chassis, milling chamber and long operator deck. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `tandem-vibratory-roller` | Tandem vibratory roller | Compaction roller with front and rear steel drums, operator canopy and central chassis. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `single-drum-soil-compactor` | Single-drum soil compactor | Soil compactor with broad front drum, rear traction tires and enclosed operator cab. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `pneumatic-tire-roller` | Pneumatic tire roller | Road compactor with staggered banks of rubber tires and a raised operator station. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `trench-roller` | Remote trench roller | Compact trench compactor with paired steel drums and a protected remote-control mast. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `motor-grader` | Motor grader | Tandem rear drive wheels under the engine body, tall glazed cab, arched gooseneck frame to a steering axle, and a long curved moldboard angled on a turntable circle with drawbar and lift rams. | scale · cab glass · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `asphalt-distributor-truck` | Asphalt distributor truck | Paving tanker truck with insulated tank, rear spray bar and multiple road nozzles. | scale · cab glass · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `crawler-dozer` | Crawler dozer | Steel crawler tracks with grousers, idler, sprocket and rollers; full-width curved push blade on push arms and tilt rams; engine hood with exhaust; glazed ROPS cab; rear ripper. | scale · cab glass · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `articulated-dump-truck` | Articulated dump truck | Off-road articulated hauler with forward cab, rear dump body and six large tires. | scale · cab glass · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `rigid-haul-truck` | Rigid-frame haul truck | Large site haul truck with high-capacity open bed, tall chassis and oversized tires. | scale · cab glass · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `skid-steer-loader` | Skid-steer loader | Four equal treaded wheels, forward operator cage with glazed door, rear engine bay with grille, two lift arms on tall rear towers and a full-width bucket. | scale · cab glass · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `backhoe-loader` | Backhoe loader | Large rear and small front wheels, sloping hood, glazed four-post cab, front loader bucket on curved arms, rear boom, dipper and toothed bucket, splayed stabilisers. | scale · cab glass · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `telescopic-handler` | Telescopic handler | Rough-terrain handler with long extending boom, front carriage and four-wheel chassis. | scale · cab glass · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `rough-terrain-forklift` | Rough-terrain forklift | Site forklift with wide tires, overhead guard, tall mast and long fork tines. | scale · cab glass · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `water-tanker-truck` | Construction water tanker truck | Site water truck with cylindrical tank, cab, hose reel and rear spray manifold. | scale · cab glass · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `lowboy-equipment-trailer` | Lowboy equipment trailer | Heavy equipment trailer with a dropped deck, twin axle groups and loading ramps. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `transit-mixer-truck` | Transit concrete mixer truck | Three-axle chassis with forward cab, tilted pear-shaped drum with spiral-blade bands on pedestals, charge hopper, curved discharge chute and rear ladder. | scale · cab glass · equipment enamel paint · mixing drum paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `concrete-pump-truck` | Concrete pump truck | Concrete placing truck with hopper, multi-section boom, outriggers and delivery hose. | scale · cab glass · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `concrete-batch-plant` | Compact concrete batch plant | Framed plant with selectable 2/3/4 aggregate bins, tapered discharge chutes, shared feed conveyor, central mixer and variable-height cement silo. | scale · aggregate-bin count · silo height · equipment enamel · structural steel · aggregate coating · silo coating · weathered · highVisibility |
+| `trailer-concrete-line-pump` | Trailer concrete line pump | Towable concrete pump with hopper, motor enclosure, hose connections and road wheels. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `tracked-concrete-buggy` | Tracked concrete buggy | Compact powered buggy with tracked undercarriage, skip hopper and operator handles. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `ride-on-power-trowel` | Ride-on power trowel | Rider finisher with twin open rotor guards, visible radial blade shoes, engine, bucket seat and paired steering controls. | scale · blade count · rotor diameter · equipment enamel · structural steel · rubber grips · seat vinyl · weathered · highVisibility |
+| `walk-behind-power-trowel` | Walk-behind power trowel | Concrete finisher with an open circular safety ring, four pitched blades, compact engine and two-rail operator handle; compact, standard or wide guard. | scale · guard diameter · equipment enamel · structural steel · engine metal · grip rubber · weathered · highVisibility |
+| `walk-behind-concrete-saw` | Walk-behind concrete saw | Push saw with guarded cutting blade, compact motor and adjustable handlebar. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `ride-on-concrete-saw` | Ride-on concrete saw | Self-propelled slab saw with operator seat, blade guard and water tank. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `concrete-vibrator-needle` | Concrete vibrator and needle | Portable concrete vibrator with motor case, flexible shaft and immersion head. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `vibrating-concrete-screed` | Vibrating concrete screed | Faceted extruded leveling profile, central eccentric exciter and paired damped handle frame; short, standard or wide profile with working or folded handles. | scale · profile length · handle position · extruded aluminum · equipment enamel · structural steel · grip rubber · weathered · highVisibility |
+| `concrete-placement-bucket` | Concrete placement bucket | Crane-suspended concrete bucket with tapered hopper, discharge gate and lifting frame. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `concrete-formwork-panel` | Concrete formwork panel | Reusable wall-form panel with framed face, stiffeners and corner clamps. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `adjustable-formwork-prop` | Adjustable formwork prop | Telescoping floor support prop with top plate, screw collar and broad base plate. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `modular-shoring-frame` | Modular shoring frame | Stackable shoring frame with paired standards, cross braces and foot plates. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `concrete-form-tie` | Concrete form tie | Reusable form tie assembly with threaded rod, bearing plates and wing nuts. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `rebar-bending-machine` | Rebar bending machine | Table bender with roller-pin disc, geared drive, feed rollers and separate foot pedal; compact or extended feed table with hook or stirrup bar form. | scale · table reach · bar form · equipment enamel · structural steel · rebar steel · pedal rubber · highVisibility · siteBlue |
+| `rebar-cutting-machine` | Rebar cutting machine | Jobsite bar cutter with reinforced base, cutting head, guard and foot control. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `rebar-straightener-coil` | Rebar straightener and coil stand | Portable rebar straightening unit with feed rollers, guide wheels and coil stand. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `rebar-cage` | Reinforcing bar cage | Short reinforcing cage assembled from longitudinal bars and repeating ties. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `slab-edge-form` | Slab edge form system | Straight slab edge form with steel stakes, brackets and adjustable clamps. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `concrete-column-form` | Concrete column form | Square column shutter with corner walers, vertical stiffeners and base shoes. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `concrete-beam-form` | Concrete beam form | Raised beam shutter with paired supports, side panels and bottom soffit. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `portable-material-hoist` | Portable material hoist | Braced twin-rail mast, guided carriage, rack, drive, overhead sheave, guarded platform, transport wheels and outriggers; short or standard mast with open or guarded platform. | scale · mast height · platform style · equipment enamel · structural steel · hoist cable steel · tire rubber · weathered · highVisibility |
+| `construction-personnel-elevator` | Construction personnel elevator | Temporary mast elevator cage with guide rails, mesh walls and ground frame. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `mast-climbing-work-platform` | Mast-climbing work platform | Twin-mast access platform with guardrails, deck and ground outriggers. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `drywall-panel-lift` | Drywall panel lift | Foldable panel lift with telescoping mast, tilting cradle, tripod legs and casters. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `jobsite-tile-saw` | Jobsite tile saw | Water-cooled tile saw on a folding stand with sliding table and blade guard. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `masonry-mixer` | Masonry mortar mixer | Portable drum mixer with reinforced frame, tilting cradle and transport wheels. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `portable-air-compressor` | Portable site air compressor | Towable compressor enclosure with access panels, hose ports and single axle. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `towable-light-tower` | Towable site light tower | Wheeled generator trailer with four stabilizer jacks, telescoping mast and a selectable 2/4/6-head lamp bank. | scale · mast extension · lamp count · equipment enamel · structural steel · tire rubber · lamp lenses · weathered · highVisibility |
+| `portable-site-water-tank` | Portable site water tank | Skid-mounted water tank with fill cap, outlet valve and protective frame. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `mobile-fuel-tank` | Mobile site fuel tank | Bunded fuel pod on a towable chassis with hose reel, pump box and filler neck. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `pipe-roller-stand` | Pipe roller stand | Adjustable pipe support stand with paired rollers, screw post and tripod feet. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `portable-core-drill-stand` | Portable core drill stand | Anchored core-drilling rig with guide column, sliding carriage and base plate. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+| `portable-floor-grinder` | Portable floor grinder | Concrete surface grinder with circular shroud, handlebar and motor enclosure. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `walk-behind-floor-scarifier` | Walk-behind floor scarifier | Surface-preparation machine with guarded drum, wheeled frame and push handle. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
+| `laser-level-tripod` | Laser level and tripod | Survey tripod with compact rotating laser head and control panel. | scale · cab glass · equipment enamel paint · weathered · highVisibility |
+| `grade-rod-and-prism-pole` | Grade rod and prism pole | Survey rod assembly with graduated segments, target prism and clamp mount. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
+
+## Open an asset
+
+Search for construction or paving equipment in the catalog, or open an asset in Studio with `?catalog=construction-equipment/<id>`. For example, `?catalog=construction-equipment/track-asphalt-paver` opens its editable source and controls.
+
+## Nov 9 machine silhouette follow-up
+
+The existing `walk-behind-power-trowel`, `vibrating-concrete-screed`,
+`rebar-bending-machine`, and `portable-material-hoist` now have recognizable
+multi-part machine shapes and real shape choices. Each exposes four
+material-named color controls and two named finish presets. No asset IDs or kit
+counts changed. The [machine silhouette handoff](../../../artifacts/catalog-demos/construction-equipment-machines-20261109/README.md)
+contains the source-render variants, preview/index checks, local tests and
+inspected MP4. This is a local branch update; it has not been deployed.
+
+## Rebuild and verify
+
+```sh
+python3 -B artifacts/catalog-demos/construction-equipment-wave-20261102/generate_construction_equipment_assets.py
+npx tsx scripts/buildAssetCatalog.ts
+npx eslint catalog/
+npx vitest run tests/integration/catalog/
+npx tsx scripts/renderCatalogPreviews.ts track-asphalt-paver wheel-asphalt-paver asphalt-paver-screed asphalt-transfer-conveyor cold-planer-milling-machine road-reclaimer tandem-vibratory-roller single-drum-soil-compactor pneumatic-tire-roller trench-roller motor-grader asphalt-distributor-truck crawler-dozer articulated-dump-truck rigid-haul-truck skid-steer-loader backhoe-loader telescopic-handler rough-terrain-forklift water-tanker-truck lowboy-equipment-trailer transit-mixer-truck concrete-pump-truck concrete-batch-plant trailer-concrete-line-pump tracked-concrete-buggy ride-on-power-trowel walk-behind-power-trowel walk-behind-concrete-saw ride-on-concrete-saw concrete-vibrator-needle vibrating-concrete-screed concrete-placement-bucket concrete-formwork-panel adjustable-formwork-prop modular-shoring-frame concrete-form-tie rebar-bending-machine rebar-cutting-machine rebar-straightener-coil rebar-cage slab-edge-form concrete-column-form concrete-beam-form portable-material-hoist construction-personnel-elevator mast-climbing-work-platform drywall-panel-lift jobsite-tile-saw masonry-mixer portable-air-compressor towable-light-tower portable-site-water-tank mobile-fuel-tank pipe-roller-stand portable-core-drill-stand portable-floor-grinder walk-behind-floor-scarifier laser-level-tripod grade-rod-and-prism-pole
+npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-construction-equipment-pages
+```
+
+## License and provenance
+
+All assets are original and dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). They use kernelCAD primitives; no external meshes, textures, manufacturer marks or product images are included.

@@ -1,0 +1,12 @@
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  1184ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 441ms
+     ✓ search_assets finds the pine tree with an ok coverage verdict and a compact row  308ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 728977ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  727319ms
+
+ Test Files  104 passed (104)
+      Tests  172 passed (172)
+   Start at  00:07:07
+   Duration  739.76s (transform 114.83s, setup 12.73s, import 753.32s, tests 1345.21s, environment 22ms)
+
+exit 0

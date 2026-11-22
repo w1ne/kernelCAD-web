@@ -73,10 +73,12 @@ describe('diagnostic catalogue invariants', () => {
     //   tool.send-to-printer.upload-failed = 264.
     // + 4 trace-guided repair: tool.repair.exhausted, tool.repair.no-candidate,
     //   tool.repair.out-of-region, tool.repair.source-drift = 268.
-    // + 4 mechanism checks: assembly.joint.static-hold.exceeded,
+    // + 6 mechanism checks: assembly.joint.static-hold.exceeded,
     //   assembly.joint.static-hold.margin-low,
+    //   assembly.joint.static-hold.no-actuator,
+    //   assembly.joint.static-hold.mass-unavailable,
     //   kinematic.static-hold.no-actuator-declared,
-    //   kinematic.sweep-tolerance.combo-cap-exceeded = 272.
+    //   kinematic.sweep-tolerance.combo-cap-exceeded = 273.
     // + 4 USD physics export and geometry diff: export.usd.joint-unsupported,
     //   export.usd.pose-unsolved, export.usd.mass-missing, diff.body.unmatched =
     //   276.
@@ -139,7 +141,7 @@ describe('diagnostic catalogue invariants', () => {
     // + 2 selector binding drift: selector.binding-moved, selector.binding-changed = 365.
     // + 4 closed-loop kinematics: kinematic.loop.branch-flip,
     //   kinematic.loop.lockup, kinematic.loop.mobility-mismatch,
-    //   kinematic.loop.branch-ambiguous = 376 (DIAGNOSTIC_CODES.length; the running total above lags codes added without a comment).
+    //   kinematic.loop.branch-ambiguous = 377 (DIAGNOSTIC_CODES.length; the running total above lags codes added without a comment).
     expect(new Set(DIAGNOSTIC_CODES).size).toBe(DIAGNOSTIC_CODES.length);
     expect(DIAGNOSTIC_CODES).toContain('feature.boolean.recovered');
     expect(DIAGNOSTIC_CODES).toContain('feature.shell.boolean-fallback');
@@ -148,6 +150,8 @@ describe('diagnostic catalogue invariants', () => {
     expect(DIAGNOSTIC_CODES).toContain('assembly.mounting-hole.unverified');
     expect(DIAGNOSTIC_CODES).toContain('assembly.mounting-hole.misaligned');
     expect(DIAGNOSTIC_CODES).toContain('assembly.connectivity.assumed-root');
+    expect(DIAGNOSTIC_CODES).toContain('assembly.joint.static-hold.no-actuator');
+    expect(DIAGNOSTIC_CODES).toContain('assembly.joint.static-hold.mass-unavailable');
     expect(DIAGNOSTIC_CODES).toContain('script.no-return');
     expect(DIAGNOSTIC_CODES).toContain('recompute.kernel.guard-fallback');
     expect(DIAGNOSTIC_CODES).toContain('selector.binding-moved');

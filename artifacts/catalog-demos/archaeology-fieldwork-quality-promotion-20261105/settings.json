@@ -1,0 +1,1509 @@
+{
+  "date": "2026-11-05",
+  "kit": "archaeology-fieldwork",
+  "sourceBase": "bb9abf1a8",
+  "scope": "Promote all 50 existing assets in place; add no IDs or kits.",
+  "assetIDs": [
+    "archaeologist-trowel",
+    "artifact-bag",
+    "boundary-flag",
+    "context-clipboard",
+    "detail-paintbrush",
+    "detail-scoop",
+    "dustpan-and-brush",
+    "excavation-camera-tripod",
+    "excavation-grid",
+    "excavation-pick",
+    "field-loupe",
+    "field-notebook",
+    "finds-tray",
+    "fine-mesh-sieve",
+    "flotation-tank",
+    "folding-rule",
+    "grade-rod",
+    "hand-auger",
+    "hand-broom",
+    "line-level",
+    "margin-trowel",
+    "masonry-chisel",
+    "mattock",
+    "nested-sieves",
+    "north-arrow-marker",
+    "photo-board",
+    "photo-north-arrow",
+    "photo-scale-bar",
+    "plumb-bob",
+    "pointing-trowel",
+    "round-point-shovel",
+    "sample-scoop",
+    "sample-tag-set",
+    "sample-wash-tray",
+    "sediment-bucket",
+    "shaker-screen",
+    "site-camera",
+    "soft-finds-brush",
+    "soil-core-sampler",
+    "soil-knife",
+    "sorting-pan",
+    "specimen-jar-rack",
+    "square-point-shovel",
+    "survey-compass",
+    "survey-stake",
+    "tape-measure",
+    "total-station",
+    "trenching-spade",
+    "water-screen-frame",
+    "wire-cleaning-brush"
+  ],
+  "assetCountAndPassRate": "50/50 assets pass the catalog quality gate",
+  "materialControls": 124,
+  "materialRoles": "timber, canvas, fabric, paper, fiber, rope, polymer, leather, rubber, glass, brass, aluminum, stainless steel, painted steel, painted polymer",
+  "presets": [
+    "fieldReady",
+    "weathered"
+  ],
+  "presetEntries": 100,
+  "geometryUpdates": [
+    "pointed path-profile trowel blade",
+    "glass lens added to field loupe",
+    "objective lens and top display added to total station"
+  ],
+  "triangleBudget": "Existing 2400-triangle budgets retained; final meshes 48\u2013932 triangles.",
+  "promotionSource": "python artifacts/catalog-demos/archaeology-fieldwork-quality-promotion-20261105/promote_archaeology.py",
+  "catalogPreviewRenderer": "scripts/renderCatalogPreviews.ts; deterministic software-rendered three-quarter view at default controls",
+  "catalogPreviewInvocation": "npx tsx scripts/renderCatalogPreviews.ts archaeologist-trowel artifact-bag boundary-flag context-clipboard detail-paintbrush detail-scoop dustpan-and-brush excavation-camera-tripod excavation-grid excavation-pick field-loupe field-notebook finds-tray fine-mesh-sieve flotation-tank folding-rule grade-rod hand-auger hand-broom line-level margin-trowel masonry-chisel mattock nested-sieves north-arrow-marker photo-board photo-north-arrow photo-scale-bar plumb-bob pointing-trowel round-point-shovel sample-scoop sample-tag-set sample-wash-tray sediment-bucket shaker-screen site-camera soft-finds-brush soil-core-sampler soil-knife sorting-pan specimen-jar-rack square-point-shovel survey-compass survey-stake tape-measure total-station trenching-spade water-screen-frame wire-cleaning-brush",
+  "indexBuild": "npx tsx scripts/buildAssetCatalog.ts",
+  "kitQualityGate": "python scripts/checkCatalogQuality.py --kit archaeology-fieldwork",
+  "globalQualityGate": "python scripts/checkCatalogQuality.py",
+  "eslint": "npx eslint catalog/kits/archaeology-fieldwork/",
+  "integration": "npx vitest run tests/integration/catalog/",
+  "localPages": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-archaeology-fieldwork-pages-20261105",
+  "localPagesCheck": "python artifacts/catalog-demos/archaeology-fieldwork-quality-promotion-20261105/verify_local_pages.py /tmp/kernelcad-archaeology-fieldwork-pages-20261105",
+  "presetRender": "npx tsx artifacts/catalog-demos/archaeology-fieldwork-quality-promotion-20261105/render_preset_variant.ts",
+  "audit": "python artifacts/catalog-demos/archaeology-fieldwork-quality-promotion-20261105/record_promotion_audit.py",
+  "demoCapture": "python artifacts/catalog-demos/archaeology-fieldwork-quality-promotion-20261105/capture_archaeology_demo.py",
+  "caption": "Replay montage of local source authoring and software rendering. Local validation only; it does not show simulation, deployed behavior, or field/hardware acceptance.",
+  "catalogQualityAfter": "1904/2390 assets pass (79.67%); 486 thin assets remain (20.33%).",
+  "deployment": "Not deployed; PR #1224 had already merged before this branch follow-up.",
+  "comparisonNotes": "/home/andrii/worktrees/kernelCAD-private/catalog-archaeology-fieldwork-compare-20261105/COMPARISON.md",
+  "assetSettings": [
+    {
+      "id": "archaeologist-trowel",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "artifact-bag",
+      "materialControls": [
+        {
+          "name": "canvas",
+          "label": "Canvas",
+          "default": "#a99675"
+        },
+        {
+          "name": "paper",
+          "label": "Paper",
+          "default": "#d8cba9"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "canvas": "#c0ad88",
+          "paper": "#eee6d1"
+        },
+        "weathered": {
+          "canvas": "#80745d",
+          "paper": "#a99c7e"
+        }
+      }
+    },
+    {
+      "id": "boundary-flag",
+      "materialControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "fabric",
+          "label": "Flag fabric",
+          "default": "#dc6842"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "fabric": "#f39b35"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "fabric": "#a9573d"
+        }
+      }
+    },
+    {
+      "id": "context-clipboard",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "paper",
+          "label": "Paper",
+          "default": "#d8cba9"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "brass",
+          "label": "Brass",
+          "default": "#b18b50"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "paper": "#eee6d1",
+          "stainlessSteel": "#c7cdcf",
+          "brass": "#c6a364"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "paper": "#a99c7e",
+          "stainlessSteel": "#7a8588",
+          "brass": "#846a3e"
+        }
+      }
+    },
+    {
+      "id": "detail-paintbrush",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "fiber",
+          "label": "Brush fiber",
+          "default": "#cfb986"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf",
+          "fiber": "#e2d09d"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588",
+          "fiber": "#a18a61"
+        }
+      }
+    },
+    {
+      "id": "detail-scoop",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "dustpan-and-brush",
+      "materialControls": [
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        },
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "fiber",
+          "label": "Brush fiber",
+          "default": "#cfb986"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "timber": "#a27850",
+          "fiber": "#e2d09d"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "timber": "#705a45",
+          "fiber": "#a18a61"
+        }
+      }
+    },
+    {
+      "id": "excavation-camera-tripod",
+      "materialControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "polymer": "#e6e9df"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "polymer": "#8d9890"
+        }
+      }
+    },
+    {
+      "id": "excavation-grid",
+      "materialControls": [
+        {
+          "name": "rope",
+          "label": "Survey cord",
+          "default": "#c8ad6e"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "rope": "#e5cf8d",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "rope": "#907746",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "excavation-pick",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "field-loupe",
+      "materialControls": [
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "glass",
+          "label": "Glass",
+          "default": "#63949c"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf",
+          "glass": "#94bdc3"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588",
+          "glass": "#5d7b7f"
+        }
+      }
+    },
+    {
+      "id": "field-notebook",
+      "materialControls": [
+        {
+          "name": "leather",
+          "label": "Leather",
+          "default": "#805b3c"
+        },
+        {
+          "name": "paper",
+          "label": "Paper",
+          "default": "#d8cba9"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#343a3b"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "leather": "#9b7049",
+          "paper": "#eee6d1",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "leather": "#664932",
+          "paper": "#a99c7e",
+          "rubber": "#292f30"
+        }
+      }
+    },
+    {
+      "id": "finds-tray",
+      "materialControls": [
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "fine-mesh-sieve",
+      "materialControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "polymer": "#e6e9df"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "polymer": "#8d9890"
+        }
+      }
+    },
+    {
+      "id": "flotation-tank",
+      "materialControls": [
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#343a3b"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588",
+          "rubber": "#292f30"
+        }
+      }
+    },
+    {
+      "id": "folding-rule",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "brass",
+          "label": "Brass",
+          "default": "#b18b50"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "brass": "#c6a364"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "brass": "#846a3e"
+        }
+      }
+    },
+    {
+      "id": "grade-rod",
+      "materialControls": [
+        {
+          "name": "aluminum",
+          "label": "Aluminum",
+          "default": "#9eafb7"
+        },
+        {
+          "name": "paintedSteel",
+          "label": "Painted steel",
+          "default": "#607b83"
+        },
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "aluminum": "#c3ccd0",
+          "paintedSteel": "#e5a536",
+          "polymer": "#e6e9df"
+        },
+        "weathered": {
+          "aluminum": "#788990",
+          "paintedSteel": "#56686c",
+          "polymer": "#8d9890"
+        }
+      }
+    },
+    {
+      "id": "hand-auger",
+      "materialControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "timber": "#a27850"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "timber": "#705a45"
+        }
+      }
+    },
+    {
+      "id": "hand-broom",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "fiber",
+          "label": "Brush fiber",
+          "default": "#cfb986"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "fiber": "#e2d09d"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "fiber": "#a18a61"
+        }
+      }
+    },
+    {
+      "id": "line-level",
+      "materialControls": [
+        {
+          "name": "aluminum",
+          "label": "Aluminum",
+          "default": "#9eafb7"
+        },
+        {
+          "name": "glass",
+          "label": "Glass",
+          "default": "#63949c"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "aluminum": "#c3ccd0",
+          "glass": "#94bdc3",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "aluminum": "#788990",
+          "glass": "#5d7b7f",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "margin-trowel",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "masonry-chisel",
+      "materialControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#343a3b"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "rubber": "#292f30"
+        }
+      }
+    },
+    {
+      "id": "mattock",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "nested-sieves",
+      "materialControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "aluminum",
+          "label": "Aluminum",
+          "default": "#9eafb7"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "aluminum": "#c3ccd0"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "aluminum": "#788990"
+        }
+      }
+    },
+    {
+      "id": "north-arrow-marker",
+      "materialControls": [
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "paintedSteel",
+          "label": "Painted steel",
+          "default": "#607b83"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf",
+          "paintedSteel": "#e5a536"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588",
+          "paintedSteel": "#56686c"
+        }
+      }
+    },
+    {
+      "id": "photo-board",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "paper",
+          "label": "Paper",
+          "default": "#d8cba9"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "paper": "#eee6d1",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "paper": "#a99c7e",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "photo-north-arrow",
+      "materialControls": [
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        },
+        {
+          "name": "paintedSteel",
+          "label": "Painted steel",
+          "default": "#607b83"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "paintedSteel": "#e5a536"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "paintedSteel": "#56686c"
+        }
+      }
+    },
+    {
+      "id": "photo-scale-bar",
+      "materialControls": [
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        },
+        {
+          "name": "paintedSteel",
+          "label": "Painted steel",
+          "default": "#607b83"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "paintedSteel": "#e5a536"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "paintedSteel": "#56686c"
+        }
+      }
+    },
+    {
+      "id": "plumb-bob",
+      "materialControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "brass",
+          "label": "Brass",
+          "default": "#b18b50"
+        },
+        {
+          "name": "rope",
+          "label": "Survey cord",
+          "default": "#c8ad6e"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "brass": "#c6a364",
+          "rope": "#e5cf8d"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "brass": "#846a3e",
+          "rope": "#907746"
+        }
+      }
+    },
+    {
+      "id": "pointing-trowel",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "round-point-shovel",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#343a3b"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588",
+          "rubber": "#292f30"
+        }
+      }
+    },
+    {
+      "id": "sample-scoop",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "sample-tag-set",
+      "materialControls": [
+        {
+          "name": "paper",
+          "label": "Paper",
+          "default": "#d8cba9"
+        },
+        {
+          "name": "brass",
+          "label": "Brass",
+          "default": "#b18b50"
+        },
+        {
+          "name": "rope",
+          "label": "Survey cord",
+          "default": "#c8ad6e"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "paper": "#eee6d1",
+          "brass": "#c6a364",
+          "rope": "#e5cf8d"
+        },
+        "weathered": {
+          "paper": "#a99c7e",
+          "brass": "#846a3e",
+          "rope": "#907746"
+        }
+      }
+    },
+    {
+      "id": "sample-wash-tray",
+      "materialControls": [
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "sediment-bucket",
+      "materialControls": [
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "shaker-screen",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "site-camera",
+      "materialControls": [
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        },
+        {
+          "name": "glass",
+          "label": "Glass",
+          "default": "#63949c"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#343a3b"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "glass": "#94bdc3",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "glass": "#5d7b7f",
+          "rubber": "#292f30"
+        }
+      }
+    },
+    {
+      "id": "soft-finds-brush",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "fiber",
+          "label": "Brush fiber",
+          "default": "#cfb986"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "fiber": "#e2d09d"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "fiber": "#a18a61"
+        }
+      }
+    },
+    {
+      "id": "soil-core-sampler",
+      "materialControls": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#343a3b"
+        },
+        {
+          "name": "paintedSteel",
+          "label": "Painted steel",
+          "default": "#607b83"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "rubber": "#454c4d",
+          "paintedSteel": "#e5a536"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "rubber": "#292f30",
+          "paintedSteel": "#56686c"
+        }
+      }
+    },
+    {
+      "id": "soil-knife",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "sorting-pan",
+      "materialControls": [
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "specimen-jar-rack",
+      "materialControls": [
+        {
+          "name": "aluminum",
+          "label": "Aluminum",
+          "default": "#9eafb7"
+        },
+        {
+          "name": "glass",
+          "label": "Glass",
+          "default": "#63949c"
+        },
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "aluminum": "#c3ccd0",
+          "glass": "#94bdc3",
+          "polymer": "#e6e9df"
+        },
+        "weathered": {
+          "aluminum": "#788990",
+          "glass": "#5d7b7f",
+          "polymer": "#8d9890"
+        }
+      }
+    },
+    {
+      "id": "square-point-shovel",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#343a3b"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588",
+          "rubber": "#292f30"
+        }
+      }
+    },
+    {
+      "id": "survey-compass",
+      "materialControls": [
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        },
+        {
+          "name": "glass",
+          "label": "Glass",
+          "default": "#63949c"
+        },
+        {
+          "name": "brass",
+          "label": "Brass",
+          "default": "#b18b50"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "glass": "#94bdc3",
+          "brass": "#c6a364"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "glass": "#5d7b7f",
+          "brass": "#846a3e"
+        }
+      }
+    },
+    {
+      "id": "survey-stake",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "paintedSteel",
+          "label": "Painted steel",
+          "default": "#607b83"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "paintedSteel": "#e5a536"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "paintedSteel": "#56686c"
+        }
+      }
+    },
+    {
+      "id": "tape-measure",
+      "materialControls": [
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#343a3b"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588",
+          "rubber": "#292f30"
+        }
+      }
+    },
+    {
+      "id": "total-station",
+      "materialControls": [
+        {
+          "name": "paintedPolymer",
+          "label": "Painted polymer",
+          "default": "#d39b35"
+        },
+        {
+          "name": "aluminum",
+          "label": "Aluminum",
+          "default": "#9eafb7"
+        },
+        {
+          "name": "glass",
+          "label": "Glass",
+          "default": "#63949c"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber",
+          "default": "#343a3b"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "paintedPolymer": "#edb83f",
+          "aluminum": "#c3ccd0",
+          "glass": "#94bdc3",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "paintedPolymer": "#ad7c2d",
+          "aluminum": "#788990",
+          "glass": "#5d7b7f",
+          "rubber": "#292f30"
+        }
+      }
+    },
+    {
+      "id": "trenching-spade",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      }
+    },
+    {
+      "id": "water-screen-frame",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "polymer",
+          "label": "Molded polymer",
+          "default": "#d2d8ce"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf",
+          "polymer": "#e6e9df"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588",
+          "polymer": "#8d9890"
+        }
+      }
+    },
+    {
+      "id": "wire-cleaning-brush",
+      "materialControls": [
+        {
+          "name": "timber",
+          "label": "Timber",
+          "default": "#8b6848"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#aab4b6"
+        },
+        {
+          "name": "brass",
+          "label": "Brass",
+          "default": "#b18b50"
+        }
+      ],
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf",
+          "brass": "#c6a364"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588",
+          "brass": "#846a3e"
+        }
+      }
+    }
+  ]
+}

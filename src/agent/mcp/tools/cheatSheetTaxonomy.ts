@@ -85,21 +85,21 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
     task: 'Start a shape',
     blurb: 'The first call in any model: a solid primitive, or a 2D profile to extrude.',
     names: [
-      'box', 'cylinder', 'sphere', 'torus', 'spring', 'threadedRod', 'isoThread', 'spurGear', 'internalSpurGear', 'ringGear', 'internalGear', 'planetaryToothCompatibility',
+      'box', 'cylinder', 'sphere', 'torus', 'spring', 'pipe', 'threadedRod', 'isoThread', 'metricThreadFromDiameter', 'spurGear', 'spurGearPair', 'internalSpurGear', 'ringGear', 'internalGear', 'planetaryToothCompatibility',
       'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect',
       'filletPolygon', 'prismSide', 'prismSideY', 'prismFront', 'prismPlan',
       'sheetMetal', 'sdf',
-      'path', 'moveTo', 'lineTo', 'close', 'label', 'circle',
+      'path', 'moveTo', 'lineTo', 'close', 'label', 'circle', 'ellipse', 'ellipseArc',
       'tangentArc', 'threePointsArc', 'sagittaArc', 'bulgeArc', 'radiusArc',
       'tangentCircle', 'tangentLine',
       'smoothSpline', 'spline', 'nurbsSegment', 'bezierTo', 'quadraticTo', 'hermiteG2',
-      'sectionSketch', 'faceSketch', 'silhouette',
+      'sectionSketch', 'faceSketch', 'silhouette', 'offset',
     ],
   },
   {
     task: 'Add material',
     blurb: 'Turn a profile into a solid, or grow one along a path.',
-    names: ['extrude', 'revolve', 'sweep', 'loft', 'variableSweep', 'helix'],
+    names: ['extrude', 'revolve', 'sweep', 'loft', 'variableSweep', 'helix', 'rib'],
   },
   {
     task: 'Remove material',
@@ -109,7 +109,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Combine shapes',
     blurb: 'Merge or intersect solids, or group them without paying for a boolean.',
-    names: ['union', 'intersect', 'toCompound', 'toUnion'],
+    names: ['union', 'intersect', 'split', 'toCompound', 'toUnion'],
   },
   {
     task: 'Finish edges',
@@ -157,15 +157,15 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   },
   {
     task: 'Measure & verify',
-    blurb: 'Ask the kernel what you actually built, and check it before shipping.',
-    names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec', 'feaStudy', 'cfdStudy', 'tube', 'tubeSpec',
+    blurb: 'Ask the kernel what you actually built, and check it before shipping. After dfm_review, dfm_fix_recheck applies one safe shell, fillet, or draft edit and runs that review again.',
+    names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec', 'feaStudy', 'cfdStudy', 'flightStudy', 'tube', 'tubeSpec',
       'require', 'clearance', 'distance', 'mass', 'volume', 'centerOfMass', 'count', 'innerLoops',
       'angle', 'concentric', 'coplanar'],
   },
   {
     task: 'Parametrize',
     blurb: 'Declare editable dimensions and do arithmetic on them (JS operators throw on a ParamRef).',
-    names: ['param', 'params', 'meta', 'presets', 'add', 'subtract', 'multiply', 'divide', 'negate', 'min', 'max', 'abs', 'clamp'],
+    names: ['param', 'params', 'meta', 'presets', 'configurations', 'definePart', 'add', 'subtract', 'multiply', 'divide', 'negate', 'min', 'max', 'abs', 'clamp'],
   },
   {
     task: 'Import & export',

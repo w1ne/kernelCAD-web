@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-20",
+  "source": "examples/kinematic/joint-range-suggestion-motion.kcad.ts",
+  "output": "docs/demos/joint-range-suggestion/joint-range-suggestion.mp4",
+  "command": "PW_CDP_URL=http://127.0.0.1:1 node dist/cli/index.js animate examples/kinematic/joint-range-suggestion-motion.kcad.ts docs/demos/joint-range-suggestion/joint-range-suggestion.mp4 --fps 12 --pose 0,8 --lock-frame --backdrop white --json",
+  "playerBuild": "node scripts/build-cli.mjs && npm run build:player",
+  "stopMm": 9.693750000000001,
+  "pair": [
+    "carriage",
+    "wall"
+  ],
+  "resolutionMm": 0.02656250000000071,
+  "clearanceMm": 0.3,
+  "analyticStopMm": 9.7,
+  "fps": 12,
+  "durationMs": 2000,
+  "frameCount": 24,
+  "width": 1920,
+  "height": 1080,
+  "pose": "0,8",
+  "lockFrame": true,
+  "backdrop": "white",
+  "cameraTarget": [
+    36,
+    12,
+    10
+  ],
+  "cameraDistance": 48,
+  "animateWallSeconds": 204.3,
+  "verify": {
+    "ok": true,
+    "verified": true,
+    "collisions": []
+  },
+  "kind": "local kinematic replay of one animationView timeline",
+  "recapture": "Replaces the 2026-11-17 capture, which drew the suggestJointRanges probe scene as a second carriage fixed at slide 0.1.",
+  "geometry": "rail = end block + bed; wall fastened to the bed at z = 0; carriage slides on the bed"
+}

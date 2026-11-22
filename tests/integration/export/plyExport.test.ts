@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
+import { strFromU8, unzipSync } from 'fflate';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -12,7 +13,7 @@ const errors = (r: { diagnostics: Array<{ severity: string }> }) => r.diagnostic
 
 /** Triangle count and bbox of the same export mesher, read through OBJ. */
 function objStats(bytes: Uint8Array): { faces: number; min: number[]; max: number[] } {
-  const lines = new TextDecoder().decode(bytes).split('\n');
+  const lines = strFromU8(unzipSync(bytes)['model.obj']!).split('\n');
   const vs = lines.filter(l => l.startsWith('v ')).map(l => l.split(' ').slice(1).map(Number));
   return {
     faces: lines.filter(l => l.startsWith('f ')).length,

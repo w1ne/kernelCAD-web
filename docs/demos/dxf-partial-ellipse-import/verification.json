@@ -1,0 +1,36 @@
+{
+  "inputSha256": "7f5e133052e15d15d3e92899731d23e12a81efb6eea158e08d7405c461e8fb3b",
+  "modelScriptSha256": "b5579b45857b69b3debfac83a84380c0d8461df3cd0999af0fa6f481d8fccb60",
+  "captureScriptSha256": "aa65b22266e1adf5e239d027fe60da1dc998bb2c2d823eccc50334decba7eac1",
+  "outputFeatureId": "extrude_1",
+  "importedSketchId": "sketch_1",
+  "nurbsArcCount": 2,
+  "validBrep": true,
+  "measuredVolumeMm3": 235.61944901850393,
+  "analyticVolumeMm3": 235.61944901923448,
+  "relativeVolumeError": 3.1005573701153466e-12,
+  "boundingBoxMm": {
+    "min": [
+      10,
+      20,
+      0
+    ],
+    "max": [
+      30,
+      25,
+      3
+    ]
+  },
+  "triangleCount": 108,
+  "video": {
+    "file": "demo.mp4",
+    "sha256": "7123c72631b3c71ef7ed0f53891fb5062b570c0cb221a6e401506584748110dd",
+    "durationSeconds": 10,
+    "sizeBytes": 111526,
+    "codec_name": "h264",
+    "width": 1280,
+    "height": 720,
+    "avg_frame_rate": "16/1"
+  },
+  "scope": "Local model evaluation and OCCT B-rep measurement. No deployment, simulation, or hardware acceptance is claimed."
+}

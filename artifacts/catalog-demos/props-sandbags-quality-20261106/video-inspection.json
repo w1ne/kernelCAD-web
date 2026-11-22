@@ -1,0 +1,46 @@
+{
+  "video": "sandbags-quality-demo.mp4",
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "15.000000"
+    }
+  },
+  "decodedFrames": [
+    {
+      "timeSeconds": 1,
+      "path": "frame-01.png",
+      "size": 165821
+    },
+    {
+      "timeSeconds": 4,
+      "path": "frame-02.png",
+      "size": 160876
+    },
+    {
+      "timeSeconds": 7,
+      "path": "frame-03.png",
+      "size": 197214
+    },
+    {
+      "timeSeconds": 10,
+      "path": "frame-04.png",
+      "size": 150110
+    },
+    {
+      "timeSeconds": 13,
+      "path": "frame-05.png",
+      "size": 109348
+    }
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "manualVisualInspection": "Reviewed all five decoded frames at full size and the contact sheet. Text and cards are legible and uncropped. The default and preset images read as a three-course staggered sandbag wall; the olive and pale palettes are distinct, the closure seams remain visible, and the curved layout is visibly different. Captions consistently identify local source renders and state that no deployment or flood-performance claim is shown."
+}

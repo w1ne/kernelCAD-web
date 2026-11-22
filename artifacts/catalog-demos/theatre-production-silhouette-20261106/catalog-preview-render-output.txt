@@ -1,0 +1,7 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/renderCatalogPreviews.ts ellipsoidal-reflector-spotlight fresnel-wash-fixture par-can-fixture motorized-chain-hoist spotlight-followspot-stand
+theatre-production/ellipsoidal-reflector-spotlight: 1442 tris
+theatre-production/fresnel-wash-fixture: 1144 tris
+theatre-production/motorized-chain-hoist: 1796 tris
+theatre-production/par-can-fixture: 1056 tris
+theatre-production/spotlight-followspot-stand: 2024 tris

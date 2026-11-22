@@ -1,0 +1,833 @@
+{
+  "kit": "construction-equipment",
+  "assetsPromoted": 60,
+  "newAssets": 0,
+  "materialControls": 162,
+  "presetEntries": 120,
+  "assetsWithGeometryEnhancements": 16,
+  "geometryEnhancements": 201,
+  "assets": [
+    {
+      "id": "adjustable-formwork-prop",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 5,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "articulated-dump-truck",
+      "materialControls": [
+        "cabGlassColor",
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 23,
+      "geometryEnhancements": 21
+    },
+    {
+      "id": "asphalt-distributor-truck",
+      "materialControls": [
+        "cabGlassColor",
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 30,
+      "geometryEnhancements": 11
+    },
+    {
+      "id": "asphalt-paver-screed",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 5,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "asphalt-transfer-conveyor",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 13,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "backhoe-loader",
+      "materialControls": [
+        "cabGlassColor",
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 25,
+      "geometryEnhancements": 11
+    },
+    {
+      "id": "cold-planer-milling-machine",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 54,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "concrete-batch-plant",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 13,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "concrete-beam-form",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 11,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "concrete-column-form",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 9,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "concrete-form-tie",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 5,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "concrete-formwork-panel",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 7,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "concrete-placement-bucket",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 8,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "concrete-pump-truck",
+      "materialControls": [
+        "cabGlassColor",
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 27,
+      "geometryEnhancements": 18
+    },
+    {
+      "id": "concrete-vibrator-needle",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 5,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "construction-personnel-elevator",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 8,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "crawler-dozer",
+      "materialControls": [
+        "cabGlassColor",
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 51,
+      "geometryEnhancements": 27
+    },
+    {
+      "id": "drywall-panel-lift",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 13,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "grade-rod-and-prism-pole",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 12,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "jobsite-tile-saw",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 7,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "laser-level-tripod",
+      "materialControls": [
+        "cabGlassColor",
+        "equipmentPaintColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 7,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "lowboy-equipment-trailer",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 16,
+      "geometryEnhancements": 10
+    },
+    {
+      "id": "masonry-mixer",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 11,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "mast-climbing-work-platform",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 8,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "mobile-fuel-tank",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 12,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "modular-shoring-frame",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 13,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "motor-grader",
+      "materialControls": [
+        "cabGlassColor",
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 25,
+      "geometryEnhancements": 11
+    },
+    {
+      "id": "pipe-roller-stand",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 6,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "pneumatic-tire-roller",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 29,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "portable-air-compressor",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 15,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "portable-core-drill-stand",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 5,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "portable-floor-grinder",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 18,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "portable-material-hoist",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 6,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "portable-site-water-tank",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 6,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "rebar-bending-machine",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 9,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "rebar-cage",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 23,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "rebar-cutting-machine",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 5,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "rebar-straightener-coil",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 9,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "ride-on-concrete-saw",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 18,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "ride-on-power-trowel",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 6,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "rigid-haul-truck",
+      "materialControls": [
+        "cabGlassColor",
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 28,
+      "geometryEnhancements": 11
+    },
+    {
+      "id": "road-reclaimer",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 28,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "rough-terrain-forklift",
+      "materialControls": [
+        "cabGlassColor",
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 21,
+      "geometryEnhancements": 11
+    },
+    {
+      "id": "single-drum-soil-compactor",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 14,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "skid-steer-loader",
+      "materialControls": [
+        "cabGlassColor",
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 22,
+      "geometryEnhancements": 11
+    },
+    {
+      "id": "slab-edge-form",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 11,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "tandem-vibratory-roller",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 11,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "telescopic-handler",
+      "materialControls": [
+        "cabGlassColor",
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 20,
+      "geometryEnhancements": 11
+    },
+    {
+      "id": "towable-light-tower",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 10,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "track-asphalt-paver",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 52,
+      "geometryEnhancements": 15
+    },
+    {
+      "id": "tracked-concrete-buggy",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 37,
+      "geometryEnhancements": 10
+    },
+    {
+      "id": "trailer-concrete-line-pump",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 20,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "transit-mixer-truck",
+      "materialControls": [
+        "cabGlassColor",
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 22,
+      "geometryEnhancements": 11
+    },
+    {
+      "id": "trench-roller",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 9,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "vibrating-concrete-screed",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 5,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "walk-behind-concrete-saw",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 17,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "walk-behind-floor-scarifier",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 18,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "walk-behind-power-trowel",
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 5,
+      "geometryEnhancements": 0
+    },
+    {
+      "id": "water-tanker-truck",
+      "materialControls": [
+        "cabGlassColor",
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 30,
+      "geometryEnhancements": 11
+    },
+    {
+      "id": "wheel-asphalt-paver",
+      "materialControls": [
+        "equipmentPaintColor",
+        "tireRubberColor",
+        "structuralSteelColor"
+      ],
+      "presetNames": [
+        "weathered",
+        "highVisibility"
+      ],
+      "sourcePartCount": 26,
+      "geometryEnhancements": 1
+    }
+  ]
+}

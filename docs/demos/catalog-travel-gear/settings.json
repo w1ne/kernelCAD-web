@@ -1,0 +1,26 @@
+{
+  "kit": "travel-gear",
+  "width": 1280,
+  "height": 720,
+  "frameRate": 2,
+  "videoFrameRate": 24,
+  "videoCodec": "libx264",
+  "pixelFormat": "yuv420p",
+  "crf": 24,
+  "render": "software render of exported low-poly GLB triangles",
+  "auditAllChoices": true,
+  "variants": [
+    {
+      "id": "rolling-suitcase",
+      "want": "check-in retracted"
+    },
+    {
+      "id": "passport-wallet",
+      "want": "open compact"
+    },
+    {
+      "id": "foldable-umbrella",
+      "want": "folded straight"
+    }
+  ]
+}

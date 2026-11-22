@@ -1,0 +1,537 @@
+{
+  "checkedAt": "2026-11-02",
+  "kit": "music",
+  "totalAssets": 635,
+  "assetCount": 40,
+  "passed": 40,
+  "total": 40,
+  "catalogIndexSource": "catalog/index.json",
+  "verificationCommands": [
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx eslint catalog/",
+    "npx vitest run tests/integration/catalog/"
+  ],
+  "auditScope": "All music asset sources build to a non-empty, one-material mesh inside the indexed triangle budget; each has exactly scale and color knobs and base origin.",
+  "assets": [
+    {
+      "id": "accordion",
+      "source": "catalog/kits/music/accordion.kcad.ts",
+      "sourceSha256": "f873e13d99286421ebe3e43026075414b0b48530f608e5ebf4368f129cef533e",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 204,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "acoustic-guitar",
+      "source": "catalog/kits/music/acoustic-guitar.kcad.ts",
+      "sourceSha256": "d803746641544fe740d952ee5926385394b04c9162869dbf2d464e06df115f04",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 176,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "alto-saxophone",
+      "source": "catalog/kits/music/alto-saxophone.kcad.ts",
+      "sourceSha256": "3b5d371aea6811f9426abc1aef51c9a2d7e97ff00bb0548919689c7c9c9381a7",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 222,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "banjo",
+      "source": "catalog/kits/music/banjo.kcad.ts",
+      "sourceSha256": "b2698188f49b405cc90da1a194929a2930daba5f0dfcf1620e81960a3e082255",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 188,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "bass-drum",
+      "source": "catalog/kits/music/bass-drum.kcad.ts",
+      "sourceSha256": "20193aa6f313409c2fb63c332960f7a7ab9655044e3057c1f79e4290fe9c7504",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 168,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "bass-guitar",
+      "source": "catalog/kits/music/bass-guitar.kcad.ts",
+      "sourceSha256": "8d5f1998443e5a3f23fd53791f2b11e8d463f9fa217777e31cdf285ad042f9a6",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 104,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "bassoon",
+      "source": "catalog/kits/music/bassoon.kcad.ts",
+      "sourceSha256": "2ab69e4ddea465f321729e6ebfad026059d914274c6b4e48cd8d51df04f187cd",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 228,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "bongos",
+      "source": "catalog/kits/music/bongos.kcad.ts",
+      "sourceSha256": "44e933e6d62e6a3361e448dc9a1d8080eab1190ecf230341cf81a1e04e3b8ec7",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 200,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cajon",
+      "source": "catalog/kits/music/cajon.kcad.ts",
+      "sourceSha256": "6cc9a363a8babf207ccb94e2747aea7eb0dfe80816b4d253bf9fec73922339bd",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 60,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cello",
+      "source": "catalog/kits/music/cello.kcad.ts",
+      "sourceSha256": "9b96886c639b8c7eccdd8e93179cbc1cecc6d17e1506e6ee5cd0e8e16ab2a4f6",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 222,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "clarinet",
+      "source": "catalog/kits/music/clarinet.kcad.ts",
+      "sourceSha256": "09ee5ccf067b55b0ff1c08a4df6e451c69ea51f97b2f7a45181a89a3ba95d6f0",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 482,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "concert-flute",
+      "source": "catalog/kits/music/concert-flute.kcad.ts",
+      "sourceSha256": "4abc4d500de7058f444237febcaf48a416c12dabf1f33b44784ae083e25a8f3c",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 264,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "concert-harp",
+      "source": "catalog/kits/music/concert-harp.kcad.ts",
+      "sourceSha256": "a8054306ed585b3f8f24e39c0fe2958e87a11d40d7c395b891b731eadfc6e5d8",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "conductor-podium",
+      "source": "catalog/kits/music/conductor-podium.kcad.ts",
+      "sourceSha256": "a92ab63582cb8bf56851d5123afb5a596ce56051cf8f47cbb2ee342b643417fd",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 48,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "conga-drums",
+      "source": "catalog/kits/music/conga-drums.kcad.ts",
+      "sourceSha256": "4c10c2136f689238e1140c7ad8863ca3741f9fff85e83c3549409e3c4f8384b3",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 276,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "double-bass",
+      "source": "catalog/kits/music/double-bass.kcad.ts",
+      "sourceSha256": "9c012d6f7334868d80f4e7ae671adc0857b3d2e5a2ae2796b86af6de211bcb48",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 222,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "drum-kit",
+      "source": "catalog/kits/music/drum-kit.kcad.ts",
+      "sourceSha256": "134f0122ee96e482807fbe97d84639f045cf4fbda24a346f66f19a0e315c4cb8",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 560,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "electric-guitar",
+      "source": "catalog/kits/music/electric-guitar.kcad.ts",
+      "sourceSha256": "bbbc5215aef072c30ccbe0210620744db1e334a1e2983ee4d3a968f7f16648ae",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 136,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "french-horn",
+      "source": "catalog/kits/music/french-horn.kcad.ts",
+      "sourceSha256": "ec7dc9731565c106eff5d7ee73c6501e2515ef2f0698b9e34634f7c468a10645",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 416,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "harmonica",
+      "source": "catalog/kits/music/harmonica.kcad.ts",
+      "sourceSha256": "ac2ca00f20b2804e6f48d010c1bdb4bb4a944c13e78954998c7dbc27f14aec64",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 120,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "maracas",
+      "source": "catalog/kits/music/maracas.kcad.ts",
+      "sourceSha256": "9a92795b1f8106cb66dad91029ab79ebe3858a7b7f200381b3a4b9c5a991f890",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 332,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "marimba",
+      "source": "catalog/kits/music/marimba.kcad.ts",
+      "sourceSha256": "ad01750260476a5d03e25b0a50a9c3523682c087668566b5cf2554439d5e44fa",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 228,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "mechanical-metronome",
+      "source": "catalog/kits/music/mechanical-metronome.kcad.ts",
+      "sourceSha256": "d8a01894669e143b1758ade227c7490b928ea5eb7d4ac57f36c921de82508ea4",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 162,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "microphone-stand",
+      "source": "catalog/kits/music/microphone-stand.kcad.ts",
+      "sourceSha256": "0b7c9dc01c2ea134868204f81325b9df3eb888ef5797725ce5281111c4ba64ae",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 266,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "music-stand",
+      "source": "catalog/kits/music/music-stand.kcad.ts",
+      "sourceSha256": "ed86a2cfcc855ed9c8fa48a91fa3e66012a419857a620e513af453d84f39db28",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 148,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "oboe",
+      "source": "catalog/kits/music/oboe.kcad.ts",
+      "sourceSha256": "4dc6626fcc6e394703f75b43cd0b92543f8ea45a10776a50874f2251bdec688a",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 526,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "orchestral-cymbals",
+      "source": "catalog/kits/music/orchestral-cymbals.kcad.ts",
+      "sourceSha256": "4894965a73307938d1ba8f04c83de9b47a0494edfb6e6b97936eb696664453b7",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 316,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "orchestral-triangle",
+      "source": "catalog/kits/music/orchestral-triangle.kcad.ts",
+      "sourceSha256": "7651bb30a9418b029e120323ef70f7ed91e081ea9c2857458e6db8fbd3da7207",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 158,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "snare-drum",
+      "source": "catalog/kits/music/snare-drum.kcad.ts",
+      "sourceSha256": "bfb6c76cfe10a4c25ea45bda2d5f25b7bd4bd563a5c3f3ec57aec53e1258f277",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 304,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "tambourine",
+      "source": "catalog/kits/music/tambourine.kcad.ts",
+      "sourceSha256": "cb43c03cbae873fb6f477791c744b12de0dab10cb88dcef96879715357a9a29b",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 286,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "tenor-saxophone",
+      "source": "catalog/kits/music/tenor-saxophone.kcad.ts",
+      "sourceSha256": "37444f8b03ec467db38cdc761f3428e1539b9e6acf339d8f94e4b854fd1c3e78",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 222,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "timpani",
+      "source": "catalog/kits/music/timpani.kcad.ts",
+      "sourceSha256": "6ead11c7560e869947bb70788c6518b7a54cb0985653dc3d89f117d55c2555ea",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 226,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "trombone",
+      "source": "catalog/kits/music/trombone.kcad.ts",
+      "sourceSha256": "29a980d28acceeafdade915700c1c545ba63f10c4e756c3f22aff7e9fe9fd6f9",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 314,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "trumpet",
+      "source": "catalog/kits/music/trumpet.kcad.ts",
+      "sourceSha256": "f05ace8a88a1ae437c1d95acb52ab828372f9a2dd38b69ddec8a185a12036352",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 268,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "tuba",
+      "source": "catalog/kits/music/tuba.kcad.ts",
+      "sourceSha256": "cdd78c61d0958cda57003ccaf87405e726ac39004224592e9cd327f592428009",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 340,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "ukulele",
+      "source": "catalog/kits/music/ukulele.kcad.ts",
+      "sourceSha256": "e7e3ab715de665da2a966fa5c7e075cc27c2e3d50c559d5c50e89227fc8f1f89",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 208,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "vibraphone",
+      "source": "catalog/kits/music/vibraphone.kcad.ts",
+      "sourceSha256": "80449031171d5f520603e008465fc92deab24f939fc16f02b81afa0fbed84b29",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 304,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "viola",
+      "source": "catalog/kits/music/viola.kcad.ts",
+      "sourceSha256": "2088b4f8f48f965b3dfe639e412710491b136b9ea3f4aa434c9278ef4a434c9e",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 178,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "violin",
+      "source": "catalog/kits/music/violin.kcad.ts",
+      "sourceSha256": "c8252ae6b82d5b325d72c91511372d9624e5ad3432e5c09aeeaf2faacfe8f91d",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 178,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "xylophone",
+      "source": "catalog/kits/music/xylophone.kcad.ts",
+      "sourceSha256": "b8dd819b9c843bec637a1c09ccfd44721bf8b027a02f298e64e5daf794f3883a",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 152,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    }
+  ]
+}

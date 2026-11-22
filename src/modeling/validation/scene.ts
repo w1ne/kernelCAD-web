@@ -46,12 +46,15 @@ export interface ScenePart {
    *  applied to it. */
   readonly shape: Shape;
   /** SE(3) motion applied after the part's `at` (world = worldTransform ·
-   *  T(at) · shape). Identity for kinematic-zero `model()` and for a part no
-   *  mate places (the first declared part keeps its `at`). For a part a mate
-   *  places in `solvedModel(poses)` it is the mate's placement with `at`
-   *  taken back out, so the part's own `at` does not move it; the built
-   *  scene part carries the same transform. Joints from `arm.revolute` /
-   *  `.prismatic` / `.ball` move the part in the built scene only. */
+   *  T(at) · shape). `model()` resolves the default mate pose when all
+   *  referenced connector origins are numeric vectors. If a connector
+   *  origin is topology-based, this capture-time transform remains
+   *  unresolved; the lowered SceneBackend resolves it during recompute. Use
+   *  `solvedModel(poses)` when capture-time transforms must be fully solved.
+   *  For a part a mate places in `solvedModel(poses)`, this is the mate
+   *  placement with `at` taken back out, so the part's own `at` does not move
+   *  it. Joints from `arm.revolute` / `.prismatic` / `.ball` move the part in
+   *  the built scene only. */
   readonly worldTransform: Transform;
   /** Role token or hex; resolved from the source shape's metadata. */
   readonly color?: string;
@@ -99,16 +102,15 @@ export class Scene implements Iterable<ScenePart> {
    *  `connectors` arrays surfaced above. */
   readonly tendons?: readonly TendonRecord[];
   /** Validator diagnostics attached by `Assembly.solvedModel({validate: 'warn'})`
-   *  (v0.6 Task 9). Populated from `validateAssemblyWithMates(arm)` when the
-   *  gate is in `warn` mode; empty when validation is skipped (`mode: 'off'`)
-   *  or when `mode: 'error'` is used (in which case error-severity diagnostics
-   *  throw, and the surviving warnings/info are silently dropped). Always
-   *  present (possibly empty); never undefined, so consumers don't need a
-   *  presence check. */
+   *  (v0.6 Task 9), or an overlap-only error deferred to mechanism truth.
+   *  Always present (possibly empty); never undefined, so consumers don't need
+   *  a presence check. */
   readonly warnings: readonly SceneDiagnostic[];
   private _bbox: SceneBbox | null = null;
   private readonly bboxFn: () => SceneBbox;
   private readonly exportFn?: SceneExportFn;
+  /** Strict-mode overlap errors awaiting the evaluator's mechanism verdict. */
+  private readonly _deferredValidationDiagnostics: readonly ValidatorDiagnostic[];
   /**
    * Underlying capture-time feature id for the upstream `solvedAssembly` /
    * `assemblyModel` record. Internal — used by `runAndExport` to route a
@@ -127,6 +129,7 @@ export class Scene implements Iterable<ScenePart> {
     mates?: readonly MateRecord[],
     warnings?: readonly SceneDiagnostic[],
     tendons?: readonly TendonRecord[],
+    deferredValidationDiagnostics?: readonly ValidatorDiagnostic[],
   ) {
     this.assemblyName = assemblyName;
     this.parts = Object.freeze([...parts]);
@@ -140,11 +143,17 @@ export class Scene implements Iterable<ScenePart> {
       this.tendons = Object.freeze([...tendons]);
     }
     // `warnings` is always present (possibly empty) — keep it a frozen array
-    // so callers can `.some(...)` / iterate without a null-check. Inserted as
-    // the last constructor arg so existing v0.5 call sites (Scene built by
-    // SolvedKinematics.toScene, Assembly.makeScene before T9) keep working
-    // without an explicit `[]`.
+    // so callers can `.some(...)` / iterate without a null-check.
     this.warnings = Object.freeze(warnings ? [...warnings] : []);
+    this._deferredValidationDiagnostics = Object.freeze(
+      deferredValidationDiagnostics ? [...deferredValidationDiagnostics] : [],
+    );
+  }
+
+  /** Internal handoff for strict assembly diagnostics deferred until after
+   *  build, when evaluate_script can attach its mechanism-specific verdict. */
+  __deferredValidationDiagnostics(): readonly ValidatorDiagnostic[] {
+    return this._deferredValidationDiagnostics;
   }
 
   /** Lazily-computed AABB over all transformed parts. */

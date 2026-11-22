@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-03",
+  "kit": "hydroponics",
+  "assetCount": 52,
+  "demo": {
+    "source": "capture_hydroponics_demo.py",
+    "output": "hydroponics-kit.mp4",
+    "codec": "H.264 / libx264",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 24,
+    "frameHoldSeconds": 3,
+    "frameCount": 10,
+    "pixelFormat": "yuv420p",
+    "quality": "CRF 25",
+    "previewFrames": 7,
+    "assetsPerPreviewFrame": 8
+  },
+  "commands": [
+    "python3 artifacts/catalog-demos/hydroponics-wave-20261103/generate_hydroponics_assets.py",
+    "npx eslint catalog/ --fix",
+    "npx eslint catalog/",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx tsx scripts/renderCatalogPreviews.ts",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx vitest run tests/integration/catalog/",
+    "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-hydroponics-pages-wave-20261103",
+    "npm run build",
+    "npm pack --dry-run --ignore-scripts --json",
+    "python3 artifacts/catalog-demos/hydroponics-wave-20261103/capture_hydroponics_demo.py",
+    "python3 artifacts/catalog-demos/hydroponics-wave-20261103/inspect_hydroponics_video.py"
+  ],
+  "verificationScope": {
+    "covered": [
+      "local source and generated catalog index",
+      "catalog integration suite for load, knobs, mesh, triangle budget, one material and Studio opening",
+      "catalog ESLint",
+      "rendered PNG previews for every indexed asset",
+      "local generated static catalog pages",
+      "built npm package contents and public source boundary",
+      "MP4 decode and visual review"
+    ],
+    "notCovered": [
+      "deployed website behavior for this feature branch",
+      "greenhouse compliance or crop performance",
+      "food-contact suitability or chemical compatibility",
+      "pressure or electrical ratings",
+      "sensor calibration or physical acceptance"
+    ]
+  }
+}

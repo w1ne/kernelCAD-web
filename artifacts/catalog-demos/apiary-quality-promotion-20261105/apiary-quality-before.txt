@@ -1,0 +1,4 @@
+  MIXED  apiary                        1/50   colours/asset=1.04
+
+  1/50 assets pass (0 rich kits, 0 thin kits)
+  49 thin assets = 98% of the catalog

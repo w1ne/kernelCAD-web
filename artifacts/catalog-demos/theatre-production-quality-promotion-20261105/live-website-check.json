@@ -1,0 +1,18 @@
+{
+  "checkedAtUtc": "2026-11-05T07:04:30.907790+00:00",
+  "checks": [
+    {
+      "url": "https://kernelcad.com/",
+      "httpStatus": "200",
+      "curlExitCode": 0,
+      "error": ""
+    },
+    {
+      "url": "https://kernelcad.com/asset-library/",
+      "httpStatus": "200",
+      "curlExitCode": 0,
+      "error": ""
+    }
+  ],
+  "meaning": "Live site baseline only; current feature branch is not deployed."
+}

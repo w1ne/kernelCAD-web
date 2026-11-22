@@ -87,8 +87,22 @@ export type DimensionAnchor =
   | { edge: EdgeQuery }
   | { face: FaceQuery };
 
+/**
+ * Dimension tolerance. A number is bilateral ±mm. `{ upper, lower }` are signed
+ * deviations from nominal. `{ plus, minus }` are non-negative drawing magnitudes.
+ * A fit-class string is not accepted here.
+ */
+export type DimensionDeviation =
+  | number
+  | { readonly upper: number; readonly lower: number }
+  | { readonly plus: number; readonly minus: number };
+
 /** `shape.dimension({...})` argument. */
-export type DrawingDimensionSpec = { id?: string } & (
+export type DrawingDimensionSpec = {
+  id?: string;
+  /** Optional. Capture stores it as signed `{ upper, lower }` deviations. */
+  tol?: DimensionDeviation;
+} & (
   | { kind: 'linear'; from: DimensionAnchor; to: DimensionAnchor; label?: string }
   | { kind: 'diameter' | 'radius'; edge: EdgeQuery; label?: string }
   | { kind: 'angular'; from: EdgeQuery; to: EdgeQuery; label?: string });

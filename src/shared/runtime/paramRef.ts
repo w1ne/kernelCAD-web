@@ -12,9 +12,9 @@
 // .multiply, .divide, .negate) that build a structured expression AST. The
 // expression is stored on `_expr` and resolved against the ParamTable at lower
 // time. This lets agents write `param('r', 5).divide(2)` instead of plain JS
-// arithmetic — which is rejected loudly: `Symbol.toPrimitive` throws on
-// numeric/default coercion (see below) so `ref + 4` fails at the operator
-// instead of flowing `"[object Object]4"` / NaN into geometry (#439).
+// arithmetic. Plain JS arithmetic (`ref + 4`, `Math.sin(ref)`) also works
+// inside a script run: the ref coerces to its current value and the param is
+// recorded as coerced (see `Symbol.toPrimitive` and `bindParamCoercion`).
 
 import { KernelError } from '../intent/kernelError';
 import { invalidArgs } from '../intent/invalidArgs';
@@ -88,39 +88,39 @@ export class ParamRef<T extends number | boolean = number | boolean> {
 
   add(this: ParamRef<number>, other: number | ParamRef<number>): ParamRef<number> {
     assertNumericReceiver(this, 'add');
-    return new ParamRef<number>(
+    return inheritCoercion(new ParamRef<number>(
       { kind: 'binop', op: '+', left: this._expr, right: operandExpr(other, 'add') },
       'number',
-    );
+    ), this, other);
   }
 
   subtract(this: ParamRef<number>, other: number | ParamRef<number>): ParamRef<number> {
     assertNumericReceiver(this, 'subtract');
-    return new ParamRef<number>(
+    return inheritCoercion(new ParamRef<number>(
       { kind: 'binop', op: '-', left: this._expr, right: operandExpr(other, 'subtract') },
       'number',
-    );
+    ), this, other);
   }
 
   multiply(this: ParamRef<number>, other: number | ParamRef<number>): ParamRef<number> {
     assertNumericReceiver(this, 'multiply');
-    return new ParamRef<number>(
+    return inheritCoercion(new ParamRef<number>(
       { kind: 'binop', op: '*', left: this._expr, right: operandExpr(other, 'multiply') },
       'number',
-    );
+    ), this, other);
   }
 
   divide(this: ParamRef<number>, other: number | ParamRef<number>): ParamRef<number> {
     assertNumericReceiver(this, 'divide');
-    return new ParamRef<number>(
+    return inheritCoercion(new ParamRef<number>(
       { kind: 'binop', op: '/', left: this._expr, right: operandExpr(other, 'divide') },
       'number',
-    );
+    ), this, other);
   }
 
   negate(this: ParamRef<number>): ParamRef<number> {
     assertNumericReceiver(this, 'negate');
-    return new ParamRef<number>({ kind: 'neg', expr: this._expr }, 'number');
+    return inheritCoercion(new ParamRef<number>({ kind: 'neg', expr: this._expr }, 'number'), this);
   }
 
   /** Smaller of this ref and `other`; symbolic, so it re-evaluates on param
@@ -128,25 +128,25 @@ export class ParamRef<T extends number | boolean = number | boolean> {
    *  infinities. */
   min(this: ParamRef<number>, other: number | ParamRef<number>): ParamRef<number> {
     assertNumericReceiver(this, 'min');
-    return new ParamRef<number>(
+    return inheritCoercion(new ParamRef<number>(
       { kind: 'min', left: this._expr, right: operandExpr(other, 'min') },
       'number',
-    );
+    ), this, other);
   }
 
   /** Larger of this ref and `other`; symbolic. */
   max(this: ParamRef<number>, other: number | ParamRef<number>): ParamRef<number> {
     assertNumericReceiver(this, 'max');
-    return new ParamRef<number>(
+    return inheritCoercion(new ParamRef<number>(
       { kind: 'max', left: this._expr, right: operandExpr(other, 'max') },
       'number',
-    );
+    ), this, other);
   }
 
   /** Absolute value of this ref; symbolic. */
   abs(this: ParamRef<number>): ParamRef<number> {
     assertNumericReceiver(this, 'abs');
-    return new ParamRef<number>({ kind: 'abs', expr: this._expr }, 'number');
+    return inheritCoercion(new ParamRef<number>({ kind: 'abs', expr: this._expr }, 'number'), this);
   }
 
   /** Clamp this ref into `[min, max]`; symbolic. Both bounds accept numbers or
@@ -170,7 +170,7 @@ export class ParamRef<T extends number | boolean = number | boolean> {
         example: "param('wall', 2).clamp(1, 8)",
       });
     }
-    return new ParamRef<number>({ kind: 'clamp', value: this._expr, min: minExpr, max: maxExpr }, 'number');
+    return inheritCoercion(new ParamRef<number>({ kind: 'clamp', value: this._expr, min: minExpr, max: maxExpr }, 'number'), this, min, max);
   }
 
   /** String contexts (template literals, String(ref)) render the symbolic
@@ -181,22 +181,29 @@ export class ParamRef<T extends number | boolean = number | boolean> {
   }
 
   /**
-   * JS operators (`+ - * /`, comparisons) coerce via this hook. Deliberately
-   * NOT a value-returning `valueOf`: a ParamRef has no binding to the live
-   * ParamTable at authoring time, and even if it did, coercing to a plain
-   * number would bake a frozen snapshot into the captured record — the
-   * dimension would silently stop re-evaluating on param updates. That trades
-   * a loud failure for a silent one, so numeric/default coercion throws with
-   * the exact fix instead. String-hint coercion (template literals) returns
-   * the symbolic expression for readable diagnostics.
+   * JS operators (`+ - * /`, comparisons, `Math.*`) coerce via this hook.
+   * Inside a script run, a numeric ParamRef is bound to its capture session
+   * (`bindParamCoercion`): coercion returns the param's current value and
+   * records the param as coerced. The number no longer tracks the param, so
+   * an edit to a coerced param re-runs the script with the new default
+   * (`updateModelParams`) instead of re-lowering captured records; with
+   * dependency-aware reuse only the features whose inputs changed rebuild.
+   * Outside a run (an unbound ref) coercion still throws, because there is
+   * no value to return. String-hint coercion (template literals) returns the
+   * symbolic expression for readable diagnostics.
    */
-  [Symbol.toPrimitive](hint: string): string {
+  [Symbol.toPrimitive](hint: string): string | number {
     if (hint === 'string') return this.$param;
+    const coercion = COERCIONS.get(this);
+    if (coercion && this._type === 'number') {
+      for (const name of paramExprNames(this._expr)) coercion.noteCoerced(name);
+      return evaluateParamExpr(this._expr, coercion.valueOf);
+    }
     throw new KernelError(
       'feature.invalid-args',
-      `JS arithmetic on a ParamRef is not supported: tried to coerce ParamRef '${this.$param}' to a primitive (hint: '${hint}'). The result would be a frozen number that no longer re-evaluates when the param changes.`,
+      `JS arithmetic on a ParamRef outside a script run is not supported: tried to coerce ParamRef '${this.$param}' to a primitive (hint: '${hint}').`,
       undefined,
-      `invalid-args.param.js-arithmetic — use the ParamRef arithmetic methods instead of JS operators: .add(n), .subtract(n), .multiply(n), .divide(n), .negate(), .min(n), .max(n), .abs(), .clamp(lo, hi). Example: param('w', 18).add(4) instead of param('w', 18) + 4. These return derived ParamRefs that re-evaluate whenever the underlying param changes.`,
+      `invalid-args.param.js-arithmetic — plain arithmetic on param() values works inside a .kcad.ts script; outside one, use the ParamRef methods: .add(n), .subtract(n), .multiply(n), .divide(n), .negate(), .min(n), .max(n), .abs(), .clamp(lo, hi).`,
     );
   }
 }
@@ -241,6 +248,67 @@ function operandExpr(other: number | ParamRef<number>, method: string): ParamRef
     undefined,
     `invalid-args.param.invalid-args — ParamRef.${method}() operand must be a number or numeric ParamRef.`,
   );
+}
+
+/** How a numeric ParamRef reads its current value and reports a coercion,
+ *  bound per capture session by `param()`. */
+export interface ParamCoercion {
+  valueOf: (name: string) => number;
+  noteCoerced: (name: string) => void;
+}
+
+// A WeakMap, not a field: ParamRefs are frozen and serialized into records;
+// the binding must not change their shape or their structural hash.
+const COERCIONS = new WeakMap<object, ParamCoercion>();
+
+/** Let `ref` (and every ParamRef derived from it) coerce to a number. */
+export function bindParamCoercion<R extends ParamRef>(ref: R, coercion: ParamCoercion): R {
+  COERCIONS.set(ref, coercion);
+  return ref;
+}
+
+/** A derived ref coerces like the first bound ref it was built from. */
+function inheritCoercion<R extends ParamRef>(result: R, ...sources: unknown[]): R {
+  for (const source of sources) {
+    const coercion = isParamRef(source) ? COERCIONS.get(source) : undefined;
+    if (coercion) {
+      COERCIONS.set(result, coercion);
+      break;
+    }
+  }
+  return result;
+}
+
+/** Leaf param names an expression reads. */
+export function paramExprNames(expr: ParamRefExpr, out: Set<string> = new Set()): Set<string> {
+  switch (expr.kind) {
+    case 'param': out.add(expr.name); break;
+    case 'lit': break;
+    case 'binop': case 'min': case 'max': paramExprNames(expr.left, out); paramExprNames(expr.right, out); break;
+    case 'neg': case 'abs': paramExprNames(expr.expr, out); break;
+    case 'clamp': paramExprNames(expr.value, out); paramExprNames(expr.min, out); paramExprNames(expr.max, out); break;
+  }
+  return out;
+}
+
+/** Evaluate an expression with `valueOf` for each param leaf. */
+export function evaluateParamExpr(expr: ParamRefExpr, valueOf: (name: string) => number): number {
+  const ev = (e: ParamRefExpr): number => {
+    switch (e.kind) {
+      case 'param': return valueOf(e.name);
+      case 'lit': return e.value;
+      case 'neg': return -ev(e.expr);
+      case 'abs': return Math.abs(ev(e.expr));
+      case 'min': return Math.min(ev(e.left), ev(e.right));
+      case 'max': return Math.max(ev(e.left), ev(e.right));
+      case 'clamp': return Math.min(Math.max(ev(e.value), ev(e.min)), ev(e.max));
+      case 'binop': {
+        const l = ev(e.left), r = ev(e.right);
+        return e.op === '+' ? l + r : e.op === '-' ? l - r : e.op === '*' ? l * r : l / r;
+      }
+    }
+  };
+  return ev(expr);
 }
 
 export type Editable<T extends number | boolean> = T | ParamRef<T>;

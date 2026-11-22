@@ -1,0 +1,492 @@
+{
+  "checkedAt": "2026-11-02T19:33:40.997Z",
+  "totalAssets": 595,
+  "kit": "outdoor-gear",
+  "addedAssets": 12,
+  "assets": [
+    {
+      "id": "binoculars",
+      "triangles": 408,
+      "knobs": [
+        "magnification",
+        "body",
+        "trim",
+        "glass"
+      ]
+    },
+    {
+      "id": "camp-chair",
+      "triangles": 96,
+      "knobs": [
+        "size",
+        "fabric",
+        "frame"
+      ]
+    },
+    {
+      "id": "camp-stove",
+      "triangles": 200,
+      "knobs": [
+        "style",
+        "body",
+        "burner",
+        "fuel"
+      ]
+    },
+    {
+      "id": "camping-backpack",
+      "triangles": 96,
+      "knobs": [
+        "capacity",
+        "pack",
+        "trim"
+      ]
+    },
+    {
+      "id": "camping-hammock",
+      "triangles": 168,
+      "knobs": [
+        "length",
+        "fabric",
+        "frame",
+        "strap"
+      ]
+    },
+    {
+      "id": "canteen",
+      "triangles": 180,
+      "knobs": [
+        "capacity",
+        "flask",
+        "cap",
+        "loop"
+      ]
+    },
+    {
+      "id": "fishing-rod",
+      "triangles": 496,
+      "knobs": [
+        "length",
+        "shaft",
+        "grip",
+        "reel"
+      ]
+    },
+    {
+      "id": "hiking-boots",
+      "triangles": 244,
+      "knobs": [
+        "size",
+        "leather",
+        "sole",
+        "laces"
+      ]
+    },
+    {
+      "id": "map-case",
+      "triangles": 132,
+      "knobs": [
+        "state",
+        "pouch",
+        "map",
+        "strap"
+      ]
+    },
+    {
+      "id": "sleeping-bag",
+      "triangles": 108,
+      "knobs": [
+        "cut",
+        "shell",
+        "lining",
+        "zipper"
+      ]
+    },
+    {
+      "id": "trail-compass",
+      "triangles": 140,
+      "knobs": [
+        "style",
+        "caseColor",
+        "dial",
+        "needle"
+      ]
+    },
+    {
+      "id": "trekking-poles",
+      "triangles": 464,
+      "knobs": [
+        "length",
+        "shaft",
+        "grip",
+        "tip"
+      ]
+    }
+  ],
+  "choiceAudit": [
+    {
+      "id": "binoculars",
+      "param": "magnification",
+      "value": "8x",
+      "triangles": 408,
+      "triangleBudget": 500,
+      "materials": 1,
+      "minUpM": 0.019
+    },
+    {
+      "id": "binoculars",
+      "param": "magnification",
+      "value": "10x",
+      "triangles": 408,
+      "triangleBudget": 500,
+      "materials": 1,
+      "minUpM": 0.013
+    },
+    {
+      "id": "camp-chair",
+      "param": "size",
+      "value": "compact",
+      "triangles": 96,
+      "triangleBudget": 320,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "camp-chair",
+      "param": "size",
+      "value": "classic",
+      "triangles": 96,
+      "triangleBudget": 320,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "camp-stove",
+      "param": "style",
+      "value": "integrated",
+      "triangles": 200,
+      "triangleBudget": 280,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "camp-stove",
+      "param": "style",
+      "value": "remote",
+      "triangles": 180,
+      "triangleBudget": 280,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "camping-backpack",
+      "param": "capacity",
+      "value": "30",
+      "triangles": 96,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "camping-backpack",
+      "param": "capacity",
+      "value": "40",
+      "triangles": 96,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "camping-backpack",
+      "param": "capacity",
+      "value": "60",
+      "triangles": 96,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "camping-hammock",
+      "param": "length",
+      "value": "2200",
+      "triangles": 168,
+      "triangleBudget": 320,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "camping-hammock",
+      "param": "length",
+      "value": "2600",
+      "triangles": 168,
+      "triangleBudget": 320,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "canteen",
+      "param": "capacity",
+      "value": "500",
+      "triangles": 180,
+      "triangleBudget": 200,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "canteen",
+      "param": "capacity",
+      "value": "750",
+      "triangles": 180,
+      "triangleBudget": 200,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "canteen",
+      "param": "capacity",
+      "value": "1000",
+      "triangles": 180,
+      "triangleBudget": 200,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "fishing-rod",
+      "param": "length",
+      "value": "1800",
+      "triangles": 496,
+      "triangleBudget": 550,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "fishing-rod",
+      "param": "length",
+      "value": "2100",
+      "triangles": 496,
+      "triangleBudget": 550,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "fishing-rod",
+      "param": "length",
+      "value": "2400",
+      "triangles": 496,
+      "triangleBudget": 550,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "hiking-boots",
+      "param": "size",
+      "value": "39",
+      "triangles": 244,
+      "triangleBudget": 380,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "hiking-boots",
+      "param": "size",
+      "value": "42",
+      "triangles": 244,
+      "triangleBudget": 380,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "hiking-boots",
+      "param": "size",
+      "value": "45",
+      "triangles": 244,
+      "triangleBudget": 380,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "map-case",
+      "param": "state",
+      "value": "open",
+      "triangles": 132,
+      "triangleBudget": 260,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "map-case",
+      "param": "state",
+      "value": "folded",
+      "triangles": 132,
+      "triangleBudget": 260,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "sleeping-bag",
+      "param": "cut",
+      "value": "mummy",
+      "triangles": 108,
+      "triangleBudget": 260,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "sleeping-bag",
+      "param": "cut",
+      "value": "rectangular",
+      "triangles": 76,
+      "triangleBudget": 260,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "trail-compass",
+      "param": "style",
+      "value": "baseplate",
+      "triangles": 140,
+      "triangleBudget": 220,
+      "materials": 1,
+      "minUpM": -0.002
+    },
+    {
+      "id": "trail-compass",
+      "param": "style",
+      "value": "round",
+      "triangles": 160,
+      "triangleBudget": 220,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "trekking-poles",
+      "param": "length",
+      "value": "1000",
+      "triangles": 464,
+      "triangleBudget": 500,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "trekking-poles",
+      "param": "length",
+      "value": "1200",
+      "triangles": 464,
+      "triangleBudget": 500,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "trekking-poles",
+      "param": "length",
+      "value": "1400",
+      "triangles": 464,
+      "triangleBudget": 500,
+      "materials": 1,
+      "minUpM": 0
+    }
+  ],
+  "variants": [
+    {
+      "id": "camp-stove",
+      "want": "remote fuel canister",
+      "params": {
+        "style": "remote"
+      },
+      "unmatched": [],
+      "defaultTriangles": 200,
+      "resolvedTriangles": 180,
+      "triangleBudget": 280,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "renderFrame": {
+        "frameHeightM": 0.5994117993946193,
+        "cameraOffsetYM": 0.07050386370947692
+      },
+      "defaultGlbSha256": "3e5aaae60c69a8d42e3a5a3992a8220b41a136825295faf0074917552ab48fb2",
+      "resolvedGlbSha256": "522795af27139e55a29cbf1197ca71c94acdaf908ab5b77d7b34028c871a4c12"
+    },
+    {
+      "id": "sleeping-bag",
+      "want": "rectangular cut",
+      "params": {
+        "cut": "rectangular"
+      },
+      "unmatched": [],
+      "defaultTriangles": 108,
+      "resolvedTriangles": 76,
+      "triangleBudget": 260,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "renderFrame": {
+        "frameHeightM": 1.795404321649023,
+        "cameraOffsetYM": 0.42166362957940207
+      },
+      "defaultGlbSha256": "93a24c40c3f122a67790d9d5a78bf9781015930b72bc5a5ca50f5e5ea1b2bd7e",
+      "resolvedGlbSha256": "ba086da5ad713a1c988a071c50ea1decd6608b6bea0395db38ad3054347bbc8e"
+    },
+    {
+      "id": "camping-backpack",
+      "want": "60 L alpine pack",
+      "params": {
+        "pack": "#315b78",
+        "trim": "#d6d4c8",
+        "capacity": "60"
+      },
+      "unmatched": [],
+      "defaultTriangles": 96,
+      "resolvedTriangles": 96,
+      "triangleBudget": 420,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "renderFrame": {
+        "frameHeightM": 0.7886775052807223,
+        "cameraOffsetYM": 0.06951167384915348
+      },
+      "defaultGlbSha256": "4104036011ad71ebeadc264cbf611de149a1729db78b36109838db333d95750c",
+      "resolvedGlbSha256": "44576e6e38af67c9dc56058524030015262ef49c30953718f32ec1edd9081d5b"
+    }
+  ],
+  "settings": {
+    "kit": "outdoor-gear",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 2,
+    "videoFrameRate": 24,
+    "videoCodec": "libx264",
+    "pixelFormat": "yuv420p",
+    "crf": 24,
+    "render": "software render of exported low-poly GLB triangles",
+    "auditAllChoices": true,
+    "variants": [
+      {
+        "id": "camp-stove",
+        "want": "remote fuel canister"
+      },
+      {
+        "id": "sleeping-bag",
+        "want": "rectangular cut"
+      },
+      {
+        "id": "camping-backpack",
+        "want": "60 L alpine pack"
+      }
+    ]
+  },
+  "claims": {
+    "originalGeometry": true,
+    "localCatalogWorkflow": true,
+    "softwareRender": true,
+    "threeJsRendered": false,
+    "engineImportTested": false,
+    "deployedBehavior": false,
+    "simulation": false,
+    "hardwareAcceptance": false
+  }
+}

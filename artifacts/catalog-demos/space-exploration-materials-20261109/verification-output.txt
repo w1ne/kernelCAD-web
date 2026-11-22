@@ -1,0 +1,27 @@
+{
+  "assetsRefined": 36,
+  "materialControlsAdded": 36,
+  "kitAssets": 52,
+  "catalogAssets": 2402,
+  "catalogQualityGate": "2,402/2,402 assets pass (50 rich kits, 0 thin kits)",
+  "kitMaterialControlDistribution": {
+    "2": 1,
+    "3": 49,
+    "4": 2
+  },
+  "kitPresetCoverage": "52/52",
+  "previewsRendered": 52,
+  "indexedRowsWithPreview": 52,
+  "sourceHashesMatched": 52,
+  "triangles": {
+    "oxygen-cylinder-rack": 540,
+    "robotic-arm-pedestal": 676
+  },
+  "eslint": "passed",
+  "integration": "passed",
+  "localPages": 52,
+  "localCatalogHubListsKit": true,
+  "deployed": false,
+  "simulation": false,
+  "hardwareAcceptance": false
+}

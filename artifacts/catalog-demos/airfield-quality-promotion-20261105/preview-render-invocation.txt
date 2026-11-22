@@ -1,0 +1,2 @@
+mapfile -t asset_ids < <(printf '%s\n' catalog/kits/airfield/*.kcad.ts | sed 's#catalog/kits/airfield/##; s/\.kcad\.ts$//')
+npx tsx scripts/renderCatalogPreviews.ts "${asset_ids[@]}"

@@ -1,0 +1,4 @@
+cefd322b64d9df9aebcfdde3ed5d1ebd62f15a5b41b0267a04c2413b828201d6  artifacts/catalog-demos/mining-grizzly-spring-material-review-20261115/sources/before/grizzly-scalping-deck.kcad.ts
+21d958484970ce1149d13bfdf7f9bdb9fd1eac7dfd2d914aa017b045e608bd1e  artifacts/catalog-demos/mining-grizzly-spring-material-review-20261115/sources/after/grizzly-scalping-deck.kcad.ts
+e0bd74a396f979f846d03576603ff464f0aaf1902b49480163061813024bdcb9  artifacts/catalog-demos/mining-grizzly-spring-material-review-20261115/previews/before/grizzly-scalping-deck.png
+5b3c578bef1052cbe80fe9eafe4a645c826b5c4741c8bba9f5d0d16d456dab48  artifacts/catalog-demos/mining-grizzly-spring-material-review-20261115/previews/after/grizzly-scalping-deck.png

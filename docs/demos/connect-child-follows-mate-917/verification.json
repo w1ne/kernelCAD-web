@@ -1,0 +1,123 @@
+{
+  "status": "local-cad-lowerer-and-forward-kinematics-verified",
+  "source": "connect-parent-motion.kcad.ts",
+  "sourceSha256": "65ab00def19ae1ffbb77eedead2e7d9511b11a3d0d2aca63ae5518ceb2cbdec9",
+  "assembly": "rig",
+  "replay": "solveMates pose overrides plus reposedLoweredAssemblyScene",
+  "poseSamples": 41,
+  "endpointHoldFrames": 20,
+  "poses": [
+    {
+      "turnDeg": 0,
+      "worldBoundsMm": {
+        "root": {
+          "min": [
+            -1,
+            -1,
+            -1
+          ],
+          "max": [
+            1,
+            1,
+            1
+          ]
+        },
+        "parent": {
+          "min": [
+            100,
+            0,
+            0
+          ],
+          "max": [
+            120,
+            4,
+            1.9999999999999998
+          ]
+        },
+        "child": {
+          "min": [
+            120,
+            0,
+            0
+          ],
+          "max": [
+            130,
+            1.9999999999999998,
+            1.9999999999999998
+          ]
+        }
+      },
+      "parentMountMm": [
+        120,
+        0,
+        0
+      ],
+      "childRootMm": [
+        120,
+        0,
+        0
+      ]
+    },
+    {
+      "turnDeg": 90,
+      "worldBoundsMm": {
+        "root": {
+          "min": [
+            -1,
+            -1,
+            -1
+          ],
+          "max": [
+            1,
+            1,
+            1
+          ]
+        },
+        "parent": {
+          "min": [
+            -3.999999999999994,
+            100,
+            0
+          ],
+          "max": [
+            7.34788079488412e-15,
+            120,
+            1.9999999999999998
+          ]
+        },
+        "child": {
+          "min": [
+            -1.9999999999999925,
+            120,
+            0
+          ],
+          "max": [
+            7.960204194457796e-15,
+            130,
+            1.9999999999999998
+          ]
+        }
+      },
+      "parentMountMm": [
+        7.34788079488412e-15,
+        120,
+        0
+      ],
+      "childRootMm": [
+        7.34788079488412e-15,
+        120,
+        0
+      ]
+    }
+  ],
+  "checks": {
+    "parentRotatesFromPositiveXToPositiveY": true,
+    "childRetainsItsAuthoredDimensions": true,
+    "parentMountAndChildRootRemainCoincident": true
+  },
+  "scope": {
+    "physicsSimulation": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

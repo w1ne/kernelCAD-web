@@ -1,0 +1,5 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/checkCatalogAsset.ts catalog/kits/standard-components/pipe-elbow-90.kcad.ts
+(node:3103001) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"pipe-elbow-90","triangles":1528,"budget":2000,"sizeM":[0.028,0.069295,0.067295],"minUpM":0,"materials":1,"knobs":["size:choice","steel:color","bronze:color","elastomer:color"],"palette":["steel=#85929a","bronze=#98714c","elastomer=#30383b"]}

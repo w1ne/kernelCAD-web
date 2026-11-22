@@ -78,6 +78,8 @@ export interface InspectAssemblyMateSummary {
   type: string;
   a: string;
   b: string;
+  /** Set on a mate driven by `coupleMates`: pose = ratio * source pose + offset. */
+  coupling?: { source: string; ratio: number; offset?: number };
 }
 
 export interface InspectAssemblyTransmissionSummary {
@@ -188,17 +190,28 @@ export async function inspectAssemblyTool(
     partCount: parts.length,
     mateCount: arm.__mates().length,
     parts,
-    mates: arm.__mates().map((mate) => ({
-      name: mate.name,
-      type: mate.type,
-      a: mate.a,
-      b: mate.b,
-    })),
+    mates: summarizeMates(arm),
     transmissions: arm.__transmissionIntents().map(summarizeTransmission),
     reviewFacts,
     unexplainedGeometry,
     nextActionPrompt: buildNextActionPrompt(unexplainedGeometry),
   };
+}
+
+function summarizeMates(arm: Assembly): InspectAssemblyMateSummary[] {
+  const couplingByDriven = new Map(arm.__mateCouplings().map((c) => [c.driven, c]));
+  return arm.__mates().map((mate) => {
+    const c = couplingByDriven.get(mate.name);
+    return {
+      name: mate.name,
+      type: mate.type,
+      a: mate.a,
+      b: mate.b,
+      ...(c !== undefined
+        ? { coupling: { source: c.source, ratio: c.ratio, ...(c.offset !== undefined ? { offset: c.offset } : {}) } }
+        : {}),
+    };
+  });
 }
 
 async function summarizePart(

@@ -11,7 +11,7 @@
 // `browserRuntime.ts`.
 //
 // Importing this module also INSTALLS the node host capabilities — the
-// filesystem port (`referenceImage` existence checks, `lib.fromSTEP`, fonts,
+// filesystem port (`referenceImage` existence checks, `lib.fromSTEP`/`fromSTL`/`from3MF`, fonts,
 // parts catalog) and the package version stamped into exported meshes. Those
 // used to be plain `node:fs` / `node:module` imports buried deep in the
 // modeling graph; routing them through explicit installers is what let the
@@ -29,6 +29,7 @@ import {
   type ScriptRunner,
   type RunScriptResult,
 } from './runScriptCore';
+import { registerPartSourceRunner } from '../capture/partSourceRunner';
 
 export type { ScriptApiFactory, ScriptRunner, RunScriptResult };
 
@@ -81,3 +82,5 @@ export async function runScript(
     wrapOffset: runner === runIsolated ? ISOLATION_WRAP_OFFSET : undefined,
   });
 }
+
+registerPartSourceRunner((req) => runScript(req));

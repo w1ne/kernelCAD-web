@@ -1,0 +1,951 @@
+{
+  "scope": "Local kernelCAD Node API: Sketch.translate, Sketch.rotate and Sketch.scale of line-and-arc profiles, Sketch.subtract, extrude to a 60 mm fan guard plate, loop areas and centres computed from the kernel result, OCCT volume, validity, overlap and distance measurement against four pin gauges.",
+  "invocation": "node --import tsx docs/demos/sketch-transform/capture-demo.mts",
+  "source": "docs/demos/sketch-transform/fan-guard.kcad.ts",
+  "sourceSha256": "8f806d1d79f1aa2472dcd44b1d610a17915ca5c502a1890f59b3c9e05f5ebe1b",
+  "implementationSha256": {
+    "src/modeling/capture/sketchTransform.ts": "5379ab507859728faa10913ce9e8d1d8de41511249c3e48f174eb9cb16bb5d09"
+  },
+  "dimensionsMm": {
+    "plate": 60,
+    "thickness": 2,
+    "holeDiameter": 4.3,
+    "holeSquare": 50,
+    "pinDiameter": 4,
+    "slotEndRadius": 2.5,
+    "slotEndNear": 16,
+    "slotEndFar": 24
+  },
+  "transforms": {
+    "slotCount": 8,
+    "slotStepDeg": 45,
+    "innerScale": 0.45,
+    "innerTurnDeg": 22.5
+  },
+  "expected": {
+    "basis": "closed form from the dimensions in the source script",
+    "holeAreaMm2": 14.522012,
+    "outerSlotAreaMm2": 59.634954,
+    "innerSlotAreaMm2": 12.076078,
+    "outerSlotCentreRadiusMm": 20,
+    "innerSlotCentreRadiusMm": 9,
+    "ventOpenAreaMm2": 573.688258,
+    "profileAreaMm2": 2968.223694,
+    "plateVolumeMm3": 5936.447387,
+    "pinToHoleGapMm": 0.15
+  },
+  "measured": {
+    "errorDiagnostics": 0,
+    "profile": {
+      "areaMm2": 2968.223694,
+      "loopCount": 21,
+      "holeCount": 20
+    },
+    "outline": {
+      "areaMm2": 3600,
+      "centreMm": [
+        0,
+        0
+      ],
+      "radiusMm": 0,
+      "angleDeg": 0,
+      "lines": 4,
+      "arcs": 0,
+      "loop": [
+        [
+          "moveTo",
+          -30,
+          -30
+        ],
+        [
+          "lineTo",
+          30,
+          -30
+        ],
+        [
+          "lineTo",
+          30,
+          30
+        ],
+        [
+          "lineTo",
+          -30,
+          30
+        ],
+        [
+          "lineTo",
+          -30,
+          -30
+        ],
+        [
+          "close"
+        ]
+      ]
+    },
+    "mounts": [
+      {
+        "areaMm2": 14.522012,
+        "centreMm": [
+          25,
+          25
+        ],
+        "radiusMm": 35.355339,
+        "angleDeg": 45,
+        "lines": 0,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            27.15,
+            25
+          ],
+          [
+            "bulgeArc",
+            22.85,
+            25,
+            -1
+          ],
+          [
+            "bulgeArc",
+            27.15,
+            25,
+            -1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 14.522012,
+        "centreMm": [
+          -25,
+          25
+        ],
+        "radiusMm": 35.355339,
+        "angleDeg": 135,
+        "lines": 0,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            -22.85,
+            25
+          ],
+          [
+            "bulgeArc",
+            -27.15,
+            25,
+            -1
+          ],
+          [
+            "bulgeArc",
+            -22.85,
+            25,
+            -1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 14.522012,
+        "centreMm": [
+          -25,
+          -25
+        ],
+        "radiusMm": 35.355339,
+        "angleDeg": 225,
+        "lines": 0,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            -22.85,
+            -25
+          ],
+          [
+            "bulgeArc",
+            -27.15,
+            -25,
+            -1
+          ],
+          [
+            "bulgeArc",
+            -22.85,
+            -25,
+            -1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 14.522012,
+        "centreMm": [
+          25,
+          -25
+        ],
+        "radiusMm": 35.355339,
+        "angleDeg": 315,
+        "lines": 0,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            27.15,
+            -25
+          ],
+          [
+            "bulgeArc",
+            22.85,
+            -25,
+            -1
+          ],
+          [
+            "bulgeArc",
+            27.15,
+            -25,
+            -1
+          ],
+          [
+            "close"
+          ]
+        ]
+      }
+    ],
+    "outerRing": [
+      {
+        "areaMm2": 59.634954,
+        "centreMm": [
+          20,
+          0
+        ],
+        "radiusMm": 20,
+        "angleDeg": 0,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            24,
+            2.5
+          ],
+          [
+            "lineTo",
+            16,
+            2.5
+          ],
+          [
+            "bulgeArc",
+            16,
+            -2.5,
+            1
+          ],
+          [
+            "lineTo",
+            24,
+            -2.5
+          ],
+          [
+            "bulgeArc",
+            24,
+            2.5,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 59.634954,
+        "centreMm": [
+          14.142136,
+          14.142136
+        ],
+        "radiusMm": 20,
+        "angleDeg": 45,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            15.202796,
+            18.73833
+          ],
+          [
+            "lineTo",
+            9.545942,
+            13.081475
+          ],
+          [
+            "bulgeArc",
+            13.081475,
+            9.545942,
+            1
+          ],
+          [
+            "lineTo",
+            18.73833,
+            15.202796
+          ],
+          [
+            "bulgeArc",
+            15.202796,
+            18.73833,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 59.634954,
+        "centreMm": [
+          0,
+          20
+        ],
+        "radiusMm": 20,
+        "angleDeg": 90,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            -2.5,
+            24
+          ],
+          [
+            "lineTo",
+            -2.5,
+            16
+          ],
+          [
+            "bulgeArc",
+            2.5,
+            16,
+            1
+          ],
+          [
+            "lineTo",
+            2.5,
+            24
+          ],
+          [
+            "bulgeArc",
+            -2.5,
+            24,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 59.634954,
+        "centreMm": [
+          -14.142136,
+          14.142136
+        ],
+        "radiusMm": 20,
+        "angleDeg": 135,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            -18.73833,
+            15.202796
+          ],
+          [
+            "lineTo",
+            -13.081475,
+            9.545942
+          ],
+          [
+            "bulgeArc",
+            -9.545942,
+            13.081475,
+            1
+          ],
+          [
+            "lineTo",
+            -15.202796,
+            18.73833
+          ],
+          [
+            "bulgeArc",
+            -18.73833,
+            15.202796,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 59.634954,
+        "centreMm": [
+          -20,
+          0
+        ],
+        "radiusMm": 20,
+        "angleDeg": 180,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            -24,
+            -2.5
+          ],
+          [
+            "lineTo",
+            -16,
+            -2.5
+          ],
+          [
+            "bulgeArc",
+            -16,
+            2.5,
+            1
+          ],
+          [
+            "lineTo",
+            -24,
+            2.5
+          ],
+          [
+            "bulgeArc",
+            -24,
+            -2.5,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 59.634954,
+        "centreMm": [
+          -14.142136,
+          -14.142136
+        ],
+        "radiusMm": 20,
+        "angleDeg": 225,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            -15.202796,
+            -18.73833
+          ],
+          [
+            "lineTo",
+            -9.545942,
+            -13.081475
+          ],
+          [
+            "bulgeArc",
+            -13.081475,
+            -9.545942,
+            1
+          ],
+          [
+            "lineTo",
+            -18.73833,
+            -15.202796
+          ],
+          [
+            "bulgeArc",
+            -15.202796,
+            -18.73833,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 59.634954,
+        "centreMm": [
+          0,
+          -20
+        ],
+        "radiusMm": 20,
+        "angleDeg": 270,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            2.5,
+            -24
+          ],
+          [
+            "lineTo",
+            2.5,
+            -16
+          ],
+          [
+            "bulgeArc",
+            -2.5,
+            -16,
+            1
+          ],
+          [
+            "lineTo",
+            -2.5,
+            -24
+          ],
+          [
+            "bulgeArc",
+            2.5,
+            -24,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 59.634954,
+        "centreMm": [
+          14.142136,
+          -14.142136
+        ],
+        "radiusMm": 20,
+        "angleDeg": 315,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            18.73833,
+            -15.202796
+          ],
+          [
+            "lineTo",
+            13.081475,
+            -9.545942
+          ],
+          [
+            "bulgeArc",
+            9.545942,
+            -13.081475,
+            1
+          ],
+          [
+            "lineTo",
+            15.202796,
+            -18.73833
+          ],
+          [
+            "bulgeArc",
+            18.73833,
+            -15.202796,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      }
+    ],
+    "innerRing": [
+      {
+        "areaMm2": 12.076078,
+        "centreMm": [
+          8.314916,
+          3.444151
+        ],
+        "radiusMm": 9,
+        "angleDeg": 22.5,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            9.54738,
+            5.172346
+          ],
+          [
+            "lineTo",
+            6.221414,
+            3.794685
+          ],
+          [
+            "bulgeArc",
+            7.082451,
+            1.715956,
+            1
+          ],
+          [
+            "lineTo",
+            10.408418,
+            3.093617
+          ],
+          [
+            "bulgeArc",
+            9.54738,
+            5.172346,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 12.076078,
+        "centreMm": [
+          3.444151,
+          8.314916
+        ],
+        "radiusMm": 9,
+        "angleDeg": 67.5,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            3.093617,
+            10.408418
+          ],
+          [
+            "lineTo",
+            1.715956,
+            7.082451
+          ],
+          [
+            "bulgeArc",
+            3.794685,
+            6.221414,
+            1
+          ],
+          [
+            "lineTo",
+            5.172346,
+            9.54738
+          ],
+          [
+            "bulgeArc",
+            3.093617,
+            10.408418,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 12.076078,
+        "centreMm": [
+          -3.444151,
+          8.314916
+        ],
+        "radiusMm": 9,
+        "angleDeg": 112.5,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            -5.172346,
+            9.54738
+          ],
+          [
+            "lineTo",
+            -3.794685,
+            6.221414
+          ],
+          [
+            "bulgeArc",
+            -1.715956,
+            7.082451,
+            1
+          ],
+          [
+            "lineTo",
+            -3.093617,
+            10.408418
+          ],
+          [
+            "bulgeArc",
+            -5.172346,
+            9.54738,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 12.076078,
+        "centreMm": [
+          -8.314916,
+          3.444151
+        ],
+        "radiusMm": 9,
+        "angleDeg": 157.5,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            -10.408418,
+            3.093617
+          ],
+          [
+            "lineTo",
+            -7.082451,
+            1.715956
+          ],
+          [
+            "bulgeArc",
+            -6.221414,
+            3.794685,
+            1
+          ],
+          [
+            "lineTo",
+            -9.54738,
+            5.172346
+          ],
+          [
+            "bulgeArc",
+            -10.408418,
+            3.093617,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 12.076078,
+        "centreMm": [
+          -8.314916,
+          -3.444151
+        ],
+        "radiusMm": 9,
+        "angleDeg": 202.5,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            -9.54738,
+            -5.172346
+          ],
+          [
+            "lineTo",
+            -6.221414,
+            -3.794685
+          ],
+          [
+            "bulgeArc",
+            -7.082451,
+            -1.715956,
+            1
+          ],
+          [
+            "lineTo",
+            -10.408418,
+            -3.093617
+          ],
+          [
+            "bulgeArc",
+            -9.54738,
+            -5.172346,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 12.076078,
+        "centreMm": [
+          -3.444151,
+          -8.314916
+        ],
+        "radiusMm": 9,
+        "angleDeg": 247.5,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            -3.093617,
+            -10.408418
+          ],
+          [
+            "lineTo",
+            -1.715956,
+            -7.082451
+          ],
+          [
+            "bulgeArc",
+            -3.794685,
+            -6.221414,
+            1
+          ],
+          [
+            "lineTo",
+            -5.172346,
+            -9.54738
+          ],
+          [
+            "bulgeArc",
+            -3.093617,
+            -10.408418,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 12.076078,
+        "centreMm": [
+          3.444151,
+          -8.314916
+        ],
+        "radiusMm": 9,
+        "angleDeg": 292.5,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            5.172346,
+            -9.54738
+          ],
+          [
+            "lineTo",
+            3.794685,
+            -6.221414
+          ],
+          [
+            "bulgeArc",
+            1.715956,
+            -7.082451,
+            1
+          ],
+          [
+            "lineTo",
+            3.093617,
+            -10.408418
+          ],
+          [
+            "bulgeArc",
+            5.172346,
+            -9.54738,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 12.076078,
+        "centreMm": [
+          8.314916,
+          -3.444151
+        ],
+        "radiusMm": 9,
+        "angleDeg": 337.5,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            10.408418,
+            -3.093617
+          ],
+          [
+            "lineTo",
+            7.082451,
+            -1.715956
+          ],
+          [
+            "bulgeArc",
+            6.221414,
+            -3.794685,
+            1
+          ],
+          [
+            "lineTo",
+            9.54738,
+            -5.172346
+          ],
+          [
+            "bulgeArc",
+            10.408418,
+            -3.093617,
+            1
+          ],
+          [
+            "close"
+          ]
+        ]
+      }
+    ],
+    "ventOpenAreaMm2": 573.688258,
+    "plateVolumeMm3": 5936.447387,
+    "plateBoundsMm": [
+      60,
+      60,
+      2
+    ],
+    "plateValid": true,
+    "pins": [
+      {
+        "pinPlateOverlapMm3": 0,
+        "pinToHoleGapMm": 0.15
+      },
+      {
+        "pinPlateOverlapMm3": 0,
+        "pinToHoleGapMm": 0.15
+      },
+      {
+        "pinPlateOverlapMm3": 0,
+        "pinToHoleGapMm": 0.15
+      },
+      {
+        "pinPlateOverlapMm3": 0,
+        "pinToHoleGapMm": 0.15
+      }
+    ]
+  },
+  "limits": [
+    "Sketch.rotate takes a plain-number angle: a param() angle is refused.",
+    "Sketch.rotate refuses a profile with a smoothSpline segment.",
+    "Sketch.scale is uniform; a factor that is not > 0 is refused.",
+    "A sketch.text sketch is refused by all three methods.",
+    "The pins are hand-modelled check gauges (Ø4), not catalog screws.",
+    "Air flow through the vents was not simulated or measured.",
+    "No part was printed or machined, and no fit was tested on hardware.",
+    "No other CAD system opened the result."
+  ],
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}

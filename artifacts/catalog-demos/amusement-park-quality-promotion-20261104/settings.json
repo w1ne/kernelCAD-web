@@ -1,0 +1,45 @@
+{
+  "kit": "amusement-park",
+  "baselineCommit": "735bcc8ce",
+  "existingAssetCount": 70,
+  "idPolicy": "retain every existing source ID; add none",
+  "materialControlsPerAsset": {
+    "minimum": 3,
+    "maximum": 4
+  },
+  "presets": [
+    "festival",
+    "twilight"
+  ],
+  "triangleBudget": 1800,
+  "runtime": {
+    "node": "v22.23.4",
+    "previewRenderer": "scripts/renderCatalogPreviews.ts",
+    "previewSize": "512x512",
+    "demoFrames": 6,
+    "demoFrameSize": "1280x720",
+    "demoSecondsPerFrame": 3,
+    "videoCodec": "H.264 / libx264",
+    "videoFrameRate": 24,
+    "videoPixelFormat": "yuv420p"
+  },
+  "commands": [
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/amusement-park-quality-promotion-20261104/promote_amusement_park_quality.py",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/grid-substation-quality-promotion-20261104/node-preload.mjs --import tsx scripts/renderCatalogPreviews.ts <70 amusement-park ids>",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/grid-substation-quality-promotion-20261104/node-preload.mjs --import tsx scripts/buildAssetCatalog.ts",
+    "PYTHONDONTWRITEBYTECODE=1 python3 scripts/checkCatalogQuality.py --kit amusement-park",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH npx --silent eslint catalog/kits/amusement-park/",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH NODE_OPTIONS=--import=./artifacts/catalog-demos/grid-substation-quality-promotion-20261104/node-preload.mjs npx vitest run tests/integration/catalog/",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/grid-substation-quality-promotion-20261104/node-preload.mjs --import tsx scripts/buildCatalogPages.ts /tmp/kernelcad-amusement-park-quality-promotion-20261104",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/amusement-park-quality-promotion-20261104/verify_amusement_park_pages.py /tmp/kernelcad-amusement-park-quality-promotion-20261104",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/amusement-park-quality-promotion-20261104/record_amusement_park_promotion.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/amusement-park-quality-promotion-20261104/capture_amusement_park_quality_demo.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/amusement-park-quality-promotion-20261104/inspect_amusement_park_video.py"
+  ],
+  "localWebsiteStatus": {
+    "liveHomepage": 200,
+    "liveGallery": 200,
+    "liveCatalogRoute": 404,
+    "deployment": "not deployed from this feature branch"
+  }
+}

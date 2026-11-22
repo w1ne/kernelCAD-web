@@ -1,0 +1,7 @@
+{
+  "command": "npx --silent eslint catalog/",
+  "assetSourcesAudited": 2000,
+  "errorCount": 0,
+  "warningCount": 0,
+  "passed": true
+}

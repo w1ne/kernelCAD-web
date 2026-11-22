@@ -1,0 +1,291 @@
+{
+  "kit": "data-center-infrastructure",
+  "generatedOn": "2026-11-03",
+  "assetCount": 50,
+  "sourceCommand": "python3 artifacts/catalog-demos/data-center-wave-20261103/generate_data_center_assets.py",
+  "catalogCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts",
+  "knobs": {
+    "scale": {
+      "default": 1,
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    "color": "asset-specific hex color"
+  },
+  "triangleBudget": 2200,
+  "materialCount": 1,
+  "verificationScope": {
+    "covered": [
+      "local source and index",
+      "low-poly mesh export",
+      "triangle and material audit",
+      "catalog integration suite",
+      "preview files and URLs",
+      "local generated catalog pages",
+      "current public website snapshot",
+      "built npm tarball contents"
+    ],
+    "notCovered": [
+      "deployed behavior for this branch",
+      "data-center capacity or reliability",
+      "power and cooling engineering",
+      "safety certification",
+      "site suitability",
+      "physical acceptance"
+    ]
+  },
+  "assets": [
+    {
+      "id": "enclosed-it-rack",
+      "title": "Enclosed IT rack",
+      "profile": "rack-enclosed"
+    },
+    {
+      "id": "open-frame-it-rack",
+      "title": "Open-frame IT rack",
+      "profile": "rack-open"
+    },
+    {
+      "id": "wall-mount-network-cabinet",
+      "title": "Wall-mount network cabinet",
+      "profile": "rack-wall"
+    },
+    {
+      "id": "high-density-server-chassis",
+      "title": "High-density server chassis",
+      "profile": "server"
+    },
+    {
+      "id": "blade-server-enclosure",
+      "title": "Blade server enclosure",
+      "profile": "blade"
+    },
+    {
+      "id": "storage-array-chassis",
+      "title": "Storage array chassis",
+      "profile": "storage"
+    },
+    {
+      "id": "top-of-rack-network-switch",
+      "title": "Top-of-rack network switch",
+      "profile": "switch"
+    },
+    {
+      "id": "fiber-patch-panel",
+      "title": "Fiber patch panel",
+      "profile": "patch"
+    },
+    {
+      "id": "rack-kvm-console",
+      "title": "Rack KVM console",
+      "profile": "kvm"
+    },
+    {
+      "id": "rack-blanking-panel",
+      "title": "Rack blanking panel",
+      "profile": "blanking"
+    },
+    {
+      "id": "vertical-cable-manager",
+      "title": "Vertical cable manager",
+      "profile": "cable-manager"
+    },
+    {
+      "id": "overhead-cable-ladder",
+      "title": "Overhead cable ladder",
+      "profile": "ladder"
+    },
+    {
+      "id": "overhead-power-busway",
+      "title": "Overhead power busway",
+      "profile": "busway"
+    },
+    {
+      "id": "busway-plug-in-unit",
+      "title": "Busway plug-in unit",
+      "profile": "bus-plug"
+    },
+    {
+      "id": "rack-power-distribution-unit",
+      "title": "Rack power distribution unit",
+      "profile": "rack-pdu"
+    },
+    {
+      "id": "raised-floor-tile",
+      "title": "Raised floor tile",
+      "profile": "floor-tile"
+    },
+    {
+      "id": "perforated-floor-tile",
+      "title": "Perforated floor tile",
+      "profile": "floor-grille"
+    },
+    {
+      "id": "floor-cable-grommet",
+      "title": "Floor cable grommet",
+      "profile": "grommet"
+    },
+    {
+      "id": "hot-aisle-containment-door",
+      "title": "Hot-aisle containment door",
+      "profile": "containment-door"
+    },
+    {
+      "id": "cold-aisle-roof-panel",
+      "title": "Cold-aisle roof panel",
+      "profile": "containment-roof"
+    },
+    {
+      "id": "modular-ups-cabinet",
+      "title": "Modular UPS cabinet",
+      "profile": "cabinet"
+    },
+    {
+      "id": "monolithic-ups-cabinet",
+      "title": "UPS cabinet",
+      "profile": "cabinet"
+    },
+    {
+      "id": "data-center-battery-cabinet",
+      "title": "Data-center battery cabinet",
+      "profile": "cabinet"
+    },
+    {
+      "id": "rack-mounted-battery-tray",
+      "title": "Rack-mounted battery tray",
+      "profile": "battery-tray"
+    },
+    {
+      "id": "static-transfer-switch",
+      "title": "Static transfer switch",
+      "profile": "cabinet"
+    },
+    {
+      "id": "maintenance-bypass-cabinet",
+      "title": "Maintenance bypass cabinet",
+      "profile": "cabinet"
+    },
+    {
+      "id": "switchgear-lineup",
+      "title": "Switchgear lineup",
+      "profile": "switchgear"
+    },
+    {
+      "id": "distribution-panelboard",
+      "title": "Distribution panelboard",
+      "profile": "panelboard"
+    },
+    {
+      "id": "dry-type-transformer",
+      "title": "Dry-type transformer",
+      "profile": "transformer"
+    },
+    {
+      "id": "automatic-transfer-switch-cabinet",
+      "title": "Automatic transfer switch cabinet",
+      "profile": "cabinet"
+    },
+    {
+      "id": "standby-generator-enclosure",
+      "title": "Standby generator enclosure",
+      "profile": "generator"
+    },
+    {
+      "id": "day-fuel-tank",
+      "title": "Generator day tank",
+      "profile": "tank"
+    },
+    {
+      "id": "power-meter-pedestal",
+      "title": "Power meter pedestal",
+      "profile": "pedestal"
+    },
+    {
+      "id": "emergency-power-off-station",
+      "title": "Emergency power-off station",
+      "profile": "epo"
+    },
+    {
+      "id": "in-row-cooler",
+      "title": "In-row precision cooler",
+      "profile": "cooler"
+    },
+    {
+      "id": "perimeter-precision-cooler",
+      "title": "Perimeter precision cooler",
+      "profile": "cooler"
+    },
+    {
+      "id": "air-cooled-chiller",
+      "title": "Air-cooled chiller",
+      "profile": "chiller"
+    },
+    {
+      "id": "cooling-tower-cell",
+      "title": "Cooling tower cell",
+      "profile": "tower"
+    },
+    {
+      "id": "coolant-distribution-unit",
+      "title": "Coolant distribution unit",
+      "profile": "cdu"
+    },
+    {
+      "id": "liquid-cooling-manifold",
+      "title": "Liquid-cooling manifold",
+      "profile": "manifold"
+    },
+    {
+      "id": "rear-door-heat-exchanger",
+      "title": "Rear-door heat exchanger",
+      "profile": "rear-door"
+    },
+    {
+      "id": "overhead-coolant-header",
+      "title": "Overhead coolant header",
+      "profile": "header"
+    },
+    {
+      "id": "condenser-pump-skid",
+      "title": "Condenser pump skid",
+      "profile": "pump-skid"
+    },
+    {
+      "id": "data-center-plate-heat-exchanger",
+      "title": "Data-center plate heat exchanger",
+      "profile": "heat-exchanger"
+    },
+    {
+      "id": "floor-air-grille",
+      "title": "Floor air grille",
+      "profile": "floor-grille"
+    },
+    {
+      "id": "ceiling-return-plenum",
+      "title": "Ceiling return plenum",
+      "profile": "plenum"
+    },
+    {
+      "id": "environmental-sensor",
+      "title": "Environmental sensor",
+      "profile": "sensor"
+    },
+    {
+      "id": "leak-detection-module",
+      "title": "Leak detection module",
+      "profile": "leak"
+    },
+    {
+      "id": "clean-agent-cylinder-bank",
+      "title": "Clean-agent cylinder bank",
+      "profile": "fire-bank"
+    },
+    {
+      "id": "data-center-security-camera",
+      "title": "Data-center security camera",
+      "profile": "camera"
+    }
+  ]
+}

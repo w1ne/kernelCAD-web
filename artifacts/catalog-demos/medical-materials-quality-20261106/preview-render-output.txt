@@ -1,0 +1,43 @@
+(node:2469112) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+medical/adhesive-bandage-box: 60 tris
+medical/bandage-roll: 152 tris
+medical/bedside-cabinet: 84 tris
+medical/blood-collection-tube: 176 tris
+medical/blood-pressure-monitor: 268 tris
+medical/centrifuge: 280 tris
+medical/defibrillator: 128 tris
+medical/diagnostic-monitor: 224 tris
+medical/digital-thermometer: 156 tris
+medical/erlenmeyer-flask: 188 tris
+medical/exam-table: 128 tris
+medical/examination-light: 368 tris
+medical/first-aid-kit: 108 tris
+medical/forceps: 68 tris
+medical/forearm-crutches: 288 tris
+medical/gauze-pads: 72 tris
+medical/hospital-bed: 320 tris
+medical/instrument-trolley: 224 tris
+medical/iv-stand: 292 tris
+medical/lab-incubator: 96 tris
+medical/medical-cart: 400 tris
+medical/microscope: 292 tris
+medical/nebulizer: 280 tris
+medical/otoscope: 220 tris
+medical/oxygen-cylinder: 200 tris
+medical/petri-dish: 232 tris
+medical/pill-blister-pack: 288 tris
+medical/pill-bottle: 220 tris
+medical/pulse-oximeter: 148 tris
+medical/reflex-hammer: 188 tris
+medical/sharps-container: 60 tris
+medical/specimen-cup: 188 tris
+medical/specimen-tube-rack: 376 tris
+medical/stethoscope: 228 tris
+medical/surgical-scissors: 268 tris
+medical/syringe: 292 tris
+medical/tongue-depressor-pack: 84 tris
+medical/walker-frame: 196 tris
+medical/walking-cane: 144 tris
+medical/wheelchair: 332 tris
+exit=0

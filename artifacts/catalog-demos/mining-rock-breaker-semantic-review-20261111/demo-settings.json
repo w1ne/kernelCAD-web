@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-11",
+  "asset": "mining/rock-breaker-boom",
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts rock-breaker-boom",
+  "catalogIndexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "previewRenderer": "scripts/lib/glbSoftwareRender.ts",
+  "defaultTriangleCount": 1638,
+  "triangleBudget": 1800,
+  "video": {
+    "file": "demo.mp4",
+    "resolution": "720x640",
+    "frameRate": 24,
+    "durationSeconds": 12,
+    "codec": "H.264 / yuv420p",
+    "scenes": [
+      "Before: warning posts float 600 mm above the concrete wall",
+      "After: posts stand on wall-top steel base plates with embedded anchors"
+    ]
+  },
+  "provenance": "Local catalog preview and geometry regression test; branch not deployed; no physical acceptance claimed"
+}

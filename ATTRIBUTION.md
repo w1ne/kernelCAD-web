@@ -64,3 +64,11 @@ Copyright 2009, 2010, 2013–2016 by the Brotli Authors).
 See [NOTICE](NOTICE) and [retained license texts](licenses/smlibwasm/).
 The kernel loads only when explicitly selected; kernelCAD does not ship native
 experimental core patches.
+
+## Boolean keep-parts idea
+
+`shape.split` keeps the overlap and both leftovers as separate solids. That
+framing — retain each boolean fragment instead of discarding the complement —
+follows the idea in [Cadrs](https://github.com/Sh1Art/Cadrs) (MIT and
+Apache-2.0). kernelCAD does not include Cadrs source. The split uses the
+already-bound Open CASCADE cut and common operations.

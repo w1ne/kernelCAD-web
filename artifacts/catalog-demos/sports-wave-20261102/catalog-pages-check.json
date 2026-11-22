@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-02",
+  "source": "catalog/index.json",
+  "totalAssets": 583,
+  "kitCount": 16,
+  "assetPages": 583,
+  "previewImages": 583,
+  "hubListsSportsKit": true,
+  "sportsAssets": 40,
+  "sportsPages": 40,
+  "sportsPreviews": 40,
+  "sportsKnobsPerPage": 2,
+  "sportsKnobNames": [
+    "color",
+    "scale"
+  ],
+  "allPagesHavePreviews": true,
+  "staticPageBuild": "passed",
+  "deployedBehavior": "not verified; branch is not deployed"
+}

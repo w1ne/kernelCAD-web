@@ -1,0 +1,191 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' artifacts/catalog-demos/farm-tillage-silhouette-20261106/render_farm_tillage_variants.ts
+(node:139802) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{
+  "invocation": "npx tsx artifacts/catalog-demos/farm-tillage-silhouette-20261106/render_farm_tillage_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/farm-machinery/chisel-plow.kcad.ts",
+      "sourceSha256": "6be682468942cc4a90a80baf22abd5de6978d45c1a5f2950b0705328bbc960cf",
+      "triangleBudget": 3000,
+      "presets": {
+        "weathered": {
+          "paintedSteelColor": "#53694d",
+          "steelColor": "#7c6a58",
+          "springColor": "#9a8650",
+          "tireRubberColor": "#3b3a37"
+        },
+        "highVisibility": {
+          "paintedSteelColor": "#db762c",
+          "steelColor": "#c3c9c4",
+          "springColor": "#f2d23c",
+          "tireRubberColor": "#1d1f21"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/farm-machinery/subsoiler-implement.kcad.ts",
+      "sourceSha256": "8cbbdb75b708cfd2f64dd10c03b5f63dbdae2eb674483caaa590afc6d04d9bb0",
+      "triangleBudget": 2600,
+      "presets": {
+        "weathered": {
+          "paintedSteelColor": "#53694d",
+          "steelColor": "#7c6a58",
+          "hardwareColor": "#8d877a",
+          "tireRubberColor": "#3b3a37"
+        },
+        "highVisibility": {
+          "paintedSteelColor": "#db762c",
+          "steelColor": "#c3c9c4",
+          "hardwareColor": "#e8e3d2",
+          "tireRubberColor": "#1d1f21"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/farm-machinery/rear-landscape-rake.kcad.ts",
+      "sourceSha256": "013187bbed27b5114c2612b3cff923db2b87ae7a8d34279fce0dcd63f341f8ff",
+      "triangleBudget": 2600,
+      "presets": {
+        "weathered": {
+          "paintedSteelColor": "#53694d",
+          "steelColor": "#7c6a58",
+          "hardwareColor": "#8d877a",
+          "tireRubberColor": "#3b3a37"
+        },
+        "highVisibility": {
+          "paintedSteelColor": "#db762c",
+          "steelColor": "#c3c9c4",
+          "hardwareColor": "#e8e3d2",
+          "tireRubberColor": "#1d1f21"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "chisel-plow",
+      "variant": "default",
+      "values": {},
+      "triangles": 2076,
+      "png": "artifacts/catalog-demos/farm-tillage-silhouette-20261106/variants/chisel-plow-default.png"
+    },
+    {
+      "assetId": "chisel-plow",
+      "variant": "sweep-points",
+      "values": {
+        "pointStyle": "sweep"
+      },
+      "triangles": 2112,
+      "png": "artifacts/catalog-demos/farm-tillage-silhouette-20261106/variants/chisel-plow-sweep-points.png"
+    },
+    {
+      "assetId": "chisel-plow",
+      "variant": "weathered",
+      "values": {
+        "paintedSteelColor": "#53694d",
+        "steelColor": "#7c6a58",
+        "springColor": "#9a8650",
+        "tireRubberColor": "#3b3a37"
+      },
+      "triangles": 2076,
+      "png": "artifacts/catalog-demos/farm-tillage-silhouette-20261106/variants/chisel-plow-weathered.png"
+    },
+    {
+      "assetId": "chisel-plow",
+      "variant": "highVisibility",
+      "values": {
+        "paintedSteelColor": "#db762c",
+        "steelColor": "#c3c9c4",
+        "springColor": "#f2d23c",
+        "tireRubberColor": "#1d1f21"
+      },
+      "triangles": 2076,
+      "png": "artifacts/catalog-demos/farm-tillage-silhouette-20261106/variants/chisel-plow-highVisibility.png"
+    },
+    {
+      "assetId": "subsoiler-implement",
+      "variant": "default",
+      "values": {},
+      "triangles": 1808,
+      "png": "artifacts/catalog-demos/farm-tillage-silhouette-20261106/variants/subsoiler-implement-default.png"
+    },
+    {
+      "assetId": "subsoiler-implement",
+      "variant": "straight-plain",
+      "values": {
+        "shankStyle": "straight",
+        "pointWings": "plain"
+      },
+      "triangles": 1628,
+      "png": "artifacts/catalog-demos/farm-tillage-silhouette-20261106/variants/subsoiler-implement-straight-plain.png"
+    },
+    {
+      "assetId": "subsoiler-implement",
+      "variant": "weathered",
+      "values": {
+        "paintedSteelColor": "#53694d",
+        "steelColor": "#7c6a58",
+        "hardwareColor": "#8d877a",
+        "tireRubberColor": "#3b3a37"
+      },
+      "triangles": 1808,
+      "png": "artifacts/catalog-demos/farm-tillage-silhouette-20261106/variants/subsoiler-implement-weathered.png"
+    },
+    {
+      "assetId": "subsoiler-implement",
+      "variant": "highVisibility",
+      "values": {
+        "paintedSteelColor": "#db762c",
+        "steelColor": "#c3c9c4",
+        "hardwareColor": "#e8e3d2",
+        "tireRubberColor": "#1d1f21"
+      },
+      "triangles": 1808,
+      "png": "artifacts/catalog-demos/farm-tillage-silhouette-20261106/variants/subsoiler-implement-highVisibility.png"
+    },
+    {
+      "assetId": "rear-landscape-rake",
+      "variant": "default",
+      "values": {},
+      "triangles": 1580,
+      "png": "artifacts/catalog-demos/farm-tillage-silhouette-20261106/variants/rear-landscape-rake-default.png"
+    },
+    {
+      "assetId": "rear-landscape-rake",
+      "variant": "angled-30",
+      "values": {
+        "rakeAngle": "30"
+      },
+      "triangles": 1580,
+      "png": "artifacts/catalog-demos/farm-tillage-silhouette-20261106/variants/rear-landscape-rake-angled-30.png"
+    },
+    {
+      "assetId": "rear-landscape-rake",
+      "variant": "weathered",
+      "values": {
+        "paintedSteelColor": "#53694d",
+        "steelColor": "#7c6a58",
+        "hardwareColor": "#8d877a",
+        "tireRubberColor": "#3b3a37"
+      },
+      "triangles": 1580,
+      "png": "artifacts/catalog-demos/farm-tillage-silhouette-20261106/variants/rear-landscape-rake-weathered.png"
+    },
+    {
+      "assetId": "rear-landscape-rake",
+      "variant": "highVisibility",
+      "values": {
+        "paintedSteelColor": "#db762c",
+        "steelColor": "#c3c9c4",
+        "hardwareColor": "#e8e3d2",
+        "tireRubberColor": "#1d1f21"
+      },
+      "triangles": 1580,
+      "png": "artifacts/catalog-demos/farm-tillage-silhouette-20261106/variants/rear-landscape-rake-highVisibility.png"
+    }
+  ]
+}

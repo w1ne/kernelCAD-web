@@ -1,0 +1,875 @@
+{
+  "kit": "music",
+  "assetCount": 40,
+  "musicPassing": 40,
+  "musicTotal": 40,
+  "materialControls": 125,
+  "presetEntries": 80,
+  "previewCount": 40,
+  "catalogPassing": 2251,
+  "catalogTotal": 2390,
+  "catalogPassRate": "94.2%",
+  "catalogThin": 139,
+  "eslint": "pass",
+  "integrationFiles": 4,
+  "integrationTests": 15,
+  "localPages": 40,
+  "localPagesDeploymentVerified": false,
+  "indexSourceHashesMatch": true,
+  "assets": [
+    {
+      "id": "accordion",
+      "source": "catalog/kits/music/accordion.kcad.ts",
+      "sourceSha256": "4851ed50d8600e1a6631840d5c02fbe25864defdfe9af63e155f9496bfdddcd5",
+      "materialControls": [
+        "lacquer",
+        "bellows",
+        "ivory",
+        "nickel"
+      ],
+      "presets": {
+        "concert": {
+          "lacquer": "#25617a"
+        },
+        "vintage": {
+          "lacquer": "#71323d"
+        }
+      },
+      "preview": "/assets/music-accordion.png",
+      "triangles": 204,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "acoustic-guitar",
+      "source": "catalog/kits/music/acoustic-guitar.kcad.ts",
+      "sourceSha256": "18ea72ac6920e90c3ed18bff50d934d196688c9476053d506106c4177e906c0d",
+      "materialControls": [
+        "spruce",
+        "mahogany",
+        "ebony",
+        "steel"
+      ],
+      "presets": {
+        "concert": {
+          "spruce": "#e4b873"
+        },
+        "vintage": {
+          "spruce": "#ab7044"
+        }
+      },
+      "preview": "/assets/music-acoustic-guitar.png",
+      "triangles": 180,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "alto-saxophone",
+      "source": "catalog/kits/music/alto-saxophone.kcad.ts",
+      "sourceSha256": "d78980852748138221b3cc80efa8db711be611fb555ad95d9fe37be12472fe5c",
+      "materialControls": [
+        "brass",
+        "nickel",
+        "ebonite"
+      ],
+      "presets": {
+        "concert": {
+          "brass": "#e2b346"
+        },
+        "vintage": {
+          "brass": "#a76d2d"
+        }
+      },
+      "preview": "/assets/music-alto-saxophone.png",
+      "triangles": 214,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "banjo",
+      "source": "catalog/kits/music/banjo.kcad.ts",
+      "sourceSha256": "c2ed5d5bf98a64e76eeccfb46dedb3ef891f4d9672c7a7ec16f685fe81bbef35",
+      "materialControls": [
+        "maple",
+        "parchment",
+        "nickel",
+        "ebony"
+      ],
+      "presets": {
+        "concert": {
+          "maple": "#d8a45e"
+        },
+        "vintage": {
+          "maple": "#8f5b34"
+        }
+      },
+      "preview": "/assets/music-banjo.png",
+      "triangles": 244,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "bass-drum",
+      "source": "catalog/kits/music/bass-drum.kcad.ts",
+      "sourceSha256": "85851e6faa3e0f880e6689da612abb9011c1243a46b745e66d12b37a33c5ccb0",
+      "materialControls": [
+        "lacquer",
+        "calfskin",
+        "steel"
+      ],
+      "presets": {
+        "concert": {
+          "lacquer": "#23627a"
+        },
+        "vintage": {
+          "lacquer": "#6c3435"
+        }
+      },
+      "preview": "/assets/music-bass-drum.png",
+      "triangles": 168,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "bass-guitar",
+      "source": "catalog/kits/music/bass-guitar.kcad.ts",
+      "sourceSha256": "3d173ddebe3eef4c5d9f7e5bd867cf21f452f0998823dda78a5f3f09fab81907",
+      "materialControls": [
+        "lacquer",
+        "maple",
+        "ebony",
+        "steel"
+      ],
+      "presets": {
+        "concert": {
+          "lacquer": "#bf463d"
+        },
+        "vintage": {
+          "lacquer": "#654335"
+        }
+      },
+      "preview": "/assets/music-bass-guitar.png",
+      "triangles": 152,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "bassoon",
+      "source": "catalog/kits/music/bassoon.kcad.ts",
+      "sourceSha256": "c18d2e4763fe168b4af35e1615dafc89c7d20a2ccfb9a379ba823ade46b3c639",
+      "materialControls": [
+        "maple",
+        "silver",
+        "ebonite"
+      ],
+      "presets": {
+        "concert": {
+          "maple": "#a46938"
+        },
+        "vintage": {
+          "maple": "#603d2d"
+        }
+      },
+      "preview": "/assets/music-bassoon.png",
+      "triangles": 240,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "bongos",
+      "source": "catalog/kits/music/bongos.kcad.ts",
+      "sourceSha256": "407dae15460e4a8ca9f7addfe7faa288233ee416ca43e9f6a10dc3198f0fa167",
+      "materialControls": [
+        "maple",
+        "calfskin",
+        "steel"
+      ],
+      "presets": {
+        "concert": {
+          "maple": "#ce914e"
+        },
+        "vintage": {
+          "maple": "#805032"
+        }
+      },
+      "preview": "/assets/music-bongos.png",
+      "triangles": 200,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "cajon",
+      "source": "catalog/kits/music/cajon.kcad.ts",
+      "sourceSha256": "280176d603d4b6f25b2cd2078a053cf550ffc5e70644e94e19bce98496d475a5",
+      "materialControls": [
+        "birch",
+        "rosewood",
+        "rubber"
+      ],
+      "presets": {
+        "concert": {
+          "birch": "#d39a58"
+        },
+        "vintage": {
+          "birch": "#845334"
+        }
+      },
+      "preview": "/assets/music-cajon.png",
+      "triangles": 60,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "cello",
+      "source": "catalog/kits/music/cello.kcad.ts",
+      "sourceSha256": "aea50b196de1f0857b717b7dd1b44cd0c6aaac3058691fef02a88081d23c7772",
+      "materialControls": [
+        "maple",
+        "ebony",
+        "steel",
+        "nickel"
+      ],
+      "presets": {
+        "concert": {
+          "maple": "#c8894e"
+        },
+        "vintage": {
+          "maple": "#79482e"
+        }
+      },
+      "preview": "/assets/music-cello.png",
+      "triangles": 238,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "clarinet",
+      "source": "catalog/kits/music/clarinet.kcad.ts",
+      "sourceSha256": "27ee3bf431fb0afec7ca04759ee8e127fc9ad9d70284e4364a4aaaefceacee7d",
+      "materialControls": [
+        "grenadilla",
+        "silver",
+        "ivory"
+      ],
+      "presets": {
+        "concert": {
+          "grenadilla": "#343039"
+        },
+        "vintage": {
+          "grenadilla": "#211d1d"
+        }
+      },
+      "preview": "/assets/music-clarinet.png",
+      "triangles": 674,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "concert-flute",
+      "source": "catalog/kits/music/concert-flute.kcad.ts",
+      "sourceSha256": "f9838f156895b163cc42637ebd910489c7c777932dde928aa19e79d88244bf82",
+      "materialControls": [
+        "silver",
+        "nickel"
+      ],
+      "presets": {
+        "concert": {
+          "silver": "#dce4e8"
+        },
+        "vintage": {
+          "silver": "#a49b8b"
+        }
+      },
+      "preview": "/assets/music-concert-flute.png",
+      "triangles": 264,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "concert-harp",
+      "source": "catalog/kits/music/concert-harp.kcad.ts",
+      "sourceSha256": "df4edeafd0e6c9b8cc129e91ae81cd078fc8bb864cb8f24363415e4e0b87f9a9",
+      "materialControls": [
+        "maple",
+        "brass",
+        "steel"
+      ],
+      "presets": {
+        "concert": {
+          "maple": "#d5a562"
+        },
+        "vintage": {
+          "maple": "#855331"
+        }
+      },
+      "preview": "/assets/music-concert-harp.png",
+      "triangles": 144,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "conductor-podium",
+      "source": "catalog/kits/music/conductor-podium.kcad.ts",
+      "sourceSha256": "aff4f458e847a5e85c9070fdfb21cfa2dfc6b2366109c230b860a8d4dd2fa079",
+      "materialControls": [
+        "oak",
+        "paint",
+        "rubber"
+      ],
+      "presets": {
+        "concert": {
+          "oak": "#b57a48"
+        },
+        "vintage": {
+          "oak": "#68452f"
+        }
+      },
+      "preview": "/assets/music-conductor-podium.png",
+      "triangles": 48,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "conga-drums",
+      "source": "catalog/kits/music/conga-drums.kcad.ts",
+      "sourceSha256": "9980190fcd5da0b0f8a2bd33f4cfc665a374ae736d88b601ee4c11e4dcefc1a9",
+      "materialControls": [
+        "maple",
+        "calfskin",
+        "chrome"
+      ],
+      "presets": {
+        "concert": {
+          "maple": "#ce914d"
+        },
+        "vintage": {
+          "maple": "#825032"
+        }
+      },
+      "preview": "/assets/music-conga-drums.png",
+      "triangles": 276,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "double-bass",
+      "source": "catalog/kits/music/double-bass.kcad.ts",
+      "sourceSha256": "7892baa0d1b9ab472264edfe77e6626927ab9a2ad62d67e15a5277455928d4ca",
+      "materialControls": [
+        "maple",
+        "ebony",
+        "steel",
+        "nickel"
+      ],
+      "presets": {
+        "concert": {
+          "maple": "#bd7c47"
+        },
+        "vintage": {
+          "maple": "#6c432d"
+        }
+      },
+      "preview": "/assets/music-double-bass.png",
+      "triangles": 238,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "drum-kit",
+      "source": "catalog/kits/music/drum-kit.kcad.ts",
+      "sourceSha256": "c858fa6248e4fb8eb5d3c30a482793b730d9437d47badbc655f74790f98ed0e5",
+      "materialControls": [
+        "lacquer",
+        "calfskin",
+        "chrome",
+        "bronze"
+      ],
+      "presets": {
+        "concert": {
+          "lacquer": "#286582"
+        },
+        "vintage": {
+          "lacquer": "#6b3935"
+        }
+      },
+      "preview": "/assets/music-drum-kit.png",
+      "triangles": 824,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "electric-guitar",
+      "source": "catalog/kits/music/electric-guitar.kcad.ts",
+      "sourceSha256": "5652754fcf97507c58573450cf4e2c4ea896ccb9660be6615fb30e2f4e840935",
+      "materialControls": [
+        "polyLacquer",
+        "maple",
+        "ebony",
+        "steel"
+      ],
+      "presets": {
+        "concert": {
+          "polyLacquer": "#c64238"
+        },
+        "vintage": {
+          "polyLacquer": "#593c32"
+        }
+      },
+      "preview": "/assets/music-electric-guitar.png",
+      "triangles": 152,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "french-horn",
+      "source": "catalog/kits/music/french-horn.kcad.ts",
+      "sourceSha256": "a3b03770790abbd329e8a8639ba05789df2be254c186dcfb31db5bb56848f486",
+      "materialControls": [
+        "brass",
+        "nickel",
+        "ebonite"
+      ],
+      "presets": {
+        "concert": {
+          "brass": "#e3b54b"
+        },
+        "vintage": {
+          "brass": "#a86f2d"
+        }
+      },
+      "preview": "/assets/music-french-horn.png",
+      "triangles": 416,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "harmonica",
+      "source": "catalog/kits/music/harmonica.kcad.ts",
+      "sourceSha256": "1e29df2f19ab5cba3fa236be0394e271cea3b0a3aafc4e38ba44e2e0fa223176",
+      "materialControls": [
+        "stainless",
+        "brass",
+        "polymer"
+      ],
+      "presets": {
+        "concert": {
+          "stainless": "#d5dfe2"
+        },
+        "vintage": {
+          "stainless": "#888f8d"
+        }
+      },
+      "preview": "/assets/music-harmonica.png",
+      "triangles": 120,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "maracas",
+      "source": "catalog/kits/music/maracas.kcad.ts",
+      "sourceSha256": "3d48918df057e815ca68bb9317a47441deb8093a9a2deb96c5624682ee632d33",
+      "materialControls": [
+        "paint",
+        "maple"
+      ],
+      "presets": {
+        "concert": {
+          "paint": "#dd6532"
+        },
+        "vintage": {
+          "paint": "#9b4b2e"
+        }
+      },
+      "preview": "/assets/music-maracas.png",
+      "triangles": 332,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "marimba",
+      "source": "catalog/kits/music/marimba.kcad.ts",
+      "sourceSha256": "c5645ba48ce76b351f93b4dd5a4ce7f62e5bc1a04140f9e6bdef7054f33cde94",
+      "materialControls": [
+        "rosewood",
+        "aluminum",
+        "steel"
+      ],
+      "presets": {
+        "concert": {
+          "rosewood": "#a45d37"
+        },
+        "vintage": {
+          "rosewood": "#603b2d"
+        }
+      },
+      "preview": "/assets/music-marimba.png",
+      "triangles": 228,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "mechanical-metronome",
+      "source": "catalog/kits/music/mechanical-metronome.kcad.ts",
+      "sourceSha256": "d1791c7b9e7891ec490badea95867b4469ffed1f302215236da43aede84aa1fd",
+      "materialControls": [
+        "walnut",
+        "brass",
+        "steel"
+      ],
+      "presets": {
+        "concert": {
+          "walnut": "#8b5736"
+        },
+        "vintage": {
+          "walnut": "#50362d"
+        }
+      },
+      "preview": "/assets/music-mechanical-metronome.png",
+      "triangles": 162,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "microphone-stand",
+      "source": "catalog/kits/music/microphone-stand.kcad.ts",
+      "sourceSha256": "117f010bfbe6857b4cf6d4a334a56d3158c90197ee94a11d11996c8dd314a09e",
+      "materialControls": [
+        "steel",
+        "polymer",
+        "silver"
+      ],
+      "presets": {
+        "concert": {
+          "steel": "#385f70"
+        },
+        "vintage": {
+          "steel": "#34383a"
+        }
+      },
+      "preview": "/assets/music-microphone-stand.png",
+      "triangles": 266,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "music-stand",
+      "source": "catalog/kits/music/music-stand.kcad.ts",
+      "sourceSha256": "a10a19c59f8b123e38f23f07a273f629a27d1a13ea7422896feb0b9f861f47d1",
+      "materialControls": [
+        "steel",
+        "aluminum",
+        "rubber"
+      ],
+      "presets": {
+        "concert": {
+          "steel": "#b23d3d"
+        },
+        "vintage": {
+          "steel": "#33383b"
+        }
+      },
+      "preview": "/assets/music-music-stand.png",
+      "triangles": 148,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "oboe",
+      "source": "catalog/kits/music/oboe.kcad.ts",
+      "sourceSha256": "e5d768c7162f6597b865e77af9a2f9e8184d4946951afd3a0df14fd49a77e1fb",
+      "materialControls": [
+        "grenadilla",
+        "silver",
+        "reed"
+      ],
+      "presets": {
+        "concert": {
+          "grenadilla": "#4d3329"
+        },
+        "vintage": {
+          "grenadilla": "#292120"
+        }
+      },
+      "preview": "/assets/music-oboe.png",
+      "triangles": 526,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "orchestral-cymbals",
+      "source": "catalog/kits/music/orchestral-cymbals.kcad.ts",
+      "sourceSha256": "ad7264a2462220fd880b876c19884c729c0b34702fc852e7d3efe4dee717e3ee",
+      "materialControls": [
+        "bronze",
+        "leather",
+        "steel"
+      ],
+      "presets": {
+        "concert": {
+          "bronze": "#e1b44b"
+        },
+        "vintage": {
+          "bronze": "#a66b2f"
+        }
+      },
+      "preview": "/assets/music-orchestral-cymbals.png",
+      "triangles": 316,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "orchestral-triangle",
+      "source": "catalog/kits/music/orchestral-triangle.kcad.ts",
+      "sourceSha256": "f63636e4d2fced26fbab3955f93432c468d096ad9b9267674680414b2c28166f",
+      "materialControls": [
+        "steel",
+        "maple",
+        "rubber"
+      ],
+      "presets": {
+        "concert": {
+          "steel": "#dce4e7"
+        },
+        "vintage": {
+          "steel": "#998f81"
+        }
+      },
+      "preview": "/assets/music-orchestral-triangle.png",
+      "triangles": 158,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "snare-drum",
+      "source": "catalog/kits/music/snare-drum.kcad.ts",
+      "sourceSha256": "3c165eb11fd91e35fa94c232335c00111d8c97225126ae3586a2e3740b52acab",
+      "materialControls": [
+        "lacquer",
+        "calfskin",
+        "chrome"
+      ],
+      "presets": {
+        "concert": {
+          "lacquer": "#2e637d"
+        },
+        "vintage": {
+          "lacquer": "#6e4037"
+        }
+      },
+      "preview": "/assets/music-snare-drum.png",
+      "triangles": 348,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "tambourine",
+      "source": "catalog/kits/music/tambourine.kcad.ts",
+      "sourceSha256": "83136117f0c81bbf7985b2f550fb42b4d7d058b790f247b1119752f523058742",
+      "materialControls": [
+        "maple",
+        "brass"
+      ],
+      "presets": {
+        "concert": {
+          "maple": "#c58b4b"
+        },
+        "vintage": {
+          "maple": "#754b31"
+        }
+      },
+      "preview": "/assets/music-tambourine.png",
+      "triangles": 286,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "tenor-saxophone",
+      "source": "catalog/kits/music/tenor-saxophone.kcad.ts",
+      "sourceSha256": "5802f0dafe3d40c306b93801877cff915d5e06fb1cbd5ce39cb1f5f20973a56a",
+      "materialControls": [
+        "brass",
+        "nickel",
+        "ebonite"
+      ],
+      "presets": {
+        "concert": {
+          "brass": "#dfae3f"
+        },
+        "vintage": {
+          "brass": "#a2692a"
+        }
+      },
+      "preview": "/assets/music-tenor-saxophone.png",
+      "triangles": 214,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "timpani",
+      "source": "catalog/kits/music/timpani.kcad.ts",
+      "sourceSha256": "8dfe0989e9a5cac9526db48f93238071c5b6edac025963705b65dbf6772a8b8a",
+      "materialControls": [
+        "copper",
+        "calfskin",
+        "steel"
+      ],
+      "presets": {
+        "concert": {
+          "copper": "#c27a45"
+        },
+        "vintage": {
+          "copper": "#78442f"
+        }
+      },
+      "preview": "/assets/music-timpani.png",
+      "triangles": 226,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "trombone",
+      "source": "catalog/kits/music/trombone.kcad.ts",
+      "sourceSha256": "4ccf651b937006e6071a5b9cdd221ab5a4fe698f6c614981d0ec5a5a1433a57e",
+      "materialControls": [
+        "brass",
+        "nickel",
+        "ebonite"
+      ],
+      "presets": {
+        "concert": {
+          "brass": "#e1b144"
+        },
+        "vintage": {
+          "brass": "#a56c2b"
+        }
+      },
+      "preview": "/assets/music-trombone.png",
+      "triangles": 314,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "trumpet",
+      "source": "catalog/kits/music/trumpet.kcad.ts",
+      "sourceSha256": "c20a9da4cabb709801f9a26933b011dc80b5f142d7c82321469fd443a395b3fc",
+      "materialControls": [
+        "brass",
+        "nickel",
+        "ebonite"
+      ],
+      "presets": {
+        "concert": {
+          "brass": "#e2b44a"
+        },
+        "vintage": {
+          "brass": "#a66d2c"
+        }
+      },
+      "preview": "/assets/music-trumpet.png",
+      "triangles": 268,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "tuba",
+      "source": "catalog/kits/music/tuba.kcad.ts",
+      "sourceSha256": "a91d5a73b26c765c76f95de1698e702d4af627c3294619ef0204b494183456b9",
+      "materialControls": [
+        "brass",
+        "nickel",
+        "ebonite"
+      ],
+      "presets": {
+        "concert": {
+          "brass": "#e2b247"
+        },
+        "vintage": {
+          "brass": "#a2692b"
+        }
+      },
+      "preview": "/assets/music-tuba.png",
+      "triangles": 480,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "ukulele",
+      "source": "catalog/kits/music/ukulele.kcad.ts",
+      "sourceSha256": "a78fbbe8e12877ff8b4505354c2dfd9fa2b8f2f8c650c3ac18bbcadad3d76dec",
+      "materialControls": [
+        "koa",
+        "ebony",
+        "steel",
+        "brass"
+      ],
+      "presets": {
+        "concert": {
+          "koa": "#dfa562"
+        },
+        "vintage": {
+          "koa": "#86502f"
+        }
+      },
+      "preview": "/assets/music-ukulele.png",
+      "triangles": 276,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "vibraphone",
+      "source": "catalog/kits/music/vibraphone.kcad.ts",
+      "sourceSha256": "55f3979a81e4904d17e130b446d069918e2561e40940759b67d2647a509b4b54",
+      "materialControls": [
+        "aluminum",
+        "steel",
+        "resonator"
+      ],
+      "presets": {
+        "concert": {
+          "aluminum": "#dce4e7"
+        },
+        "vintage": {
+          "aluminum": "#94948e"
+        }
+      },
+      "preview": "/assets/music-vibraphone.png",
+      "triangles": 304,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "viola",
+      "source": "catalog/kits/music/viola.kcad.ts",
+      "sourceSha256": "ac19b6dcde3068a822686b0277818bb6177107c2cd8320c3a42d2d85e1cad22f",
+      "materialControls": [
+        "maple",
+        "ebony",
+        "steel"
+      ],
+      "presets": {
+        "concert": {
+          "maple": "#c1834b"
+        },
+        "vintage": {
+          "maple": "#75472e"
+        }
+      },
+      "preview": "/assets/music-viola.png",
+      "triangles": 330,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "violin",
+      "source": "catalog/kits/music/violin.kcad.ts",
+      "sourceSha256": "0b43a0cf89822550fce4147478407637dc0f2182cee1c5a4c2dfa743aab0a234",
+      "materialControls": [
+        "maple",
+        "ebony",
+        "steel"
+      ],
+      "presets": {
+        "concert": {
+          "maple": "#d09150"
+        },
+        "vintage": {
+          "maple": "#7d4d30"
+        }
+      },
+      "preview": "/assets/music-violin.png",
+      "triangles": 338,
+      "triangleBudget": 1800
+    },
+    {
+      "id": "xylophone",
+      "source": "catalog/kits/music/xylophone.kcad.ts",
+      "sourceSha256": "9d78c738c93a322bef08a42149d5a4d4b2e0b382d6bb463fc830f90f45457448",
+      "materialControls": [
+        "rosewood",
+        "steel"
+      ],
+      "presets": {
+        "concert": {
+          "rosewood": "#b16b39"
+        },
+        "vintage": {
+          "rosewood": "#633c2c"
+        }
+      },
+      "preview": "/assets/music-xylophone.png",
+      "triangles": 152,
+      "triangleBudget": 1800
+    }
+  ],
+  "commands": [
+    "python3 scripts/checkCatalogQuality.py --kit music",
+    "python3 scripts/checkCatalogQuality.py --top 1",
+    "npx eslint catalog/kits/music/",
+    "npx vitest run tests/integration/catalog/",
+    "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-music-quality-pages",
+    "python3 artifacts/catalog-demos/music-quality-20261106/verify_music_pages.py /tmp/kernelcad-music-quality-pages",
+    "npx tsx scripts/buildAssetCatalog.ts --check"
+  ]
+}

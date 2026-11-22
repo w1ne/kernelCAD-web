@@ -1,0 +1,216 @@
+{
+  "id": "mine-skip",
+  "kit": "mining",
+  "title": "Mine skip conveyance",
+  "description": "Bottom-dump shaft skip at about real size: 7 m open-topped vessel with stiffening bands and a floor sloping to a hinged front dump door with cam roller, manganese wear liners on the rim, bridle with side stiles, crosshead and transom, guide shoes and rollers on two steel shaft guides tied to buntons, cappel socket and head rope, landing keps on a concrete station floor. Material controls: skip body coating, bridle and guide steel, manganese wear liners, ore, plus a gate choice (loaded with the door shut, or dumping with the door open and ore pouring onto a pile). weathered, highVisibility and blueHoist presets.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "mining",
+    "shaft hoisting",
+    "mine skip",
+    "hoist conveyance",
+    "headframe",
+    "ore handling",
+    "underground mining",
+    "shaft"
+  ],
+  "compat": [
+    "mining",
+    "mineral-processing",
+    "industrial",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/mining/mine-skip.kcad.ts",
+  "preview": "/assets/mining-mine-skip.png",
+  "sourceSha256": "3adc6876caaae1e111165e47ca36d470494411f1d124479eac606b465020cc96",
+  "triangleBudget": 2000,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "coatedSteel",
+      "type": "color",
+      "default": "#c9a227",
+      "label": "Skip body coating"
+    },
+    {
+      "name": "structuralSteel",
+      "type": "color",
+      "default": "#4f5b62",
+      "label": "Bridle and guide steel"
+    },
+    {
+      "name": "manganeseSteel",
+      "type": "color",
+      "default": "#8a8f8c",
+      "label": "Manganese wear liners"
+    },
+    {
+      "name": "ore",
+      "type": "color",
+      "default": "#8c7c6a",
+      "label": "Ore"
+    },
+    {
+      "name": "gate",
+      "type": "choice",
+      "default": "loaded",
+      "label": "Skip state",
+      "choices": [
+        "loaded",
+        "dumping"
+      ]
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "coatedSteel": "#8a7a55",
+      "structuralSteel": "#666a66",
+      "manganeseSteel": "#77706a",
+      "ore": "#7d7062"
+    },
+    "highVisibility": {
+      "coatedSteel": "#e48a1e",
+      "structuralSteel": "#465159",
+      "manganeseSteel": "#9aa09c",
+      "ore": "#a99b88"
+    },
+    "blueHoist": {
+      "coatedSteel": "#2f6f9e",
+      "structuralSteel": "#3b4248",
+      "manganeseSteel": "#b5bab6",
+      "ore": "#6f4a3a"
+    }
+  },
+  "stats": {
+    "triangles": 1490,
+    "sizeM": [
+      5.2,
+      16,
+      5.4
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "station-floor",
+      "color": "#a6a196",
+      "parts": [
+        "station-floor"
+      ]
+    },
+    {
+      "name": "floor-edge-stripe",
+      "color": "#e8c21a",
+      "parts": [
+        "floor-edge-stripe",
+        "cappel",
+        "guide-roller-l-1200-f",
+        "guide-roller-l-1200-b",
+        "guide-roller-l-10200-f",
+        "guide-roller-l-10200-b",
+        "guide-roller-r-1200-f",
+        "guide-roller-r-1200-b",
+        "guide-roller-r-10200-f",
+        "guide-roller-r-10200-b",
+        "landing-kep-l",
+        "landing-kep-r"
+      ]
+    },
+    {
+      "name": "coatedSteel",
+      "color": "#c9a227",
+      "parts": [
+        "vessel",
+        "dump-door"
+      ],
+      "param": "coatedSteel"
+    },
+    {
+      "name": "structuralSteel",
+      "color": "#4f5b62",
+      "parts": [
+        "stiffening-band-3300",
+        "stiffening-band-4700",
+        "stiffening-band-6100",
+        "stiffening-band-7500",
+        "door-ribs",
+        "door-hinge",
+        "cam-arm",
+        "stile-l",
+        "stile-stay-l",
+        "stile-stay-rear-l",
+        "stile-r",
+        "stile-stay-r",
+        "stile-stay-rear-r",
+        "crosshead",
+        "transom",
+        "guide-l",
+        "bunton-bracket-l-3500",
+        "bunton-bracket-l-7500",
+        "bunton-bracket-l-11500",
+        "bunton-bracket-l-15000",
+        "guide-r",
+        "bunton-bracket-r-3500",
+        "bunton-bracket-r-7500",
+        "bunton-bracket-r-11500",
+        "bunton-bracket-r-15000",
+        "bunton-3500",
+        "bunton-7500",
+        "bunton-11500",
+        "bunton-15000"
+      ],
+      "param": "structuralSteel"
+    },
+    {
+      "name": "manganeseSteel",
+      "color": "#8a8f8c",
+      "parts": [
+        "rim-liner",
+        "door-sill",
+        "suspension-link-l",
+        "suspension-link-r"
+      ],
+      "param": "manganeseSteel"
+    },
+    {
+      "name": "cam-roller",
+      "color": "#26292b",
+      "parts": [
+        "cam-roller",
+        "guide-shoe-l-1200",
+        "guide-shoe-l-10200",
+        "guide-shoe-r-1200",
+        "guide-shoe-r-10200"
+      ]
+    },
+    {
+      "name": "ore",
+      "color": "#8c7c6a",
+      "parts": [
+        "ore-load",
+        "ore-lump-0",
+        "ore-lump-1",
+        "ore-lump-2"
+      ],
+      "param": "ore"
+    },
+    {
+      "name": "head-rope",
+      "color": "#3a3c3d",
+      "parts": [
+        "head-rope"
+      ]
+    }
+  ]
+}

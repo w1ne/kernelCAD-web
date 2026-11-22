@@ -621,9 +621,12 @@ describe('feature-aware annotation kinds', () => {
       annotations,
     }, diagnostics as never);
     expect(bytes.length).toBeGreaterThan(0);
-    expect(diagnostics).toHaveLength(1);
-    expect(diagnostics[0].code).toBe('drawing.annotation.overlap');
-    expect(diagnostics[0].severity).toBe('warn');
+    // The original annotation-pair check and the serialized-sheet text
+    // preflight both report this deliberately crowded drawing.
+    expect(diagnostics.map(d => d.code).sort()).toEqual([
+      'drawing.annotation.overlap', 'drawing.text.placement',
+    ]);
+    expect(diagnostics.every(d => d.severity === 'warn')).toBe(true);
   });
 
   it('does not warn when the same two labels are separated with offset/view', () => {

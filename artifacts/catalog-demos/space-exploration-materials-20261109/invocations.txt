@@ -1,0 +1,25 @@
+All commands run from the repository root. The final full-kit preview render
+and index rebuild happened after the last source changes. `catalog/index.json`
+was generated; it was not hand-edited.
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/space-exploration-materials-20261109/promote_space_materials.py --dry-run
+PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/space-exploration-materials-20261109/promote_space_materials.py
+mapfile -t asset_ids < <(find catalog/kits/space-exploration -maxdepth 1 -type f -name '*.kcad.ts' -printf '%f\n' | sed 's/\.kcad\.ts$//')
+npx tsx scripts/renderCatalogPreviews.ts "${asset_ids[@]}"
+npx tsx scripts/buildAssetCatalog.ts
+python3 scripts/checkCatalogQuality.py --kit space-exploration
+python3 scripts/checkCatalogQuality.py
+npx eslint catalog/kits/space-exploration/
+npx vitest run tests/integration/catalog/
+npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-space-materials-pages
+python3 artifacts/catalog-demos/space-exploration-materials-20261109/verify_space_pages.py /tmp/kernelcad-space-materials-pages
+PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/space-exploration-materials-20261109/record_space_materials_results.py
+python3 artifacts/catalog-demos/space-exploration-materials-20261109/capture_space_materials_demo.py
+python3 artifacts/catalog-demos/space-exploration-materials-20261109/inspect_space_materials_video.py
+```
+
+The source transformer is deterministic against the pre-round `HEAD`; the
+hand-off also includes a source-to-transformer comparison. For a replay after
+this commit, restore the kit sources and README from `HEAD^` before running the
+promotion script.

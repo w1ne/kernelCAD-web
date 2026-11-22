@@ -1,0 +1,11 @@
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-coupling-details-20261110/frames/01-before-after.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-coupling-details-20261110/frames/02-bearing-housing.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-coupling-details-20261110/frames/03-jaw-coupling.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-coupling-details-20261110/frames/04-pipe-union.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-coupling-details-20261110/frames/05-local-verification.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/standard-components-coupling-details-20261110/frames/05-local-verification.png'

@@ -1,0 +1,39 @@
+{
+  "invocation": "node --import tsx docs/demos/from3mf-brep-import/make-video.mts",
+  "source": "make-video.mts",
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerScene": 4,
+    "scenes": 2,
+    "codec": "H.264 libx264",
+    "crf": 26,
+    "pixelFormat": "yuv420p",
+    "audio": false
+  },
+  "media": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "8.000000",
+      "size": "83344"
+    }
+  },
+  "poster": "poster.png",
+  "posterSha256": "3acdd121b35ac3657b126241f9267bb1ce4dc6bb8569da9cd0f2b7048b7043bf",
+  "videoSha256": "813dd89a0263211305acdfd12de62a3eff4c9e8977be4cb0066f6124dba618d5",
+  "inspection": "Poster extracted from the final MP4 scene and visually reviewed after generation.",
+  "scope": "Local .kcad.ts API capture and OCCT B-rep recompute; no deployed behavior or hardware acceptance.",
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}

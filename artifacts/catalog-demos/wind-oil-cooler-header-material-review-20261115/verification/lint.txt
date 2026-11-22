@@ -1,0 +1,1 @@
+eslint catalog/kits/wind-energy/ + new test: 0 problems

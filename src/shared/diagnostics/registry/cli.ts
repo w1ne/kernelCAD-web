@@ -27,7 +27,7 @@ export const CLI_CODES = {
     defaultSeverity: 'error',
     group: 'cli',
     description:
-      'The script called a feature that needs filesystem access (referenceImage, lib.fromSTEP/fromSTL, fontPath fonts, parts catalog) from a runtime that has no filesystem — typically the in-browser script engine.',
+      'The script called a feature that needs filesystem access (referenceImage, lib.fromSTEP/fromSTL/from3MF, fontPath fonts, parts catalog) from a runtime that has no filesystem — typically the in-browser script engine.',
   },
   'cli.file-read': {
     hintTemplate:

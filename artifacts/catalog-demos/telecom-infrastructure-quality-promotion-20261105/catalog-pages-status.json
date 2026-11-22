@@ -1,0 +1,6 @@
+{
+  "command": "npx tsx artifacts/catalog-demos/telecom-infrastructure-quality-promotion-20261105/check_telecom_pages.mts",
+  "environment": {},
+  "exitCode": 0,
+  "status": "pass"
+}

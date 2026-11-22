@@ -1,0 +1,12 @@
+{
+  "exitCode": 1,
+  "expectedExitCode": 1,
+  "reason": "the remaining thin kits are outside this round; standard-components passes separately",
+  "pass": 1854,
+  "total": 2390,
+  "passRatePercent": 77.6,
+  "thinAssets": 536,
+  "remainingThinKits": 11,
+  "roundKit": "standard-components",
+  "roundKitPassed": true
+}

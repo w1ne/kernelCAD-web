@@ -5,7 +5,7 @@ description: Editable symbolic parameters — param(), params(), ParamRef arithm
 
 # kernelCAD — editable parameters
 
-Use `param()` for values the user may want to tweak after the first build; use literals for incidental dimensions. A param returns a symbolic `ParamRef`, not a number, so do not do JS arithmetic with it (`paramRef / 2` throws `feature.invalid-args` at the coercion site — the result would be a frozen number that stops re-evaluating on param updates). For derived dimensions, chain the arithmetic methods on the ParamRef itself: `.add`, `.subtract`, `.multiply`, `.divide`, `.negate`, `.min`, `.max`, `.abs`, `.clamp` each return a new ParamRef built on a structured expression that re-evaluates whenever the underlying param changes — e.g. `param('r', 5).divide(2)` for a half-radius, `param('w', 80).subtract(param('margin', 5).multiply(2))` for a derived inset width, or `param('wall', 2).max(1.2).clamp(1.2, 8)` for a printable wall bound.
+Use `param()` for values the user may want to tweak after the first build; use literals for incidental dimensions. A param returns a `ParamRef`. Plain JS math works on it inside a script: `w + 4`, `w / 2`, `Math.sin(angle * Math.PI / 180)`, loops and point lists all get the current value, and an edit to that param re-runs the script, rebuilding only the features whose inputs changed. The arithmetic methods `.add`, `.subtract`, `.multiply`, `.divide`, `.negate`, `.min`, `.max`, `.abs`, `.clamp` are still available and keep the dimension symbolic (it re-evaluates in place without re-running the script, the fastest slider path) — e.g. `param('r', 5).divide(2)`, `param('w', 80).subtract(param('margin', 5).multiply(2))`, `param('wall', 2).max(1.2).clamp(1.2, 8)`. Use whichever reads better; prefer plain math when it is clearer (trig, loops, point lists).
 
 ## `param()` / `params()` API
 
@@ -153,7 +153,9 @@ presets({ Compact: { width: 60, depth: 30 }, Wide: { width: 120, depth: 50 } });
 ```
 
 After `evaluate_script`, call the read-only `asset_manifest` MCP tool to receive
-`{ meta, params, presets }`. `params` is deterministic JSON derived from the
+`{ meta, params, presets, stats }`. `stats` matches GLB `asset.extras.kernelcad.stats`:
+triangles, `sizeM` (metres, Y up), `minUpM`, materials, draw calls, parts, `hasRig`
+and `hasIk`. `params` is deterministic JSON derived from the
 evaluated entries (with each declared default used when no current value is
 available); preset names and knob keys are emitted in stable sorted order.
 Without a prior evaluation the tool returns an empty manifest with the default

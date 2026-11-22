@@ -31,7 +31,7 @@ const meshToFeaturesToolEntry: ToolRegistryEntry = {
       'ledger, fidelity: { maxDeviationMm, rmsMm, volumeIoU, verdict: faithful | approximate | failed, ' +
       'thresholds }, unmatchedRegions, features, passes }. A fillet or sharp reading is kept by which ' +
       'measures better; variable-radius blends and chamfers are reported, not forced. The verdict is computed from the numbers — ' +
-      'faithful needs IoU >= minIoU AND max deviation <= maxDeviationMm AND a watertight mesh AND no ' +
+      'faithful needs IoU >= min_iou AND max deviation <= max_deviation_mm AND a watertight mesh AND no ' +
       'unmatched region. Freeform surfaces, tilted planes and side bosses are listed in ' +
       'unmatchedRegions (reference.mesh.freeform-region-unmatched), never silently dropped. The ledger ' +
       'uses fact ids equal to param names, so resolve_assumptions on the written ' +
@@ -48,14 +48,14 @@ const meshToFeaturesToolEntry: ToolRegistryEntry = {
           type: 'string',
           description: 'Write the emitted script to this .kcad.ts path and the assumption ledger to the sibling .ledger.json.',
         },
-        minIoU: { type: 'number', description: 'Volume IoU a faithful verdict requires. Default 0.98.' },
-        maxDeviationMm: {
+        min_iou: { type: 'number', description: 'Volume IoU a faithful verdict requires. Default 0.98.' },
+        max_deviation_mm: {
           type: 'number',
           description: 'Max surface deviation (mm) a faithful verdict allows. Default max(0.25, 0.1 % of the bbox diagonal).',
         },
-        maxPasses: { type: 'number', description: 'Refinement passes, 1–4. Default 4; stops early at the first faithful pass.' },
-        weldToleranceMm: { type: 'number', description: 'Vertex weld distance in mm. Default max(1e-4, 1e-6 × bbox diagonal).' },
-        maxTriangles: { type: 'number', description: 'Refuse meshes above this triangle count instead of stalling. Default 300000.' },
+        max_passes: { type: 'number', description: 'Refinement passes, 1–4. Default 4; stops early at the first faithful pass.' },
+        weld_tolerance_mm: { type: 'number', description: 'Vertex weld distance in mm. Default max(1e-4, 1e-6 × bbox diagonal).' },
+        max_triangles: { type: 'number', description: 'Refuse meshes above this triangle count instead of stalling. Default 300000.' },
       },
     },
   },

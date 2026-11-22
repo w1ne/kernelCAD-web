@@ -33,6 +33,8 @@ import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { Region, Vec2 } from '../../../shared/intent/region';
 import type { FeatureId } from '../../../shared/intent/types';
 import type { ShapeBackend } from '../../../kernel/backends/backend';
+import type { ParamTable } from '../../../shared/runtime/paramTable';
+import { resolveParams } from '../../../shared/runtime/resolveParams';
 import { computeBendAllowance } from '../../sheetMetal';
 import { flattenPatternWithHoles } from '../../sheetMetalFlatPattern';
 
@@ -53,6 +55,9 @@ export const SHEET_METAL_DEFAULTS: SheetMetalSettings = {
   holeToEdgeThicknesses: 2,
   minFlangeThicknesses: 4,
 };
+
+/** Inclusive allowance shared by the four flat-pattern comparison rules. */
+export const SHEET_METAL_COMPARISON_TOLERANCE_MM = 1e-9;
 
 export interface SheetBendFinding {
   ordinal: number;
@@ -200,7 +205,7 @@ function bendFindings(bends: BendGeom[], ids: string[], t: number, s: SheetMetal
     angleDeg: b.angleDeg,
     radiusMm: b.radius,
     minRadiusMm: minR,
-    ok: b.radius >= minR - 1e-9,
+    ok: b.radius >= minR - SHEET_METAL_COMPARISON_TOLERANCE_MM,
     location: b.line.mid,
   }));
 }
@@ -216,7 +221,8 @@ function holeToBendFindings(holes: Vec2[][], bends: BendGeom[], t: number, s: Sh
       const k = offs.reduce((m, o, i) => (Math.abs(o) < Math.abs(offs[m]) ? i : m), 0);
       const distance = straddles ? 0 : Math.abs(offs[k]);
       const f: SheetDistanceFinding = {
-        hole: hi, bend: b.ordinal, distanceMm: distance, limitMm: limit, ok: distance >= limit - 1e-9, location: hole[k],
+        hole: hi, bend: b.ordinal, distanceMm: distance, limitMm: limit,
+        ok: distance >= limit - SHEET_METAL_COMPARISON_TOLERANCE_MM, location: hole[k],
       };
       if (worst === undefined || f.distanceMm - f.limitMm < worst.distanceMm - worst.limitMm) worst = f;
     }
@@ -229,7 +235,10 @@ function holeToEdgeFindings(holes: Vec2[][], outer: Vec2[], t: number, s: SheetM
   const limit = s.holeToEdgeThicknesses * t;
   return holes.map((hole, hi) => {
     const gap = polylineGap(hole, outer);
-    return { hole: hi, distanceMm: gap.distanceMm, limitMm: limit, ok: gap.distanceMm >= limit - 1e-9, location: gap.location };
+    return {
+      hole: hi, distanceMm: gap.distanceMm, limitMm: limit,
+      ok: gap.distanceMm >= limit - SHEET_METAL_COMPARISON_TOLERANCE_MM, location: gap.location,
+    };
   });
 }
 
@@ -254,7 +263,8 @@ function flangeFindings(bends: BendGeom[], outer: Vec2[], t: number, s: SheetMet
       const length = leg + b.radius + t;
       const at = side * (end + b.halfZone) / 2;
       out.push({
-        bend: b.ordinal, side: side === 1 ? '+' : '-', lengthMm: length, limitMm: limit, ok: length >= limit - 1e-9,
+        bend: b.ordinal, side: side === 1 ? '+' : '-', lengthMm: length, limitMm: limit,
+        ok: length >= limit - SHEET_METAL_COMPARISON_TOLERANCE_MM,
         location: [b.line.mid[0] + at * b.line.v[0], b.line.mid[1] + at * b.line.v[1]],
       });
     }
@@ -292,13 +302,15 @@ export async function checkSheetMetal(
   terminalId: string,
   settings: SheetMetalSettings,
   lowered?: ReadonlyMap<FeatureId, ShapeBackend>,
+  paramTable?: ParamTable,
 ): Promise<SheetMetalPartReport | undefined> {
   const root = sheetMetalRootOf(records, terminalId);
   if (root === undefined) return undefined;
-  const region = await flattenPatternWithHoles(records, terminalId, lowered);
+  const resolvedRoot = paramTable ? resolveParams(root, paramTable) as FeatureRecord : root;
+  const region = await flattenPatternWithHoles(records, terminalId, lowered, paramTable);
   return analyzeSheetMetalFlat(region, {
-    thickness: evaluated(root, 'thickness'),
-    kFactor: evaluated(root, 'kFactor'),
+    thickness: evaluated(resolvedRoot, 'thickness'),
+    kFactor: evaluated(resolvedRoot, 'kFactor'),
     settings,
     terminalId,
     bendIds: bendIdsOf(records, terminalId),

@@ -1,0 +1,2 @@
+
+  70/70 assets pass (1 rich kits, 0 thin kits)

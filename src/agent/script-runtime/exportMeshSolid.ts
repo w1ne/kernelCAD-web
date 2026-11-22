@@ -15,9 +15,9 @@ import type { SolidMeshBackend } from '../../kernel/backends/solidMeshBackend';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { export3mfWithReportAsync, type Export3mfOptions, type MeshedPart } from '../../kernel/backends/occt/export3mf';
 import { verifyWatertight } from '../../kernel/backends/occt/meshHeal';
-import { exportMeshObj } from '../../kernel/export/meshFormats';
+import { exportMeshObjZip } from '../../kernel/export/meshFormats';
 import type { LatticeReport } from '../../kernel/lattice/buildLattice';
-import { stlNotWatertightDiagnostic } from './exportDiagnostics';
+import { meshToleranceUnavailableDiagnostic, stlNotWatertightDiagnostic } from './exportDiagnostics';
 
 export const MESH_SOLID_EXPORT_FORMATS = ['stl', '3mf', 'obj'] as const;
 
@@ -51,6 +51,14 @@ export async function exportMeshSolid(
   const latticeReport = shape.facts.lattice as LatticeReport | undefined;
   const base = { featureCount, ...(latticeReport ? { latticeReport } : {}) };
   const mesh = { vertices: shape.positions, triangles: shape.indices };
+  const meshOptions = options as { tolerance?: unknown; angularToleranceDeg?: unknown } | undefined;
+  if (meshOptions?.tolerance !== undefined || meshOptions?.angularToleranceDeg !== undefined) {
+    return {
+      ...base,
+      bytes: new Uint8Array(),
+      diagnostics: [...diagnostics, meshToleranceUnavailableDiagnostic(targetId)],
+    };
+  }
   if (format === 'stl') {
     const bytes = shape.exportSTL();
     const verify = (options as { verify?: boolean } | undefined)?.verify !== false;
@@ -58,7 +66,7 @@ export async function exportMeshSolid(
     return { ...base, bytes, diagnostics: report && !report.ok ? [...diagnostics, stlNotWatertightDiagnostic(report, targetId)] : diagnostics };
   }
   if (format === 'obj') {
-    return { ...base, bytes: exportMeshObj([{ name: 'part', mesh }]), diagnostics };
+    return { ...base, bytes: exportMeshObjZip([{ name: 'part', mesh }]), diagnostics };
   }
   if (format === '3mf') {
     const opts = (options as Export3mfOptions | undefined) ?? { format: '3mf' };

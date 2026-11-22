@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-11-02T20:11:07Z",
+  "localOnly": true,
+  "method": "Built the 659 static catalog pages and reviewed the rolling-suitcase page in the existing Chrome session; screenshot captured for visual review.",
+  "samplePage": {
+    "route": "http://127.0.0.1:4329/catalog/travel-gear/rolling-suitcase/",
+    "title": "Rolling suitcase - free low-poly prop model (CC0) | kernelCAD",
+    "previewVisible": true,
+    "studioLinkVisible": true,
+    "triangleCount": 312,
+    "triangleBudget": 900,
+    "catalogTotalAssets": 659,
+    "controls": [
+      "size",
+      "handle",
+      "shell",
+      "trim"
+    ],
+    "relatedKitLinksVisible": true
+  },
+  "staticPageAudit": "catalog-pages-check.json (659 generated pages; 12 travel-gear pages verified)",
+  "liveDeployment": {
+    "url": "https://kernelcad.com/catalog/",
+    "httpStatus": 404,
+    "checkedAt": "2026-11-02T20:11:07Z",
+    "result": "The public catalog route is unavailable; no deployment claim is made."
+  }
+}

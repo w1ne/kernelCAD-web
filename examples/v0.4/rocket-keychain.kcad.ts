@@ -69,4 +69,5 @@ const keyringHole = cylinder(8, 2.8)
 return body
   .subtract(portholeOpening)
   .subtract(keyringHole)
-  .union(outerPortholeRing, innerPortholeLip);
+  .union(outerPortholeRing, innerPortholeLip)
+  .finish('anodized', { color: '#d1495b' });

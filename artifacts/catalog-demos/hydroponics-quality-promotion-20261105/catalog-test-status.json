@@ -1,0 +1,8 @@
+{
+  "command": "npx vitest run tests/integration/catalog/",
+  "exitCode": 0,
+  "filesPassed": 4,
+  "testsPassed": 15,
+  "passed": true,
+  "initialFailure": "The first run found negative minUpM from the two rotated corner bosses on greenhouse-exhaust-fan. Both bosses were shifted upward 48 mm; the final rerender, index rebuild and complete suite pass."
+}

@@ -8,11 +8,13 @@
 // Two boxes with a swept clearance gap param. At gap >= 0 the boxes clear;
 // at gap = -5 mm they overlap by 5 mm along the shared axis. The sweep both
 // measures the ledger and bisects the interference transition to report the
-// boundary and the binding gate. This is the classic tolerance-stackup
-// question: "does this design still clear once the real part comes out
-// oversized." The cookbook harness only checks diagnostic codes on the OUTER
-// (this file's) evaluation, so the assertions below run in-script against the
-// sweep's own returned envelope.
+// boundary and the binding gate. The interference gate passes face contact:
+// an overlap no thicker than 0.01 mm is not an error, so the boundary is at
+// gap = -0.01 mm, found to the default 0.001 mm boundaryTolerance. This is
+// the classic tolerance-stackup question: "does this design still clear once
+// the real part comes out oversized." The cookbook harness only checks
+// diagnostic codes on the OUTER (this file's) evaluation, so the assertions
+// below run in-script against the sweep's own returned envelope.
 
 const code = `
   const arm = assembly('cookbook-sweep-clearance');
@@ -37,8 +39,8 @@ if (!firstFail || firstFail.combo['GapMm'] !== -5)
   throw new Error('sweep: expected the -5 combo to be the first interference failure');
 const interferenceBoundary = sweep.boundaries.find((b) => b.bindingGates.includes('interference'));
 if (!interferenceBoundary) throw new Error('sweep: expected a bisected interference boundary');
-if (Math.abs(interferenceBoundary.value) > 0.01)
-  throw new Error(`sweep: expected the interference boundary near 0 mm, got ${interferenceBoundary.value}`);
+if (Math.abs(interferenceBoundary.value - -0.01) > 0.002)
+  throw new Error(`sweep: expected the interference boundary near -0.01 mm, got ${interferenceBoundary.value}`);
 if (!/Checked at 4 points plus 1 boundary/.test(sweep.coverage.statement))
   throw new Error('sweep: coverage must state the checked point count, not a proof');
 

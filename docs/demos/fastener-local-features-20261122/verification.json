@@ -1,0 +1,782 @@
+{
+  "checkedAt": "2026-11-22T18:12:28.429Z",
+  "invocation": "npx tsx docs/demos/fastener-local-features-20261122/capture-demo.mts",
+  "exampleSha256": "053fb26b1dbcd732fbd2b7473ba6668c1a8bfe60d0b70ef38a44b4b6df78c43a",
+  "generatorSha256": "f7a7fdce2b6bcce51c5a393139e0c3221246c9600e350bbdf12f55ac340e7210",
+  "implementationHashes": {
+    "src/modeling/runtime/fastenerInstallation.ts": "2173c9b514b3f4a8e3c5664b63c0e6c0081a9e56593324b8d7255124e3f07900",
+    "src/kernel/backends/occt/holeDetection.ts": "9d23267173d0b7b64d0de0f6b9ce456ebf10d521e61cbfb7005b646f77424f27"
+  },
+  "evidence": [
+    {
+      "name": "remote-notch",
+      "kind": "remote-notch",
+      "lift": 0,
+      "expected": "pass",
+      "title": "An intact local bore remains measurable",
+      "note": "The remote edge notch does not invalidate the screw station.",
+      "file": "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/remote-notch.kcad.ts",
+      "sourceSha256": "68255c76c1014c899910efc6be449e0411728cb1f8e7655971162aea14007d4c",
+      "report": {
+        "ok": true,
+        "source": "local",
+        "assembly": "local-feature-mount",
+        "status": "pass",
+        "counts": {
+          "requested": 1,
+          "measured": 1,
+          "passed": 1,
+          "failed": 0,
+          "unknown": 0
+        },
+        "stations": [
+          {
+            "part": "screw",
+            "against": [
+              "plate"
+            ],
+            "engagementPart": null,
+            "catalogId": "iso-4762-m3x10",
+            "status": "pass",
+            "metrics": [
+              {
+                "name": "coaxial-offset",
+                "part": "plate",
+                "status": "pass",
+                "value": 0,
+                "unit": "mm",
+                "limit": 0.05,
+                "basis": "Distance of screw bearing center to measured bore axis.",
+                "repairHint": null
+              },
+              {
+                "name": "axis-tilt",
+                "part": "plate",
+                "status": "pass",
+                "value": 0,
+                "unit": "deg",
+                "limit": 1,
+                "basis": "Angle between measured bore axis and catalog bearing-to-tip axis.",
+                "repairHint": null
+              },
+              {
+                "name": "bore-diameter",
+                "part": "plate",
+                "status": "pass",
+                "value": 3.4,
+                "unit": "mm",
+                "limit": 3,
+                "basis": "BREP bore diameter and conservative shank envelope at shaft-clipped bore endpoint planes, including tilt accumulated from the bearing.",
+                "repairHint": null
+              },
+              {
+                "name": "axial-overlap",
+                "part": "plate",
+                "status": "pass",
+                "value": 4,
+                "unit": "mm",
+                "limit": 0,
+                "basis": "Axial interval overlap of measured cylindrical bore with catalog shank.",
+                "repairHint": null
+              },
+              {
+                "name": "bearing-gap",
+                "part": null,
+                "status": "pass",
+                "value": 0,
+                "unit": "mm",
+                "limit": 0.05,
+                "basis": "BREP minimum distance between the head annulus and facing coplanar trimmed material; four support directions at geometry-derived radii.",
+                "repairHint": null
+              },
+              {
+                "name": "engagement",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              },
+              {
+                "name": "tip-protrusion",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              }
+            ]
+          }
+        ],
+        "limitations": [
+          "Explicit stations only; unlisted fasteners are not audited.",
+          "Flat annular-bearing screws and full open cylindrical bores only; unsupported/ambiguous geometry is unknown.",
+          "Engagement is modeled axial overlap. Simplified threads cannot certify thread contact, strength, torque, preload or physical installation.",
+          "Bearing support is checked at four radial locations on facing coplanar trimmed material; this is not a pressure/contact-area analysis."
+        ]
+      },
+      "render": {
+        "args": [
+          "180",
+          "/home/andrii/.nvm/versions/node/v24.22.2/bin/node",
+          "/data/kernelcad-fastener-public-20261122/dist/cli/index.js",
+          "render",
+          "inspect",
+          "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/remote-notch.kcad.ts",
+          "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/remote-notch-inspection",
+          "--width",
+          "680",
+          "--height",
+          "450"
+        ],
+        "manifest": {
+          "bundleVersion": 1,
+          "scriptPath": "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/remote-notch.kcad.ts",
+          "generatedAt": "2026-11-22T18:11:47.259Z",
+          "requestedChannels": [
+            "rgb"
+          ],
+          "emittedChannels": [
+            "rgb"
+          ],
+          "viewport": {
+            "width": 680,
+            "height": 450
+          },
+          "views": [
+            "front",
+            "right",
+            "top",
+            "iso"
+          ],
+          "bounds": {
+            "min": [
+              0,
+              0,
+              -6
+            ],
+            "max": [
+              20,
+              20,
+              7
+            ]
+          },
+          "command": {
+            "name": "kernelcad render inspect",
+            "channels": [
+              "rgb"
+            ],
+            "views": [
+              "front",
+              "right",
+              "top",
+              "iso"
+            ]
+          },
+          "caveats": [
+            "Channels are view-dependent and reflect the same camera, visibility filter, tail-feature filtering, and reference-image visibility used for RGB."
+          ],
+          "channels": {
+            "rgb": {
+              "front": "channels/rgb/front.png",
+              "right": "channels/rgb/right.png",
+              "top": "channels/rgb/top.png",
+              "iso": "channels/rgb/iso.png"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "split-bearing",
+      "kind": "split-bearing",
+      "lift": 0,
+      "expected": "pass",
+      "title": "Coplanar trimmed faces support one head",
+      "note": "Both trimmed faces contribute to the same measured bearing plane.",
+      "file": "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/split-bearing.kcad.ts",
+      "sourceSha256": "053fb26b1dbcd732fbd2b7473ba6668c1a8bfe60d0b70ef38a44b4b6df78c43a",
+      "report": {
+        "ok": true,
+        "source": "local",
+        "assembly": "local-feature-mount",
+        "status": "pass",
+        "counts": {
+          "requested": 1,
+          "measured": 1,
+          "passed": 1,
+          "failed": 0,
+          "unknown": 0
+        },
+        "stations": [
+          {
+            "part": "screw",
+            "against": [
+              "plate"
+            ],
+            "engagementPart": null,
+            "catalogId": "iso-4762-m3x10",
+            "status": "pass",
+            "metrics": [
+              {
+                "name": "coaxial-offset",
+                "part": "plate",
+                "status": "pass",
+                "value": 0,
+                "unit": "mm",
+                "limit": 0.05,
+                "basis": "Distance of screw bearing center to measured bore axis.",
+                "repairHint": null
+              },
+              {
+                "name": "axis-tilt",
+                "part": "plate",
+                "status": "pass",
+                "value": 0,
+                "unit": "deg",
+                "limit": 1,
+                "basis": "Angle between measured bore axis and catalog bearing-to-tip axis.",
+                "repairHint": null
+              },
+              {
+                "name": "bore-diameter",
+                "part": "plate",
+                "status": "pass",
+                "value": 3.4,
+                "unit": "mm",
+                "limit": 3,
+                "basis": "BREP bore diameter and conservative shank envelope at shaft-clipped bore endpoint planes, including tilt accumulated from the bearing.",
+                "repairHint": null
+              },
+              {
+                "name": "axial-overlap",
+                "part": "plate",
+                "status": "pass",
+                "value": 4,
+                "unit": "mm",
+                "limit": 0,
+                "basis": "Axial interval overlap of measured cylindrical bore with catalog shank.",
+                "repairHint": null
+              },
+              {
+                "name": "bearing-gap",
+                "part": null,
+                "status": "pass",
+                "value": 0,
+                "unit": "mm",
+                "limit": 0.05,
+                "basis": "BREP minimum distance between the head annulus and facing coplanar trimmed material; four support directions at geometry-derived radii.",
+                "repairHint": null
+              },
+              {
+                "name": "engagement",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              },
+              {
+                "name": "tip-protrusion",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              }
+            ]
+          }
+        ],
+        "limitations": [
+          "Explicit stations only; unlisted fasteners are not audited.",
+          "Flat annular-bearing screws and full open cylindrical bores only; unsupported/ambiguous geometry is unknown.",
+          "Engagement is modeled axial overlap. Simplified threads cannot certify thread contact, strength, torque, preload or physical installation.",
+          "Bearing support is checked at four radial locations on facing coplanar trimmed material; this is not a pressure/contact-area analysis."
+        ]
+      },
+      "render": {
+        "args": [
+          "180",
+          "/home/andrii/.nvm/versions/node/v24.22.2/bin/node",
+          "/data/kernelcad-fastener-public-20261122/dist/cli/index.js",
+          "render",
+          "inspect",
+          "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/split-bearing.kcad.ts",
+          "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/split-bearing-inspection",
+          "--width",
+          "680",
+          "--height",
+          "450"
+        ],
+        "manifest": {
+          "bundleVersion": 1,
+          "scriptPath": "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/split-bearing.kcad.ts",
+          "generatedAt": "2026-11-22T18:11:56.930Z",
+          "requestedChannels": [
+            "rgb"
+          ],
+          "emittedChannels": [
+            "rgb"
+          ],
+          "viewport": {
+            "width": 680,
+            "height": 450
+          },
+          "views": [
+            "front",
+            "right",
+            "top",
+            "iso"
+          ],
+          "bounds": {
+            "min": [
+              0,
+              0,
+              -6
+            ],
+            "max": [
+              20,
+              20,
+              8
+            ]
+          },
+          "command": {
+            "name": "kernelcad render inspect",
+            "channels": [
+              "rgb"
+            ],
+            "views": [
+              "front",
+              "right",
+              "top",
+              "iso"
+            ]
+          },
+          "caveats": [
+            "Channels are view-dependent and reflect the same camera, visibility filter, tail-feature filtering, and reference-image visibility used for RGB."
+          ],
+          "channels": {
+            "rgb": {
+              "front": "channels/rgb/front.png",
+              "right": "channels/rgb/right.png",
+              "top": "channels/rgb/top.png",
+              "iso": "channels/rgb/iso.png"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "lifted-head",
+      "kind": "split-bearing",
+      "lift": 1.5,
+      "expected": "fail",
+      "title": "A lifted head still fails the gap check",
+      "note": "The same station measures a 1.500 mm gap after the source edit.",
+      "file": "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/lifted-head.kcad.ts",
+      "sourceSha256": "4b8ab98d9cce5592db1f1d517b12a53b5b77abc453e4ba37c630d87512be92d9",
+      "report": {
+        "ok": false,
+        "source": "local",
+        "assembly": "local-feature-mount",
+        "status": "fail",
+        "counts": {
+          "requested": 1,
+          "measured": 1,
+          "passed": 0,
+          "failed": 1,
+          "unknown": 1
+        },
+        "stations": [
+          {
+            "part": "screw",
+            "against": [
+              "plate"
+            ],
+            "engagementPart": null,
+            "catalogId": "iso-4762-m3x10",
+            "status": "fail",
+            "metrics": [
+              {
+                "name": "coaxial-offset",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "axis-tilt",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "deg",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "bore-diameter",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "axial-overlap",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "bearing-gap",
+                "part": null,
+                "status": "fail",
+                "value": 1.5,
+                "unit": "mm",
+                "limit": 0.05,
+                "basis": "BREP minimum distance between the head annulus and facing coplanar trimmed material; four support directions at geometry-derived radii.",
+                "repairHint": "Seat the head on the facing washer/plate bearing surface."
+              },
+              {
+                "name": "engagement",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              },
+              {
+                "name": "tip-protrusion",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              }
+            ]
+          }
+        ],
+        "limitations": [
+          "Explicit stations only; unlisted fasteners are not audited.",
+          "Flat annular-bearing screws and full open cylindrical bores only; unsupported/ambiguous geometry is unknown.",
+          "Engagement is modeled axial overlap. Simplified threads cannot certify thread contact, strength, torque, preload or physical installation.",
+          "Bearing support is checked at four radial locations on facing coplanar trimmed material; this is not a pressure/contact-area analysis."
+        ]
+      },
+      "render": {
+        "args": [
+          "180",
+          "/home/andrii/.nvm/versions/node/v24.22.2/bin/node",
+          "/data/kernelcad-fastener-public-20261122/dist/cli/index.js",
+          "render",
+          "inspect",
+          "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/lifted-head.kcad.ts",
+          "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/lifted-head-inspection",
+          "--width",
+          "680",
+          "--height",
+          "450"
+        ],
+        "manifest": {
+          "bundleVersion": 1,
+          "scriptPath": "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/lifted-head.kcad.ts",
+          "generatedAt": "2026-11-22T18:12:10.497Z",
+          "requestedChannels": [
+            "rgb"
+          ],
+          "emittedChannels": [
+            "rgb"
+          ],
+          "viewport": {
+            "width": 680,
+            "height": 450
+          },
+          "views": [
+            "front",
+            "right",
+            "top",
+            "iso"
+          ],
+          "bounds": {
+            "min": [
+              0,
+              0,
+              -4.5
+            ],
+            "max": [
+              20,
+              20,
+              8.5
+            ]
+          },
+          "command": {
+            "name": "kernelcad render inspect",
+            "channels": [
+              "rgb"
+            ],
+            "views": [
+              "front",
+              "right",
+              "top",
+              "iso"
+            ]
+          },
+          "caveats": [
+            "Channels are view-dependent and reflect the same camera, visibility filter, tail-feature filtering, and reference-image visibility used for RGB."
+          ],
+          "channels": {
+            "rgb": {
+              "front": "channels/rgb/front.png",
+              "right": "channels/rgb/right.png",
+              "top": "channels/rgb/top.png",
+              "iso": "channels/rgb/iso.png"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "narrow-breach",
+      "kind": "narrow-breach",
+      "lift": 0,
+      "expected": "partial",
+      "title": "A narrow side pocket stays unverified",
+      "note": "A 0.4 mm slot through half the depth removes actual bore-wall area.",
+      "file": "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/narrow-breach.kcad.ts",
+      "sourceSha256": "ce9a0a1baa6ca1a0a3a4ffec26224c404b17d7e1d19707a569ab2fd62acbc32c",
+      "report": {
+        "ok": false,
+        "source": "local",
+        "assembly": "local-feature-mount",
+        "status": "partial",
+        "counts": {
+          "requested": 1,
+          "measured": 1,
+          "passed": 0,
+          "failed": 0,
+          "unknown": 1
+        },
+        "stations": [
+          {
+            "part": "screw",
+            "against": [
+              "plate"
+            ],
+            "engagementPart": null,
+            "catalogId": "iso-4762-m3x10",
+            "status": "partial",
+            "metrics": [
+              {
+                "name": "coaxial-offset",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "axis-tilt",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "deg",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "bore-diameter",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "axial-overlap",
+                "part": "plate",
+                "status": "unknown",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "Missing, ambiguous, breached or non-through BREP bore.",
+                "repairHint": "Resolve the unsupported geometry/metadata and rerun this explicit station."
+              },
+              {
+                "name": "bearing-gap",
+                "part": null,
+                "status": "pass",
+                "value": 0,
+                "unit": "mm",
+                "limit": 0.05,
+                "basis": "BREP minimum distance between the head annulus and facing coplanar trimmed material; four support directions at geometry-derived radii.",
+                "repairHint": null
+              },
+              {
+                "name": "engagement",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              },
+              {
+                "name": "tip-protrusion",
+                "part": null,
+                "status": "not-applicable",
+                "value": null,
+                "unit": "mm",
+                "limit": null,
+                "basis": "No receiver or corresponding geometric limit declared.",
+                "repairHint": null
+              }
+            ]
+          }
+        ],
+        "limitations": [
+          "Explicit stations only; unlisted fasteners are not audited.",
+          "Flat annular-bearing screws and full open cylindrical bores only; unsupported/ambiguous geometry is unknown.",
+          "Engagement is modeled axial overlap. Simplified threads cannot certify thread contact, strength, torque, preload or physical installation.",
+          "Bearing support is checked at four radial locations on facing coplanar trimmed material; this is not a pressure/contact-area analysis."
+        ]
+      },
+      "render": {
+        "args": [
+          "180",
+          "/home/andrii/.nvm/versions/node/v24.22.2/bin/node",
+          "/data/kernelcad-fastener-public-20261122/dist/cli/index.js",
+          "render",
+          "inspect",
+          "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/narrow-breach.kcad.ts",
+          "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/narrow-breach-inspection",
+          "--width",
+          "680",
+          "--height",
+          "450"
+        ],
+        "manifest": {
+          "bundleVersion": 1,
+          "scriptPath": "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/narrow-breach.kcad.ts",
+          "generatedAt": "2026-11-22T18:12:25.232Z",
+          "requestedChannels": [
+            "rgb"
+          ],
+          "emittedChannels": [
+            "rgb"
+          ],
+          "viewport": {
+            "width": 680,
+            "height": 450
+          },
+          "views": [
+            "front",
+            "right",
+            "top",
+            "iso"
+          ],
+          "bounds": {
+            "min": [
+              0,
+              0,
+              -6
+            ],
+            "max": [
+              20,
+              20,
+              7
+            ]
+          },
+          "command": {
+            "name": "kernelcad render inspect",
+            "channels": [
+              "rgb"
+            ],
+            "views": [
+              "front",
+              "right",
+              "top",
+              "iso"
+            ]
+          },
+          "caveats": [
+            "Channels are view-dependent and reflect the same camera, visibility filter, tail-feature filtering, and reference-image visibility used for RGB."
+          ],
+          "channels": {
+            "rgb": {
+              "front": "channels/rgb/front.png",
+              "right": "channels/rgb/right.png",
+              "top": "channels/rgb/top.png",
+              "iso": "channels/rgb/iso.png"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "video": {
+    "codec_name": "h264",
+    "width": 1280,
+    "height": 720,
+    "r_frame_rate": "20/1",
+    "duration": "16.000000",
+    "ffmpegArgs": [
+      "-y",
+      "-v",
+      "error",
+      "-f",
+      "concat",
+      "-safe",
+      "0",
+      "-i",
+      "slides.txt",
+      "-t",
+      "16",
+      "-vf",
+      "fps=20,format=yuv420p",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "medium",
+      "-crf",
+      "22",
+      "-movflags",
+      "+faststart",
+      "demo.mp4"
+    ]
+  },
+  "scope": {
+    "localMcpHandler": true,
+    "actualOcct": true,
+    "canonicalViews": true,
+    "deployedRuntime": false,
+    "physicalQualification": false
+  }
+}

@@ -1,0 +1,572 @@
+{
+  "kit": "grid-substation",
+  "assetCount": 80,
+  "applied": false,
+  "assets": [
+    {
+      "asset": "substation-ac-station-service-board",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-battery-charger-cabinet",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 6,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-bay-control-cabinet",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-bay-identification-post",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-breaker-timing-analyzer-cart",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 4,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-bus-coupler-gantry",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 4,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-bus-post-insulator",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-busbar-expansion-joint",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 2,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-bushing-turret",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 2,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-cable-junction-pit",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-cable-ladder-section",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-cable-riser-frame",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 2,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-cable-trench-cover",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-capacitive-voltage-transformer",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-center-break-disconnector",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 6,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-chain-gate-barrier",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-control-room-console",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-coupling-capacitor",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-current-transformer",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-dc-distribution-panel",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-dead-end-crossarm",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 4,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-dead-tank-breaker",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-disturbance-recorder-cabinet",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-earthing-switch-stand",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-fiber-communications-cabinet",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 6,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-fire-monitor-post",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-fire-suppression-cylinder-bank",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-gas-insulated-breaker-module",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-gis-busduct-terminal",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-grading-ring-stand",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-ground-bar-pedestal",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-ground-conductor-clamp",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-ground-grid-test-well",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-high-voltage-warning-sign",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 4,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-hv-cable-termination",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-hydraulic-breaker-service-trolley",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 4,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-inductive-voltage-transformer",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-insulated-stick-cabinet",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-lightning-mast",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-line-trap",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 5,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-live-tank-breaker",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-main-power-transformer",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 8,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-maintenance-access-platform",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 2,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-metering-marshalling-box",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-mimic-board-cabinet",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-oil-containment-bund",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-oil-cooling-pump-skid",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 2,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-oil-water-separator",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-optical-current-transformer",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-overhead-line-gantry",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 4,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-phase-spacer-damper",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 2,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-portable-hv-test-divider",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 2,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-portable-work-canopy",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 2,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-power-cable-reel",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 5,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-precast-cable-trench",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-pressure-relief-device",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 2,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-protection-control-kiosk",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 7,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-protection-relay-rack",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-protection-relay-test-cart",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 4,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-rtu-gateway-cabinet",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 6,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-shield-wire-mast",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-silica-gel-breather",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-station-battery-rack",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-station-post-insulator",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-station-service-transformer",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 8,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-strain-insulator-string",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 2,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-surge-arrester",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-synchronism-check-panel",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-tap-changer-drive-cabinet",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-three-pole-disconnector",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-transformer-conservator",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-transformer-cooling-fan",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 4,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-transformer-fire-wall",
+      "materials": 2,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-transformer-oil-sampling-station",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-transformer-radiator-bank",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 1,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-transformer-rail-bogie",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 5,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-tubular-busbar-bridge",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-vertical-break-disconnector",
+      "materials": 4,
+      "presets": 1,
+      "shapeOperations": 6,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-yard-barrier-section",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 2,
+      "sourceChanged": true
+    },
+    {
+      "asset": "substation-yard-light-mast",
+      "materials": 3,
+      "presets": 1,
+      "shapeOperations": 3,
+      "sourceChanged": true
+    }
+  ],
+  "materialCountRange": [
+    2,
+    4
+  ],
+  "allHavePresets": true
+}

@@ -337,9 +337,11 @@ arm.mechanicalJoint('wrist-drive', {
   requiredSupport: { kind: 'hinge-bracket', around: 'forearm-link.wrist', supports: ['forearm-link'], minBearingLengthMm: 20 },
 });
 
-// Optional gravity/actuator check (uncomment when validating torque margins).
-// checkStaticHold reads arm.revolute actuators, not mates — add those
-// revolutes before enabling it. This snippet stays mate-driven.
+// Optional gravity/actuator check. checkStaticHold reads actuator capacities
+// from arm.revolute / arm.prismatic joints, not mechanicalJoint declarations.
+// This mate-only snippet therefore reports ok:false with
+// assembly.joint.static-hold.no-actuator and names these moving mates as
+// uncovered; it does not establish that the arm can hold a load.
 // const hold = await kinematic.checkStaticHold(arm, { minTorqueMarginPct: 15 });
 
 return arm.solvedModel({});

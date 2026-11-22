@@ -1,0 +1,68 @@
+{
+  "status": "PASS_WITH_STATED_VIEW_SCOPES",
+  "sourceSha256": "2c24214bccb08bee9912851fd4aa869dfbcc41b1561f0826cb8eb065cc6ab37c",
+  "defaultGlbSha256": "f4d810982b88c6016d203f4f49a05aa68d050f9e5e4bd5f6c04c708a74bf39d8",
+  "default": {
+    "canonicalPreview": {
+      "dimensions": [
+        512,
+        512
+      ],
+      "label": "Hydroponic grow rack · 7832 tris",
+      "observations": [
+        "Complete rack and feet fit inside the image.",
+        "Three plant tiers, blue frame, pale gutters and green crop are visible.",
+        "Title and 7832-triangle label are legible and match the required canonical label."
+      ]
+    },
+    "orthographicAndIsometric": [
+      "Front and right views show three distinct tiers and the frame; all displayed whole-rack views fit inside their frames.",
+      "Top view shows the four rows of planting stations; no camera or geometry edits conceal the frame."
+    ],
+    "selectedPartDetails": [
+      "The isolated lid has a continuous rectangular opening.",
+      "The end view of the isolated gutter shows an open U-shaped channel.",
+      "The planting-station detail shows the crop at the slotted lid.",
+      "The shortened knee brace lies below the gutter and intersects its frame members.",
+      "The middle post and crop have visible separation in the selected top view; numerical clearance belongs to the source/mesh checks."
+    ],
+    "video": {
+      "observationMethod": "Inspected the four decoded MP4 frames in decoded-orbit.webp, not continuous playback.",
+      "frameIndices": [
+        0,
+        12,
+        24,
+        36
+      ],
+      "timesSeconds": [
+        0,
+        1.5,
+        3,
+        4.5
+      ],
+      "observations": [
+        "Each decoded view shows a fully framed rack.",
+        "Opposite side views retain the frame, three plant tiers and drain/manifold scene geometry.",
+        "Labels are legible in all four sampled frames."
+      ]
+    }
+  },
+  "parameterStates": {
+    "observations": [
+      "All ten frames show a complete three-tier rack without image-edge clipping; frame, feet, channels, lights and external plumbing remain within the view.",
+      "Each crop row grows visibly from0.7 to1.0 to1.3 with unchanged viewpoint and metres-to-pixels conversion. No per-state auto-fit masks the size change.",
+      "Lettuce shows distinct low-poly heads across all three tiers. Empty states remove foliage and retain the visible planting locations. Microgreens states replace heads with flat green mat geometry.",
+      "The four-color state visibly changes the frame to magenta, gutters to cyan-blue and foliage to yellow-green while keeping the default crop and size.",
+      "Labels and color legend remain readable; no overlapping text or blank/missing render cells observed."
+    ],
+    "fourthColorQualification": "The light diffusers are small and partly occluded in the fixed overall view. Their orange control value is verified by actual COLOR_0/material sampling in the native validator; this sheet alone is not an independent clear view of every light surface.",
+    "limitations": [
+      "The images show saved public GLBs through the repository software rasterizer; they do not establish live Studio WebGL or retained-handle parameter edits.",
+      "Uniform scale, crop branch and colors are visible. Independent engineering dimensions, structural strength, hydraulic performance and manufacturing suitability are not established.",
+      "Default details, canonical catalog preview and default orbit are owned by the publication lane and are not duplicated here."
+    ]
+  },
+  "independentReview": "Root viewed canonical preview, default views, geometry details, the compact ten-state fixed-camera sheet and the four decoded orbit samples.",
+  "independentReviewSha256": "ae0cb19a458af8f8c53ec3c9b9c1073cc94bec1a02066ad41f7d85ef1c7fec12",
+  "scope": "No live Studio WebGL or continuous-video-playback claim. Numeric geometry checks are reported separately. The fourth light color is verified by mesh color values; its small surfaces are partly occluded in the overall parameter sheet."
+}

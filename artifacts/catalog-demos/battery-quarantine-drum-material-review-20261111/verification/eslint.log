@@ -1,0 +1,2 @@
+Command: npx eslint catalog/kits/recycling-facility/ tests/integration/catalog/batteryQuarantineDrumMaterials.test.ts
+Result: exit 0, no diagnostics

@@ -1,0 +1,15 @@
+{
+  "page": "site-build/catalog/standard-components/linear-guide-carriage/index.html",
+  "checks": {
+    "asset page exists": true,
+    "updated asset description": true,
+    "preview linked": true,
+    "size selector exposed": true,
+    "steel material control": true,
+    "polymer material control": true,
+    "brass material control": true,
+    "named presets exposed": true,
+    "asset appears on kit hub": true
+  },
+  "passed": true
+}

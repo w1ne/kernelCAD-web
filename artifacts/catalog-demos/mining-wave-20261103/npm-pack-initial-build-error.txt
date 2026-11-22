@@ -1,0 +1,24 @@
+src/kernel/backends/occt/backendInit.ts(49,76): error TS2345: Argument of type 'ProcessListener' is not assignable to parameter of type '(...args: any[]) => void'.
+  Types of parameters 'args' and 'args' are incompatible.
+    Type 'any' is not assignable to type 'never'.
+{
+  "error": {
+    "code": 2,
+    "summary": "",
+    "detail": ""
+  }
+}
+{
+  "error": {
+    "code": 2,
+    "summary": "",
+    "detail": ""
+  }
+}
+{
+  "error": {
+    "code": 2,
+    "summary": "command failed",
+    "detail": "sh -c npm run build"
+  }
+}

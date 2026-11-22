@@ -1,0 +1,17 @@
+{
+  "input": "docs/benchmarks/token-efficiency/output.json",
+  "canvas": {
+    "width": 1600,
+    "height": 900
+  },
+  "video": {
+    "codec": "H.264",
+    "crf": 27,
+    "fps": 24,
+    "secondsPerSlide": 5,
+    "slideCount": 4,
+    "pixelFormat": "yuv420p"
+  },
+  "renderer": "rsvg-convert",
+  "encoding": "ffmpeg libx264"
+}

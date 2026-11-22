@@ -1,0 +1,24 @@
+# Reproduce from the repository root. Promotion is a one-time migration from the
+# original single-color sources and refuses already-promoted inputs.
+python3 artifacts/catalog-demos/airfield-wave-20261102/generate_airfield_assets.py
+python3 artifacts/catalog-demos/airfield-quality-promotion-20261105/promote_airfield_quality.py --apply
+# Render all 40 IDs with source defaults. Same invocation is in
+# preview-render-invocation.txt.
+mapfile -t asset_ids < <(printf '%s\n' catalog/kits/airfield/*.kcad.ts | sed 's#catalog/kits/airfield/##; s/\.kcad\.ts$//')
+npx tsx scripts/renderCatalogPreviews.ts "${asset_ids[@]}"
+npx tsx scripts/buildAssetCatalog.ts
+python3 artifacts/catalog-demos/airfield-quality-promotion-20261105/promote_airfield_quality.py --refresh-triangle-counts
+python3 scripts/checkCatalogQuality.py --kit airfield
+python3 scripts/checkCatalogQuality.py
+npx eslint catalog/kits/airfield/
+npx vitest run tests/integration/catalog/
+npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-airfield-catalog-pages
+python3 artifacts/catalog-demos/airfield-quality-promotion-20261105/verify_airfield_pages.py /tmp/kernelcad-airfield-catalog-pages
+npx tsx artifacts/catalog-demos/airfield-quality-promotion-20261105/render_airfield_presets.ts
+python3 artifacts/catalog-demos/airfield-quality-promotion-20261105/capture_airfield_quality.py
+python3 artifacts/catalog-demos/airfield-quality-promotion-20261105/inspect_airfield_quality_video.py
+python3 artifacts/catalog-demos/airfield-quality-promotion-20261105/audit_npm_package.py
+
+# The full catalog quality command exits 1 while the repository still contains
+# thin assets. On 2026-11-05 it reported 2,091/2,390 passing (87.49%) and 299
+# remaining; the target airfield kit command passed 40/40 (100%).

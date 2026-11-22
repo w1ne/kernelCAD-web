@@ -1,0 +1,1 @@
+The local sew() capture rejects requireClosd as an unknown option before creating a sew feature record. The corrected requireClosed option remains enabled. Geometry lowering, deployment, and hardware acceptance were not part of this demo.

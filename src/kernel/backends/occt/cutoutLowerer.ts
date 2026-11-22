@@ -15,6 +15,7 @@
 //   5. extrude(-depth) — extrudes inward (since plane normal is outward).
 //      For 'symmetric', translate the plane outward by depth first and
 //      extrude(-2*depth). For 'through', use deriveThroughDepth(target).
+//      For upToFace, cutoutUpToFace trims a long prism at the target plane.
 //   6. cutWithHistory(target, tool) → the post-boolean result.
 //   7. Walk new faces, classify via createdFaceTracker.classifyCutoutFace.
 //
@@ -30,9 +31,13 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import type { Vec3 } from '../../../shared/intent/types';
 import type { FaceHash, HistoryMap } from '../../naming/evolutionRecord';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
+import { collectParamRefs } from '../../../shared/runtime/resolveParams';
+import { invalidArgsText } from '../../../shared/intent/invalidArgs';
 import { classifyCutoutFace, type CutoutFrame, type CutoutRefName } from './cutoutClassifier';
 import { drawingFromCommands } from './sketchToDrawing';
+import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { faceFrameOrigin } from './faceFrame';
+import { buildUpToFaceTool } from './cutoutUpToFace';
 import {
   applyCreatedRefs,
   captureAllFaceSnapshots,
@@ -41,6 +46,7 @@ import {
   surfaceTypeOf,
   type CreatedRefSpec,
 } from './createdRefs';
+import { edgeLineageAfterCut } from './edgeLineage';
 import type { FeatureKind } from '../../../shared/intent/types';
 
 export interface CutoutLowerResult {
@@ -149,21 +155,36 @@ function deriveThroughDepth(
   return maxAlong;
 }
 
+/** Place the profile on `plane`. A `Drawing` has no spline or NURBS segment
+ *  kinds, so a profile with one is built flat on XY by the NURBS lowerer and
+ *  moved onto the plane by the plane's own local-to-world transform. */
+function profileSketchOnPlane(commands: readonly SketchCommand[], plane: replicad.Plane): replicad.Sketch {
+  if (!hasNurbsSegments(commands as SketchCommand[])) {
+    return drawingFromCommands(commands).sketchOnPlane(plane) as replicad.Sketch;
+  }
+  const flat = buildNurbsSketchOnPlane(commands as SketchCommand[], 'XY');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const localToGlobal = (plane as any).localToGlobal as { transform(s: unknown): unknown };
+  const placed = replicad.cast(localToGlobal.transform(flat.wire.wrapped) as never) as replicad.Wire;
+  return new replicad.Sketch(placed, { defaultOrigin: plane.origin, defaultDirection: plane.zDir });
+}
+
 /** Build the prism tool by extruding the profile along the bore axis from
- *  the entry face plane. */
+ *  the entry face plane. Like `hole()`, the tool starts OVERSHOOT outside the
+ *  entry face; only a tool that must leave the body (`through`, or the long
+ *  tool that `upToFace` trims) also runs OVERSHOOT past `effectiveDepth`. A
+ *  blind or symmetric floor stays at exactly `effectiveDepth`. */
 function buildPrismTool(
   entry: ResolvedEntry,
   commands: readonly SketchCommand[],
   effectiveDepth: number,
-  symmetric: boolean,
+  mode: 'blind' | 'symmetric' | 'exit',
 ): replicad.Shape3D {
-  const drawing = drawingFromCommands(commands);
   const OVERSHOOT = 0.01;
-  const totalDepth = symmetric ? effectiveDepth * 2 + OVERSHOOT * 2 : effectiveDepth + OVERSHOOT * 2;
-  // For symmetric: start the plane offset by +effectiveDepth in the outward
-  // normal direction, then extrude inward by total. For blind: start at the
-  // entry face (offset by +OVERSHOOT outward), extrude inward by depth+2ε.
-  const startOffset = symmetric ? effectiveDepth : OVERSHOOT;
+  // Symmetric: start effectiveDepth outside the entry face and extrude
+  // 2*effectiveDepth inward.
+  const startOffset = mode === 'symmetric' ? effectiveDepth : OVERSHOOT;
+  const totalDepth = startOffset + effectiveDepth + (mode === 'exit' ? OVERSHOOT : 0);
   const planeOrigin: Vec3 = [
     entry.centroid[0] + entry.normalOutward[0] * startOffset,
     entry.centroid[1] + entry.normalOutward[1] * startOffset,
@@ -172,10 +193,8 @@ function buildPrismTool(
   // Build a Plane with origin at planeOrigin, xDir=uBasis, normal=outward.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const plane = new (replicad as any).Plane(planeOrigin, entry.uBasis, entry.normalOutward) as replicad.Plane;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sketch = drawing.sketchOnPlane(plane) as any;
   // extrude(-totalDepth) extrudes against the plane normal — into the body.
-  return sketch.extrude(-totalDepth) as replicad.Shape3D;
+  return profileSketchOnPlane(commands, plane).extrude(-totalDepth) as replicad.Shape3D;
 }
 
 function attachCreatedRefs(
@@ -216,16 +235,49 @@ function attachCreatedRefs(
   return merged;
 }
 
+/** A resolved Param retains its dependency reference; record identity tells
+ *  whether the recompute engine evaluated it against a parameter table. */
+function unresolvedProfileDiagnostic(
+  feature: FeatureRecord,
+  rawRecord: FeatureRecord | undefined,
+  resolvedRecord: FeatureRecord | undefined,
+): CompilerDiagnostic | undefined {
+  if (!rawRecord || resolvedRecord !== rawRecord) return undefined;
+  const commands = (rawRecord.metadata as { commands?: SketchCommand[] } | undefined)?.commands ?? [];
+  const unresolvedRefs = [...collectParamRefs(commands)];
+  if (unresolvedRefs.length === 0) return undefined;
+  return {
+    target: 'export-occt',
+    code: 'feature.invalid-args',
+    featureId: feature.id,
+    severity: 'error',
+    ...invalidArgsText({
+      api: 'cutout(profile, opts)',
+      path: 'profile.commands',
+      gotText: `unresolved parameter reference(s): ${unresolvedRefs.join(', ')}`,
+      requires: 'coordinates evaluated with the current script parameter table',
+      example: "base.cutout(path().moveTo(0, 0).lineTo(10, 0).lineTo(0, 10).close(), { face: 'top', depth: 'through' })",
+      hint: "Recompute with the script's current parameter table so every profile coordinate is evaluated before cutout lowering.",
+    }),
+  };
+}
+
 /** Resolve the cutout profile sketch's commands from the referenced
  *  sketch FeatureRecord's metadata. */
 function resolveProfileCommands(
   feature: FeatureRecord,
   records: readonly FeatureRecord[] | undefined,
+  resolveRecord?: (record: FeatureRecord) => FeatureRecord,
 ): SketchCommand[] | { error: CompilerDiagnostic } {
   // The profile sketch's commands live in the sketch FeatureRecord's metadata.
   const profileRef = feature.inputs.profile;
   const profileFeatureId = profileRef && profileRef.kind === 'feature' ? profileRef.id : undefined;
-  const profileRecord = records?.find(r => r.id === profileFeatureId);
+  const rawProfileRecord = records?.find(r => r.id === profileFeatureId);
+  const profileRecord = rawProfileRecord && resolveRecord
+    ? resolveRecord(rawProfileRecord)
+    : rawProfileRecord;
+  const unresolved = unresolvedProfileDiagnostic(feature, rawProfileRecord, profileRecord);
+  if (unresolved) return { error: unresolved };
   const commands = ((profileRecord?.metadata as { commands?: SketchCommand[] } | undefined)?.commands) ?? [];
   if (commands.length === 0) {
     return {
@@ -284,11 +336,11 @@ function tryBuildPrismTool(
   entry: ResolvedEntry,
   commands: readonly SketchCommand[],
   effectiveDepth: number,
-  symmetric: boolean,
+  mode: 'blind' | 'symmetric' | 'exit',
   featureId: string,
 ): replicad.Shape3D | { error: CompilerDiagnostic } {
   try {
-    return buildPrismTool(entry, commands, effectiveDepth, symmetric);
+    return buildPrismTool(entry, commands, effectiveDepth, mode);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     return {
@@ -302,6 +354,22 @@ function tryBuildPrismTool(
       },
     };
   }
+}
+
+/** Depth-driven tool: blind, symmetric or 'through'. */
+function buildDepthTool(
+  feature: FeatureRecord,
+  target: OcctBackend,
+  entry: ResolvedEntry,
+  commands: readonly SketchCommand[],
+): { tool: replicad.Shape3D; effectiveDepth: number; through: boolean } | { error: CompilerDiagnostic } {
+  const depthRes = resolveCutoutDepth(feature, target, entry);
+  if ('error' in depthRes) return depthRes;
+  const { effectiveDepth, through, symmetric } = depthRes;
+  const mode = through ? 'exit' : symmetric ? 'symmetric' : 'blind';
+  const tool = tryBuildPrismTool(entry, commands, effectiveDepth, mode, feature.id);
+  if ('error' in tool) return tool;
+  return { tool, effectiveDepth, through };
 }
 
 /** Boolean-cut the tool out of the target, converting a throw into a diagnostic. */
@@ -382,6 +450,7 @@ export function lowerCutout(
   target: OcctBackend,
   profileBackend: OcctBackend | undefined,
   records: readonly FeatureRecord[] | undefined,
+  resolveRecord?: (record: FeatureRecord) => FeatureRecord,
 ): CutoutLowerResult {
   const diagnostics: CompilerDiagnostic[] = [];
   const entryRes = resolveEntry(feature, target, records);
@@ -391,7 +460,7 @@ export function lowerCutout(
   }
   const entry = entryRes;
 
-  const commandsRes = resolveProfileCommands(feature, records);
+  const commandsRes = resolveProfileCommands(feature, records, resolveRecord);
   if ('error' in commandsRes) {
     diagnostics.push(commandsRes.error);
     return { backend: target, diagnostics };
@@ -400,19 +469,14 @@ export function lowerCutout(
   // Suppress unused-var warning until slice-2 might consume profileBackend.
   void profileBackend;
 
-  const depthRes = resolveCutoutDepth(feature, target, entry);
-  if ('error' in depthRes) {
-    diagnostics.push(depthRes.error);
-    return { backend: target, diagnostics };
-  }
-  const { effectiveDepth, through, symmetric } = depthRes;
-
-  const toolRes = tryBuildPrismTool(entry, commands, effectiveDepth, symmetric, feature.id);
+  const toolRes = feature.inputs.upToFace
+    ? buildUpToFaceTool(feature, target, records, entry, (depth) => buildPrismTool(entry, commands, depth, 'exit'))
+    : buildDepthTool(feature, target, entry, commands);
   if ('error' in toolRes) {
     diagnostics.push(toolRes.error);
     return { backend: target, diagnostics };
   }
-  const toolShape = toolRes;
+  const { tool: toolShape, effectiveDepth, through } = toolRes;
 
   const toolBackend = new OcctBackend(toolShape);
   const cutRes = tryCutWithHistory(target, toolBackend, feature.id);
@@ -445,8 +509,7 @@ export function lowerCutout(
     feature.id, feature.kind, featMeta?.name, featMeta?.ordinal,
   );
 
-  return {
-    backend: new OcctBackend(wrapped, undefined, newHistoryMap),
-    diagnostics,
-  };
+  const backend = new OcctBackend(wrapped, undefined, newHistoryMap);
+  backend.edgeHistoryMap = edgeLineageAfterCut(target, cutResult, backend, feature.id);
+  return { backend, diagnostics };
 }

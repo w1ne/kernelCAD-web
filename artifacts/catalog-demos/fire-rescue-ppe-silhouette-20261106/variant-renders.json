@@ -1,0 +1,190 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/fire-rescue-ppe-silhouette-20261106/render_fire_rescue_ppe_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/fire-rescue/structural-fire-boots.kcad.ts",
+      "sourceSha256": "5a90eac1be15a2955a3991707e0b4e63c6eadce748123669fcb8340c5d166c65",
+      "triangleBudget": 2200,
+      "presets": {
+        "weathered": {
+          "leatherColor": "#4a4038",
+          "soleRubberColor": "#3a3b38",
+          "reflectiveTrimColor": "#a7a77c",
+          "liningColor": "#6a3a30"
+        },
+        "highVisibility": {
+          "leatherColor": "#2a2624",
+          "soleRubberColor": "#c2402b",
+          "reflectiveTrimColor": "#f2f06a",
+          "liningColor": "#e0a22c"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/fire-rescue/firefighter-gloves.kcad.ts",
+      "sourceSha256": "a5de35e0cf9145e61b43339dc13137acbbf8d048a0afe75b18b7bbdb3ecbe4b1",
+      "triangleBudget": 2200,
+      "presets": {
+        "weathered": {
+          "cuffFabricColor": "#94653a",
+          "gloveLeatherColor": "#4a3e33",
+          "palmGripColor": "#3a3532",
+          "reflectiveTrimColor": "#a7a77c"
+        },
+        "highVisibility": {
+          "cuffFabricColor": "#e1bd45",
+          "gloveLeatherColor": "#7a5a34",
+          "palmGripColor": "#2a2a2a",
+          "reflectiveTrimColor": "#f2f06a"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/fire-rescue/firefighter-hood.kcad.ts",
+      "sourceSha256": "5c3cf20adccfc708c23c960f21349deb58b5ac4496f7134254d7bae8a56255b0",
+      "triangleBudget": 2200,
+      "presets": {
+        "weathered": {
+          "fabricColor": "#8c5545",
+          "safetyTrimColor": "#b2a04e",
+          "headformColor": "#bfb3a2",
+          "standColor": "#4e4c48"
+        },
+        "highVisibility": {
+          "fabricColor": "#d67e2d",
+          "safetyTrimColor": "#f0df67",
+          "headformColor": "#ece2d4",
+          "standColor": "#2b2f33"
+        },
+        "carbonKnit": {
+          "fabricColor": "#2f3236",
+          "safetyTrimColor": "#c34b35"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "structural-fire-boots",
+      "variant": "default",
+      "values": {},
+      "triangles": 1224,
+      "png": "artifacts/catalog-demos/fire-rescue-ppe-silhouette-20261106/variants/structural-fire-boots-default.png"
+    },
+    {
+      "assetId": "structural-fire-boots",
+      "variant": "short-shaft",
+      "values": {
+        "shaftHeight": "220"
+      },
+      "triangles": 1224,
+      "png": "artifacts/catalog-demos/fire-rescue-ppe-silhouette-20261106/variants/structural-fire-boots-short-shaft.png"
+    },
+    {
+      "assetId": "structural-fire-boots",
+      "variant": "weathered",
+      "values": {
+        "leatherColor": "#4a4038",
+        "soleRubberColor": "#3a3b38",
+        "reflectiveTrimColor": "#a7a77c",
+        "liningColor": "#6a3a30"
+      },
+      "triangles": 1224,
+      "png": "artifacts/catalog-demos/fire-rescue-ppe-silhouette-20261106/variants/structural-fire-boots-weathered.png"
+    },
+    {
+      "assetId": "structural-fire-boots",
+      "variant": "highVisibility",
+      "values": {
+        "leatherColor": "#2a2624",
+        "soleRubberColor": "#c2402b",
+        "reflectiveTrimColor": "#f2f06a",
+        "liningColor": "#e0a22c"
+      },
+      "triangles": 1224,
+      "png": "artifacts/catalog-demos/fire-rescue-ppe-silhouette-20261106/variants/structural-fire-boots-highVisibility.png"
+    },
+    {
+      "assetId": "firefighter-gloves",
+      "variant": "default",
+      "values": {},
+      "triangles": 1264,
+      "png": "artifacts/catalog-demos/fire-rescue-ppe-silhouette-20261106/variants/firefighter-gloves-default.png"
+    },
+    {
+      "assetId": "firefighter-gloves",
+      "variant": "wristlet-cuff",
+      "values": {
+        "cuffStyle": "wristlet"
+      },
+      "triangles": 1152,
+      "png": "artifacts/catalog-demos/fire-rescue-ppe-silhouette-20261106/variants/firefighter-gloves-wristlet-cuff.png"
+    },
+    {
+      "assetId": "firefighter-gloves",
+      "variant": "weathered",
+      "values": {
+        "cuffFabricColor": "#94653a",
+        "gloveLeatherColor": "#4a3e33",
+        "palmGripColor": "#3a3532",
+        "reflectiveTrimColor": "#a7a77c"
+      },
+      "triangles": 1264,
+      "png": "artifacts/catalog-demos/fire-rescue-ppe-silhouette-20261106/variants/firefighter-gloves-weathered.png"
+    },
+    {
+      "assetId": "firefighter-gloves",
+      "variant": "highVisibility",
+      "values": {
+        "cuffFabricColor": "#e1bd45",
+        "gloveLeatherColor": "#7a5a34",
+        "palmGripColor": "#2a2a2a",
+        "reflectiveTrimColor": "#f2f06a"
+      },
+      "triangles": 1264,
+      "png": "artifacts/catalog-demos/fire-rescue-ppe-silhouette-20261106/variants/firefighter-gloves-highVisibility.png"
+    },
+    {
+      "assetId": "firefighter-hood",
+      "variant": "default",
+      "values": {},
+      "triangles": 736,
+      "png": "artifacts/catalog-demos/fire-rescue-ppe-silhouette-20261106/variants/firefighter-hood-default.png"
+    },
+    {
+      "assetId": "firefighter-hood",
+      "variant": "short-bib",
+      "values": {
+        "bibLength": "short"
+      },
+      "triangles": 736,
+      "png": "artifacts/catalog-demos/fire-rescue-ppe-silhouette-20261106/variants/firefighter-hood-short-bib.png"
+    },
+    {
+      "assetId": "firefighter-hood",
+      "variant": "weathered",
+      "values": {
+        "fabricColor": "#8c5545",
+        "safetyTrimColor": "#b2a04e",
+        "headformColor": "#bfb3a2",
+        "standColor": "#4e4c48"
+      },
+      "triangles": 736,
+      "png": "artifacts/catalog-demos/fire-rescue-ppe-silhouette-20261106/variants/firefighter-hood-weathered.png"
+    },
+    {
+      "assetId": "firefighter-hood",
+      "variant": "highVisibility",
+      "values": {
+        "fabricColor": "#d67e2d",
+        "safetyTrimColor": "#f0df67",
+        "headformColor": "#ece2d4",
+        "standColor": "#2b2f33"
+      },
+      "triangles": 736,
+      "png": "artifacts/catalog-demos/fire-rescue-ppe-silhouette-20261106/variants/firefighter-hood-highVisibility.png"
+    }
+  ]
+}

@@ -5,7 +5,7 @@ meta({
   name: 'cairn',
   license: 'CC0-1.0',
   title: 'Stone cairn',
-  description: 'Balanced stack of flat stones shrinking toward the top, a trail marker or zen garden piece. Knobs: stones, base width, stone and accent colours.',
+  description: 'Balanced stack of flat stones shrinking toward the top, a trail marker or zen garden piece. Knobs: stones, base width, stone and accent-stone colours.',
   tags: ['cairn', 'stone stack', 'rock stack', 'trail marker', 'zen', 'balanced stones', 'path', 'mountain', 'nature'],
   kit: 'nature',
   category: 'nature',
@@ -16,12 +16,12 @@ meta({
 
 const stones = param('stones', '6', { choices: ['4', '6', '8'], label: 'Stones' });
 const size = param('size', '0.5', { choices: ['0.3', '0.5', '0.8'], label: 'Base width (m)' });
-const stone = param('stone', '#8e8e88', { label: 'Stone' });
-const accent = param('accent', '#b8b0a2', { label: 'Accent stones' });
+const stoneColor = param('stoneColor', '#8e8e88', { label: 'Stone' });
+const accentColor = param('accentColor', '#b8b0a2', { label: 'Accent stones' });
 
 presets({
-  dark: { stone: '#4f545a', accent: '#6e747a' },
-  sandstone: { stone: '#b88a62', accent: '#d4ae84' },
+  dark: { stoneColor: '#4f545a', accentColor: '#6e747a' },
+  sandstone: { stoneColor: '#b88a62', accentColor: '#d4ae84' },
 });
 
 const n = Number(stones.value);
@@ -61,7 +61,7 @@ for (let i = 0; i < n; i++) {
   const th = r * (0.55 - 0.1 * (i % 2));
   const x = Math.sin(i * 2.1) * r * 0.08;
   const y = Math.cos(i * 1.6) * r * 0.08;
-  cairn.part(`stone-${i + 1}`, flat(r, th, i * 3 + 1, x, y, z).rotateZ(i * 41).color(i % 3 === 1 ? accent : stone));
+  cairn.part(`stone-${i + 1}`, flat(r, th, i * 3 + 1, x, y, z).rotateZ(i * 41).color(i % 3 === 1 ? accentColor : stoneColor));
   // Next stone sinks a little into this one's top so the stack touches.
   z += th * 0.9;
 }

@@ -1,0 +1,8 @@
+
+> kernelcad@0.17.4 catalog:pages
+> npx tsx scripts/buildCatalogPages.ts /tmp/medical-materials-catalog-pages-20261106
+
+wrote 2390 asset page(s) + hub, sitemap.xml and robots.txt to /tmp/medical-materials-catalog-pages-20261106
+(node:2486530) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+exit=0

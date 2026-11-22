@@ -1,0 +1,10 @@
+Command: npx vitest run tests/integration/catalog/
+
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 686ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 322ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 177799ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 245399ms
+
+Test Files  4 passed (4)
+Tests  15 passed (15)
+Duration  249.91s

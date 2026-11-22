@@ -1,0 +1,2 @@
+evaluate ok: 0 union errors (develop: 10); validate: mechanism real, holds under gravity
+Static turntable only; motion checks come from the CLI gates, not this video

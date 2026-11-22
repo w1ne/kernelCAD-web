@@ -9,7 +9,7 @@
 
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { Assembly } from '../capture/assembly';
-import type { MechanismCoverage } from './mechanismTruth';
+import type { MechanismCoverage, MechanismLoopMobility } from './mechanismTruth';
 import { hasMotionIntent } from './motionIntent';
 
 export type MechanismVerdictKind = 'real' | 'broken' | 'unverified';
@@ -20,6 +20,8 @@ export interface MechanismVerdictFailure {
   readonly reason: string;
   /** Mate / joint the failure is on, when the check knows it. */
   readonly joint?: string;
+  /** Closed-loop name when the failure came from the loop solver. */
+  readonly loop?: string;
   /** Part the failure moves or names, when the check knows it. */
   readonly part?: string;
 }
@@ -39,6 +41,11 @@ export interface MechanismVerdictSummary {
   readonly skipped: readonly string[];
   /** Error-severity mechanism failures. Empty unless verdict is 'broken'. */
   readonly failures: readonly MechanismVerdictFailure[];
+  /** Jacobian rank and mobility measured for closed-loop clusters per pose. */
+  readonly loopMobility?: readonly MechanismLoopMobility[];
+  /** Pair declarations from `solvedModel({ ignore })`; the declarations do
+   *  not suppress collision checks during joint travel. */
+  readonly ignoredPairs?: ReadonlyArray<readonly [string, string]>;
   /** Motion-load result in one line, when a mechanicalJoint declares a
    *  torqueNm rating. The full table is verify({ check: 'motion-load' }). */
   readonly loads?: MechanismLoadsLine;
@@ -88,24 +95,65 @@ function plural(n: number, word: string): string {
 }
 
 function failureOf(d: CompilerDiagnostic): MechanismVerdictFailure {
-  const { mateName: joint, partName: part } = d as { mateName?: unknown; partName?: unknown };
+  const legacy = d as { mateName?: unknown; partName?: unknown };
+  const joint = d.details?.mateName ?? d.details?.joint ?? legacy.mateName;
+  const part = typeof d.details?.partName === 'string' ? d.details.partName : legacy.partName;
+  const loop = d.details?.loop;
   return {
     code: d.code,
     reason: d.message,
     ...(typeof joint === 'string' ? { joint } : {}),
     ...(typeof part === 'string' ? { part } : {}),
+    ...(typeof loop === 'string' ? { loop } : {}),
   };
+}
+
+function physicsSkipLine(code: string, message: string): string | undefined {
+  if (code === 'mechanism.physics-budget-exceeded') {
+    const mesh = /estimated mesh work (\d+) triangles exceeds the budget (\d+)/.exec(message);
+    return mesh
+      ? `physics gravity check skipped: mesh work ${mesh[1]} is over the budget ${mesh[2]}`
+      : 'physics gravity check skipped: over the work budget or mesh work could not be measured';
+  }
+  if (code === 'mechanism.physics-unsupported') {
+    return 'physics gravity check skipped: closed-loop mate graphs are unsupported';
+  }
+  return undefined;
+}
+
+function jointContinuitySkipLine(message: string): string {
+  const joint = /Joint '([^']+)'/.exec(message)?.[1];
+  const part = /body '([^']+)'/.exec(message)?.[1];
+  return joint !== undefined && part !== undefined
+    ? `rest-pose joint continuity could not be measured at '${joint}' on '${part}'`
+    : 'rest-pose joint continuity could not be measured';
+}
+
+function budgetSkipLine(message: string): string {
+  const forced = /sweepBudget is (-?\d+(?:\.\d+)?) \(forced skip\)/.exec(message)?.[1];
+  if (forced !== undefined) {
+    return `collision sweep across the joint travel skipped: sweepBudget is ${forced} (forced skip)`;
+  }
+  const estimate = /estimated work (\d+) exceeds the budget (\d+)/.exec(message);
+  return estimate
+    ? `collision sweep across the joint travel skipped: work ${estimate[1]} is over the budget ${estimate[2]}`
+    : 'collision sweep across the joint travel skipped: budget reason is unavailable';
 }
 
 function skippedOf(input: MechanismVerdictInput): string[] {
   const out: string[] = [];
   if (input.notRunReason !== undefined) out.push(input.notRunReason);
   for (const d of input.failures) {
-    if (d.code !== 'mechanism.unverified-budget-exceeded') continue;
-    const m = /estimated work (\d+) exceeds the budget (\d+)/.exec(d.message);
-    out.push(m
-      ? `collision sweep across the joint travel skipped: work ${m[1]} is over the budget ${m[2]}`
-      : 'collision sweep across the joint travel skipped: over the work budget');
+    if (d.code === 'mechanism.unverified-budget-exceeded') {
+      out.push(budgetSkipLine(d.message));
+    } else if (d.code === 'mechanism.unverified-exact-probe') {
+      out.push('collision sweep across the joint travel skipped: an exact overlap probe failed');
+    } else if (d.code === 'mechanism.joint-mesh-unverified') {
+      out.push(jointContinuitySkipLine(d.message));
+    } else {
+      const physicsSkip = physicsSkipLine(d.code, d.message);
+      if (physicsSkip !== undefined) out.push(physicsSkip);
+    }
   }
   if (out.length === 0 && input.coverage !== undefined && !input.coverage.sweep) {
     out.push('collision sweep across the joint travel did not run');
@@ -119,47 +167,101 @@ function checkedOf(c: MechanismCoverage | undefined): string[] {
   const poses = c.joints === 0
     ? 'rest pose only (no moving joints)'
     : `${plural(c.poses, 'pose')} across ${plural(c.joints, 'joint')} (each joint at its limits)`;
+  const ignoredPairs = c.ignoredPairs ?? [];
+  const ignoredPairsLabel = ignoredPairs.map(([a, b]) => `${a} ↔ ${b}`).join(', ');
+  const collisionCheck = ignoredPairs.length === 0
+    ? 'no collisions'
+    : !c.sweep
+      ? `collision sweep not completed; declared ignore pairs: ${ignoredPairsLabel}`
+      : c.joints === 0
+        ? `no collisions; declared ignore pairs also reported: ${ignoredPairsLabel}`
+        : `no swept collisions; declared ignore pairs also checked during travel: ${ignoredPairsLabel}`;
   return [
     poses,
     ...(c.limitsChecked > 0 ? [`animation within limits on ${plural(c.limitsChecked, 'joint')}`] : []),
     ...(c.matesChecked ? ['all mates satisfied'] : []),
-    'no collisions',
+    collisionCheck,
     ...(c.fastened > 0 ? ['fastened parts stay rigid'] : []),
     ...(c.physics ? ['holds under gravity'] : []),
   ];
 }
 
+function ignoredPairsOf(coverage: MechanismCoverage | undefined): ReadonlyArray<readonly [string, string]> {
+  return coverage?.ignoredPairs ?? [];
+}
+
+function ignoredPairsText(pairs: ReadonlyArray<readonly [string, string]>): string {
+  return pairs.map(([a, b]) => `${a} ↔ ${b}`).join(', ');
+}
+
+function attachIgnoredPairs<T extends object>(
+  summary: T,
+  ignoredPairs: ReadonlyArray<readonly [string, string]>,
+): T & { ignoredPairs?: ReadonlyArray<readonly [string, string]> } {
+  return ignoredPairs.length > 0 ? { ...summary, ignoredPairs } : summary;
+}
+
+function brokenIgnoreNote(
+  first: string,
+  more: string,
+  ignoredPairs: ReadonlyArray<readonly [string, string]>,
+): string {
+  if (ignoredPairs.length === 0) return '';
+  const punct = /[.!?]$/.test(`${first}${more}`) ? '' : '.';
+  return `${punct} Declared ignore pairs: ${ignoredPairsText(ignoredPairs)}.`;
+}
+
+function unverifiedIgnoreNote(ignoredPairs: ReadonlyArray<readonly [string, string]>): string {
+  if (ignoredPairs.length === 0) return '';
+  return ` Declared ignore pairs are not certified clear across joint travel: ${ignoredPairsText(ignoredPairs)}.`;
+}
+
 /** Build the verdict summary from one (possibly aggregated) probe result. */
 export function summarizeMechanism(input: MechanismVerdictInput): MechanismVerdictSummary {
+  const loopMobility = input.coverage?.loopMobility;
+  const loopMobilitySummary = loopMobility !== undefined && loopMobility.length > 0 ? { loopMobility } : {};
   if (input.mechanism === 'broken') {
     const failures = input.failures.filter((d) => d.severity === 'error').map(failureOf);
     const first = failures[0]?.reason ?? 'a mechanism check failed';
     const more = failures.length > 1 ? ` (+${failures.length - 1} more)` : '';
-    return { verdict: 'broken', maxLevel: 'error', statement: `Mechanism broken: ${first}${more}`, checked: [], skipped: [], failures };
+    const ignoredPairs = ignoredPairsOf(input.coverage);
+    return attachIgnoredPairs({
+      verdict: 'broken' as const,
+      maxLevel: 'error' as const,
+      statement: `Mechanism broken: ${first}${more}${brokenIgnoreNote(first, more, ignoredPairs)}`,
+      checked: [],
+      skipped: [],
+      failures,
+      ...loopMobilitySummary,
+    }, ignoredPairs);
   }
   if (input.mechanism === 'unverified') {
     const skipped = skippedOf(input);
-    return {
-      verdict: 'unverified',
-      maxLevel: 'warning',
-      statement: `Motion not checked: ${skipped[0]}. Do not call this mechanism working.`,
+    const ignoredPairs = ignoredPairsOf(input.coverage);
+    return attachIgnoredPairs({
+      verdict: 'unverified' as const,
+      maxLevel: 'warning' as const,
+      statement: `Motion not checked: ${skipped[0]}. Do not call this mechanism working.${unverifiedIgnoreNote(ignoredPairs)}`,
       checked: [],
       skipped,
       failures: [],
-    };
+      ...loopMobilitySummary,
+    }, ignoredPairs);
   }
   const checked = checkedOf(input.coverage);
   const skipped = [...(input.coverage?.skipped ?? [])];
+  const ignoredPairs = ignoredPairsOf(input.coverage);
   const gravity = input.coverage?.physics === true ? '' : ' Gravity not checked.';
   const ranges = skipped.length === 0 ? '' : ` Not checked: ${skipped[0]}${skipped.length > 1 ? ` (+${skipped.length - 1} more)` : ''}.`;
-  return {
-    verdict: 'real',
-    maxLevel: 'ok',
+  return attachIgnoredPairs({
+    verdict: 'real' as const,
+    maxLevel: 'ok' as const,
     statement: `Motion checked: ${checked.join(', ')}.${ranges}${gravity}`,
     checked,
     skipped,
     failures: [],
-  };
+    ...loopMobilitySummary,
+  }, ignoredPairs);
 }
 
 /** Fold several assemblies' coverage into one. */
@@ -175,5 +277,11 @@ export function mergeCoverage(list: ReadonlyArray<MechanismCoverage | undefined>
     limitsChecked: present.reduce((n, c) => n + c.limitsChecked, 0),
     matesChecked: present.every((c) => c.matesChecked),
     skipped: present.flatMap((c) => c.skipped),
+    ...(present.some((c) => (c.ignoredPairs?.length ?? 0) > 0)
+      ? { ignoredPairs: present.flatMap((c) => c.ignoredPairs ?? []) }
+      : {}),
+    ...(present.some((c) => (c.loopMobility?.length ?? 0) > 0)
+      ? { loopMobility: present.flatMap((c) => c.loopMobility ?? []) }
+      : {}),
   };
 }

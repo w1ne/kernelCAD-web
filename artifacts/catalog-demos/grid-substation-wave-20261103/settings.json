@@ -1,0 +1,39 @@
+{
+  "checkedAt": "2026-11-03",
+  "kit": "grid-substation",
+  "assetCount": 80,
+  "startingCatalogAssets": 2310,
+  "expectedCatalogAssets": 2390,
+  "triangleBudget": 1800,
+  "parameters": {
+    "scale": { "default": 1, "min": 0.65, "max": 1.35, "step": 0.05 },
+    "color": { "default": "#73828b" }
+  },
+  "preview": {
+    "command": "npx tsx scripts/renderCatalogPreviews.ts",
+    "view": "software rendered three-quarter view",
+    "note": "The required full-catalog command renders all indexed assets, including the new kit."
+  },
+  "localPageAssets": {
+    "stylesheetSource": "https://kernelcad.com/style.css",
+    "stylesheetSnapshot": "public-site-style.css",
+    "stylesheetSha256": "c6d23334678a9039bfdb6f6db466ddfffd5f7977660b750c52045fb5106675b6",
+    "faviconSource": "https://kernelcad.com/favicon.svg",
+    "faviconSnapshot": "public-site-favicon.svg",
+    "faviconSha256": "b756f4933fa58fbeb3bc5ab8f1b2bc1b7573d92c0e199a8d7695548618b12a14",
+    "note": "Snapshots fetched 2026-11-03 for local page rendering; branch content is not deployed."
+  },
+  "demo": {
+    "capture": "capture_grid_substation_demo.cjs",
+    "browser": "existing Chrome CDP on 127.0.0.1:9223",
+    "browserProfile": "attached to the existing user profile; no new browser launched",
+    "localDemoServer": "127.0.0.1:8766 (temporary, owned by this capture and stopped after use)",
+    "captureSize": "1280x720",
+    "assetDetailCaptureZoom": 0.72,
+    "assetDetailCaptureScrollPixels": 96,
+    "fps": 30,
+    "durationSeconds": 15,
+    "idleTimeoutSeconds": 45,
+    "helperLifetimeSeconds": 180
+  }
+}

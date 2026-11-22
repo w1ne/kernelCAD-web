@@ -1,0 +1,851 @@
+{
+  "checkedAt": "2026-11-02T22:13:04.390Z",
+  "method": "npx tsx artifacts/catalog-demos/lab-infrastructure-wave-20261102/check-pages.mts",
+  "localOnly": true,
+  "totalIndexedAssets": 955,
+  "generatedAssetPages": 955,
+  "laboratoryInfrastructurePages": 60,
+  "checkedLaboratoryInfrastructurePages": [
+    {
+      "id": "acid-corrosive-storage-cabinet",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 84,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "articulated-extraction-snorkel",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 148,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "balance-isolation-bench",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "bench-service-pegboard",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 312,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "benchtop-extraction-enclosure",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 156,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "canopy-extraction-hood",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 60,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cantilever-lab-bench",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 156,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "ceiling-service-carrier",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 144,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "center-island-lab-bench",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 228,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "chemical-weighing-enclosure",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 156,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-ceiling-light-panel",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 48,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-fan-filter-unit",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 120,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-gowning-bench",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-gowning-locker-bank",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 180,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-partition-panel",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 60,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-pass-through-chamber",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 108,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-shoe-cubby",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 156,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-single-door-module",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 72,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-tacky-mat-tray",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 108,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-viewing-window",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 84,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cold-room-door-module",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 72,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cold-room-wall-panel",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 60,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cryogenic-dewar-storage-rack",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 348,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "ductless-fume-enclosure",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 156,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "flammable-liquid-storage-cabinet",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 144,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "fume-exhaust-riser",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 72,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "glassware-drying-cabinet",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 120,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "l-shaped-laboratory-bench",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "lab-gas-manifold-panel",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 320,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-base-cabinet",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 72,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-drawer-cabinet",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 408,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-electrical-service-rail",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 180,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-faucet-set",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 180,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-floor-drain-trough",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 188,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-fume-hood",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 144,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-gas-cylinder-cabinet",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 144,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-refrigerator",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-safety-shower",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 400,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-service-spine",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 372,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-sink-base-cabinet",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 84,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-utility-turret",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 156,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-vacuum-service-panel",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 316,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-wall-eyewash-station",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 224,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-washup-station",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 212,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-water-service-console",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 160,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laminar-flow-workbench",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 168,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "mobile-underbench-cabinet",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 296,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "open-laboratory-shelving",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 192,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "overhead-reagent-shelf",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 448,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "overhead-service-bridge",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 108,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "reagent-wall-shelf",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 624,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "solvent-storage-cabinet",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "stainless-lab-bench",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 192,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "ultra-low-temperature-freezer",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 180,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "undercounter-laboratory-freezer",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 144,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "vibration-isolation-table",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 144,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "walk-in-fume-hood",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 168,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "wall-lab-bench",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 108,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "wall-reagent-cabinet",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 96,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "wet-lab-sink-bench",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 188,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    }
+  ],
+  "liveDeployment": "not verified; this branch has not been deployed"
+}

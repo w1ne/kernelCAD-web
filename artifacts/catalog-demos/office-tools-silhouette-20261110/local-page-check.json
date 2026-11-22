@@ -1,0 +1,36 @@
+{
+  "verified": true,
+  "hub": "catalog/index.html",
+  "assetPageCount": 2402,
+  "catalogAssetCount": 2402,
+  "changedPages": [
+    {
+      "id": "highlighter",
+      "page": "catalog/office/highlighter/index.html",
+      "preview": "catalog/office/highlighter/preview.png",
+      "checkedLabels": [
+        "Barrel polymer",
+        "Cap polymer",
+        "Felt nib",
+        "Fluorescent ink",
+        "professional",
+        "classroom"
+      ],
+      "previewSha256": "4367854e80b1672c76b26122906724e68b76a61d0e53edd6405e2457b26bc46b"
+    },
+    {
+      "id": "mechanical-pencil",
+      "page": "catalog/office/mechanical-pencil/index.html",
+      "preview": "catalog/office/mechanical-pencil/preview.png",
+      "checkedLabels": [
+        "Barrel aluminum",
+        "Grip rubber",
+        "Accent polymer",
+        "Graphite lead",
+        "professional",
+        "classroom"
+      ],
+      "previewSha256": "d004f51b6f001cccffe0535d6a4611103a298b80aba97407807a67d0c41449e4"
+    }
+  ]
+}

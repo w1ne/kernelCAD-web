@@ -1,0 +1,15 @@
+{
+  "source": "catalog/kits/theatre-production/ellipsoidal-reflector-spotlight.kcad.ts",
+  "sourceSha256": "b4cab68ab5eec1a36e3a473e782c6ea35a2745940f14ecf0650c70fb707d7f6c",
+  "preset": "touring",
+  "appliedOverrides": {
+    "powderCoat": "#315465",
+    "aluminum": "#dce3e2",
+    "hardware": "#e2b347",
+    "glass": "#31b9d2"
+  },
+  "triangles": 304,
+  "triangleBudget": 1800,
+  "output": "variants/ellipsoidal-reflector-spotlight-touring.png",
+  "workflow": "evaluate authored preset, export low-poly GLB, and software-render the resolved mesh"
+}

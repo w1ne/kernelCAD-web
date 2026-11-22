@@ -1,0 +1,32 @@
+{
+  "invocation": "npx tsx docs/demos/dxf-hatch-polyline-import/capture-demo.mts",
+  "sourceScript": "examples/interoperability/dxf-hatch/import-hatch-plate.kcad.ts",
+  "inputFixture": "examples/interoperability/dxf-hatch/hatch-bulged-plate.dxf",
+  "renderer": "scripts/lib/glbSoftwareRender.ts using triangles meshed from the lowered OCCT B-rep",
+  "browser": "none; offline SVG + Sharp + FFmpeg capture",
+  "width": 1280,
+  "height": 720,
+  "fps": 16,
+  "durationSeconds": 10,
+  "initialViewYawDeg": 72,
+  "encoding": {
+    "codec": "libx264",
+    "preset": "medium",
+    "crf": 26,
+    "pixelFormat": "yuv420p",
+    "fastStart": true
+  },
+  "model": {
+    "profile": "40 × 20 mm rectangle with one outward semicircular bulge of radius 20 mm",
+    "hatchBoundaryPaths": 1,
+    "hatchPolylineVertices": 4,
+    "bulge": 1,
+    "extrusionMm": 5
+  },
+  "validation": [
+    "OCCT B-rep validity",
+    "measured volume against (800 + 200π) × 5 mm³",
+    "bounding box against fixture extents"
+  ],
+  "scope": "Local geometry validation only; no deployment, simulation, or hardware acceptance."
+}

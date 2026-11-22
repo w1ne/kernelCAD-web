@@ -34,6 +34,7 @@
 import { getOC } from 'replicad';
 import { OcctBackend } from './occtBackend';
 import { untracked } from './occtFinalizers';
+import { integrateArea } from './volumeIntegration';
 
 export interface CylindricalHole {
   /** Hole-mouth center for blind holes; t_min end for through holes. */
@@ -93,8 +94,9 @@ export const MIN_PARTIAL_COVERAGE_RAD = 4.0;
 /** Coverage (rad) above which a rejected concave cylinder is "ambiguous"
  *  rather than clearly a fillet / slot end. */
 const AMBIGUOUS_COVERAGE_RAD = Math.PI + 0.2;
-/** Near end-probe offset (mm) — catches flat caps just past the bore end. */
-const NEAR_PROBE_OFFSET_MM = 0.2;
+/** Near end-probe offset (mm) — two probe radii catches flat caps without
+ *  placing an open-end probe close enough to graze the exterior face. */
+const NEAR_PROBE_OFFSET_MM = 2 * PROBE_SPHERE_RADIUS_MM;
 /** Deep end-probe offset as a fraction of hole diameter — catches conical
  *  drill-tip bottoms (118° tip extends ≈ 0.29·d past the cylindrical wall). */
 const DEEP_PROBE_DIAMETER_FACTOR = 0.45;
@@ -275,7 +277,7 @@ export interface ConcaveCylFace {
   /** Unit axis direction (sign as OCCT reports it for this face). */
   dir: Vec3;
   radiusMm: number;
-  /** Angular UV extent (rad). */
+  /** Angular extent (rad); trimmed collection uses mean actual wall coverage. */
   du: number;
   /** Axial UV bounds (mm along `dir` from `loc`). */
   v1: number;
@@ -369,9 +371,11 @@ export function collectFullCylinders(backend: OcctBackend, kind: 'hole' | 'pin')
  * including partial ones (fillets, rounded pocket corners). Coverage below
  * `MIN_ANGULAR_COVERAGE_RAD` marks a partial cylinder. Cheap — no boolean
  * probes. Used by the CNC internal-corner-radius check (dfm_review).
+ * Nominal coverage retains bores with curved mouths. A conservative full-wall
+ * audit can request trimmed area; curved mouths and side pockets both reduce it.
  */
-export function collectConcaveCylinderClusters(backend: OcctBackend): BoreExtent[] {
-  return resolveBoreCandidates(collectConcaveCylindricalFaces(backend, 'concave'));
+export function collectConcaveCylinderClusters(backend: OcctBackend, coverage: 'nominal' | 'trimmed' = 'nominal'): BoreExtent[] {
+  return resolveBoreCandidates(collectConcaveCylindricalFaces(backend, 'concave', coverage));
 }
 
 /**
@@ -472,7 +476,7 @@ function classifyBore(backend: OcctBackend, bore: BoreExtent): CylindricalHole {
 
 /**
  * An axial end is "closed" (material beyond it) when either the near probe
- * (end + 0.2 mm — flat caps) or the deep probe (end + 0.45·d — past a
+ * (end + two probe radii — flat caps) or the deep probe (end + 0.45·d — past a
  * conical drill-tip void) sits inside the solid. `outward` is the unit
  * vector pointing out of the bore at this end.
  */
@@ -499,14 +503,15 @@ function isEndClosed(
 function collectConcaveCylindricalFaces(
   backend: OcctBackend,
   want: 'concave' | 'convex' = 'concave',
+  coverage: 'nominal' | 'trimmed' = 'nominal',
 ): ConcaveCylFace[] {
   // Every handle below is deleted here, so none is registered with the GC
   // safety net: a mesh-derived body runs this loop over tens of thousands
   // of facets.
-  return untracked(() => scanCylindricalFaces(backend, want));
+  return untracked(() => scanCylindricalFaces(backend, want, coverage));
 }
 
-function scanCylindricalFaces(backend: OcctBackend, want: 'concave' | 'convex'): ConcaveCylFace[] {
+function scanCylindricalFaces(backend: OcctBackend, want: 'concave' | 'convex', coverage: 'nominal' | 'trimmed'): ConcaveCylFace[] {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -568,7 +573,11 @@ function scanCylindricalFaces(backend: OcctBackend, want: 'concave' | 'convex'):
           const w = sub(point, axisPoint);
           const concave = dot(n, w) < 0;
           if (concave === (want === 'concave')) {
-            out.push({ loc, dir, radiusMm, du: u2 - u1, v1, v2 });
+            // A side pocket can trim only part of the bore depth while its UV
+            // bounds still span a full circle. Measure the actual wall area.
+            const du = coverage === 'trimmed' ? integrateArea(face) / (radiusMm * Math.abs(v2-v1)) : u2-u1;
+            if (!Number.isFinite(du) || du < 0) throw new Error('Cylindrical wall coverage could not be measured');
+            out.push({ loc, dir, radiusMm, du, v1, v2 });
           }
         }
       } finally {

@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-10",
+  "kit": "beverage-bottling-line",
+  "asset": "cap-elevator",
+  "variants": [
+    {
+      "id": "sanitaryLine",
+      "preset": "sanitaryLine"
+    },
+    {
+      "id": "legacyPlant",
+      "preset": "legacyPlant"
+    }
+  ],
+  "capture": {
+    "canvas": "1280x720",
+    "frames": 5,
+    "secondsPerFrame": 3,
+    "codec": "H.264 / yuv420p",
+    "provenance": "Checked-in kernelCAD source, catalog GLB software renderer, and local validation only; not deployed and no physical acceptance is shown."
+  },
+  "videoPath": "artifacts/catalog-demos/beverage-cap-elevator-semantic-review-20261110/beverage-cap-elevator-semantic-review.mp4",
+  "durationSeconds": 15,
+  "ffmpegInvocation": "ffmpeg -framerate 1/3 -c:v libx264 -r 24 -pix_fmt yuv420p -crf 24 -movflags +faststart",
+  "captureInvocation": "python3 artifacts/catalog-demos/beverage-cap-elevator-semantic-review-20261110/capture_demo.py",
+  "provenance": "Local source, catalog GLB software renders, generated pages and integration checks only; not deployed and no physical acceptance is shown."
+}

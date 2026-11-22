@@ -1,0 +1,2 @@
+EXIT CODE: 0
+wrote demo-settings.json for 60 preview IDs and 3 refined assets

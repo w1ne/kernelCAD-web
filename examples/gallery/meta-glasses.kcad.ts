@@ -219,7 +219,10 @@ function lensInsert(sign: 1 | -1) {
     .color('#253631');
 }
 
+// The bezel is a ring around the camera glass, so the two parts touch at the
+// glass rim instead of sharing material.
 const cameraBezel = yCylinder(0.92, CAMERA_BEZEL_R - 0.35, 72)
+  .subtract(yCylinder(2, CAMERA_INNER_R, 56).translate(0, -0.5, 0))
   .translate(CAMERA_X, CENTER_Y - 0.04, CAMERA_Z)
   .material({
     baseColor: '#08090a',
@@ -270,10 +273,19 @@ function darkBoxRotX(w, d, h, x, y, z, deg) {
 function sideTemple(sign: 1 | -1) {
   const x = sign * 81.0;
   const parts = [];
+  // The hinge barrel sits in a matching bore in the temple front block. The
+  // block starts at the frame back face (Y = FRAME_DEPTH / 2), so the frame,
+  // temple and barrel touch without sharing material.
+  const hingeBarrel = cylinder(8.2, 2.0, 32)
+    .alongAxis([0, 0, 1])
+    .translate(sign * 76.8, 7.2, 7.5);
+  // Touchpad strip on the right temple, recessed so its glossy face sits
+  // flush with the temple side.
+  const touchStrip = box(0.8, 32, 4.0, true).translate(sign * 85.85, 41, 8.2);
 
   // Build each temple as one connected solid so the gallery video reads as a
   // physical pair of glasses instead of many small pieces appearing in space.
-  const body = darkBox(8.8, 13.2, 17.4, sign * 77.0, 7.2, 7.0)
+  let body = darkBox(8.8, FRAME_DEPTH, 17.4, sign * 77.0, FRAME_DEPTH, 7.0)
     .union(darkBox(9.2, 48, 9.4, x, 31, 7.2))
     .union(darkBoxRotX(7.4, 54, 7.7, sign * 80.0, 76, 5.3, -4))
     .union(darkBoxRotX(5.8, 40, 6.2, sign * 78.5, 118, -1.8, -14))
@@ -282,8 +294,9 @@ function sideTemple(sign: 1 | -1) {
         .alongAxis([1, 0, 0])
         .translate(sign * 78.5, 136, -6.4),
     )
-    .material(RUBBER_DARK)
-    .color('#151718');
+    .subtract(hingeBarrel);
+  if (sign > 0) body = body.subtract(touchStrip);
+  body = body.material(RUBBER_DARK).color('#151718');
 
   parts.push({
     name: sign < 0 ? 'left-connected-electronics-temple-with-ear-bend' : 'right-connected-electronics-temple-with-ear-bend',
@@ -292,19 +305,15 @@ function sideTemple(sign: 1 | -1) {
 
   parts.push({
     name: sign < 0 ? 'left-hinge-barrel-pair' : 'right-hinge-barrel-pair',
-    shape: cylinder(8.2, 2.0, 32)
-      .alongAxis([0, 0, 1])
-      .translate(sign * 76.8, 3.35, 7.5)
+    shape: hingeBarrel
       .material(METAL_PIN)
       .color('#c8c3b8'),
   });
 
-  // Touchpad strip on the right temple, flush and glossy.
   if (sign > 0) {
     parts.push({
       name: 'right-temple-glossy-touch-control-strip',
-      shape: box(0.8, 32, 4.0, true)
-        .translate(sign * 85.85, 41, 8.2)
+      shape: touchStrip
         .material({
           baseColor: '#303336',
           metalness: 0,

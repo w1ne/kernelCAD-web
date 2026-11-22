@@ -4,7 +4,8 @@
 //
 // FDM printability check for one part (dfmSpec({ process: 'fdm' })): the
 // OCCT-facing half. Builds the face-tagged mesh from the kernel's own
-// per-face triangulation, names faces as `@kc[...]` refs, and combines the
+// per-face triangulation, references faces only when history supplies a
+// unique, resolvable name/owner pair, and combines the
 // orientation analysis (fdmOrientation.ts) with the orientation-independent
 // checks that REUSE existing machinery:
 //   - nozzle-relative walls: `checkMinWall` at 2 × nozzle,
@@ -47,6 +48,8 @@ export const MIN_HOLE_NOZZLES = 5;
 /** Pins below this many nozzle widths are fragile and lose roundness
  *  (3 mm at a 0.4 mm nozzle). */
 export const MIN_PIN_NOZZLES = 7.5;
+/** Inclusive diameter allowance used by the min-hole and min-pin checks. */
+export const FDM_FEATURE_DIAMETER_TOLERANCE_MM = 1e-9;
 /** Knife-edge cut-off for the nozzle wall check, degrees. Two faces opening
  *  at θ leave a tip thinner than 2 × nozzle for 2·nozzle / tan θ from their
  *  shared edge; at θ = atan(0.5) that tip is 4 line widths deep, which the
@@ -145,21 +148,26 @@ export function checkFdmPrintability(shape: OcctBackend, opts: FdmCheckOptions):
 }
 
 /** Weld the kernel's per-face triangulation (stamped by meshShapeForExport)
- *  into one mesh whose triangles remember their BREP face. Face refs follow
- *  the list_faces convention: label, canonical name, else `f<index>`. */
+ *  into one mesh whose triangles remember their BREP face. Emit a face ref
+ *  only when history supplies a label or canonical name that uniquely
+ *  resolves to that face on the current part. */
 export function faceTaggedMeshOf(shape: OcctBackend, owner: string): FaceTaggedMesh {
   const faces = (shape.getReplicadShape() as unknown as { faces: Face[] }).faces;
   const history = shape.historyMap;
+  const uniqueHashesByName = uniqueFaceHashesByOwner(history, owner);
   const Q = 1e7;
   const canonical = new Map<string, number>();
   const vertices: number[] = [];
   const triangles: number[] = [];
   const faceOfTri: number[] = [];
-  const faceRefs: string[] = [];
+  const faceRefs: Array<string | undefined> = [];
   faces.forEach((face, fi) => {
     const lineage = history?.get(faceHashOf(face));
-    const name = lineage?.labelName ?? lineage?.canonicalName ?? `f${fi}`;
-    faceRefs.push(formatTopoRef({ owner, kind: 'face', segments: [name] }));
+    const name = lineage?.labelName ?? lineage?.canonicalName;
+    const faceHash = faceHashOf(face);
+    faceRefs.push(name !== undefined && name.length > 0 && uniqueHashesByName.get(name) === faceHash
+      ? formatTopoRef({ owner, kind: 'face', segments: [name] })
+      : undefined);
     const tri = (face as unknown as {
       triangulation(i0: number): { vertices: number[]; trianglesIndexes: number[] } | null;
     }).triangulation(0);
@@ -188,6 +196,24 @@ export function faceTaggedMeshOf(shape: OcctBackend, owner: string): FaceTaggedM
   return { vertices, triangles, faceOfTri, faceRefs };
 }
 
+function uniqueFaceHashesByOwner(
+  history: OcctBackend['historyMap'],
+  owner: string,
+): Map<string, string | null> {
+  const hashes = new Map<string, string | null>();
+  for (const [hash, lineage] of history ?? []) {
+    if (lineage.featureName !== owner && lineage.rootFeatureId !== owner) continue;
+    const names = new Set([lineage.labelName, lineage.canonicalName]
+      .filter((name): name is string => name !== undefined && name.length > 0));
+    for (const name of names) {
+      const previous = hashes.get(name);
+      if (previous === undefined) hashes.set(name, hash);
+      else if (previous !== hash) hashes.set(name, null);
+    }
+  }
+  return hashes;
+}
+
 function findSmallFeatures(shape: OcctBackend, nozzleMm: number): FdmSmallFeature[] {
   const out: FdmSmallFeature[] = [];
   const kinds: Array<['hole' | 'pin', number]> = [
@@ -197,7 +223,7 @@ function findSmallFeatures(shape: OcctBackend, nozzleMm: number): FdmSmallFeatur
   for (const [kind, minDiameterMm] of kinds) {
     for (const c of collectFullCylinders(shape, kind)) {
       const diameterMm = 2 * c.radiusMm;
-      if (diameterMm >= minDiameterMm - 1e-9) continue;
+      if (diameterMm >= minDiameterMm - FDM_FEATURE_DIAMETER_TOLERANCE_MM) continue;
       const t = (c.tMin + c.tMax) / 2;
       out.push({
         kind,

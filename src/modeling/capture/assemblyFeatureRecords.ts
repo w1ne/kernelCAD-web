@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureId, FeatureKind, FeatureRef, Param, Vec3, Vec3Param } from '../../shared/intent/types';
+import type { StockSpec } from '../../shared/stock';
 import { KernelError } from '../../shared/intent/kernelError';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
@@ -13,11 +14,20 @@ export interface AssemblyFeatureSpec {
 }
 
 export interface SolvedAssemblyMateMetadata {
+  readonly virtualJoints?: readonly EncodedVirtualJointRecord[];
   readonly connectorsByPartId: Record<FeatureId, readonly EncodedConnectorRecord[]>;
   readonly mates: readonly EncodedMateRecord[];
   readonly couplings?: readonly MateCouplingRecord[];
   /** `loopMode(...)` branch pins for closed loops. */
   readonly loopModes?: readonly { readonly loop: string; readonly joint: string; readonly sign: '+' | '-' }[];
+}
+
+/** Serializable joint intent; record construction stays independent of capture handles. */
+export interface EncodedVirtualJointRecord {
+  readonly name: string;
+  readonly type: 'fixed' | 'floating' | 'planar';
+  readonly parentFrame: string;
+  readonly childLink: string;
 }
 
 export interface EncodedConnectorRecord {
@@ -81,6 +91,8 @@ export interface AssemblyPartCaptureOpts {
   at?: Vec3Param;
   /** Canonical engineering-material name from `arm.part(..., { material })`. */
   materialName?: string;
+  /** Declared blank from `arm.part(..., { stock })`. */
+  stock?: StockSpec;
   connectors?: Record<string, AssemblyConnectorFrameStoredLike>;
   placedBy?: {
     connector: string;
@@ -135,6 +147,7 @@ export function buildAssemblyPartFeatureSpec(
       ...(opts.at !== undefined ? { at: opts.at } : {}),
       ...(opts.connectors !== undefined ? { connectors: opts.connectors } : {}),
       ...(opts.materialName !== undefined ? { materialName: opts.materialName } : {}),
+      ...(opts.stock !== undefined ? { stock: opts.stock } : {}),
       ...(opts.placedBy !== undefined ? {
         placedBy: {
           connector: opts.placedBy.connector,
@@ -397,6 +410,7 @@ function mateMetadataPayload(mateMetadata?: SolvedAssemblyMateMetadata): Record<
   return {
     mates: mateMetadata.mates,
     couplings: mateMetadata.couplings ?? [],
+    ...(mateMetadata.virtualJoints?.length ? { virtualJoints: mateMetadata.virtualJoints } : {}),
     connectorsByPartId: mateMetadata.connectorsByPartId,
     ...(mateMetadata.loopModes !== undefined && mateMetadata.loopModes.length > 0 ? { loopModes: mateMetadata.loopModes } : {}),
   };

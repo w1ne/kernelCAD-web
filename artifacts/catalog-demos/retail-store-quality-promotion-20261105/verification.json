@@ -1,0 +1,218 @@
+{
+  "kit": "retail-store",
+  "promotedExistingIds": 48,
+  "addedIds": 0,
+  "materialControlsAdded": 144,
+  "materialControlsPerAsset": [
+    2,
+    4
+  ],
+  "presetsBlocksAdded": 48,
+  "namedPresetEntriesAdded": 96,
+  "defaultPreviewsRendered": 48,
+  "index": {
+    "kit": "retail-store",
+    "assets": 48,
+    "materialControlRange": [
+      2,
+      4
+    ],
+    "materialControls": 144,
+    "presetBlocks": 48,
+    "sourceHashesMatched": 48,
+    "previewPathsPresent": 48,
+    "triangleBudgetsWithinLimit": 48,
+    "sameIDsAsBefore": true,
+    "failures": []
+  },
+  "kitQuality": {
+    "passes": "48/48",
+    "passed": true,
+    "rate": "100%"
+  },
+  "catalogQuality": {
+    "before": "2003/2390",
+    "beforeRate": "83.81%",
+    "after": "2051/2390",
+    "afterRate": "85.82%",
+    "thinRemaining": "339/2390 (14.18%)"
+  },
+  "lint": {
+    "command": "npx eslint catalog/kits/retail-store/",
+    "passed": true,
+    "outputFile": "eslint-output.txt"
+  },
+  "integration": {
+    "command": "npx vitest run tests/integration/catalog/",
+    "filesPassed": 4,
+    "testsPassed": 15,
+    "passed": true,
+    "outputFile": "catalog-integration-output.txt"
+  },
+  "localPages": {
+    "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-retail-store-catalog-pages",
+    "generatedOutput": "/tmp/kernelcad-retail-store-catalog-pages",
+    "assetsInIndex": 2390,
+    "kitRows": 48,
+    "kitPagesChecked": 48,
+    "previewCopiesChecked": 48,
+    "sourceHashesChecked": 48,
+    "parameterCountRangeIncludingScale": [
+      3,
+      5
+    ],
+    "hubHasKitAndFinder": true,
+    "failures": [],
+    "passed": true
+  },
+  "builtPackage": {
+    "command": "npm pack --ignore-scripts --pack-destination <temporary directory> --json",
+    "packageName": "kernelcad",
+    "packageVersion": "0.17.4",
+    "fileCount": 5202,
+    "includedKitSources": 48,
+    "expectedKitSources": 48,
+    "includedKitPreviews": 48,
+    "expectedKitPreviews": 48,
+    "catalogIndexIncluded": true,
+    "builtTarballCreated": true,
+    "archiveSha256": "6cd83129a43a20a1e715be239c9c6f2c4ae238997d5ad9a88e1b24ccb4551747",
+    "archiveRetained": false,
+    "packageExportsUnchanged": true,
+    "forbiddenChangedProductPaths": [],
+    "productImplementationPaths": [],
+    "catalogAssetNameCollisionsExcludedAsReusableAssets": [
+      "catalog/kits/retail-store/assisted-checkout-till.kcad.ts",
+      "catalog/kits/retail-store/checkout-bagging-stand.kcad.ts",
+      "catalog/kits/retail-store/checkout-conveyor.kcad.ts",
+      "catalog/kits/retail-store/checkout-counter.kcad.ts",
+      "catalog/kits/retail-store/checkout-divider.kcad.ts",
+      "catalog/kits/retail-store/previews/assisted-checkout-till.png",
+      "catalog/kits/retail-store/previews/checkout-bagging-stand.png",
+      "catalog/kits/retail-store/previews/checkout-conveyor.png",
+      "catalog/kits/retail-store/previews/checkout-counter.png",
+      "catalog/kits/retail-store/previews/checkout-divider.png",
+      "catalog/kits/retail-store/previews/self-checkout-kiosk.png",
+      "catalog/kits/retail-store/self-checkout-kiosk.kcad.ts"
+    ],
+    "missing": [],
+    "passed": true
+  },
+  "presetReplay": {
+    "targets": [
+      "checkout-counter",
+      "shopping-cart",
+      "upright-drink-cooler"
+    ],
+    "results": [
+      {
+        "asset": "checkout-counter",
+        "preset": "cleanStore",
+        "triangles": 188,
+        "colors": {
+          "powderCoat": "#e5ebed",
+          "laminate": "#d5c3a5",
+          "glass": "#9ccfd6"
+        }
+      },
+      {
+        "asset": "checkout-counter",
+        "preset": "nightRestock",
+        "triangles": 188,
+        "colors": {
+          "powderCoat": "#354750",
+          "laminate": "#685744",
+          "glass": "#3e6677"
+        }
+      },
+      {
+        "asset": "shopping-cart",
+        "preset": "cleanStore",
+        "triangles": 908,
+        "colors": {
+          "stainless": "#bfc8cb",
+          "polypropylene": "#d6e0d5",
+          "rubber": "#40474b"
+        }
+      },
+      {
+        "asset": "shopping-cart",
+        "preset": "nightRestock",
+        "triangles": 908,
+        "colors": {
+          "stainless": "#66747a",
+          "polypropylene": "#45614e",
+          "rubber": "#262b2e"
+        }
+      },
+      {
+        "asset": "upright-drink-cooler",
+        "preset": "cleanStore",
+        "triangles": 816,
+        "colors": {
+          "powderCoat": "#e5ebed",
+          "glass": "#9ccfd6",
+          "stainless": "#bfc8cb"
+        }
+      },
+      {
+        "asset": "upright-drink-cooler",
+        "preset": "nightRestock",
+        "triangles": 816,
+        "colors": {
+          "powderCoat": "#354750",
+          "glass": "#3e6677",
+          "stainless": "#66747a"
+        }
+      }
+    ]
+  },
+  "videoInspection": {
+    "video": "retail-store-quality-promotion.mp4",
+    "probe": {
+      "programs": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 720,
+          "r_frame_rate": "24/1",
+          "nb_frames": "491"
+        }
+      ],
+      "format": {
+        "duration": "20.458333"
+      }
+    },
+    "decodedFrames": 6,
+    "contactSheet": "video-review/contact-sheet.png",
+    "visuallyReviewed": true,
+    "manualReview": "Reviewed the final six-frame contact sheet and frames 02, 05, and 06 at original resolution. Before/after objects, preset differences, corrected 85.82% catalog rate, test result, and local-only scope are readable and match the evidence."
+  },
+  "liveWebsiteBaseline": {
+    "date": "2026-11-05",
+    "checkedAt": "before retail-store promotion; curl User-Agent request",
+    "checks": [
+      {
+        "url": "https://kernelcad.com/asset-library/",
+        "finalUrl": "https://kernelcad.com/asset-library/",
+        "httpStatus": 200,
+        "pageText": "Model library \u2014 kernelCAD | Model library"
+      },
+      {
+        "url": "https://kernelcad.com/catalog/",
+        "finalUrl": "https://kernelcad.com/catalog/",
+        "httpStatus": 404,
+        "pageText": "Page not found \u2014 kernelCAD | Page not found"
+      },
+      {
+        "url": "https://kernelcad.com/docs/parametrize",
+        "finalUrl": "https://kernelcad.com/docs/parametrize",
+        "httpStatus": 200,
+        "pageText": "Parametrize \u2014 kernelCAD | Parametrize"
+      }
+    ],
+    "scope": "No deployment performed."
+  },
+  "deployment": "not deployed; no post-deployment public behavior claimed"
+}

@@ -15,6 +15,7 @@ meta({
   triangleBudget: 260,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const body = param('body', '#c8261e', { label: 'Body' });
 const panel = param('panel', '#f2f0e6', { label: 'Front panel' });
 const lamp = param('lamp', '#f29a1c', { label: 'Lamp' });
@@ -36,14 +37,14 @@ const blk = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: num
   box(x1 - x0, y1 - y0, z1 - z0).translate(x0, y0, z0);
 
 const fa = assembly('fire-alarm-box');
-fa.part('base', ngon(150, 8, Math.PI / 8).loft(ngon(90, 8, Math.PI / 8), { spacing: 160, ruled: true }).color(body));
-fa.part('post', ngon(60, 8, Math.PI / 8).extrude(1000).translate(0, 0, 150).color(body));
-fa.part('collar', ngon(90, 8, Math.PI / 8).extrude(60).translate(0, 0, 1080).color(body));
-fa.part('box', blk(-150, -120, 1130, 150, 120, 1500).color(body));
-fa.part('gable', extrudePolygon([[-180, 0], [180, 0], [0, 140]], 280).translate(0, 0, -140).rotateX(90).translate(0, 0, 1495).color(body));
-fa.part('panel', blk(-110, -128, 1180, 110, -119, 1440).color(panel));
-fa.part('handle', blk(-50, -160, 1260, 50, -127, 1300).color(body));
-fa.part('lamp-stem', ngon(25, 6).extrude(60).translate(0, 0, 1620).color(body));
+fa.part('base', ngon(150, 8, Math.PI / 8).loft(ngon(90, 8, Math.PI / 8), { spacing: 160, ruled: true }).color(body).scale(overallScale));
+fa.part('post', ngon(60, 8, Math.PI / 8).extrude(1000).translate(0, 0, 150).color(body).scale(overallScale));
+fa.part('collar', ngon(90, 8, Math.PI / 8).extrude(60).translate(0, 0, 1080).color(body).scale(overallScale));
+fa.part('box', blk(-150, -120, 1130, 150, 120, 1500).color(body).scale(overallScale));
+fa.part('gable', extrudePolygon([[-180, 0], [180, 0], [0, 140]], 280).translate(0, 0, -140).rotateX(90).translate(0, 0, 1495).color(body).scale(overallScale));
+fa.part('panel', blk(-110, -128, 1180, 110, -119, 1440).color(panel).scale(overallScale));
+fa.part('handle', blk(-50, -160, 1260, 50, -127, 1300).color(body).scale(overallScale));
+fa.part('lamp-stem', ngon(25, 6).extrude(60).translate(0, 0, 1620).color(body).scale(overallScale));
 fa.part('lamp', ngon(40, 8).loft([ngon(85, 8, Math.PI / 8), ngon(40, 8)], {
   planes: [
     { plane: 'XY', origin: [0, 0, 1670] },
@@ -51,6 +52,6 @@ fa.part('lamp', ngon(40, 8).loft([ngon(85, 8, Math.PI / 8), ngon(40, 8)], {
     { plane: 'XY', origin: [0, 0, 1820] },
   ],
   ruled: true,
-}).color(lamp));
+}).color(lamp).scale(overallScale));
 
 return fa.model();

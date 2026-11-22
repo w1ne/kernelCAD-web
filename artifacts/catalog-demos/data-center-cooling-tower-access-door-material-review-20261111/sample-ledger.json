@@ -1,0 +1,101 @@
+{
+  "assetDetailHttpStatus": 404,
+  "assetDetailUrl": "https://kernelcad.com/asset-library/data-center-infrastructure/cooling-tower-cell/",
+  "assets": [
+    {
+      "baselineLivePreviewSha256": "f989aaaaa102d97000a72518701534044015190f20b6abfc1c2e06e266483643",
+      "baselineLiveSourceSha256": "70a1a798cd95b6d6e9c13188b1f26e2249aa06cad7ac66b5f5dce7ce50232a01",
+      "baselinePreviewSha256": "f989aaaaa102d97000a72518701534044015190f20b6abfc1c2e06e266483643",
+      "baselineSourceSha256": "70a1a798cd95b6d6e9c13188b1f26e2249aa06cad7ac66b5f5dce7ce50232a01",
+      "envelopeM": [
+        3.968,
+        2.434,
+        2.28
+      ],
+      "id": "air-cooled-chiller",
+      "liveSourceAndPreviewMatchCheckedIn": true,
+      "observation": "Six guarded roof fans, V-coil condenser faces, compressor/control enclosure, and flanged chilled-water nozzles are recognizable. Casing, coil faces, copper headers, fan guards, frame and water piping have plausible distinct zones.",
+      "result": "No material or label mismatch found.",
+      "title": null,
+      "triangleBudget": 12000,
+      "triangles": 5236
+    },
+    {
+      "baselineLivePreviewSha256": "2d8fe6f2a5d8108c6c94ac1d386bdf670180da81c40f2c3da56cc643197af53f",
+      "baselineLiveSourceSha256": "0491af3c6ba651a202ad0c87bc15c795bbaafb068a36e9eb7e2c19b55741c0c7",
+      "baselinePreviewSha256": "2d8fe6f2a5d8108c6c94ac1d386bdf670180da81c40f2c3da56cc643197af53f",
+      "baselineSourceSha256": "0491af3c6ba651a202ad0c87bc15c795bbaafb068a36e9eb7e2c19b55741c0c7",
+      "envelopeM": [
+        3.3,
+        3.906,
+        2.53
+      ],
+      "id": "cooling-tower-cell",
+      "liveSourceAndPreviewMatchCheckedIn": true,
+      "observation": "FRP casing, lower inlet louvres, basin, fan stack, galvanized access ladder/handrail and water piping read as a counterflow tower cell. The access panel was light grey against teal casing because its source part used the independent fan-stack control; the edited material map treats it as part of the casing finish.",
+      "result": "Material-control mismatch corrected: access-door now follows casing; stack remains independent.",
+      "title": null,
+      "triangleBudget": 9000,
+      "triangles": 2110
+    },
+    {
+      "baselineLivePreviewSha256": "c95bc2fbe78cbbe95ee9486c5f92ff095c35dead0c9eabaf4eda6bb4f33268be",
+      "baselineLiveSourceSha256": "9ca7672501816a4878458734ede8b856c1af6f7ed24d6b76d85a54c14218cabb",
+      "baselinePreviewSha256": "c95bc2fbe78cbbe95ee9486c5f92ff095c35dead0c9eabaf4eda6bb4f33268be",
+      "baselineSourceSha256": "9ca7672501816a4878458734ede8b856c1af6f7ed24d6b76d85a54c14218cabb",
+      "envelopeM": [
+        1.86,
+        2.06,
+        0.664
+      ],
+      "id": "dry-type-transformer",
+      "liveSourceAndPreviewMatchCheckedIn": true,
+      "observation": "Three cast-resin coils, laminated core, copper links/busbars, insulators, clamping frame and wheeled base read as an open dry-type transformer. The material zones are coherent.",
+      "result": "No material or label mismatch found.",
+      "title": null,
+      "triangleBudget": 9000,
+      "triangles": 5160
+    },
+    {
+      "baselineLivePreviewSha256": "c63191802a836ece31fcdb6313665f9a2603dc38f5dcb525825826f25d38987c",
+      "baselineLiveSourceSha256": "584f05bc3ea6f9773a0dde861eae8238f92239e68466ce095ef547172bd0ad36",
+      "baselinePreviewSha256": "c63191802a836ece31fcdb6313665f9a2603dc38f5dcb525825826f25d38987c",
+      "baselineSourceSha256": "584f05bc3ea6f9773a0dde861eae8238f92239e68466ce095ef547172bd0ad36",
+      "envelopeM": [
+        4.025,
+        3.131926,
+        1.51
+      ],
+      "id": "standby-generator-enclosure",
+      "liveSourceAndPreviewMatchCheckedIn": true,
+      "observation": "Sound-attenuated canopy, three louvred service doors, sub-base tank, roof exhaust silencer, control window and emergency stop read as a standby diesel genset enclosure. The visible material zones are plausible.",
+      "result": "No material or label mismatch found.",
+      "title": null,
+      "triangleBudget": 8000,
+      "triangles": 2540
+    },
+    {
+      "baselineLivePreviewSha256": "3777b0d386a33fad264ba665b6221f434cee444758c22b7a780c87540c36b775",
+      "baselineLiveSourceSha256": "b01db3a8da44c040da9a23086c9d77b8f857970753a0ce7147634719755ed291",
+      "baselinePreviewSha256": "3777b0d386a33fad264ba665b6221f434cee444758c22b7a780c87540c36b775",
+      "baselineSourceSha256": "b01db3a8da44c040da9a23086c9d77b8f857970753a0ce7147634719755ed291",
+      "envelopeM": [
+        1.952,
+        2.08,
+        0.392
+      ],
+      "id": "clean-agent-cylinder-bank",
+      "liveSourceAndPreviewMatchCheckedIn": true,
+      "observation": "Five upright suppression cylinders, brass valve/gauge assemblies, common discharge manifold, straps, warning labels and galvanized rack are recognizable with distinct finishes.",
+      "result": "No material or label mismatch found.",
+      "title": null,
+      "triangleBudget": 9000,
+      "triangles": 5316
+    }
+  ],
+  "baselineCommit": "bbb6eecf2ad34561747524b5e80734766c2aee1a",
+  "claimsBoundary": "Local preview/source review only; not equipment performance, certification, fit, safety, or physical acceptance.",
+  "kit": "data-center-infrastructure",
+  "liveAssetsGeneratedAt": "2026-11-11T17:45:06.972Z",
+  "reviewedAt": "2026-11-11"
+}

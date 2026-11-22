@@ -1,0 +1,1 @@
+shipyard/weld-inspection-light-stand: 252 tris

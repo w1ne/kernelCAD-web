@@ -46,14 +46,80 @@ interface CrackEdge {
   v: number;
 }
 
+/**
+ * Use count of every undirected edge, in an open-addressing table over typed
+ * arrays. Vertex indices are uint32, as in binary STL. `count` is 0 for an
+ * empty slot and saturates at 255. A `Map` keyed
+ * by an edge string cost a string and an entry per edge (about 1.5 per
+ * triangle) and dominated export memory on dense meshes.
+ */
+export interface EdgeUseTable {
+  readonly lo: Uint32Array;
+  readonly hi: Uint32Array;
+  readonly count: Uint8Array;
+  readonly mask: number;
+}
+
+function edgeSlot(table: EdgeUseTable, lo: number, hi: number): number {
+  let h = Math.imul(lo, 0x9e3779b1) ^ Math.imul(hi, 0x85ebca77);
+  h = (h ^ (h >>> 15)) & table.mask;
+  while (table.count[h] !== 0 && (table.lo[h] !== lo || table.hi[h] !== hi)) h = (h + 1) & table.mask;
+  return h;
+}
+
+/** Count edge uses over all triangles. `skipDegenerate` ignores u === v edges. */
+export function countEdgeUses(triangles: ArrayLike<number>, skipDegenerate = false): EdgeUseTable {
+  const triCount = Math.floor(triangles.length / 3);
+  let capacity = 1024;
+  // 3 * triCount bounds the distinct edges; a closed mesh has half that.
+  while (capacity <= triCount * 3) capacity *= 2;
+  const table: EdgeUseTable = {
+    lo: new Uint32Array(capacity),
+    hi: new Uint32Array(capacity),
+    count: new Uint8Array(capacity),
+    mask: capacity - 1,
+  };
+  for (let t = 0; t < triCount; t++) {
+    const a = triangles[t * 3];
+    const b = triangles[t * 3 + 1];
+    const c = triangles[t * 3 + 2];
+    for (let k = 0; k < 3; k++) {
+      const u = k === 0 ? a : k === 1 ? b : c;
+      const v = k === 0 ? b : k === 1 ? c : a;
+      if (skipDegenerate && u === v) continue;
+      const lo = u < v ? u : v;
+      const hi = u < v ? v : u;
+      const slot = edgeSlot(table, lo, hi);
+      if (table.count[slot] === 0) {
+        table.lo[slot] = lo;
+        table.hi[slot] = hi;
+      }
+      if (table.count[slot] < 255) table.count[slot]++;
+    }
+  }
+  return table;
+}
+
 function collectCrackEdges(triangles: ArrayLike<number>): Map<string, CrackEdge> {
   const edges = new Map<string, CrackEdge>();
+  const uses = countEdgeUses(triangles);
+  let anyCrack = false;
+  for (let i = 0; i < uses.count.length; i++) {
+    if (uses.count[i] !== 0 && uses.count[i] !== 2) {
+      anyCrack = true;
+      break;
+    }
+  }
+  if (!anyCrack) return edges;
+  // Only crack edges get an entry, in first-use order with their triangles
+  // in ascending order.
   const triCount = Math.floor(triangles.length / 3);
   for (let t = 0; t < triCount; t++) {
     const a = triangles[t * 3];
     const b = triangles[t * 3 + 1];
     const c = triangles[t * 3 + 2];
     for (const [u, v] of [[a, b], [b, c], [c, a]] as [number, number][]) {
+      if (uses.count[edgeSlot(uses, u < v ? u : v, u < v ? v : u)] === 2) continue;
       const key = u < v ? `${u}|${v}` : `${v}|${u}`;
       let e = edges.get(key);
       if (!e) {
@@ -64,7 +130,6 @@ function collectCrackEdges(triangles: ArrayLike<number>): Map<string, CrackEdge>
       e.tris.push(t);
     }
   }
-  for (const [key, e] of edges) if (e.count === 2) edges.delete(key);
   return edges;
 }
 
@@ -371,30 +436,24 @@ export interface MeshDefectReport {
 
 /** Count open / non-manifold edges and judge them against the defect budget. */
 export function measureMeshDefects(mesh: MeshData): MeshDefectReport {
-  const use = new Map<string, number>();
   const tris = mesh.triangles;
   const triangles = Math.floor(tris.length / 3);
-  for (let t = 0; t < triangles; t++) {
-    const a = tris[t * 3];
-    const b = tris[t * 3 + 1];
-    const c = tris[t * 3 + 2];
-    for (const [u, v] of [[a, b], [b, c], [c, a]] as [number, number][]) {
-      if (u === v) continue;
-      const key = u < v ? `${u}|${v}` : `${v}|${u}`;
-      use.set(key, (use.get(key) ?? 0) + 1);
-    }
-  }
+  const uses = countEdgeUses(tris, true);
+  let edges = 0;
   let openEdges = 0;
   let nonManifoldEdges = 0;
-  for (const n of use.values()) {
+  for (let i = 0; i < uses.count.length; i++) {
+    const n = uses.count[i];
+    if (n === 0) continue;
+    edges++;
     if (n === 1) openEdges++;
     else if (n > 2) nonManifoldEdges++;
   }
   const bad = openEdges + nonManifoldEdges;
-  const budget = meshDefectBudget(use.size);
+  const budget = meshDefectBudget(edges);
   return {
     triangles,
-    edges: use.size,
+    edges,
     openEdges,
     nonManifoldEdges,
     budget,
@@ -403,8 +462,16 @@ export function measureMeshDefects(mesh: MeshData): MeshDefectReport {
   };
 }
 
-/** Remove triangles with a repeated vertex index (welding artifacts). */
+/** Remove triangles with a repeated vertex index (welding artifacts). Returns
+ *  the input array itself when there is nothing to remove. */
 export function dropDegenerateTriangles(triangles: number[]): number[] {
+  // The usual mesh has none: hand the input back instead of copying it.
+  let degenerate = triangles.length % 3 !== 0;
+  for (let i = 0; !degenerate && i < triangles.length; i += 3) {
+    const a = triangles[i], b = triangles[i + 1], c = triangles[i + 2];
+    degenerate = a === b || b === c || c === a;
+  }
+  if (!degenerate) return triangles;
   const clean: number[] = [];
   for (let i = 0; i < triangles.length; i += 3) {
     const a = triangles[i], b = triangles[i + 1], c = triangles[i + 2];

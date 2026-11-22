@@ -1,0 +1,6 @@
+{
+  "command": "npx eslint catalog/kits/construction-equipment/",
+  "status": "PASS",
+  "exitCode": 0,
+  "output": "No lint diagnostics."
+}

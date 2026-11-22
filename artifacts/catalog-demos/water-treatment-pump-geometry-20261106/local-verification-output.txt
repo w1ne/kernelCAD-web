@@ -1,0 +1,215 @@
+{
+  "kind": "source/index and generated local page verification; no deployment performed",
+  "localPagesDirectory": "/tmp/kernelcad-water-treatment-pump-geometry-20261106",
+  "waterTreatmentAssetCount": 50,
+  "waterTreatmentQuality": {
+    "passing": 50,
+    "total": 50
+  },
+  "catalogQuality": {
+    "passing": 2390,
+    "total": 2390
+  },
+  "assets": [
+    {
+      "id": "high-lift-pump-skid",
+      "source": "catalog/kits/water-treatment/high-lift-pump-skid.kcad.ts",
+      "sourceSha256": "3f0489f5f7f77b4d41aa465a40994270cbc9d3babed821f61158755575490a84",
+      "preview": "/assets/water-treatment-high-lift-pump-skid.png",
+      "triangles": 1628,
+      "triangleBudget": 3200,
+      "colorControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "choices": {
+        "scale": null,
+        "pumpCapacity": [
+          "compact",
+          "standard",
+          "highFlow"
+        ],
+        "coatedSteel": null,
+        "structuralSteel": null,
+        "stainlessSteel": null
+      }
+    },
+    {
+      "id": "horizontal-split-case-pump",
+      "source": "catalog/kits/water-treatment/horizontal-split-case-pump.kcad.ts",
+      "sourceSha256": "876fb7769dcb8f27d4cd2d198a57ea18b478308d0770561880348a41bb940c5d",
+      "preview": "/assets/water-treatment-horizontal-split-case-pump.png",
+      "triangles": 1548,
+      "triangleBudget": 3200,
+      "colorControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "elastomer"
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "choices": {
+        "scale": null,
+        "casingSize": [
+          "compact",
+          "standard",
+          "heavyDuty"
+        ],
+        "coatedSteel": null,
+        "structuralSteel": null,
+        "stainlessSteel": null,
+        "elastomer": null
+      }
+    },
+    {
+      "id": "reverse-osmosis-skid",
+      "source": "catalog/kits/water-treatment/reverse-osmosis-skid.kcad.ts",
+      "sourceSha256": "56f106861a6270241ed81732288ed2448bf53bb6309b6cbea351b13a2cc30e66",
+      "preview": "/assets/water-treatment-reverse-osmosis-skid.png",
+      "triangles": 2660,
+      "triangleBudget": 3300,
+      "colorControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "choices": {
+        "scale": null,
+        "membraneVessels": [
+          "2",
+          "3",
+          "4"
+        ],
+        "coatedSteel": null,
+        "structuralSteel": null,
+        "stainlessSteel": null
+      }
+    }
+  ],
+  "parametricVariants": [
+    {
+      "asset": "water-treatment/high-lift-pump-skid",
+      "variant": "highVisibility",
+      "values": {
+        "coatedSteel": "#e5682d",
+        "structuralSteel": "#505b60",
+        "stainlessSteel": "#e1ddd0",
+        "pumpCapacity": "highFlow"
+      },
+      "sourceSha256": "3f0489f5f7f77b4d41aa465a40994270cbc9d3babed821f61158755575490a84",
+      "triangles": 1628,
+      "png": "variants/high-lift-pump-skid-highVisibility.png"
+    },
+    {
+      "asset": "water-treatment/horizontal-split-case-pump",
+      "variant": "highVisibility",
+      "values": {
+        "coatedSteel": "#e5682d",
+        "structuralSteel": "#505b60",
+        "stainlessSteel": "#e1ddd0",
+        "elastomer": "#282d30",
+        "casingSize": "heavyDuty"
+      },
+      "sourceSha256": "876fb7769dcb8f27d4cd2d198a57ea18b478308d0770561880348a41bb940c5d",
+      "triangles": 1548,
+      "png": "variants/horizontal-split-case-pump-highVisibility.png"
+    },
+    {
+      "asset": "water-treatment/reverse-osmosis-skid",
+      "variant": "two-vessels",
+      "values": {
+        "coatedSteel": "#e5682d",
+        "structuralSteel": "#505b60",
+        "stainlessSteel": "#e1ddd0",
+        "membraneVessels": "2"
+      },
+      "sourceSha256": "56f106861a6270241ed81732288ed2448bf53bb6309b6cbea351b13a2cc30e66",
+      "triangles": 2104,
+      "png": "variants/reverse-osmosis-skid-two-vessels.png"
+    },
+    {
+      "asset": "water-treatment/reverse-osmosis-skid",
+      "variant": "four-vessels",
+      "values": {
+        "coatedSteel": "#e5682d",
+        "structuralSteel": "#505b60",
+        "stainlessSteel": "#e1ddd0",
+        "membraneVessels": "4"
+      },
+      "sourceSha256": "56f106861a6270241ed81732288ed2448bf53bb6309b6cbea351b13a2cc30e66",
+      "triangles": 3216,
+      "png": "variants/reverse-osmosis-skid-four-vessels.png"
+    }
+  ],
+  "checks": {
+    "high-lift-pump-skid.indexed": true,
+    "high-lift-pump-skid.sourceHashMatches": true,
+    "high-lift-pump-skid.previewFileExists": true,
+    "high-lift-pump-skid.previewIndexed": true,
+    "high-lift-pump-skid.qualityGate": true,
+    "high-lift-pump-skid.materialControls": true,
+    "high-lift-pump-skid.namedPresets": true,
+    "high-lift-pump-skid.usefulChoice": true,
+    "high-lift-pump-skid.silhouetteSource": true,
+    "high-lift-pump-skid.underTriangleBudget": true,
+    "high-lift-pump-skid.localPageAndPreview": true,
+    "high-lift-pump-skid.localPageControlsAndPresets": true,
+    "horizontal-split-case-pump.indexed": true,
+    "horizontal-split-case-pump.sourceHashMatches": true,
+    "horizontal-split-case-pump.previewFileExists": true,
+    "horizontal-split-case-pump.previewIndexed": true,
+    "horizontal-split-case-pump.qualityGate": true,
+    "horizontal-split-case-pump.materialControls": true,
+    "horizontal-split-case-pump.namedPresets": true,
+    "horizontal-split-case-pump.usefulChoice": true,
+    "horizontal-split-case-pump.silhouetteSource": true,
+    "horizontal-split-case-pump.underTriangleBudget": true,
+    "horizontal-split-case-pump.localPageAndPreview": true,
+    "horizontal-split-case-pump.localPageControlsAndPresets": true,
+    "reverse-osmosis-skid.indexed": true,
+    "reverse-osmosis-skid.sourceHashMatches": true,
+    "reverse-osmosis-skid.previewFileExists": true,
+    "reverse-osmosis-skid.previewIndexed": true,
+    "reverse-osmosis-skid.qualityGate": true,
+    "reverse-osmosis-skid.materialControls": true,
+    "reverse-osmosis-skid.namedPresets": true,
+    "reverse-osmosis-skid.usefulChoice": true,
+    "reverse-osmosis-skid.silhouetteSource": true,
+    "reverse-osmosis-skid.underTriangleBudget": true,
+    "reverse-osmosis-skid.localPageAndPreview": true,
+    "reverse-osmosis-skid.localPageControlsAndPresets": true,
+    "waterTreatmentKitHas50Ids": true,
+    "waterTreatmentKitQuality50of50": true,
+    "catalogQuality2390of2390": true,
+    "parametricVariantCount": true,
+    "variant1.indexedSourceHashMatches": true,
+    "variant1.underTriangleBudget": true,
+    "variant1.previewExists": true,
+    "variant2.indexedSourceHashMatches": true,
+    "variant2.underTriangleBudget": true,
+    "variant2.previewExists": true,
+    "variant3.indexedSourceHashMatches": true,
+    "variant3.underTriangleBudget": true,
+    "variant3.previewExists": true,
+    "variant4.indexedSourceHashMatches": true,
+    "variant4.underTriangleBudget": true,
+    "variant4.previewExists": true,
+    "allParametricVariantsUnderBudget": true,
+    "localHubListsWaterTreatment": true
+  },
+  "passed": 54,
+  "total": 54,
+  "pass": true
+}

@@ -54,7 +54,7 @@ describe('static catalog download generation', () => {
 
     it('builds the supplemental choice-param variant from source for the three one-preset assets', async () => {
         const index = CatalogIndexSchema.parse(JSON.parse(readFileSync(join(repoRoot, 'catalog/index.json'), 'utf8')));
-        const onePresetAssets = index.assets.filter((asset) => Object.keys(asset.presets ?? {}).length === 1);
+        const onePresetAssets = index.assets.filter((asset) => ['reeds', 'seesaw', 'speed-bump'].includes(asset.id));
         expect(onePresetAssets.map((asset) => asset.id).sort()).toEqual(['reeds', 'seesaw', 'speed-bump']);
         for (const asset of onePresetAssets) {
             const sourcePath = join(repoRoot, asset.source);

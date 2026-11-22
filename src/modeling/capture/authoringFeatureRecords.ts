@@ -16,7 +16,7 @@ import type {
   FeaStudyMetadata,
   FeaStudySpec,
 } from '../../shared/intent/feaStudyRecord';
-import { resolveFeaLoadsFromMotion, validFeaSelector, validateFeaStudyLoads } from './feaStudyLoads';
+import { recordedFeaSelector, resolveFeaLoadsFromMotion, validFeaSelector, validateFeaStudyLoads } from './feaStudyLoads';
 import { resolveFeaMaterial } from '../../kernel/fea/feaMaterials';
 import {
   DATUM_LABEL_RE,
@@ -28,6 +28,7 @@ import {
   type DrawingToleranceMetadata,
   type DrawingToleranceSpec,
 } from '../../shared/intent/drawingGdtRecord';
+import { DimensionTolError, parseDimensionTol } from '../../shared/tol/stackup';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import type {
   EmbossTextAlign,
@@ -42,6 +43,7 @@ import type {
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 
@@ -507,6 +509,41 @@ export function buildEmbossTextFeatureSpec(
   };
 }
 
+/** Option keys `Shape.embossText` accepts. `{ font, halign }` used to drop
+ *  both keys and engrave centred text in the default font with no diagnostic. */
+const EMBOSS_TEXT_OPTION_KEYS: ReadonlySet<string> = new Set([
+  'textContent', 'fontFamily', 'size', 'depth', 'align',
+  'anchorU', 'anchorV', 'rotation', 'scaleMode', 'face',
+]);
+
+const EMBOSS_TEXT_EXAMPLE =
+  "box(40, 20, 6).embossText({ textContent: 'KC', face: 'top', size: 6, depth: 0.4, fontFamily: 'Inter' })";
+
+export function assertEmbossTextOptions(opts: unknown, featureId: FeatureId): void {
+  if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api: 'embossText(opts)',
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: 'an options object { textContent, face, size, depth, ... }',
+      example: EMBOSS_TEXT_EXAMPLE,
+      featureId,
+    });
+  }
+  const unknown = Object.keys(opts).find((key) => !EMBOSS_TEXT_OPTION_KEYS.has(key));
+  if (unknown !== undefined) {
+    invalidArgs({
+      api: 'embossText(opts)',
+      path: `opts.${unknown}`,
+      got: (opts as Record<string, unknown>)[unknown],
+      requires: `a known option key; embossText accepts ${[...EMBOSS_TEXT_OPTION_KEYS].join(', ')}`,
+      example: EMBOSS_TEXT_EXAMPLE,
+      featureId,
+    });
+  }
+}
+
 export function buildProjectCurveFeatureSpec(
   parentFeatureId: FeatureId,
   args: ProjectCurveCaptureArgs,
@@ -575,7 +612,7 @@ export function buildFeaStudyFeatureSpec(args: FeaStudySpec, shapeRef: FeatureRe
     virtual: true,
     name: args.name ?? 'study',
     material: args.material,
-    fixed: args.fixed,
+    fixed: recordedFeaSelector(args.fixed),
     loads,
     ...(args.meshSize !== undefined ? { meshSize: args.meshSize } : {}),
     ...(args.minSafetyFactor !== undefined ? { minSafetyFactor: args.minSafetyFactor } : {}),
@@ -691,6 +728,21 @@ export function buildDrawingToleranceFeatureSpec(
 
 const DIMENSION_KINDS = ['linear', 'diameter', 'radius', 'angular'] as const;
 
+function dimensionTol(raw: unknown): { upper: number; lower: number } | undefined {
+  if (raw === undefined) return undefined;
+  try {
+    return parseDimensionTol(raw);
+  } catch (err) {
+    const why = err instanceof DimensionTolError ? err.message : 'must be a number or { upper, lower }';
+    invalidGdt('dimension', 'tol', why);
+  }
+}
+
+function dimensionMetadata(s: Record<string, unknown>): DrawingDimensionMetadata {
+  const tol = dimensionTol(s.tol);
+  return { ...(s as object), virtual: true, ...(tol !== undefined ? { tol } : {}) } as DrawingDimensionMetadata;
+}
+
 function isAnchor(v: unknown): boolean {
   if (Array.isArray(v)) return v.length === 3 && v.every(n => typeof n === 'number' && Number.isFinite(n));
   if (!v || typeof v !== 'object') return false;
@@ -722,7 +774,7 @@ export function buildDrawingDimensionFeatureSpec(
   if (s.label !== undefined && typeof s.label !== 'string') {
     invalidGdt('dimension', 'label', 'must be a string');
   }
-  const metadata = { ...(s as object), virtual: true } as DrawingDimensionMetadata;
+  const metadata = dimensionMetadata(s);
   return {
     kind: 'drawingDimension',
     params: {},

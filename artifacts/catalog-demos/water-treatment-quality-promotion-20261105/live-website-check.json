@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-11-05T00:53:29+00:00",
+  "homepage": {
+    "url": "https://kernelcad.com/",
+    "httpStatus": 200
+  },
+  "assetIndex": {
+    "url": "https://kernelcad.com/assets.json",
+    "httpStatus": 200,
+    "generatedAt": "2026-11-05T00:14:13.931Z",
+    "waterTreatmentRows": 50,
+    "rowsWithPreview": 50,
+    "rowsWithPresets": 0
+  },
+  "catalogRoute": {
+    "url": "https://kernelcad.com/catalog/",
+    "httpStatus": 404
+  },
+  "deploymentStatus": "feature branch not deployed; this is the current public baseline before the promotion",
+  "claimBoundary": "Local branch changes do not establish deployed behavior."
+}

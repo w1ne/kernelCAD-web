@@ -7,10 +7,11 @@
 // low-poly GLB inside its triangle budget, and record what the file measures.
 
 import { createHash } from 'node:crypto';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative } from 'node:path';
 import { runScript } from '../../composition/runScript';
 import { runAndExport } from '../script-runtime/export';
+import { resetOcct } from '../../kernel/backends/occt/occtBackend';
 import {
   CatalogAssetSchema,
   CatalogIndexSchema,
@@ -26,20 +27,38 @@ import type { AssetMetadata, AssetRig } from '../../shared/assets/assetSchema';
 const ASSET_SUFFIX = '.kcad.ts';
 
 interface GlbKernelcadExtras {
-  stats: { triangles: number; sizeM: [number, number, number]; minUpM: number };
+  stats: {
+    triangles: number;
+    sizeM: [number, number, number];
+    minUpM: number;
+    materials?: number;
+    drawCalls?: number;
+    parts?: number;
+    hasRig?: boolean;
+    hasIk?: boolean;
+  };
   palette?: Array<{ name: string; color: string; parts: string[] }>;
   rig?: AssetRig;
 }
 
 export class CatalogBuildError extends Error {}
 
-/** Build every kit under `<repoRoot>/catalog/kits`. */
-export async function buildCatalogIndex(repoRoot: string): Promise<CatalogIndex> {
+/** Every kit directory id under `<repoRoot>/catalog/kits`, sorted. */
+export function listCatalogKitIds(repoRoot: string): string[] {
   const kitsDir = join(repoRoot, 'catalog', 'kits');
-  const kitIds = readdirSync(kitsDir).filter((name) => statSync(join(kitsDir, name)).isDirectory()).sort();
+  return readdirSync(kitsDir).filter((name) => statSync(join(kitsDir, name)).isDirectory()).sort();
+}
+
+/**
+ * Build the kits under `<repoRoot>/catalog/kits`: all of them, or only
+ * `onlyKits` (used to split the full-catalog freshness check across runners).
+ */
+export async function buildCatalogIndex(repoRoot: string, onlyKits?: readonly string[]): Promise<CatalogIndex> {
+  const kitsDir = join(repoRoot, 'catalog', 'kits');
+  const kitIds = listCatalogKitIds(repoRoot).filter((id) => onlyKits === undefined || onlyKits.includes(id));
   const kits: CatalogIndex['kits'] = [];
   const assets: CatalogAsset[] = [];
-  for (const kitId of kitIds) {
+  for (const [kitIndex, kitId] of kitIds.entries()) {
     const kitDir = join(kitsDir, kitId);
     const kitFile = CatalogKitFileSchema.parse(JSON.parse(readFileSync(join(kitDir, 'kit.json'), 'utf8')));
     const sources = readdirSync(kitDir).filter((name) => name.endsWith(ASSET_SUFFIX)).sort();
@@ -49,6 +68,11 @@ export async function buildCatalogIndex(repoRoot: string): Promise<CatalogIndex>
     }
     kits.push({ id: kitId, ...kitFile, assets: kitAssets.map((asset) => asset.id) });
     assets.push(...kitAssets);
+
+    // Asset export allocates substantial native geometry state. The catalog
+    // retains only serialized metadata and GLB-derived stats, so reset OCCT
+    // between kits to keep full-catalog builds bounded as the library grows.
+    if (kitIndex < kitIds.length - 1) await resetOcct();
   }
   const duplicate = assets.find((asset, index) => assets.findIndex((other) => other.id === asset.id) !== index);
   if (duplicate !== undefined) throw new CatalogBuildError(`duplicate catalog asset id '${duplicate.id}'.`);
@@ -93,8 +117,16 @@ export async function buildCatalogAssetWithGlb(
     params,
     presets: run.session.assetPresets ?? {},
     ...(glb.extras.rig === undefined ? {} : { rig: glb.extras.rig }),
-    stats: { ...glb.extras.stats, materials: glb.materials },
+    stats: {
+      triangles: glb.extras.stats.triangles,
+      sizeM: glb.extras.stats.sizeM,
+      minUpM: glb.extras.stats.minUpM,
+      materials: glb.materials,
+    },
     palette: (glb.extras.palette ?? []).map((zone) => paletteZone(zone, params)),
+    ...(existsSync(join(repoRoot, 'catalog', 'kits', kit, 'previews', `${id}.png`))
+      ? { preview: `/assets/${kit}-${id}.png` }
+      : {}),
   });
   return { asset, glb: glb.bytes };
 }

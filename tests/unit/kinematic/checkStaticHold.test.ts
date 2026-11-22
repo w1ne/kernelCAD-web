@@ -12,11 +12,13 @@
 // (box() is centered then translated so it spans x in [0, L]).
 // tau = m * g * L/2 = 0.4710 * 9.81 * 0.15 = 0.6931 N*m.
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { checkStaticHold } from '../../../src/kinematic/checkStaticHold';
+import { checkMotionLoad } from '../../../src/kinematic/motionLoad';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createScriptApi } from '../../../src/composition/scriptApi';
+import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import type { Assembly } from '../../../src/modeling/capture/assembly';
 
 const LENGTH_MM = 300;
@@ -48,6 +50,40 @@ function buildHingedBeam(opts: {
   return { arm };
 }
 
+function buildMateOnlyArm(opts: { ratedTorqueNm?: number } = {}): Assembly {
+  const session = new CaptureSession();
+  const kc = createScriptApi({ session });
+  const arm = kc.assembly('mate-only-arm');
+  const wall = arm.part('wall', kc.box(40, 40, 40, true));
+  const beam = arm.part(
+    'beam',
+    kc.box(LENGTH_MM, WIDTH_MM, HEIGHT_MM, true).translate(LENGTH_MM / 2, 0, 0),
+    { density: STEEL_DENSITY },
+  );
+  wall.connector('pivot', {
+    type: 'axis',
+    origin: { kind: 'vec3', value: [0, 0, 0] },
+    axis: [0, 1, 0],
+  });
+  beam.connector('pivot', {
+    type: 'axis',
+    origin: { kind: 'vec3', value: [0, 0, 0] },
+    axis: [0, 1, 0],
+  });
+  arm.mate('shoulder', 'wall.pivot', 'beam.pivot', 'revolute', { limitsDeg: [-90, 90] });
+  if (opts.ratedTorqueNm !== undefined) {
+    arm.mechanicalJoint('drive', {
+      mate: 'shoulder',
+      actuator: 'wall',
+      shaft: 'wall',
+      supports: ['wall'],
+      output: 'beam',
+      torqueNm: opts.ratedTorqueNm,
+    });
+  }
+  return arm;
+}
+
 function expectedTorqueAtHorizontal(density: number): number {
   const volumeM3 = (LENGTH_MM * WIDTH_MM * HEIGHT_MM) * 1e-9;
   const massKg = density * volumeM3;
@@ -57,6 +93,32 @@ function expectedTorqueAtHorizontal(density: number): number {
 describe('checkStaticHold — gravitational torque vs actuator capacity', () => {
   beforeAll(async () => {
     await initOcct();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('does not pass when the assembly scene cannot be lowered for mass properties', async () => {
+    const expected = expectedTorqueAtHorizontal(STEEL_DENSITY);
+    const { arm } = buildHingedBeam({ torqueNm: expected * 10 });
+    const lower = vi.spyOn(RecomputeEngine.prototype, 'run').mockResolvedValue({
+      shapes: new Map(),
+      diagnostics: [],
+      health: new Map(),
+      selections: [],
+    });
+
+    const r = await checkStaticHold(arm, { pose: { shoulder: 0 } });
+
+    expect(lower).toHaveBeenCalledOnce();
+    expect(r.ok).toBe(false);
+    expect(r.joints).toHaveLength(0);
+    expect(r.posesSampled).toBe(0);
+    expect(r.diagnostics).toContainEqual(expect.objectContaining({
+      code: 'assembly.joint.static-hold.mass-unavailable',
+      severity: 'error',
+    }));
   });
 
   it('analytic torque on a horizontal beam: tau = m*g*L/2', async () => {
@@ -112,12 +174,59 @@ describe('checkStaticHold — gravitational torque vs actuator capacity', () => 
     expect(diag).toBeDefined();
   });
 
-  it('empty assembly / no joints is a vacuous pass', async () => {
+  it('mate-only revolute joints report that static-hold has no actuator coverage', async () => {
+    const arm = buildMateOnlyArm();
+    const r = await checkStaticHold(arm);
+
+    expect(r.ok).toBe(false);
+    expect(r.joints).toHaveLength(0);
+    const diag = r.diagnostics.find((d) => d.code === 'assembly.joint.static-hold.no-actuator');
+    expect(diag).toMatchObject({ severity: 'warn' });
+    expect(diag?.message).toContain('shoulder');
+    expect(diag?.message).toContain('mechanicalJoint');
+  });
+
+  it('a named mate with a rated mechanicalJoint is not a pass and points to motion-load', async () => {
+    // #1270 replay: an undersized mechanicalJoint rating on a mate-only hinge
+    // returned ok=true with no joints. motion-load evaluates this rating.
+    const arm = buildMateOnlyArm({ ratedTorqueNm: 1e-6 });
+    const r = await checkStaticHold(arm, { joint: 'shoulder', pose: { shoulder: 0 } });
+
+    expect(r.ok).toBe(false);
+    expect(r.joints).toHaveLength(0);
+    expect(r.posesSampled).toBe(0);
+    const diag = r.diagnostics.find((d) => d.code === 'assembly.joint.static-hold.no-actuator');
+    expect(diag?.message).toContain("Requested joint 'shoulder'");
+    expect(diag?.message).toContain("check:'motion-load'");
+
+    const load = await checkMotionLoad(arm, {
+      mode: 'poses',
+      poses: [{ shoulder: 0 }],
+      quasiStatic: true,
+      gravity: [0, 0, -9.81],
+    });
+    expect(load.ok).toBe(false);
+    expect(load.diagnostics.map((d) => d.code)).toContain('mechanism.load.torque-exceeded');
+  });
+
+  it('an unknown requested joint is not a pass even when another joint is actuated', async () => {
+    const expected = expectedTorqueAtHorizontal(STEEL_DENSITY);
+    const { arm } = buildHingedBeam({ torqueNm: expected * 10 });
+    const r = await checkStaticHold(arm, { joint: 'elbow', pose: { shoulder: 0 } });
+
+    expect(r.ok).toBe(false);
+    expect(r.joints).toHaveLength(0);
+    const diag = r.diagnostics.find((d) => d.code === 'assembly.joint.static-hold.no-actuator');
+    expect(diag?.message).toContain("Requested joint 'elbow' did not resolve");
+  });
+
+  it('empty assembly reports that static-hold checked nothing', async () => {
     const session = new CaptureSession();
     const kc = createScriptApi({ session });
     const arm = kc.assembly('empty');
     const r = await checkStaticHold(arm);
-    expect(r.ok).toBe(true);
+    expect(r.ok).toBe(false);
     expect(r.joints).toHaveLength(0);
+    expect(r.diagnostics.some((d) => d.code === 'assembly.joint.static-hold.no-actuator')).toBe(true);
   });
 });

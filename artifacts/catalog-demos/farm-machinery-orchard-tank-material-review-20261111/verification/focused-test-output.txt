@@ -1,0 +1,9 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/orchardSprayerTankMaterial.test.ts (1 test) 440ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  16:09:20
+   Duration  5.45s (transform 3.85s, setup 82ms, import 4.81s, tests 440ms, environment 0ms)

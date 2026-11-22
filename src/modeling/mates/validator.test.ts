@@ -164,6 +164,37 @@ describe('validateAssembly', () => {
     expect(floating).toHaveLength(0);
   });
 
+  it('does not call a mated cluster orphan when an unmated part is declared first', () => {
+    nextId = 0;
+    // A standalone context part declared before the hinge assembly.
+    const table = mkPart('table');
+    const base = mkPart('base');
+    const lid = mkPart('lid');
+    const hinge = mkJoint('hinge', base, lid);
+    const r = validateAssembly({ records: [table, base, lid, hinge] });
+    const codes = r.diagnostics.map((d) => [d.code, d.partName]);
+    // Same result as with 'table' declared last: only 'table' is disconnected.
+    expect(codes).toEqual([['assembly.part.floating', 'table']]);
+    const last = validateAssembly({ records: [base, lid, table, hinge] });
+    expect(last.diagnostics.map((d) => [d.code, d.partName])).toEqual(codes);
+  });
+
+  it('names the larger cluster as the main mechanism when a smaller one is declared first', () => {
+    nextId = 0;
+    const gripper = mkPart('gripper');
+    const jaw = mkPart('jaw');
+    const base = mkPart('base');
+    const arm = mkPart('arm');
+    const wrist = mkPart('wrist');
+    const j1 = mkJoint('gripper-jaw', gripper, jaw);
+    const j2 = mkJoint('base-arm', base, arm);
+    const j3 = mkJoint('arm-wrist', arm, wrist);
+    const r = validateAssembly({ records: [gripper, jaw, base, arm, wrist, j1, j2, j3] });
+    const orphan = r.diagnostics.filter((d) => d.code === 'assembly.part.orphan');
+    expect(orphan.map((d) => d.partName).sort()).toEqual(['gripper', 'jaw']);
+    for (const d of orphan) expect(d.hint).toContain("main mechanism (contains 'base')");
+  });
+
   it('promotes interference pairs into assembly.interference.overlap errors', () => {
     nextId = 0;
     const a = mkPart('a');

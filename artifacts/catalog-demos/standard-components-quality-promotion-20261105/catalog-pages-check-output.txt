@@ -1,0 +1,10 @@
+asset page exists: PASS
+asset title: PASS
+preview linked: PASS
+model-size knob: PASS
+material-named color control: PASS
+alternate palette preset: PASS
+weathered palette preset: PASS
+CC0 license: PASS
+kit listed on hub: PASS
+angle bracket linked on hub: PASS

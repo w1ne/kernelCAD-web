@@ -8,7 +8,7 @@ import { parse } from 'yaml';
 // pull_request, so a PR tested against a stale base (e.g. an OCCT bump that
 // left catalog/index.json stale) went green and broke every later PR.
 const ci = parse(readFileSync('.github/workflows/ci.yml', 'utf8'));
-const jobs = ci.jobs as Record<string, { if?: string; needs?: string[] | string; steps?: { run?: string }[]; strategy?: { matrix?: { shard?: number[] } } }>;
+const jobs = ci.jobs as Record<string, { name?: string; if?: string; needs?: string[] | string; steps?: { run?: string }[]; strategy?: { matrix?: { shard?: number[] } } }>;
 
 describe('ci.yml develop push gate', () => {
   it('runs on push to develop and still on pull requests to develop', () => {
@@ -30,13 +30,40 @@ describe('ci.yml develop push gate', () => {
     const detect = (jobs.changes.steps ?? []).map(s => s.run ?? '').join('\n');
     expect(detect).toMatch(/"\$EVENT" = "push" \] && \[ "\$REF" = "refs\/heads\/develop" \][\s\S]*push_gate=true/);
     for (const name of ['lint', 'build-and-checks']) expect(jobs[name].if ?? '', name).not.toContain('push_gate');
-    expect(jobs['catalog-index'].if).toBe("needs.changes.outputs.push_gate == 'true'");
     expect(jobs['catalog-index'].steps?.map(s => s.run ?? '').join('\n')).toContain('tests/integration/catalog/catalogIndex.test.ts');
     expect(jobs.test.needs).toContain('catalog-index');
   });
 
+  it('runs the catalog index freshness gate as its own job on both PRs and pushes', () => {
+    // It rebuilds and exports every asset (2,100 today). As a dedicated job it
+    // never unbalances a shard, so it is required on the PR path too.
+    // Draft PRs (light=true) run it once they are marked ready.
+    // Only a PR whose files are all on the allow-list (tests/unit, eval, docs ...)
+    // turns `catalog` off; it defaults to true, so a push never skips it.
+    expect(jobs['catalog-index'].if).toBe("needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.light != 'true' && needs.changes.outputs.catalog == 'true'");
+    const detect = (jobs.changes.steps ?? []).map(s => s.run ?? '').join('\n');
+    expect(detect).toMatch(/\ncatalog=true\n/);
+    // The full catalog is rebuilt as 4 kit shards that must cover every kit.
+    expect(jobs['catalog-index'].strategy?.matrix?.shard).toEqual([1, 2, 3, 4]);
+    expect(JSON.stringify(jobs['catalog-index'])).toContain('KCAD_CATALOG_SHARD');
+    // And therefore excluded from the sharded run, so no shard pays its cost.
+    const shardRuns = (jobs['test-shard'].steps ?? []).map(s => s.run ?? '').join('\n');
+    expect(shardRuns).toContain("--exclude 'tests/integration/catalog/catalogIndex.test.ts'");
+  });
+
   it('leaves the full 8-shard suite on the PR path', () => {
     expect(jobs['test-shard'].strategy?.matrix?.shard).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
-    expect(jobs['test-shard'].if).toBe("needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.push_gate != 'true'");
+    expect(jobs['test-shard'].if).toBe("needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.push_gate != 'true' && needs.changes.outputs.light != 'true'");
+  });
+
+  it('gives draft PRs the light lane and never reports the required `test` name from it', () => {
+    const detect = (jobs.changes.steps ?? []).map(s => s.run ?? '').join('\n');
+    expect(detect).toMatch(/"\$EVENT" = "pull_request" \] && \[ "\$DRAFT" = "true" \][\s\S]*light=true/);
+    // The light decision is made before the outputs are written.
+    expect(detect.indexOf('light=true')).toBeLessThan(detect.indexOf('echo "reference_parts='));
+    expect(jobs['changed-tests'].if).toBe("needs.changes.outputs.light == 'true' && needs.changes.outputs.docs_only != 'true'");
+    expect(jobs.test.needs).toContain('changed-tests');
+    expect(jobs.test.if).toBe('always()');
+    expect(jobs.test.name).toContain("'test (draft-light)'");
   });
 });

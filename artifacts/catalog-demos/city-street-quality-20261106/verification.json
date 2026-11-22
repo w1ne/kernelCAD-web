@@ -1,0 +1,729 @@
+{
+  "date": "2026-11-06",
+  "kit": "city-street",
+  "assetsPromoted": 4,
+  "assetIdsAdded": 0,
+  "kitAssetCount": 65,
+  "materialControlCount": 13,
+  "presetEntryCount": 8,
+  "presetsNetAdded": 0,
+  "previewCount": 65,
+  "previewCommand": "python3 artifacts/catalog-demos/city-street-quality-20261106/rerender_city_street.py",
+  "indexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "kitQuality": {
+    "before": {
+      "passing": 61,
+      "total": 65
+    },
+    "passing": 65,
+    "total": 65
+  },
+  "quality": {
+    "before": {
+      "passing": 2382,
+      "total": 2390,
+      "passRate": "99.7%",
+      "thin": 8
+    },
+    "after": {
+      "passing": 2386,
+      "total": 2390,
+      "passRate": "99.8%",
+      "thin": 4
+    }
+  },
+  "sourceIndexPreviewRecords": [
+    {
+      "id": "advertising-column",
+      "sourceSha256": "d33944458fb94473261d3f1c23f7d979e4886f7487b07a11d7521b77dda4dcc9",
+      "indexSourceSha256": "d33944458fb94473261d3f1c23f7d979e4886f7487b07a11d7521b77dda4dcc9",
+      "preview": "/assets/city-street-advertising-column.png",
+      "previewFile": "catalog/kits/city-street/previews/advertising-column.png",
+      "triangleCount": 540,
+      "triangleBudget": 600
+    },
+    {
+      "id": "bicycle",
+      "sourceSha256": "b548de4c3d2f02b0bb90491f200e3a49f8ddf86ebff2b9560615db4fa643ddce",
+      "indexSourceSha256": "b548de4c3d2f02b0bb90491f200e3a49f8ddf86ebff2b9560615db4fa643ddce",
+      "preview": "/assets/city-street-bicycle.png",
+      "previewFile": "catalog/kits/city-street/previews/bicycle.png",
+      "triangleCount": 544,
+      "triangleBudget": 600
+    },
+    {
+      "id": "bike-rack",
+      "sourceSha256": "ff4a54cdf656bf4a4d8584815d305973aec415004e62435a07c77b912f11ff9f",
+      "indexSourceSha256": "ff4a54cdf656bf4a4d8584815d305973aec415004e62435a07c77b912f11ff9f",
+      "preview": "/assets/city-street-bike-rack.png",
+      "previewFile": "catalog/kits/city-street/previews/bike-rack.png",
+      "triangleCount": 180,
+      "triangleBudget": 300
+    },
+    {
+      "id": "bike-share-dock",
+      "sourceSha256": "f91ea883e1c10c3a99d36ae5c1aa043ec57af3bbf6ef7b1070c3ea722062c17c",
+      "indexSourceSha256": "f91ea883e1c10c3a99d36ae5c1aa043ec57af3bbf6ef7b1070c3ea722062c17c",
+      "preview": "/assets/city-street-bike-share-dock.png",
+      "previewFile": "catalog/kits/city-street/previews/bike-share-dock.png",
+      "triangleCount": 252,
+      "triangleBudget": 360
+    },
+    {
+      "id": "billboard",
+      "sourceSha256": "3ea4041febf5386b86d5bf5d4e23da62adc686cdc29492d60aed26c9d1407721",
+      "indexSourceSha256": "3ea4041febf5386b86d5bf5d4e23da62adc686cdc29492d60aed26c9d1407721",
+      "preview": "/assets/city-street-billboard.png",
+      "previewFile": "catalog/kits/city-street/previews/billboard.png",
+      "triangleCount": 168,
+      "triangleBudget": 320
+    },
+    {
+      "id": "bollard-light",
+      "sourceSha256": "0dd5ce0458c68abb6b16f1010a4ba7c4f3943ee3d1e0d7db1ad44e742f75bfc5",
+      "indexSourceSha256": "0dd5ce0458c68abb6b16f1010a4ba7c4f3943ee3d1e0d7db1ad44e742f75bfc5",
+      "preview": "/assets/city-street-bollard-light.png",
+      "previewFile": "catalog/kits/city-street/previews/bollard-light.png",
+      "triangleCount": 168,
+      "triangleBudget": 220
+    },
+    {
+      "id": "bollard",
+      "sourceSha256": "260c0f6797bd7b684a18ca88387ed109b2240c4de821ee010f3a5749e4b3c63e",
+      "indexSourceSha256": "260c0f6797bd7b684a18ca88387ed109b2240c4de821ee010f3a5749e4b3c63e",
+      "preview": "/assets/city-street-bollard.png",
+      "previewFile": "catalog/kits/city-street/previews/bollard.png",
+      "triangleCount": 140,
+      "triangleBudget": 160
+    },
+    {
+      "id": "brick-wall-section",
+      "sourceSha256": "ecfd280ae5e8d5023947e60006acff1018d2631f0827d78285213be5b3fcdf61",
+      "indexSourceSha256": "ecfd280ae5e8d5023947e60006acff1018d2631f0827d78285213be5b3fcdf61",
+      "preview": "/assets/city-street-brick-wall-section.png",
+      "previewFile": "catalog/kits/city-street/previews/brick-wall-section.png",
+      "triangleCount": 216,
+      "triangleBudget": 400
+    },
+    {
+      "id": "bus-stop-shelter",
+      "sourceSha256": "c41a3207dbc587727742efb25995f0e80ed754c9dd32e14485bf8359eb3d853b",
+      "indexSourceSha256": "c41a3207dbc587727742efb25995f0e80ed754c9dd32e14485bf8359eb3d853b",
+      "preview": "/assets/city-street-bus-stop-shelter.png",
+      "previewFile": "catalog/kits/city-street/previews/bus-stop-shelter.png",
+      "triangleCount": 180,
+      "triangleBudget": 400
+    },
+    {
+      "id": "bus-stop-sign",
+      "sourceSha256": "8873a04495543574e140a6ef2fcae41cf4dfebf81d7e6943eff27888c177264e",
+      "indexSourceSha256": "8873a04495543574e140a6ef2fcae41cf4dfebf81d7e6943eff27888c177264e",
+      "preview": "/assets/city-street-bus-stop-sign.png",
+      "previewFile": "catalog/kits/city-street/previews/bus-stop-sign.png",
+      "triangleCount": 192,
+      "triangleBudget": 300
+    },
+    {
+      "id": "cafe-table-set",
+      "sourceSha256": "e00e30e71ba06bc778815b50608f528b50961b3a69bf71b30c623b761be173e8",
+      "indexSourceSha256": "e00e30e71ba06bc778815b50608f528b50961b3a69bf71b30c623b761be173e8",
+      "preview": "/assets/city-street-cafe-table-set.png",
+      "previewFile": "catalog/kits/city-street/previews/cafe-table-set.png",
+      "triangleCount": 388,
+      "triangleBudget": 520
+    },
+    {
+      "id": "chain-barrier",
+      "sourceSha256": "a8ceaec45c11f27fb930223228047e4289fc7d252a4eb97286dda19786aa7725",
+      "indexSourceSha256": "a8ceaec45c11f27fb930223228047e4289fc7d252a4eb97286dda19786aa7725",
+      "preview": "/assets/city-street-chain-barrier.png",
+      "previewFile": "catalog/kits/city-street/previews/chain-barrier.png",
+      "triangleCount": 408,
+      "triangleBudget": 600
+    },
+    {
+      "id": "chain-link-fence",
+      "sourceSha256": "749d02b2cab212f71c22002868423afeb24bbc1e2c9a755a24a026b2dfb3fa5e",
+      "indexSourceSha256": "749d02b2cab212f71c22002868423afeb24bbc1e2c9a755a24a026b2dfb3fa5e",
+      "preview": "/assets/city-street-chain-link-fence.png",
+      "previewFile": "catalog/kits/city-street/previews/chain-link-fence.png",
+      "triangleCount": 416,
+      "triangleBudget": 560
+    },
+    {
+      "id": "city-bus",
+      "sourceSha256": "e928775be7f6a5fd04def4f54d7614940543498cfb811cd8ca8dabbcef41e9c3",
+      "indexSourceSha256": "e928775be7f6a5fd04def4f54d7614940543498cfb811cd8ca8dabbcef41e9c3",
+      "preview": "/assets/city-street-city-bus.png",
+      "previewFile": "catalog/kits/city-street/previews/city-bus.png",
+      "triangleCount": 464,
+      "triangleBudget": 800
+    },
+    {
+      "id": "crossing-beacon",
+      "sourceSha256": "d22e83f7ef87b2fbf8d9a13692287787bf628cb15e3e53891ea64bf0927c6604",
+      "indexSourceSha256": "d22e83f7ef87b2fbf8d9a13692287787bf628cb15e3e53891ea64bf0927c6604",
+      "preview": "/assets/city-street-crossing-beacon.png",
+      "previewFile": "catalog/kits/city-street/previews/crossing-beacon.png",
+      "triangleCount": 312,
+      "triangleBudget": 400
+    },
+    {
+      "id": "crosswalk-tile",
+      "sourceSha256": "e604f3c30f78085193fe22fb6feff5366d9d6483919480e7f2de401e063a8ae2",
+      "indexSourceSha256": "e604f3c30f78085193fe22fb6feff5366d9d6483919480e7f2de401e063a8ae2",
+      "preview": "/assets/city-street-crosswalk-tile.png",
+      "previewFile": "catalog/kits/city-street/previews/crosswalk-tile.png",
+      "triangleCount": 228,
+      "triangleBudget": 400
+    },
+    {
+      "id": "delivery-van",
+      "sourceSha256": "8e49fcf14fae7e10ee72852915e0cd675b268d606608e686b97951d24bc80a4a",
+      "indexSourceSha256": "8e49fcf14fae7e10ee72852915e0cd675b268d606608e686b97951d24bc80a4a",
+      "preview": "/assets/city-street-delivery-van.png",
+      "previewFile": "catalog/kits/city-street/previews/delivery-van.png",
+      "triangleCount": 376,
+      "triangleBudget": 520
+    },
+    {
+      "id": "drinking-fountain",
+      "sourceSha256": "155feb6e5fe444d3fc6bd67bee555a243f28a8dcbd842dbab13cc91b5b719dc3",
+      "indexSourceSha256": "155feb6e5fe444d3fc6bd67bee555a243f28a8dcbd842dbab13cc91b5b719dc3",
+      "preview": "/assets/city-street-drinking-fountain.png",
+      "previewFile": "catalog/kits/city-street/previews/drinking-fountain.png",
+      "triangleCount": 276,
+      "triangleBudget": 300
+    },
+    {
+      "id": "dumpster",
+      "sourceSha256": "15232d8ff5ff6f1c1d40dd8144fe3819ba0e52392d3a9a83e2abda4df56ae862",
+      "indexSourceSha256": "15232d8ff5ff6f1c1d40dd8144fe3819ba0e52392d3a9a83e2abda4df56ae862",
+      "preview": "/assets/city-street-dumpster.png",
+      "previewFile": "catalog/kits/city-street/previews/dumpster.png",
+      "triangleCount": 244,
+      "triangleBudget": 320
+    },
+    {
+      "id": "e-scooter",
+      "sourceSha256": "d526755453014561d9fa34caea0e55bd5a81983585012f4c2374baf21da02878",
+      "indexSourceSha256": "d526755453014561d9fa34caea0e55bd5a81983585012f4c2374baf21da02878",
+      "preview": "/assets/city-street-e-scooter.png",
+      "previewFile": "catalog/kits/city-street/previews/e-scooter.png",
+      "triangleCount": 192,
+      "triangleBudget": 260
+    },
+    {
+      "id": "ev-charger",
+      "sourceSha256": "31ab796a3fca480270aca1a44acf69f87e96f15307384455f8c1524ceb7be8cf",
+      "indexSourceSha256": "31ab796a3fca480270aca1a44acf69f87e96f15307384455f8c1524ceb7be8cf",
+      "preview": "/assets/city-street-ev-charger.png",
+      "previewFile": "catalog/kits/city-street/previews/ev-charger.png",
+      "triangleCount": 156,
+      "triangleBudget": 320
+    },
+    {
+      "id": "fire-alarm-box",
+      "sourceSha256": "49002df36fce258f33eb1eb421f8b369a87b99c24b5d6354c4156f5991807596",
+      "indexSourceSha256": "49002df36fce258f33eb1eb421f8b369a87b99c24b5d6354c4156f5991807596",
+      "preview": "/assets/city-street-fire-alarm-box.png",
+      "previewFile": "catalog/kits/city-street/previews/fire-alarm-box.png",
+      "triangleCount": 192,
+      "triangleBudget": 260
+    },
+    {
+      "id": "fire-hydrant",
+      "sourceSha256": "4b30145b4207191ccd7c670353831dd7a96f63ee6b4a56701b51520117d26170",
+      "indexSourceSha256": "4b30145b4207191ccd7c670353831dd7a96f63ee6b4a56701b51520117d26170",
+      "preview": "/assets/city-street-fire-hydrant.png",
+      "previewFile": "catalog/kits/city-street/previews/fire-hydrant.png",
+      "triangleCount": 188,
+      "triangleBudget": 300
+    },
+    {
+      "id": "flag-pole",
+      "sourceSha256": "b9bc84dc889bc08246695e43fe3345ba9e99c8fd4e6f2c7d0076d0c2e469d2af",
+      "indexSourceSha256": "b9bc84dc889bc08246695e43fe3345ba9e99c8fd4e6f2c7d0076d0c2e469d2af",
+      "preview": "/assets/city-street-flag-pole.png",
+      "previewFile": "catalog/kits/city-street/previews/flag-pole.png",
+      "triangleCount": 156,
+      "triangleBudget": 300
+    },
+    {
+      "id": "food-cart",
+      "sourceSha256": "baa6babbae4d528688702a38d1e71339fd46b8bd807b75d4520be6f90521595e",
+      "indexSourceSha256": "baa6babbae4d528688702a38d1e71339fd46b8bd807b75d4520be6f90521595e",
+      "preview": "/assets/city-street-food-cart.png",
+      "previewFile": "catalog/kits/city-street/previews/food-cart.png",
+      "triangleCount": 400,
+      "triangleBudget": 460
+    },
+    {
+      "id": "garden-gate",
+      "sourceSha256": "7906f801b4148a38e3874551d465761c3ef65bf88ff3a12f2c83f2bde7d7c389",
+      "indexSourceSha256": "7906f801b4148a38e3874551d465761c3ef65bf88ff3a12f2c83f2bde7d7c389",
+      "preview": "/assets/city-street-garden-gate.png",
+      "previewFile": "catalog/kits/city-street/previews/garden-gate.png",
+      "triangleCount": 232,
+      "triangleBudget": 360
+    },
+    {
+      "id": "guard-rail",
+      "sourceSha256": "f66e51666bdd2c77d415d661ed8444c6316adbba3f67eec6d109d5f7d66eadbd",
+      "indexSourceSha256": "f66e51666bdd2c77d415d661ed8444c6316adbba3f67eec6d109d5f7d66eadbd",
+      "preview": "/assets/city-street-guard-rail.png",
+      "previewFile": "catalog/kits/city-street/previews/guard-rail.png",
+      "triangleCount": 132,
+      "triangleBudget": 320
+    },
+    {
+      "id": "mailbox",
+      "sourceSha256": "7a8dea8a0330b6d15100c08c5075c7ae16f7ff06f31692b462047ec1ab2cc55d",
+      "indexSourceSha256": "7a8dea8a0330b6d15100c08c5075c7ae16f7ff06f31692b462047ec1ab2cc55d",
+      "preview": "/assets/city-street-mailbox.png",
+      "previewFile": "catalog/kits/city-street/previews/mailbox.png",
+      "triangleCount": 100,
+      "triangleBudget": 220
+    },
+    {
+      "id": "manhole-cover",
+      "sourceSha256": "309a3a0138e479bef7cba4fc1e37d00424d137d1e8849b2748ab03edaed9a989",
+      "indexSourceSha256": "309a3a0138e479bef7cba4fc1e37d00424d137d1e8849b2748ab03edaed9a989",
+      "preview": "/assets/city-street-manhole-cover.png",
+      "previewFile": "catalog/kits/city-street/previews/manhole-cover.png",
+      "triangleCount": 212,
+      "triangleBudget": 300
+    },
+    {
+      "id": "metal-fence-section",
+      "sourceSha256": "26c944dd46553db89999bcf4041b1f3f650c125a3a13768a1a456dfd18418304",
+      "indexSourceSha256": "26c944dd46553db89999bcf4041b1f3f650c125a3a13768a1a456dfd18418304",
+      "preview": "/assets/city-street-metal-fence-section.png",
+      "previewFile": "catalog/kits/city-street/previews/metal-fence-section.png",
+      "triangleCount": 360,
+      "triangleBudget": 600
+    },
+    {
+      "id": "news-kiosk",
+      "sourceSha256": "8ab0f3a62d245a5202aebaba816e4a0250ae456bd1b00b58e6b02e1a5e751523",
+      "indexSourceSha256": "8ab0f3a62d245a5202aebaba816e4a0250ae456bd1b00b58e6b02e1a5e751523",
+      "preview": "/assets/city-street-news-kiosk.png",
+      "previewFile": "catalog/kits/city-street/previews/news-kiosk.png",
+      "triangleCount": 280,
+      "triangleBudget": 450
+    },
+    {
+      "id": "newspaper-box",
+      "sourceSha256": "d6736ea0cc7495349faac9955a6095ba445408c2024938171256a25817694d7f",
+      "indexSourceSha256": "d6736ea0cc7495349faac9955a6095ba445408c2024938171256a25817694d7f",
+      "preview": "/assets/city-street-newspaper-box.png",
+      "previewFile": "catalog/kits/city-street/previews/newspaper-box.png",
+      "triangleCount": 120,
+      "triangleBudget": 200
+    },
+    {
+      "id": "park-bench",
+      "sourceSha256": "5980ff6def6fbd9147db254caf0db3e59d51f4bd8a402d17ab1f26685b8a0656",
+      "indexSourceSha256": "5980ff6def6fbd9147db254caf0db3e59d51f4bd8a402d17ab1f26685b8a0656",
+      "preview": "/assets/city-street-park-bench.png",
+      "previewFile": "catalog/kits/city-street/previews/park-bench.png",
+      "triangleCount": 164,
+      "triangleBudget": 400
+    },
+    {
+      "id": "parked-car",
+      "sourceSha256": "0e152c472cf5a144201f961ac3decd35a9f136a0961d8064e52727efd6470a2b",
+      "indexSourceSha256": "0e152c472cf5a144201f961ac3decd35a9f136a0961d8064e52727efd6470a2b",
+      "preview": "/assets/city-street-parked-car.png",
+      "previewFile": "catalog/kits/city-street/previews/parked-car.png",
+      "triangleCount": 352,
+      "triangleBudget": 520
+    },
+    {
+      "id": "parking-meter",
+      "sourceSha256": "edb6202edad76b11247dd6f23c98f7c470c6cfaa3db2662e31587b5b82db54eb",
+      "indexSourceSha256": "edb6202edad76b11247dd6f23c98f7c470c6cfaa3db2662e31587b5b82db54eb",
+      "preview": "/assets/city-street-parking-meter.png",
+      "previewFile": "catalog/kits/city-street/previews/parking-meter.png",
+      "triangleCount": 124,
+      "triangleBudget": 220
+    },
+    {
+      "id": "pedestrian-signal",
+      "sourceSha256": "f3a7a600b240a937fe7319aa8a8806d6d0b94bd212ddc4b4799840c8c15a2f17",
+      "indexSourceSha256": "f3a7a600b240a937fe7319aa8a8806d6d0b94bd212ddc4b4799840c8c15a2f17",
+      "preview": "/assets/city-street-pedestrian-signal.png",
+      "previewFile": "catalog/kits/city-street/previews/pedestrian-signal.png",
+      "triangleCount": 280,
+      "triangleBudget": 360
+    },
+    {
+      "id": "phone-booth",
+      "sourceSha256": "1ccabf65878d3eafffacdaea65c5bd05481c02e0360e4a426553b24dd2e83505",
+      "indexSourceSha256": "1ccabf65878d3eafffacdaea65c5bd05481c02e0360e4a426553b24dd2e83505",
+      "preview": "/assets/city-street-phone-booth.png",
+      "previewFile": "catalog/kits/city-street/previews/phone-booth.png",
+      "triangleCount": 300,
+      "triangleBudget": 450
+    },
+    {
+      "id": "picket-fence-section",
+      "sourceSha256": "33a36512ecfec71affdfe27acbc7e316bbfc92ec95ff48f12fd99a329692dca1",
+      "indexSourceSha256": "33a36512ecfec71affdfe27acbc7e316bbfc92ec95ff48f12fd99a329692dca1",
+      "preview": "/assets/city-street-picket-fence-section.png",
+      "previewFile": "catalog/kits/city-street/previews/picket-fence-section.png",
+      "triangleCount": 224,
+      "triangleBudget": 320
+    },
+    {
+      "id": "picnic-table",
+      "sourceSha256": "ffaaac7a1d6c84433e2dc5882506d5cb48d93497a8c0125a121667ec56477a2e",
+      "indexSourceSha256": "ffaaac7a1d6c84433e2dc5882506d5cb48d93497a8c0125a121667ec56477a2e",
+      "preview": "/assets/city-street-picnic-table.png",
+      "previewFile": "catalog/kits/city-street/previews/picnic-table.png",
+      "triangleCount": 168,
+      "triangleBudget": 400
+    },
+    {
+      "id": "planter-box",
+      "sourceSha256": "452b5971c5c97a1078201abd2c072c32fbe0aa8755a0c7814f0f0b8825612319",
+      "indexSourceSha256": "452b5971c5c97a1078201abd2c072c32fbe0aa8755a0c7814f0f0b8825612319",
+      "preview": "/assets/city-street-planter-box.png",
+      "previewFile": "catalog/kits/city-street/previews/planter-box.png",
+      "triangleCount": 150,
+      "triangleBudget": 300
+    },
+    {
+      "id": "playground-slide",
+      "sourceSha256": "f4e3be40e449f61357891ff2eaf9dfa624b5788e3c185536aac9142a7d52deac",
+      "indexSourceSha256": "f4e3be40e449f61357891ff2eaf9dfa624b5788e3c185536aac9142a7d52deac",
+      "preview": "/assets/city-street-playground-slide.png",
+      "previewFile": "catalog/kits/city-street/previews/playground-slide.png",
+      "triangleCount": 256,
+      "triangleBudget": 480
+    },
+    {
+      "id": "public-toilet",
+      "sourceSha256": "bb58e3e8cde33eea6855afdb27886875eb621c4b5b2bd87476f6c0ff334a96a4",
+      "indexSourceSha256": "bb58e3e8cde33eea6855afdb27886875eb621c4b5b2bd87476f6c0ff334a96a4",
+      "preview": "/assets/city-street-public-toilet.png",
+      "previewFile": "catalog/kits/city-street/previews/public-toilet.png",
+      "triangleCount": 160,
+      "triangleBudget": 260
+    },
+    {
+      "id": "recycling-bins",
+      "sourceSha256": "7f25575553d8a5a16ea44aadbcdb5bd9f96d8ad214d08f06010e35033de4117d",
+      "indexSourceSha256": "7f25575553d8a5a16ea44aadbcdb5bd9f96d8ad214d08f06010e35033de4117d",
+      "preview": "/assets/city-street-recycling-bins.png",
+      "previewFile": "catalog/kits/city-street/previews/recycling-bins.png",
+      "triangleCount": 348,
+      "triangleBudget": 520
+    },
+    {
+      "id": "road-barrier",
+      "sourceSha256": "5f116acea6d0a433ba1b42e1cd5160a7f5a7232ef0505e23be0513bf98e0b840",
+      "indexSourceSha256": "5f116acea6d0a433ba1b42e1cd5160a7f5a7232ef0505e23be0513bf98e0b840",
+      "preview": "/assets/city-street-road-barrier.png",
+      "previewFile": "catalog/kits/city-street/previews/road-barrier.png",
+      "triangleCount": 176,
+      "triangleBudget": 300
+    },
+    {
+      "id": "road-sign",
+      "sourceSha256": "b10bdc496f06ff685dde6694f5aa56417b47896754af1c48bed0e34105488459",
+      "indexSourceSha256": "b10bdc496f06ff685dde6694f5aa56417b47896754af1c48bed0e34105488459",
+      "preview": "/assets/city-street-road-sign.png",
+      "previewFile": "catalog/kits/city-street/previews/road-sign.png",
+      "triangleCount": 104,
+      "triangleBudget": 200
+    },
+    {
+      "id": "road-tile",
+      "sourceSha256": "81f3ce2a48088c14a805aaef24a5852f0db93716c02100eb5cc3b0081efff749",
+      "indexSourceSha256": "81f3ce2a48088c14a805aaef24a5852f0db93716c02100eb5cc3b0081efff749",
+      "preview": "/assets/city-street-road-tile.png",
+      "previewFile": "catalog/kits/city-street/previews/road-tile.png",
+      "triangleCount": 132,
+      "triangleBudget": 300
+    },
+    {
+      "id": "scaffolding-section",
+      "sourceSha256": "d102aa9c53c01e2c473526201c53e749095d5aded3eeba928729a509989a1742",
+      "indexSourceSha256": "d102aa9c53c01e2c473526201c53e749095d5aded3eeba928729a509989a1742",
+      "preview": "/assets/city-street-scaffolding-section.png",
+      "previewFile": "catalog/kits/city-street/previews/scaffolding-section.png",
+      "triangleCount": 384,
+      "triangleBudget": 600
+    },
+    {
+      "id": "seesaw",
+      "sourceSha256": "ef6c76d43030db5a137f2d93de14e677818e10de3e6499886e0342abcce3eb1a",
+      "indexSourceSha256": "ef6c76d43030db5a137f2d93de14e677818e10de3e6499886e0342abcce3eb1a",
+      "preview": "/assets/city-street-seesaw.png",
+      "previewFile": "catalog/kits/city-street/previews/seesaw.png",
+      "triangleCount": 132,
+      "triangleBudget": 260
+    },
+    {
+      "id": "shop-front",
+      "sourceSha256": "785bc761c5af3c0a4d0cbc515492b4e839c42c14577c36ee9dbb536703b5ac38",
+      "indexSourceSha256": "785bc761c5af3c0a4d0cbc515492b4e839c42c14577c36ee9dbb536703b5ac38",
+      "preview": "/assets/city-street-shop-front.png",
+      "previewFile": "catalog/kits/city-street/previews/shop-front.png",
+      "triangleCount": 276,
+      "triangleBudget": 500
+    },
+    {
+      "id": "sidewalk-tile",
+      "sourceSha256": "d43eca4965774043403cb658674fe97a230ad33c161bbb25d37ae0e33fb93700",
+      "indexSourceSha256": "d43eca4965774043403cb658674fe97a230ad33c161bbb25d37ae0e33fb93700",
+      "preview": "/assets/city-street-sidewalk-tile.png",
+      "previewFile": "catalog/kits/city-street/previews/sidewalk-tile.png",
+      "triangleCount": 240,
+      "triangleBudget": 400
+    },
+    {
+      "id": "speed-bump",
+      "sourceSha256": "43a12d7ce17526e516674144c72b62d2d106cff541cf50fc693912d0ee74d2e5",
+      "indexSourceSha256": "43a12d7ce17526e516674144c72b62d2d106cff541cf50fc693912d0ee74d2e5",
+      "preview": "/assets/city-street-speed-bump.png",
+      "previewFile": "catalog/kits/city-street/previews/speed-bump.png",
+      "triangleCount": 96,
+      "triangleBudget": 200
+    },
+    {
+      "id": "storm-drain",
+      "sourceSha256": "ee1ff84382f5d38da9bd615ee89c758671c8fc59c8a4935e3f4d5a0df9c11a21",
+      "indexSourceSha256": "ee1ff84382f5d38da9bd615ee89c758671c8fc59c8a4935e3f4d5a0df9c11a21",
+      "preview": "/assets/city-street-storm-drain.png",
+      "previewFile": "catalog/kits/city-street/previews/storm-drain.png",
+      "triangleCount": 172,
+      "triangleBudget": 260
+    },
+    {
+      "id": "street-clock",
+      "sourceSha256": "32ae412254a2d9538cf6e10a40712940214a2f2749537d527491c8b5c29afcba",
+      "indexSourceSha256": "32ae412254a2d9538cf6e10a40712940214a2f2749537d527491c8b5c29afcba",
+      "preview": "/assets/city-street-street-clock.png",
+      "previewFile": "catalog/kits/city-street/previews/street-clock.png",
+      "triangleCount": 380,
+      "triangleBudget": 450
+    },
+    {
+      "id": "street-lamp",
+      "sourceSha256": "ed9a5e407d9aca03d03dd4fa1a5d712a0e0b91388c09b0220895327b8c172c92",
+      "indexSourceSha256": "ed9a5e407d9aca03d03dd4fa1a5d712a0e0b91388c09b0220895327b8c172c92",
+      "preview": "/assets/city-street-street-lamp.png",
+      "previewFile": "catalog/kits/city-street/previews/street-lamp.png",
+      "triangleCount": 120,
+      "triangleBudget": 300
+    },
+    {
+      "id": "street-sign-post",
+      "sourceSha256": "69f17b94716d0188509090623abd242917f39b01699fd81c7bee53df652425d0",
+      "indexSourceSha256": "69f17b94716d0188509090623abd242917f39b01699fd81c7bee53df652425d0",
+      "preview": "/assets/city-street-street-sign-post.png",
+      "previewFile": "catalog/kits/city-street/previews/street-sign-post.png",
+      "triangleCount": 156,
+      "triangleBudget": 240
+    },
+    {
+      "id": "street-tree",
+      "sourceSha256": "495f0141e5f746580462c5f643dc76493d8ae1f42c34ab8c234f76e08f5ef13d",
+      "indexSourceSha256": "495f0141e5f746580462c5f643dc76493d8ae1f42c34ab8c234f76e08f5ef13d",
+      "preview": "/assets/city-street-street-tree.png",
+      "previewFile": "catalog/kits/city-street/previews/street-tree.png",
+      "triangleCount": 480,
+      "triangleBudget": 560
+    },
+    {
+      "id": "swing-set",
+      "sourceSha256": "1b1cf84118b841cc5bc5c585a9b48adcfd23dc5f39b98e3dc1aa12970663ecfe",
+      "indexSourceSha256": "1b1cf84118b841cc5bc5c585a9b48adcfd23dc5f39b98e3dc1aa12970663ecfe",
+      "preview": "/assets/city-street-swing-set.png",
+      "previewFile": "catalog/kits/city-street/previews/swing-set.png",
+      "triangleCount": 156,
+      "triangleBudget": 360
+    },
+    {
+      "id": "ticket-machine",
+      "sourceSha256": "5bbcfb6cabdca51b30a288136123f578bb8fa4440c672f852f940e8a3d48281e",
+      "indexSourceSha256": "5bbcfb6cabdca51b30a288136123f578bb8fa4440c672f852f940e8a3d48281e",
+      "preview": "/assets/city-street-ticket-machine.png",
+      "previewFile": "catalog/kits/city-street/previews/ticket-machine.png",
+      "triangleCount": 108,
+      "triangleBudget": 220
+    },
+    {
+      "id": "traffic-cone",
+      "sourceSha256": "5013c0e9c1aef02b31d3b078c676844bb371c2c12ca4310ed0afc2d719195e88",
+      "indexSourceSha256": "5013c0e9c1aef02b31d3b078c676844bb371c2c12ca4310ed0afc2d719195e88",
+      "preview": "/assets/city-street-traffic-cone.png",
+      "previewFile": "catalog/kits/city-street/previews/traffic-cone.png",
+      "triangleCount": 96,
+      "triangleBudget": 160
+    },
+    {
+      "id": "traffic-island",
+      "sourceSha256": "ae5d87f90b19d6f2a1f2c165420d699b5116d2c9313bf7c9d8cd5aa372c7d0d3",
+      "indexSourceSha256": "ae5d87f90b19d6f2a1f2c165420d699b5116d2c9313bf7c9d8cd5aa372c7d0d3",
+      "preview": "/assets/city-street-traffic-island.png",
+      "previewFile": "catalog/kits/city-street/previews/traffic-island.png",
+      "triangleCount": 220,
+      "triangleBudget": 320
+    },
+    {
+      "id": "traffic-light",
+      "sourceSha256": "6213b524f33bed38fb02550893f8fb8ab09708d30bdf99608500cd1c27fec1d8",
+      "indexSourceSha256": "6213b524f33bed38fb02550893f8fb8ab09708d30bdf99608500cd1c27fec1d8",
+      "preview": "/assets/city-street-traffic-light.png",
+      "previewFile": "catalog/kits/city-street/previews/traffic-light.png",
+      "triangleCount": 344,
+      "triangleBudget": 500
+    },
+    {
+      "id": "trash-bin",
+      "sourceSha256": "8239ab1a373b454ea4d25b1ff3400757dabb1e7cede8b31efa5f0c6506865e41",
+      "indexSourceSha256": "8239ab1a373b454ea4d25b1ff3400757dabb1e7cede8b31efa5f0c6506865e41",
+      "preview": "/assets/city-street-trash-bin.png",
+      "previewFile": "catalog/kits/city-street/previews/trash-bin.png",
+      "triangleCount": 168,
+      "triangleBudget": 220
+    },
+    {
+      "id": "utility-pole",
+      "sourceSha256": "b11931ee8b704b1d26aca78da476437bdc7f0f98df299381904e1ca7a5e53629",
+      "indexSourceSha256": "b11931ee8b704b1d26aca78da476437bdc7f0f98df299381904e1ca7a5e53629",
+      "preview": "/assets/city-street-utility-pole.png",
+      "previewFile": "catalog/kits/city-street/previews/utility-pole.png",
+      "triangleCount": 344,
+      "triangleBudget": 520
+    },
+    {
+      "id": "vending-machine",
+      "sourceSha256": "dae10d2ae10b0f1e2f55745bad5c7fa91b63693e9b392955dac3c132b05e8b82",
+      "indexSourceSha256": "dae10d2ae10b0f1e2f55745bad5c7fa91b63693e9b392955dac3c132b05e8b82",
+      "preview": "/assets/city-street-vending-machine.png",
+      "previewFile": "catalog/kits/city-street/previews/vending-machine.png",
+      "triangleCount": 424,
+      "triangleBudget": 520
+    },
+    {
+      "id": "water-barrier",
+      "sourceSha256": "677bb0a659fcd568a57f83401debe14fd20cb4fbbc06db2a330891fad4a27c12",
+      "indexSourceSha256": "677bb0a659fcd568a57f83401debe14fd20cb4fbbc06db2a330891fad4a27c12",
+      "preview": "/assets/city-street-water-barrier.png",
+      "previewFile": "catalog/kits/city-street/previews/water-barrier.png",
+      "triangleCount": 192,
+      "triangleBudget": 300
+    }
+  ],
+  "localCatalogPages": {
+    "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-city-street-pages-20261106",
+    "outputRoot": "/tmp/kernelcad-city-street-pages-20261106/catalog",
+    "workspacePages": 2390,
+    "assetsChecked": 4,
+    "hubBuilt": true,
+    "deployed": false,
+    "pages": [
+      {
+        "id": "crosswalk-tile",
+        "path": "/tmp/kernelcad-city-street-pages-20261106/catalog/city-street/crosswalk-tile/index.html",
+        "materialLabels": [
+          "Asphalt",
+          "Crosswalk paint",
+          "Edge-line paint"
+        ],
+        "allParameterLabels": [
+          "Zebra bars",
+          "Asphalt",
+          "Crosswalk paint",
+          "Edge-line paint"
+        ],
+        "presets": [
+          "fresh",
+          "worn"
+        ],
+        "previewPresent": true
+      },
+      {
+        "id": "road-tile",
+        "path": "/tmp/kernelcad-city-street-pages-20261106/catalog/city-street/road-tile/index.html",
+        "materialLabels": [
+          "Asphalt",
+          "Edge-line paint",
+          "Centre-line paint"
+        ],
+        "allParameterLabels": [
+          "Style",
+          "Asphalt",
+          "Edge-line paint",
+          "Centre-line paint"
+        ],
+        "presets": [
+          "worn",
+          "yellowCentre"
+        ],
+        "previewPresent": true
+      },
+      {
+        "id": "sidewalk-tile",
+        "path": "/tmp/kernelcad-city-street-pages-20261106/catalog/city-street/sidewalk-tile/index.html",
+        "materialLabels": [
+          "Kerb concrete",
+          "Paving stone",
+          "Accent brick"
+        ],
+        "allParameterLabels": [
+          "Paving grid",
+          "Kerb concrete",
+          "Paving stone",
+          "Accent brick"
+        ],
+        "presets": [
+          "brick",
+          "granite"
+        ],
+        "previewPresent": true
+      },
+      {
+        "id": "playground-slide",
+        "path": "/tmp/kernelcad-city-street-pages-20261106/catalog/city-street/playground-slide/index.html",
+        "materialLabels": [
+          "Galvanized steel",
+          "HDPE deck",
+          "Stainless-steel slide",
+          "Roof polyethylene"
+        ],
+        "allParameterLabels": [
+          "Roof",
+          "Galvanized steel",
+          "HDPE deck",
+          "Stainless-steel slide",
+          "Roof polyethylene"
+        ],
+        "presets": [
+          "coastal",
+          "park"
+        ],
+        "previewPresent": true
+      }
+    ]
+  },
+  "checks": {
+    "catalogKitQualityExitCode": 0,
+    "wholeCatalogQualityExitCode": 1,
+    "eslintExitCode": 0,
+    "catalogIntegration": {
+      "command": "npx vitest run tests/integration/catalog/",
+      "exitCode": 0,
+      "files": 4,
+      "tests": 15,
+      "durationSeconds": 251.9,
+      "output": "4 test files passed; 15 tests passed"
+    },
+    "errors": []
+  },
+  "deployed": false
+}

@@ -46,6 +46,31 @@ describe('solve_mates MCP tool', () => {
     }
   });
 
+  it('rejects a pose override for a fastened mate instead of silently ignoring it', async () => {
+    const ev = await evaluateScriptTool({
+      // The fixture checks only the solve_mates argument contract, not
+      // physical grounding or collision properties.
+      skipMechanismCheck: true,
+      code: `
+        const arm = assembly('rig');
+        arm.part('base', box(1, 1, 1))
+          .connector('joint', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.part('link', box(1, 1, 1))
+          .connector('joint', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('rigid', 'base.joint', 'link.joint', 'fastened');
+        return arm.model();
+      `,
+    });
+    expect(ev.ok).toBe(true);
+
+    const r = await solveMatesTool({ poses: { rigid: 90 } });
+    expect(r).toMatchObject({ ok: false, errorCode: 'feature.invalid-args' });
+    if (!r.ok) {
+      expect(r.error).toContain('poses.rigid');
+      expect(r.error).toContain('zero articulation DOFs');
+    }
+  });
+
   it('honors per-mate pose overrides', async () => {
     const ev = await evaluateScriptTool({
       // These are abstract solver fixtures (coincident-origin boxes), not

@@ -145,4 +145,40 @@ describe('faceLabels resolution from upstream feature metadata (Task 4)', () => 
     const collision = r.diagnostics.find(d => d.code === 'feature.label.collision');
     expect(collision?.message).toContain('is declared by multiple upstream features');
   });
+
+  // ── J. Canonical-alias label on a sketch extrude (no kind tag, no lineage) ──
+  // Regression: `lid: 'top'` failed with "no lineage data. Apply transforms
+  // after the face feature" although no transform ran, while the bare 'top'
+  // on the same solid resolved.
+  it('J: resolves a canonical-alias label on a straight or tapered sketch extrude', async () => {
+    const square = 'path().moveTo(-10, -10).lineTo(10, -10).lineTo(10, 10).lineTo(-10, 10).close()';
+    const lastVolume = (r: Awaited<ReturnType<typeof run>>) =>
+      [...r.shapes.values()].at(-1)!.volume();
+    for (const taper of ['', ', taperDeg: 5']) {
+      const byLabel = await run(
+        `return ${square}.extrude(10, { faceLabels: { lid: 'top' }${taper} }).shell(1, { face: 'lid' });`,
+      );
+      expect(byLabel.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+      const byName = await run(`return ${square}.extrude(10, { ${taper.slice(2)} }).shell(1, { face: 'top' });`);
+      expect(byName.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+      expect(lastVolume(byLabel)).toBeCloseTo(lastVolume(byName), 6);
+    }
+    // The straight case opens the top: 20×20×10 minus an 18×18×9 cavity.
+    const straight = await run(
+      `return ${square}.extrude(10, { faceLabels: { lid: 'top' } }).shell(1, { face: 'lid' });`,
+    );
+    expect(lastVolume(straight)).toBeCloseTo(4000 - 18 * 18 * 9, 6);
+  });
+
+  // ── K. A side alias on a round sketch extrude names the end-cap limit ─────
+  it('K: a side canonical alias on a round sketch extrude reports the end-cap diagnostic', async () => {
+    const r = await run(`
+      return path().moveTo(10, 0).threePointsArc(-10, 0, 0, 10).threePointsArc(10, 0, 0, -10).close()
+        .extrude(5, { faceLabels: { wall: 'left' } })
+        .fillet(0.5, { face: 'wall' });
+    `);
+    const errs = r.diagnostics.filter(d => d.severity === 'error');
+    expect(errs.map(d => d.code)).toContain('feature.face-ref.not-applicable');
+    expect(errs.map(d => d.message).join('\n')).toContain("only canonical faces are the 'top/bottom' end caps");
+  });
 });

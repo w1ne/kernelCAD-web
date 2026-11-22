@@ -1,0 +1,4 @@
+02 / MATERIAL ZONES — jaw-coupling.kcad.ts
+Steel: two toothed hubs
+Engineering polymer: flexible spider
+Presets: dark / brass / weathered

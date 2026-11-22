@@ -1,0 +1,18 @@
+{
+  "video": "water-treatment-pump-geometry.mp4",
+  "metadata": {
+    "width": 1280,
+    "height": 720,
+    "frameRate": "24/1",
+    "durationSeconds": 15.0
+  },
+  "decodedFrames": [
+    "video-review/decoded-01.png",
+    "video-review/decoded-02.png",
+    "video-review/decoded-03.png",
+    "video-review/decoded-04.png",
+    "video-review/decoded-05.png"
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "decoded": true
+}

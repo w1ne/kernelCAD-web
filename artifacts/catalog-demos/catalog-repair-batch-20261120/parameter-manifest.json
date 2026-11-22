@@ -1,0 +1,296 @@
+{
+  "at": "2026-11-20T02:01:02.122Z",
+  "method": "source edit using the native setParamValue parser, fresh native GLB export and software preview; not browser acceptance",
+  "records": [
+    {
+      "slug": "grid-substation/substation-fire-suppression-cylinder-bank",
+      "param": "cylinderCount",
+      "defaultPreviewByteIdentical": true,
+      "asset": {
+        "id": "substation-fire-suppression-cylinder-bank",
+        "kit": "grid-substation",
+        "title": "Fire suppression cylinder bank",
+        "description": "Selectable three- or five-cylinder bank seated within one rack and connected to a shared manifold header. Static CC0 visualization, not pressure-rated manufacturer CAD. Material controls: galvanized steel, safety red, brass; finish presets: weathered and maintenance.",
+        "category": "prop",
+        "origin": "base",
+        "tags": [
+          "grid substation",
+          "electrical infrastructure",
+          "utility yard",
+          "low poly",
+          "CC0",
+          "maintenance and safety"
+        ],
+        "compat": [
+          "grid-substation",
+          "utility-substation",
+          "electrical-infrastructure"
+        ],
+        "license": "CC0-1.0",
+        "source": "catalog/kits/grid-substation/substation-fire-suppression-cylinder-bank.kcad.ts",
+        "preview": "/assets/grid-substation-substation-fire-suppression-cylinder-bank.png",
+        "sourceSha256": "967fc5925d97c0f23f83ef1350eaaa03dbcd0664aed45cd2123ffa692d595891",
+        "triangleBudget": 1800,
+        "params": [
+          {
+            "name": "cylinderCount",
+            "type": "choice",
+            "default": "5",
+            "label": "Cylinder count",
+            "choices": [
+              "3",
+              "5"
+            ]
+          },
+          {
+            "name": "scale",
+            "type": "number",
+            "default": 1,
+            "label": "Overall scale",
+            "min": 0.65,
+            "max": 1.35,
+            "step": 0.05
+          },
+          {
+            "name": "galvanizedSteel",
+            "type": "color",
+            "default": "#7f8c92",
+            "label": "Galvanized steel"
+          },
+          {
+            "name": "safetyRed",
+            "type": "color",
+            "default": "#c7493c",
+            "label": "Safety red"
+          },
+          {
+            "name": "brass",
+            "type": "color",
+            "default": "#bf9143",
+            "label": "Brass"
+          }
+        ],
+        "presets": {
+          "weathered": {
+            "galvanizedSteel": "#778080",
+            "safetyRed": "#aa5144",
+            "brass": "#a48349"
+          },
+          "maintenance": {
+            "safetyRed": "#e45b4d"
+          }
+        },
+        "stats": {
+          "triangles": 636,
+          "sizeM": [
+            2.2,
+            1.792,
+            0.9
+          ],
+          "minUpM": 0,
+          "materials": 1
+        },
+        "palette": [
+          {
+            "name": "galvanizedSteel",
+            "color": "#7f8c92",
+            "parts": [
+              "rack-base",
+              "manifold-branch-1",
+              "manifold-branch-2",
+              "manifold-branch-3",
+              "manifold-branch-4",
+              "manifold-branch-5",
+              "manifold-header",
+              "rack-post--1--1",
+              "rack-post--1-1",
+              "retainer--1-650",
+              "retainer--1-1280",
+              "rack-post-1--1",
+              "rack-post-1-1",
+              "retainer-1-650",
+              "retainer-1-1280"
+            ],
+            "param": "galvanizedSteel"
+          },
+          {
+            "name": "safetyRed",
+            "color": "#c7493c",
+            "parts": [
+              "cylinder-1",
+              "cylinder-2",
+              "cylinder-3",
+              "cylinder-4",
+              "cylinder-5"
+            ],
+            "param": "safetyRed"
+          },
+          {
+            "name": "brass",
+            "color": "#bf9143",
+            "parts": [
+              "valve-1",
+              "valve-2",
+              "valve-3",
+              "valve-4",
+              "valve-5"
+            ],
+            "param": "brass"
+          }
+        ]
+      },
+      "cases": [
+        {
+          "value": "3",
+          "code": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/parametric/cylinderCount-3.kcad.ts",
+          "glb": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/parametric/cylinderCount-3.glb",
+          "png": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/parametric/cylinderCount-3.png"
+        },
+        {
+          "value": "5",
+          "code": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/parametric/cylinderCount-5.kcad.ts",
+          "glb": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/parametric/cylinderCount-5.glb",
+          "png": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/parametric/cylinderCount-5.png"
+        }
+      ]
+    },
+    {
+      "slug": "industrial-plant/vertical-cage-ladder",
+      "param": "sectionHeight",
+      "defaultPreviewByteIdentical": true,
+      "asset": {
+        "id": "vertical-cage-ladder",
+        "kit": "industrial-plant",
+        "title": "Vertical cage ladder",
+        "description": "Adjustable 900 to 1800 mm schematic ladder section, default 1035 mm, with eight rungs and an open wraparound cage. CC0 visualization only, not manufacturer CAD or a safety-rated access-ladder design. Controls: overall scale, steel, safety paint.",
+        "category": "structure",
+        "origin": "base",
+        "tags": [
+          "industrial plant",
+          "factory",
+          "process equipment",
+          "low poly",
+          "CC0"
+        ],
+        "compat": [
+          "industrial-plant",
+          "factory",
+          "manufacturing",
+          "industrial-scene"
+        ],
+        "license": "CC0-1.0",
+        "source": "catalog/kits/industrial-plant/vertical-cage-ladder.kcad.ts",
+        "preview": "/assets/industrial-plant-vertical-cage-ladder.png",
+        "sourceSha256": "8afe945c002a80d94e2d4eceb98569692c6247f76c2f45d982081e20fb37526b",
+        "triangleBudget": 1400,
+        "params": [
+          {
+            "name": "sectionHeight",
+            "type": "number",
+            "default": 1035,
+            "label": "Section height",
+            "unit": "mm",
+            "min": 900,
+            "max": 1800,
+            "step": 5
+          },
+          {
+            "name": "scale",
+            "type": "number",
+            "default": 1,
+            "label": "Overall scale",
+            "min": 0.65,
+            "max": 1.35,
+            "step": 0.05
+          },
+          {
+            "name": "steel",
+            "type": "color",
+            "default": "#6f7f85",
+            "label": "Structural steel"
+          },
+          {
+            "name": "safetyPaint",
+            "type": "color",
+            "default": "#e2a846",
+            "label": "Safety paint"
+          }
+        ],
+        "presets": {
+          "weathered": {
+            "steel": "#575851",
+            "safetyPaint": "#9e722f"
+          },
+          "highVisibility": {
+            "safetyPaint": "#f5c640"
+          }
+        },
+        "stats": {
+          "triangles": 420,
+          "sizeM": [
+            0.3344,
+            1.035,
+            0.309
+          ],
+          "minUpM": 0,
+          "materials": 1
+        },
+        "palette": [
+          {
+            "name": "steel",
+            "color": "#6f7f85",
+            "parts": [
+              "ladder-rail--1",
+              "ladder-rail-1"
+            ],
+            "param": "steel"
+          },
+          {
+            "name": "safetyPaint",
+            "color": "#e2a846",
+            "parts": [
+              "rung-0",
+              "rung-1",
+              "rung-2",
+              "rung-3",
+              "rung-4",
+              "rung-5",
+              "rung-6",
+              "rung-7",
+              "safety-hoop-0",
+              "safety-hoop-1",
+              "safety-hoop-2",
+              "safety-hoop-3",
+              "cage-upright-0",
+              "cage-upright-1",
+              "cage-upright-2",
+              "top-grab-left",
+              "top-grab-right"
+            ],
+            "param": "safetyPaint"
+          }
+        ]
+      },
+      "cases": [
+        {
+          "value": 900,
+          "code": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/parametric/sectionHeight-900.kcad.ts",
+          "glb": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/parametric/sectionHeight-900.glb",
+          "png": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/parametric/sectionHeight-900.png"
+        },
+        {
+          "value": 1035,
+          "code": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/parametric/sectionHeight-1035.kcad.ts",
+          "glb": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/parametric/sectionHeight-1035.glb",
+          "png": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/parametric/sectionHeight-1035.png"
+        },
+        {
+          "value": 1800,
+          "code": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/parametric/sectionHeight-1800.kcad.ts",
+          "glb": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/parametric/sectionHeight-1800.glb",
+          "png": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/parametric/sectionHeight-1800.png"
+        }
+      ]
+    }
+  ]
+}

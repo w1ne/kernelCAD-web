@@ -1,0 +1,5 @@
+ultra-low-temperature-freezer: 996/1800 tris, size 0.943 x 1.996 x 1.042 m, minUp 0
+articulated-extraction-snorkel: 1284/1800 tris, size 1.198038 x 0.842 x 0.352 m, minUp 0
+laboratory-safety-shower: 1324/1800 tris, size 0.498954 x 2.284 x 0.92 m, minUp 0
+laboratory-faucet-set: 1130/1800 tris, size 0.414751 x 0.399 x 0.292 m, minUp 0
+cryogenic-dewar-storage-rack: 2542/2600 tris, size 1.84 x 0.9 x 0.63 m, minUp 0

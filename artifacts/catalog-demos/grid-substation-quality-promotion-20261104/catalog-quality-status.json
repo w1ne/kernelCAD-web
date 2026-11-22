@@ -1,0 +1,6 @@
+{
+  "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/checkCatalogQuality.py --kit grid-substation",
+  "exitCode": 0,
+  "passed": true,
+  "assets": "80/80"
+}

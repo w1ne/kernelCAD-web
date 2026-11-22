@@ -1,0 +1,6 @@
+{
+  "command": "npx tsx scripts/buildAssetCatalog.ts",
+  "exitCode": 0,
+  "status": "PASS",
+  "indexRowsWithPreview": 52
+}

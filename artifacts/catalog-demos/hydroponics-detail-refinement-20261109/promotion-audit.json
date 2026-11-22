@@ -1,0 +1,282 @@
+{
+  "passed": true,
+  "totalCatalogAssets": 2402,
+  "totalSourceHashesMatching": 2402,
+  "totalRowsWithPreview": 2402,
+  "kitAssets": 52,
+  "assetsRefined": 2,
+  "sourceHashesMatching": 52,
+  "indexedRowsWithPreview": 52,
+  "materialControls": 210,
+  "presetEntries": 206,
+  "triangleBudgetViolations": [],
+  "triangleBudgets": [
+    {
+      "id": "aeration-manifold",
+      "triangles": 3380,
+      "budget": 5000
+    },
+    {
+      "id": "air-pump-cabinet",
+      "triangles": 4036,
+      "budget": 4200
+    },
+    {
+      "id": "bato-bucket",
+      "triangles": 1392,
+      "budget": 2600
+    },
+    {
+      "id": "blackout-curtain-drive",
+      "triangles": 1788,
+      "budget": 5000
+    },
+    {
+      "id": "circulation-pump-skid",
+      "triangles": 1732,
+      "budget": 3600
+    },
+    {
+      "id": "coco-coir-slab-holder",
+      "triangles": 2136,
+      "budget": 4000
+    },
+    {
+      "id": "crop-trellis-frame",
+      "triangles": 6420,
+      "budget": 7000
+    },
+    {
+      "id": "deep-water-culture-bed",
+      "triangles": 5514,
+      "budget": 6000
+    },
+    {
+      "id": "dosing-pump-skid",
+      "triangles": 2634,
+      "budget": 5200
+    },
+    {
+      "id": "dutch-bucket-row",
+      "triangles": 4712,
+      "budget": 5600
+    },
+    {
+      "id": "ebb-flow-grow-table",
+      "triangles": 4088,
+      "budget": 5000
+    },
+    {
+      "id": "ec-sensor-flow-cell",
+      "triangles": 2970,
+      "budget": 3600
+    },
+    {
+      "id": "evaporative-cooling-pad",
+      "triangles": 2352,
+      "budget": 4000
+    },
+    {
+      "id": "flood-drain-valve-manifold",
+      "triangles": 3348,
+      "budget": 6000
+    },
+    {
+      "id": "greenhouse-circulation-fan",
+      "triangles": 2352,
+      "budget": 3000
+    },
+    {
+      "id": "greenhouse-climate-sensor-post",
+      "triangles": 1634,
+      "budget": 2400
+    },
+    {
+      "id": "greenhouse-exhaust-fan",
+      "triangles": 1412,
+      "budget": 3000
+    },
+    {
+      "id": "greenhouse-fogger-header",
+      "triangles": 4352,
+      "budget": 5200
+    },
+    {
+      "id": "greenhouse-grow-light-bar",
+      "triangles": 1540,
+      "budget": 1800
+    },
+    {
+      "id": "greenhouse-tunnel-bay",
+      "triangles": 4404,
+      "budget": 6000
+    },
+    {
+      "id": "handheld-ec-meter",
+      "triangles": 1294,
+      "budget": 2600
+    },
+    {
+      "id": "handheld-ph-meter",
+      "triangles": 1926,
+      "budget": 3600
+    },
+    {
+      "id": "hydroponic-controller-console",
+      "triangles": 1520,
+      "budget": 2800
+    },
+    {
+      "id": "hydroponic-grow-rack",
+      "triangles": 6266,
+      "budget": 8000
+    },
+    {
+      "id": "inline-water-heater",
+      "triangles": 2056,
+      "budget": 3600
+    },
+    {
+      "id": "irrigation-lateral-header",
+      "triangles": 5032,
+      "budget": 6800
+    },
+    {
+      "id": "media-filter-vessel",
+      "triangles": 3812,
+      "budget": 4800
+    },
+    {
+      "id": "net-pot-stack",
+      "triangles": 5210,
+      "budget": 6400
+    },
+    {
+      "id": "nft-channel-rack",
+      "triangles": 3548,
+      "budget": 4200
+    },
+    {
+      "id": "nutrient-feed-manifold",
+      "triangles": 3152,
+      "budget": 5000
+    },
+    {
+      "id": "nutrient-measuring-cylinder",
+      "triangles": 1334,
+      "budget": 3000
+    },
+    {
+      "id": "nutrient-reservoir-tank",
+      "triangles": 1508,
+      "budget": 2000
+    },
+    {
+      "id": "nutrient-solution-chiller",
+      "triangles": 2104,
+      "budget": 2800
+    },
+    {
+      "id": "overhead-grow-light-frame",
+      "triangles": 2856,
+      "budget": 3600
+    },
+    {
+      "id": "peristaltic-dosing-pump",
+      "triangles": 5692,
+      "budget": 6400
+    },
+    {
+      "id": "ph-probe-flow-cell",
+      "triangles": 2966,
+      "budget": 3600
+    },
+    {
+      "id": "plant-support-clip-rack",
+      "triangles": 5128,
+      "budget": 5600
+    },
+    {
+      "id": "propagation-plug-tray",
+      "triangles": 4492,
+      "budget": 10000
+    },
+    {
+      "id": "return-water-header",
+      "triangles": 2822,
+      "budget": 4800
+    },
+    {
+      "id": "root-zone-heating-loop",
+      "triangles": 3552,
+      "budget": 5000
+    },
+    {
+      "id": "screen-filter-housing",
+      "triangles": 1502,
+      "budget": 2000
+    },
+    {
+      "id": "seedling-propagation-cart",
+      "triangles": 3604,
+      "budget": 5000
+    },
+    {
+      "id": "seedling-transplant-tool",
+      "triangles": 930,
+      "budget": 1600
+    },
+    {
+      "id": "solution-mixing-tank",
+      "triangles": 1670,
+      "budget": 2400
+    },
+    {
+      "id": "stock-solution-tank",
+      "triangles": 2556,
+      "budget": 3200
+    },
+    {
+      "id": "substrate-grow-gutter",
+      "triangles": 2232,
+      "budget": 2800
+    },
+    {
+      "id": "sump-return-tank",
+      "triangles": 2042,
+      "budget": 3400
+    },
+    {
+      "id": "uv-treatment-chamber",
+      "triangles": 1450,
+      "budget": 2400
+    },
+    {
+      "id": "venturi-injector-assembly",
+      "triangles": 2404,
+      "budget": 2800
+    },
+    {
+      "id": "vertical-grow-tower",
+      "triangles": 4318,
+      "budget": 4800
+    },
+    {
+      "id": "wall-mounted-co2-sensor",
+      "triangles": 1034,
+      "budget": 2400
+    },
+    {
+      "id": "water-level-float",
+      "triangles": 1540,
+      "budget": 3000
+    }
+  ],
+  "eslint": "PASS",
+  "catalogIntegration": "PASS",
+  "catalogIntegrationTestCount": "15/15",
+  "catalogPages": "PASS",
+  "kitQuality": "52/52 PASS",
+  "overallQuality": "2402/2402 PASS",
+  "failures": []
+}

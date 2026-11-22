@@ -1,0 +1,2 @@
+Command: npx tsx scripts/renderCatalogPreviews.ts evaporative-cooling-tower
+Output: industrial-plant/evaporative-cooling-tower: 648 tris

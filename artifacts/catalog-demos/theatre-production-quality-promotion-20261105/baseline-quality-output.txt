@@ -1,0 +1,4 @@
+  THIN   theatre-production            0/52   colours/asset=1.00
+
+  0/52 assets pass (0 rich kits, 1 thin kits)
+  52 thin assets = 100% of the catalog

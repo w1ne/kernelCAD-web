@@ -1,0 +1,700 @@
+{
+  "kit": "space-exploration",
+  "added": 52,
+  "catalogTotal": 1291,
+  "passed": 52,
+  "total": 52,
+  "triangleRange": [
+    60,
+    452
+  ],
+  "allOneMaterial": true,
+  "allWithinBudget": true,
+  "allBaseOrigin": true,
+  "allKnobsExact": true,
+  "allSourceHashesMatch": true,
+  "integration": {
+    "passed": true,
+    "filesPassed": 4,
+    "testsPassed": 15,
+    "durationSeconds": 124.23
+  },
+  "assets": [
+    {
+      "id": "airlock-hatch",
+      "triangles": 452,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "cargo-airlock-pod",
+      "triangles": 124,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "core-sampler",
+      "triangles": 168,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "drill-core-tube-rack",
+      "triangles": 212,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "dust-protection-screen",
+      "triangles": 84,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "emergency-shelter-pod",
+      "triangles": 148,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "equipment-locker",
+      "triangles": 72,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "equipment-stanchion",
+      "triangles": 80,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "field-lamp",
+      "triangles": 92,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "field-tool-chest",
+      "triangles": 72,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "geological-hammer",
+      "triangles": 60,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "habitat-corridor-section",
+      "triangles": 156,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "habitat-spares-crate",
+      "triangles": 96,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "inflatable-habitat-frame",
+      "triangles": 180,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "landing-gear-pod",
+      "triangles": 124,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "landing-pad-marker",
+      "triangles": 72,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "lunar-habitat-module",
+      "triangles": 148,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "lunar-rover-chassis",
+      "triangles": 84,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "orbital-communication-dish",
+      "triangles": 136,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "oxygen-cylinder-rack",
+      "triangles": 148,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "payload-container",
+      "triangles": 84,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "portable-science-console",
+      "triangles": 96,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "power-distribution-unit",
+      "triangles": 180,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "pressurized-tunnel-collar",
+      "triangles": 264,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "regolith-sieve",
+      "triangles": 108,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "relay-beacon",
+      "triangles": 128,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "robotic-arm-pedestal",
+      "triangles": 136,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rover-charging-dock",
+      "triangles": 116,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rover-dust-shield",
+      "triangles": 96,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rover-seat",
+      "triangles": 104,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rover-tool-rack",
+      "triangles": 96,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rover-wheel-assembly",
+      "triangles": 160,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "sample-canister",
+      "triangles": 144,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "sample-cassette",
+      "triangles": 96,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "sample-drill-head",
+      "triangles": 156,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "sample-trailer-cart",
+      "triangles": 172,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "satellite-bus",
+      "triangles": 96,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "satellite-solar-wing",
+      "triangles": 96,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "science-instrument-tripod",
+      "triangles": 136,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "science-worktable",
+      "triangles": 84,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "seismic-sensor",
+      "triangles": 212,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "specimen-tray",
+      "triangles": 120,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "spectrometer-case",
+      "triangles": 72,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "surface-antenna-mast",
+      "triangles": 180,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "surface-battery-bank",
+      "triangles": 248,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "surface-cable-bridge",
+      "triangles": 60,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "surface-sensor-post",
+      "triangles": 116,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "surface-storage-shed",
+      "triangles": 96,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "surface-utility-cart",
+      "triangles": 224,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "survey-flag",
+      "triangles": 144,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "tracking-antenna-dish",
+      "triangles": 232,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "transport-sled",
+      "triangles": 128,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    }
+  ]
+}

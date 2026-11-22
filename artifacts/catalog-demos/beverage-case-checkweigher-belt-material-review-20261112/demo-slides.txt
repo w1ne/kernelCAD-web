@@ -1,0 +1,7 @@
+file 'video-inputs/01-five-preview-sample.png'
+duration 4
+file 'video-inputs/02-before-after.png'
+duration 5
+file 'video-inputs/03-local-verification.png'
+duration 6
+file 'video-inputs/03-local-verification.png'

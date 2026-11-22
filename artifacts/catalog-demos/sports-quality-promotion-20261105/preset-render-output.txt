@@ -1,0 +1,8 @@
+(node:788773) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+basketball/default: 654 tris
+basketball/clubColors: 654 tris
+soccer-ball/default: 274 tris
+soccer-ball/clubColors: 274 tris
+tennis-racket/default: 288 tris
+tennis-racket/clubColors: 288 tris

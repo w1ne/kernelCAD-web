@@ -1,0 +1,2 @@
+weathered: 95784 GLB bytes; 30005 PNG bytes
+highVisibility: 95720 GLB bytes; 34429 PNG bytes

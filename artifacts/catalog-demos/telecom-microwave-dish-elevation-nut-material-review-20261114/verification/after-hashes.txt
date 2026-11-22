@@ -1,0 +1,2 @@
+b30421262ab272a5ae0919c18c8f6f76684e11a6237c52b5fab5a75e5ed893c1  catalog/kits/telecom-infrastructure/microwave-dish-antenna.kcad.ts
+415437c45785b7bb7e41bee7bec00fc7ff5891ca6407aaf9f9cced311ceb0b7d  catalog/kits/telecom-infrastructure/previews/microwave-dish-antenna.png

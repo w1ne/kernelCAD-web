@@ -1,0 +1,115 @@
+{
+  "generatedAt": "2026-11-20T01:55:46.628Z",
+  "renderer": "native OCCT GLB + repository software renderer; canonical browser inspect timed out",
+  "claims": "static source geometry only; no manufacturer/load/pressure acceptance",
+  "models": [
+    {
+      "name": "ladder",
+      "slug": "industrial-plant/vertical-cage-ladder",
+      "asset": {
+        "id": "vertical-cage-ladder",
+        "kit": "industrial-plant",
+        "title": "Vertical cage ladder",
+        "description": "Short 1035 mm schematic ladder section with eight rungs and an open wraparound cage. CC0 visualization only, not manufacturer CAD or a safety-rated access-ladder design. Controls: overall scale, steel, safety paint.",
+        "category": "structure",
+        "origin": "base",
+        "tags": [
+          "industrial plant",
+          "factory",
+          "process equipment",
+          "low poly",
+          "CC0"
+        ],
+        "compat": [
+          "industrial-plant",
+          "factory",
+          "manufacturing",
+          "industrial-scene"
+        ],
+        "license": "CC0-1.0",
+        "source": "catalog/kits/industrial-plant/vertical-cage-ladder.kcad.ts",
+        "preview": "/assets/industrial-plant-vertical-cage-ladder.png",
+        "sourceSha256": "9021a8e43cf71f8b6b78865f34df162b65f548804545a4d31d954c27697f430f",
+        "triangleBudget": 1400,
+        "params": [
+          {
+            "name": "scale",
+            "type": "number",
+            "default": 1,
+            "label": "Overall scale",
+            "min": 0.65,
+            "max": 1.35,
+            "step": 0.05
+          },
+          {
+            "name": "steel",
+            "type": "color",
+            "default": "#6f7f85",
+            "label": "Structural steel"
+          },
+          {
+            "name": "safetyPaint",
+            "type": "color",
+            "default": "#e2a846",
+            "label": "Safety paint"
+          }
+        ],
+        "presets": {
+          "weathered": {
+            "steel": "#575851",
+            "safetyPaint": "#9e722f"
+          },
+          "highVisibility": {
+            "safetyPaint": "#f5c640"
+          }
+        },
+        "stats": {
+          "triangles": 420,
+          "sizeM": [
+            0.3344,
+            1.035,
+            0.309
+          ],
+          "minUpM": 0,
+          "materials": 1
+        },
+        "palette": [
+          {
+            "name": "steel",
+            "color": "#6f7f85",
+            "parts": [
+              "ladder-rail--1",
+              "ladder-rail-1"
+            ],
+            "param": "steel"
+          },
+          {
+            "name": "safetyPaint",
+            "color": "#e2a846",
+            "parts": [
+              "rung-0",
+              "rung-1",
+              "rung-2",
+              "rung-3",
+              "rung-4",
+              "rung-5",
+              "rung-6",
+              "rung-7",
+              "safety-hoop-0",
+              "safety-hoop-1",
+              "safety-hoop-2",
+              "safety-hoop-3",
+              "cage-upright-0",
+              "cage-upright-1",
+              "cage-upright-2",
+              "top-grab-left",
+              "top-grab-right"
+            ],
+            "param": "safetyPaint"
+          }
+        ]
+      },
+      "evidence": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/ladder-proof"
+    }
+  ]
+}

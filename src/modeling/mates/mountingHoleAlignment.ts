@@ -14,7 +14,8 @@
 // parts share). Two findings mean no screw can pass through both:
 //
 //  - overlapping bores: two bores whose circles overlap on the contact
-//    plane (lateral offset < rA + rB) but are not coaxial;
+//    plane (lateral offset < rA + rB) but are not coaxial, unless the
+//    smaller circle lies wholly inside the larger (a port inside a bore);
 //  - an unpartnered interface bore: when BOTH parts have bores ending on
 //    the contact plane, a bore of one part that opens onto the other
 //    part's material (inside the contact footprint) with no coaxial
@@ -134,7 +135,7 @@ function fastenedPairs(arm: Assembly): FastenedPair[] {
   const seen = new Set<string>();
   const out: FastenedPair[] = [];
   for (const mate of arm.__mates()) {
-    if (mate.type !== 'fastened') continue;
+    if (mate.type !== 'fastened' || mate.adhesive) continue;
     let partA: string;
     let partB: string;
     try {
@@ -229,7 +230,8 @@ function findMisalignedPair(partA: PartBores, partB: PartBores): MisalignedFindi
   const overlapping = facing.find((f) =>
     !alignedA.has(f.a) && !alignedB.has(f.b) &&
     f.offsetMm > alignToleranceMm(f.a, f.b) &&
-    f.offsetMm < (f.a.diameterMm + f.b.diameterMm) / 2);
+    f.offsetMm < (f.a.diameterMm + f.b.diameterMm) / 2 &&
+    !nested(f));
   if (overlapping !== undefined) return overlapping;
   return findUnpartneredBore(facing, alignedA, partB.material, 'a')
     ?? findUnpartneredBore(facing, alignedB, partA.material, 'b');
@@ -260,6 +262,15 @@ function findUnpartneredBore(
     }
   }
   return undefined;
+}
+
+/** The smaller bore's circle lies wholly inside the larger one on the
+ *  contact plane (a port opening into a flange bore): an axis through the
+ *  small bore passes through both, so the pair is not a misaligned overlap. */
+function nested(f: FacingPair): boolean {
+  const big = Math.max(f.a.diameterMm, f.b.diameterMm) / 2;
+  const small = Math.min(f.a.diameterMm, f.b.diameterMm) / 2;
+  return f.offsetMm + small <= big;
 }
 
 function sameSizeClass(a: WorldBore, b: WorldBore): boolean {

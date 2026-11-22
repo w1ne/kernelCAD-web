@@ -1,0 +1,44 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/renderCatalogPreviews.ts archive-box business-card-holder calculator clipboard desk-calendar desk-organizer dry-erase-board envelope-stack file-folder footrest fountain-pen hanging-file-folder highlighter hole-punch ink-pad label-maker laminator laptop-stand letter-sorter letter-tray marker mechanical-pencil memo-pad monitor-riser mousepad notebook office-pinboard paper-clip-dish paper-cutter paper-shredder paperweight pencil-cup ring-binder rubber-stamp ruler scissors stapler sticky-notes tape-dispenser wrist-rest
+(node:2221663) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+office/archive-box: 60 tris
+office/business-card-holder: 60 tris
+office/calculator: 1860 tris
+office/clipboard: 92 tris
+office/desk-calendar: 120 tris
+office/desk-organizer: 84 tris
+office/dry-erase-board: 144 tris
+office/envelope-stack: 60 tris
+office/file-folder: 60 tris
+office/footrest: 60 tris
+office/fountain-pen: 888 tris
+office/hanging-file-folder: 72 tris
+office/highlighter: 232 tris
+office/hole-punch: 136 tris
+office/ink-pad: 48 tris
+office/label-maker: 236 tris
+office/laminator: 184 tris
+office/laptop-stand: 84 tris
+office/letter-sorter: 96 tris
+office/letter-tray: 108 tris
+office/marker: 156 tris
+office/mechanical-pencil: 802 tris
+office/memo-pad: 48 tris
+office/monitor-riser: 60 tris
+office/mousepad: 72 tris
+office/notebook: 72 tris
+office/office-pinboard: 120 tris
+office/paper-clip-dish: 96 tris
+office/paper-cutter: 84 tris
+office/paper-shredder: 1500 tris
+office/paperweight: 48 tris
+office/pencil-cup: 144 tris
+office/ring-binder: 192 tris
+office/rubber-stamp: 92 tris
+office/ruler: 156 tris
+office/scissors: 316 tris
+office/stapler: 448 tris
+office/sticky-notes: 36 tris
+office/tape-dispenser: 796 tris
+office/wrist-rest: 60 tris

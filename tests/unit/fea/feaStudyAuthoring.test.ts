@@ -135,7 +135,7 @@ describe('shape.feaStudy capture', () => {
 
 describe('FEA material table', () => {
   it('serves every documented grade', () => {
-    expect(FEA_MATERIAL_NAMES).toEqual(['mild-steel', 'aluminum-6061', 'pla', 'petg', 'abs', 'nylon']);
+    expect(FEA_MATERIAL_NAMES).toEqual(['mild-steel', 'aluminum-6061', 'pla', 'petg', 'abs', 'asa', 'nylon']);
   });
 
   it('reads E and yield LIVE from the bulk catalog rather than copying them', () => {
@@ -149,6 +149,7 @@ describe('FEA material table', () => {
   it('declares its own numbers only for the grade with no catalog row', () => {
     const table = feaMaterialTable();
     expect(table.nylon).toEqual({ E: 1700, nu: 0.39, yield: 45 });
+    expect(table.asa).toEqual({ E: 2120, nu: 0.35, yield: 37 });
   });
 
   it('gives every grade a physically valid Poisson ratio in solver units', () => {

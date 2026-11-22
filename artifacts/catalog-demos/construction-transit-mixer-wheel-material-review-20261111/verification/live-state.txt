@@ -1,0 +1,6 @@
+Checked 2026-11-11 before the local source correction:
+- https://kernelcad.com/catalog/construction-equipment/transit-mixer-truck/ returned HTTP 200 and identified the asset as Transit concrete mixer truck.
+- https://kernelcad.com/assets/construction-equipment-transit-mixer-truck.kcad.ts returned HTTP 200; SHA-256 matched the local baseline: 49eacba7d31ce03c67ecb73e5595a2e829858bebb42c117104b5f233a290f937.
+- https://kernelcad.com/assets/construction-equipment-transit-mixer-truck.png returned HTTP 200 with a 512x512 PNG; SHA-256 matched the checked-in baseline: 63619d76e04771efdf3ede330258deb7be3ae5a83654ee461ef691e7864e6ea5.
+
+The correction is on an unmerged feature branch and has not been deployed. The current public route therefore remains the before version.

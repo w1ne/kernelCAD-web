@@ -10,14 +10,14 @@
 // Bodies are placed by hand (the tendonBodyIntersect.test.ts idiom) so the
 // contact topology is exact and independent of the mate solver.
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { createModelingApi } from '../api';
 import { CaptureSession } from '../capture/captureSession';
-import { initOcct } from '../../kernel/backends/occt/occtBackend';
-import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { Transform } from '../../shared/runtime/se3';
 import { analyzeContactGraph } from './contactGraph';
+import * as distance from './brepDistance';
 
 async function box(sx: number, sy: number, sz: number): Promise<OcctBackend> {
   const session = new CaptureSession();
@@ -52,6 +52,40 @@ describe('analyzeContactGraph — deterministic object count + floating detectio
     const result = analyzeContactGraph(s);
     expect(result.objectCount).toBe(1);
     expect(result.floatingParts).toEqual([]);
+  });
+
+  it('connects overlapping parts without measuring their overlap volume', async () => {
+    const shape = await box(20, 20, 20);
+    const volume = vi.spyOn(OcctBackend.prototype, 'intersectionVolume');
+    try {
+      const result = analyzeContactGraph(scene({
+        a: { shape, at: Transform.identity() },
+        b: { shape, at: Transform.translation(19, 0, 0) },
+      }));
+      expect(result.components).toEqual([['a', 'b']]);
+      expect(volume.mock.calls.length).toBe(0);
+    } finally {
+      volume.mockRestore();
+      shape.dispose();
+    }
+  });
+
+  it('skips a distance query when measured edges already connect the pair', async () => {
+    const shape = await box(20, 20, 20);
+    const probe = vi.spyOn(distance, 'brepExtremaDistance');
+    try {
+      const result = analyzeContactGraph(scene({
+        a: { shape, at: Transform.identity() },
+        b: { shape, at: Transform.translation(19, 0, 0) },
+        c: { shape, at: Transform.translation(19, 19, 0) },
+        island: { shape, at: Transform.translation(200, 0, 0) },
+      }));
+      expect(result.components).toEqual([['a', 'b', 'c'], ['island']]);
+      expect(probe.mock.calls.length).toBe(2);
+    } finally {
+      probe.mockRestore();
+      shape.dispose();
+    }
   });
 
   it('reports two objects and flags the floating part across an air gap', async () => {

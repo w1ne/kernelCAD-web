@@ -78,7 +78,8 @@ describe('function-first bar grasp skeleton example', () => {
     expect(result.diagnostics.filter((diagnostic) =>
       diagnostic.severity === 'error'
     )).toEqual([]);
-    expect(trackedDistanceTravelMm(result.poseEnvelope?.connectorPoses, 'thumb-finger.tip', 'index-finger.tip')).toBeGreaterThan(8);
+    // Fingers are coupled to grip, so only the grip sweep (25.61 -> 29.64 mm) is reachable.
+    expect(trackedDistanceTravelMm(result.poseEnvelope?.connectorPoses, 'thumb-finger.tip', 'index-finger.tip')).toBeCloseTo(4.03, 1);
     expect(result.physicalUseCaseStaticCertificates).toEqual([
       expect.objectContaining({
         useCaseName: 'bar-grasp',

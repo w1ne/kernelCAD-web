@@ -1,0 +1,983 @@
+{
+  "checkedAt": "2026-11-05T13:27:21.836Z",
+  "method": "npx tsx artifacts/catalog-demos/data-center-infrastructure-quality-promotion-20261105/check_data_center_pages.mts",
+  "localOnly": true,
+  "totalIndexedAssets": 2390,
+  "generatedAssetPages": 2390,
+  "kitPages": 50,
+  "pageAndPreviewPairs": 50,
+  "checkedPages": [
+    {
+      "id": "air-cooled-chiller",
+      "params": [
+        "scale",
+        "steel",
+        "aluminum",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 860,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "automatic-transfer-switch-cabinet",
+      "params": [
+        "scale",
+        "steel",
+        "polymer",
+        "glass",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 216,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "blade-server-enclosure",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 220,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "busway-plug-in-unit",
+      "params": [
+        "scale",
+        "steel",
+        "polymer",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 124,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "ceiling-return-plenum",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 140,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "clean-agent-cylinder-bank",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 520,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cold-aisle-roof-panel",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 196,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "condenser-pump-skid",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 300,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "coolant-distribution-unit",
+      "params": [
+        "scale",
+        "steel",
+        "aluminum"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 264,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cooling-tower-cell",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 264,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "data-center-battery-cabinet",
+      "params": [
+        "scale",
+        "steel",
+        "polymer",
+        "glass",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 256,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "data-center-plate-heat-exchanger",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 304,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "data-center-security-camera",
+      "params": [
+        "scale",
+        "steel",
+        "glass"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 168,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "day-fuel-tank",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 200,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "distribution-panelboard",
+      "params": [
+        "scale",
+        "steel",
+        "polymer",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 172,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "dry-type-transformer",
+      "params": [
+        "scale",
+        "steel",
+        "aluminum",
+        "ceramic"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 228,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "emergency-power-off-station",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 136,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "enclosed-it-rack",
+      "params": [
+        "scale",
+        "steel",
+        "rubber",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 400,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "environmental-sensor",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 116,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "fiber-patch-panel",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 708,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "floor-air-grille",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 168,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "floor-cable-grommet",
+      "params": [
+        "scale",
+        "steel",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 124,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "high-density-server-chassis",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 276,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "hot-aisle-containment-door",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 116,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "in-row-cooler",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 320,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "leak-detection-module",
+      "params": [
+        "scale",
+        "steel",
+        "polymer",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 168,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "liquid-cooling-manifold",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 552,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "maintenance-bypass-cabinet",
+      "params": [
+        "scale",
+        "steel",
+        "polymer",
+        "glass",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 240,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "modular-ups-cabinet",
+      "params": [
+        "scale",
+        "steel",
+        "polymer",
+        "glass",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 316,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "monolithic-ups-cabinet",
+      "params": [
+        "scale",
+        "steel",
+        "polymer",
+        "glass",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 220,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "open-frame-it-rack",
+      "params": [
+        "scale",
+        "steel",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 304,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "overhead-cable-ladder",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 292,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "overhead-coolant-header",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 392,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "overhead-power-busway",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 140,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "perforated-floor-tile",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 340,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "perimeter-precision-cooler",
+      "params": [
+        "scale",
+        "steel",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 412,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "power-meter-pedestal",
+      "params": [
+        "scale",
+        "steel",
+        "glass",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 104,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rack-blanking-panel",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 192,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rack-kvm-console",
+      "params": [
+        "scale",
+        "steel",
+        "glass"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 248,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rack-mounted-battery-tray",
+      "params": [
+        "scale",
+        "steel",
+        "polymer",
+        "copper"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 248,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rack-power-distribution-unit",
+      "params": [
+        "scale",
+        "steel",
+        "polymer",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 676,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "raised-floor-tile",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 268,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rear-door-heat-exchanger",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 532,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "standby-generator-enclosure",
+      "params": [
+        "scale",
+        "steel",
+        "aluminum"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 336,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "static-transfer-switch",
+      "params": [
+        "scale",
+        "steel",
+        "polymer",
+        "glass",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 248,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "storage-array-chassis",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 276,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "switchgear-lineup",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 332,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "top-of-rack-network-switch",
+      "params": [
+        "scale",
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 1060,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "vertical-cable-manager",
+      "params": [
+        "scale",
+        "steel",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 260,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "wall-mount-network-cabinet",
+      "params": [
+        "scale",
+        "steel",
+        "rubber"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "triangles": 288,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    }
+  ],
+  "liveDeployment": "not verified; the feature branch has not been deployed"
+}

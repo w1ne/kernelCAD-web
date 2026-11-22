@@ -11,7 +11,9 @@
 //   The leading index N comes from a counter in OCCT's process-global STEP
 //   controller (STEPConstruct_ContextTool), so it grows with every export the
 //   process has made; the trailing .M indices are numbered within the file.
-// The counter is not bound to JS, so the written bytes are normalized: the
+// - A NEXT_ASSEMBLY_USAGE_OCCURRENCE id is a second process-global counter
+//   (one per placed instance written so far).
+// The counters are not bound to JS, so the written bytes are normalized: the
 // time stamp is pinned and the leading indices are shifted so the file's
 // first transfer is 1, which is exactly what the first export in a fresh
 // process writes. Geometry and every other entity are left as written.
@@ -53,10 +55,26 @@ export function renumberStepAutoProductNames(bytes: Uint8Array, productName: str
 }
 
 /**
+ * Shift every numeric NEXT_ASSEMBLY_USAGE_OCCURRENCE id so the smallest one
+ * in the file is 1.
+ */
+export function renumberStepUsageOccurrenceIds(bytes: Uint8Array): Uint8Array {
+  const pattern = /(NEXT_ASSEMBLY_USAGE_OCCURRENCE\s*\(\s*')(\d+)'/g;
+  const text = bytesToLatin1(bytes);
+  let first = Infinity;
+  for (const m of text.matchAll(pattern)) first = Math.min(first, Number(m[2]));
+  if (!Number.isFinite(first) || first === 1) return bytes;
+  return latin1ToBytes(text.replace(pattern, (_m, head: string, id: string) => `${head}${Number(id) - first + 1}'`));
+}
+
+/**
  * Return `bytes` with the export-order-dependent values pinned: FILE_NAME's
- * time_stamp and the auto-generated PRODUCT name indices. `productName` is
+ * time_stamp, the auto-generated PRODUCT name indices and the usage
+ * occurrence ids. `productName` is
  * OCCT's `write.step.product.name` at the time of the write.
  */
 export function makeStepReproducible(bytes: Uint8Array, productName: string): Uint8Array {
-  return renumberStepAutoProductNames(stampStepTimeStamp(bytes, STEP_REPRODUCIBLE_TIME_STAMP), productName);
+  return renumberStepUsageOccurrenceIds(
+    renumberStepAutoProductNames(stampStepTimeStamp(bytes, STEP_REPRODUCIBLE_TIME_STAMP), productName),
+  );
 }

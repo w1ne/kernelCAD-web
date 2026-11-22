@@ -1,0 +1,18 @@
+{
+  "width": 1280,
+  "height": 720,
+  "fps": 30,
+  "secondsPerSlide": 4,
+  "background": "#edf3f7",
+  "ink": "#203043",
+  "accent": "#28778a",
+  "fontRegular": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+  "fontBold": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+  "verificationLines": [
+    "Focused exported-GLB regression passed (1/1)",
+    "Water-treatment quality gate: 50/50 (100%)",
+    "Global structural gate: 2,401/2,402 (99.96%)",
+    "ESLint clean; catalog integration: 29 files / 44 tests passed"
+  ],
+  "caveat": "Local catalog source render only; not a chemical-compatibility review, simulation, deployment, or equipment acceptance."
+}

@@ -33,6 +33,8 @@ import type { CatalogPartMetadata } from '../../shared/parts/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FabProcess } from '../../shared/fab';
+import { formatStockSpec, type StockSpec } from '../../shared/stock';
+import { fastenerCallout, kindFromFamily } from '../../modeling/parts/fastenerDesignation';
 import { tryResolveMaterial } from '../../modeling/properties/materialLibrary';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 
@@ -73,10 +75,14 @@ export interface BomRow {
   process: FabProcess | null;
   /** Provenance of `process`: `declared` only when every instance in the group declared it, else `inferred`; `null` on purchased rows. */
   processSource: 'declared' | 'inferred' | null;
+  /** Declared blank. Present only when the part declared `stock`. */
+  stock?: StockSpec;
   catalog?: BomCatalogInfo;
   /** Every `assembly.part(name, ...)` name contributing to this group, in
    *  declaration order. Length always equals `quantity`. */
   instancePaths: string[];
+  /** Set when the group is one named configuration of a part file. */
+  configuration?: { source: string; name: string };
 }
 
 export interface BomTotals {
@@ -105,9 +111,29 @@ function fingerprint(volumeMm3: number, surfaceAreaMm2: number, bbox: BomBbox): 
   return `geom:${round(volumeMm3)}:${round(surfaceAreaMm2)}:${dims.join(',')}`;
 }
 
+/** Ordering designation. Prefer a stored callout; otherwise derive one from
+ *  the standard, thread and length so a seed record without `attributes.designation`
+ *  still reads `ISO 4762 M2x4 - 8.8`. The class is a nominal callout. */
+function catalogPartNumber(catalogPart: CatalogPartMetadata): string {
+  const stored = catalogPart.attributes.designation;
+  if (typeof stored === 'string' && stored.length > 0) return stored;
+  const thread = catalogPart.attributes.thread;
+  const lengthMm = catalogPart.attributes.lengthMm;
+  if (typeof thread === 'string' && catalogPart.standard !== undefined) {
+    const callout = fastenerCallout({
+      standard: catalogPart.standard,
+      thread,
+      ...(typeof lengthMm === 'number' ? { lengthMm } : {}),
+      kind: kindFromFamily(catalogPart.family),
+    });
+    if (callout !== undefined) return callout;
+  }
+  return catalogPart.standard ?? catalogPart.id;
+}
+
 function catalogInfo(catalogPart: CatalogPartMetadata): BomCatalogInfo {
   const vendor = catalogPart.upstream?.repo ?? (catalogPart.standard !== undefined ? 'kernelCAD catalog' : null);
-  const partNumber = catalogPart.standard ?? catalogPart.id;
+  const partNumber = catalogPartNumber(catalogPart);
   const source = catalogPart.stepUrl ?? catalogPart.glbUrl ?? catalogPart.upstream?.path ?? null;
   return { id: catalogPart.id, vendor, partNumber, source, license: catalogPart.license };
 }
@@ -157,7 +183,7 @@ function flatSheetMetalBbox(records: readonly FeatureRecord[], part: AssemblyPar
 }
 
 /** Key suffix keeping identically-shaped parts with different declared
- *  material/density/effective-process in separate rows. Fabricated parts
+ *  material/density/stock/effective-process in separate rows. Fabricated parts
  *  always carry the effective process in the key, so same geometry with a
  *  different process splits into two rows; purchased parts pass `null`
  *  (process is not applicable). */
@@ -165,6 +191,7 @@ function declarationKey(part: AssemblyPartStored, proc: { process: FabProcess; d
   const parts: string[] = [];
   if (part.material !== undefined) parts.push(`material:${part.material}`);
   if (part.density !== undefined) parts.push(`density:${part.density}`);
+  if (part.stock !== undefined) parts.push(`stock:${formatStockSpec(part.stock)}`);
   if (proc !== null) parts.push(`process:${proc.process}`);
   return parts.length > 0 ? `|${parts.join('|')}` : '';
 }
@@ -219,9 +246,11 @@ async function measurePart(part: AssemblyPartStored, records: readonly FeatureRe
   const bbox = kind === 'fabricated'
     ? (flatSheetMetalBbox(records, part) ?? loweredBbox)
     : loweredBbox;
-  const identityKey = catalogPart !== undefined
-    ? `catalog:${catalogPart.id}`
-    : fingerprint(volumeMm3, surfaceAreaMm2, bbox);
+  const identityKey = part.configuration !== undefined
+    ? `config:${part.configuration.source}|${part.configuration.name}`
+    : catalogPart !== undefined
+      ? `catalog:${catalogPart.id}`
+      : fingerprint(volumeMm3, surfaceAreaMm2, bbox);
   const proc = effectiveProcess(records, part);
   const groupKey = identityKey + declarationKey(part, kind === 'fabricated' ? proc : null);
 
@@ -321,7 +350,11 @@ function createBomRow(
     bboxMm: bbox,
     process: kind === 'fabricated' ? proc.process : null,
     processSource: kind === 'fabricated' ? (proc.declared ? 'declared' : 'inferred') : null,
+    ...(part.stock !== undefined ? { stock: part.stock } : {}),
     ...(catalogPart !== undefined ? { catalog: catalogInfo(catalogPart) } : {}),
+    ...(part.configuration !== undefined
+      ? { configuration: { source: part.configuration.source, name: part.configuration.name } }
+      : {}),
     instancePaths: [part.name],
     __density: density,
   };
@@ -375,7 +408,7 @@ const CSV_HEADER = [
   'item', 'name', 'quantity', 'kind', 'material', 'densityKgM3',
   'massGPerUnit', 'massGTotal',
   'bboxMinX', 'bboxMinY', 'bboxMinZ', 'bboxMaxX', 'bboxMaxY', 'bboxMaxZ',
-  'process', 'vendor', 'partNumber', 'license', 'source', 'instancePaths',
+  'process', 'stock', 'vendor', 'partNumber', 'license', 'source', 'instancePaths',
 ];
 
 function csvCell(value: unknown): string {
@@ -394,7 +427,8 @@ export function bomToCsv(rows: readonly BomRow[]): string {
       r.massGPerUnit, r.massGTotal,
       r.bboxMm.min[0], r.bboxMm.min[1], r.bboxMm.min[2],
       r.bboxMm.max[0], r.bboxMm.max[1], r.bboxMm.max[2],
-      r.process ?? '', r.catalog?.vendor ?? '', r.catalog?.partNumber ?? '',
+      r.process ?? '', r.stock !== undefined ? formatStockSpec(r.stock) : '',
+      r.catalog?.vendor ?? '', r.catalog?.partNumber ?? '',
       r.catalog?.license ?? '', r.catalog?.source ?? '', r.instancePaths.join(';'),
     ].map(csvCell).join(','));
   }

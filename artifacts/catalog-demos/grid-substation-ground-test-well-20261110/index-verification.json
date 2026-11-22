@@ -1,0 +1,61 @@
+{
+  "asset": "substation-ground-grid-test-well",
+  "kit": "grid-substation",
+  "catalogAssetCount": 2402,
+  "kitAssetCount": 80,
+  "preview": "/assets/grid-substation-substation-ground-grid-test-well.png",
+  "previewBytes": 34288,
+  "sourceSha256": "d18233303c57d68a85aad9ea7a8917eb48497f202a40302c2e8c32d61bf37870",
+  "sourceSha256MatchesIndex": true,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "wellDepth",
+      "type": "choice",
+      "default": "480",
+      "label": "Chamber depth (mm)",
+      "choices": [
+        "360",
+        "480",
+        "620"
+      ]
+    },
+    {
+      "name": "concrete",
+      "type": "color",
+      "default": "#92938b",
+      "label": "Concrete"
+    },
+    {
+      "name": "stainlessSteel",
+      "type": "color",
+      "default": "#b5c0c0",
+      "label": "Stainless steel"
+    },
+    {
+      "name": "copper",
+      "type": "color",
+      "default": "#b87545",
+      "label": "Copper"
+    }
+  ],
+  "presets": [
+    "maintenance",
+    "weathered"
+  ],
+  "maintenancePalette": {
+    "concrete": "#c5c8bc",
+    "stainlessSteel": "#eef2ef",
+    "copper": "#e99a32"
+  },
+  "triangles": 1128,
+  "triangleBudget": 1800
+}

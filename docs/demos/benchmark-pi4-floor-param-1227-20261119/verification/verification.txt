@@ -1,0 +1,45 @@
+Local verification — 2026-11-19 UTC
+Base: origin/develop 8975af9b0c06a4f8af3df94e91440b9591aeb1af
+
+Focused STEP regression:
+  npx vitest run tests/integration/manufacturing/pcbEnclosureBenchmark.test.ts \
+    -t 'Floor edit|old height after a Floor edit' --reporter=dot
+  Result: 2 passed, 6 skipped.
+
+Complete case 01 regression:
+  npx vitest run tests/integration/manufacturing/pcbEnclosureBenchmark.test.ts \
+    --reporter=dot
+  Result: 8 passed.
+
+Measured interfaces from the re-imported STEP:
+  Clean Floor edit: 2 mm to 3.5 mm; four 2.5 mm blind pilots remain 4 mm deep,
+  open at Z=8.5 mm and directed along -Z.
+  Seeded stale cutter: fixed start at Z=3 mm; STEP measures the cavity mouth at
+  Z=3 mm and its axis along +Z instead of the expected Z=8.5 mm / -Z.
+  The interface oracle reports exactly four mouth-position and four axis
+  failures. The fixture's volume and outer bounds still pass.
+
+Type, lint and artifact checks:
+  npx eslint tests/integration/manufacturing/pcbEnclosureBenchmark.test.ts
+  Result: exit 0.
+  npm run typecheck
+  Result: exit 0 (tsc build and CLI TypeScript check).
+  python3 -m py_compile docs/demos/benchmark-pi4-floor-param-1227-20261119/capture_demo.py \
+    docs/demos/benchmark-pi4-floor-param-1227-20261119/inspect_demo.py
+  Result: exit 0.
+  git diff --check
+  Result: exit 0.
+
+Demo:
+  python3 docs/demos/benchmark-pi4-floor-param-1227-20261119/capture_demo.py
+  Result: 1280x720, H.264, yuv420p, 24 fps, 12 seconds, 100,766 bytes.
+  Video SHA-256: 3c7f8d3d524a0d741dbae612259e6a8ed4eeba7122c9d078f4c36117bdfed505.
+  Fixture SHA-256: e7f5ada6d4f0b654bf9315c4add9b5927c8f9880c2a708cab282b260465bc0a7.
+  Test SHA-256: 64f6693fdc5d4c684d23e66beab9a4230183b4df8ccd8ae6c4eaebe0d8751521.
+  Inspection: ffprobe verified codec, pixel format, size, duration and frame
+  rate; frames at 1, 5 and 9 seconds were reviewed in the contact sheet, and
+  the final frame was reviewed at full resolution.
+  Files: video-inspection.json, video-contact-sheet.png.
+
+Scope: local OCCT evaluation and STEP export/re-import regression only. No
+deployed behavior, production metrology, fit or hardware acceptance is claimed.

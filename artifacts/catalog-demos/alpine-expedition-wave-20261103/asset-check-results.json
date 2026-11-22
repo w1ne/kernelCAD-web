@@ -1,0 +1,20 @@
+{
+  "kit": "alpine-expedition",
+  "total": 50,
+  "passed": 50,
+  "catalogTotal": 1591,
+  "triangleRange": [
+    72,
+    580
+  ],
+  "materialCounts": [
+    1
+  ],
+  "params": [
+    "scale",
+    "color"
+  ],
+  "sourceHashesFresh": true,
+  "missing": [],
+  "passedAudit": true
+}

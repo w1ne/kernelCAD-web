@@ -1,14 +1,16 @@
 // tests/unit/assemblies/solvedModelValidate.test.ts
 //
 // v0.6 Task 9 — `solvedModel({validate})` gate. Default `warn` attaches
-// validator diagnostics to `scene.warnings`; `error` throws on any error-
-// severity diagnostic (or `over-constrained` / `did-not-converge` status);
-// `off` skips validation. Env override `KERNELCAD_VALIDATE_DEFAULT=error`
-// flips the default for opt-less calls (T10 will set it from the CLI).
+// validator diagnostics to `scene.warnings`; `error` throws on structural or
+// non-overlap errors, while overlap-only failures are retained on the returned
+// Scene for the evaluator's mechanism verdict; `off` skips validation. Env
+// override `KERNELCAD_VALIDATE_DEFAULT=error` flips the default for opt-less
+// calls (T10 sets it from the CLI).
 
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createModelingApi } from '../../../src/modeling/api';
+import { Scene } from '../../../src/modeling/validation/scene';
 
 function makeArm() {
   const session = new CaptureSession();
@@ -108,28 +110,52 @@ describe('Assembly.solvedModel({validate})', () => {
 
   it('respects KERNELCAD_VALIDATE_DEFAULT=error env var', async () => {
     // Uses the inconsistent-triangle setup so the validator surfaces an
-    // error-severity diagnostic (over-constrained). With no `opts` passed,
-    // the env var flips the default mode from `'warn'` to `'error'` and
-    // the resulting Promise rejects. A `warning`-only assembly (e.g. an
-    // orphan part) would NOT throw under `error` mode by design — that's
-    // covered by the explicit-mode tests above.
+    // error-severity structural diagnostic (over-constrained). With no
+    // `opts` passed, the env var flips the default mode from `'warn'` to
+    // `'error'`; this non-overlap solver failure must still throw even if the
+    // same assembly also has a deferred rest-pose overlap.
     const { arm } = makeTriangleArm();
     const prev = process.env.KERNELCAD_VALIDATE_DEFAULT;
     process.env.KERNELCAD_VALIDATE_DEFAULT = 'error';
     try {
-      await expect(arm.solvedModel({})).rejects.toThrow();
+      await expect(arm.solvedModel({})).rejects.toThrow(/over-constrained/);
     } finally {
       if (prev === undefined) delete process.env.KERNELCAD_VALIDATE_DEFAULT;
       else process.env.KERNELCAD_VALIDATE_DEFAULT = prev;
     }
   });
+
+  it('defers overlap-only validation under KERNELCAD_VALIDATE_DEFAULT=error', async () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('b', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('m', 'a.o', 'b.o', 'fastened');
+
+    const prev = process.env.KERNELCAD_VALIDATE_DEFAULT;
+    process.env.KERNELCAD_VALIDATE_DEFAULT = 'error';
+    try {
+      const scene = await arm.solvedModel({});
+      expect(scene).toBeInstanceOf(Scene);
+      expect(scene.__deferredValidationDiagnostics().some(
+        (diagnostic) => diagnostic.code === 'assembly.interference.overlap',
+      )).toBe(true);
+    } finally {
+      if (prev === undefined) delete process.env.KERNELCAD_VALIDATE_DEFAULT;
+      else process.env.KERNELCAD_VALIDATE_DEFAULT = prev;
+    }
+  }, 60_000);
 });
 
 describe('Assembly.solvedModel({validate:"error"}) — interference hard gate', () => {
-  it('throws when two parts intersect (interference detected)', async () => {
+  it('defers overlap-only errors when two parts intersect', async () => {
     // Build a fixture: two boxes overlapping in world coords, mated fastened at
     // colliding origin. With validate:'error', the gate lowers the assembly,
-    // runs the BREP interference sweep, finds 100% overlap, and throws.
+    // runs the BREP interference sweep, and retains the overlap diagnostic on
+    // the returned Scene for the evaluator's mechanism verdict.
     const { arm, kcad } = makeArm();
     arm
       .part('a', kcad.box(10, 10, 10))
@@ -138,11 +164,16 @@ describe('Assembly.solvedModel({validate:"error"}) — interference hard gate', 
       .part('b', kcad.box(10, 10, 10)) // identical box at same world pos = full overlap
       .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
     arm.mate('m', 'a.o', 'b.o', 'fastened');
-    await expect(arm.solvedModel({}, { validate: 'error' }))
-      .rejects.toThrow(/assembly\.interference\.overlap|overlap/i);
+    const scene = await arm.solvedModel({}, { validate: 'error' });
+    expect(scene).toBeInstanceOf(Scene);
+    const overlap = scene.__deferredValidationDiagnostics().find(
+      (diagnostic) => diagnostic.code === 'assembly.interference.overlap',
+    );
+    expect(overlap).toBeDefined();
+    expect(overlap?.message).toMatch(/overlap/i);
   }, 60_000);
 
-  it('names the overlap location in the interference diagnostic', async () => {
+  it('retains the overlap location in the deferred interference diagnostic', async () => {
     const { arm, kcad } = makeArm();
     arm
       .part('a', kcad.box(10, 10, 10))
@@ -150,9 +181,12 @@ describe('Assembly.solvedModel({validate:"error"}) — interference hard gate', 
     arm
       .part('b', kcad.box(10, 10, 10), { at: [8, 0, 0] })
       .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-    await expect(
-      arm.solvedModel({}, { validate: 'error' }),
-    ).rejects.toThrow(/near \(-?\d+\.\d, -?\d+\.\d, -?\d+\.\d\)/);
+    const scene = await arm.solvedModel({}, { validate: 'error' });
+    expect(scene).toBeInstanceOf(Scene);
+    const overlap = scene.__deferredValidationDiagnostics().find(
+      (diagnostic) => diagnostic.code === 'assembly.interference.overlap',
+    );
+    expect(overlap?.message).toMatch(/near \(-?\d+\.\d, -?\d+\.\d, -?\d+\.\d\)/);
   }, 60_000);
 
   it('does NOT auto-run interference under validate:"warn"', async () => {
@@ -217,9 +251,9 @@ describe('Assembly.solvedModel({validate:"error"}) — interference hard gate', 
     ).resolves.not.toThrow();
   }, 60_000);
 
-  it('`ignore` does NOT silence non-listed clashing pairs', async () => {
+  it('`ignore` leaves non-listed clashing pairs as deferred diagnostics', async () => {
     // Three boxes: a-b overlap (ignored), a-c overlap (NOT ignored). The
-    // a-c pair must still throw.
+    // a-c and b-c pairs must remain visible as deferred diagnostics.
     const { arm, kcad } = makeArm();
     arm
       .part('a', kcad.box(10, 10, 10))
@@ -232,9 +266,13 @@ describe('Assembly.solvedModel({validate:"error"}) — interference hard gate', 
       .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
     arm.mate('m1', 'a.o', 'b.o', 'fastened');
     arm.mate('m2', 'a.o', 'c.o', 'fastened');
-    await expect(
-      arm.solvedModel({}, { validate: 'error', ignore: [['a', 'b']] }),
-    ).rejects.toThrow(/overlap|interference/i);
+    const scene = await arm.solvedModel({}, { validate: 'error', ignore: [['a', 'b']] });
+    expect(scene).toBeInstanceOf(Scene);
+    const remainingPairs = scene.__deferredValidationDiagnostics()
+      .filter((diagnostic) => diagnostic.code === 'assembly.interference.overlap')
+      .map((diagnostic) => [diagnostic.partA, diagnostic.partB].sort().join(':'))
+      .sort();
+    expect(remainingPairs).toEqual(['a:c', 'b:c']);
   }, 60_000);
 
   it('`ignore` under validate:"warn" drops the matched diagnostic from scene.warnings', async () => {

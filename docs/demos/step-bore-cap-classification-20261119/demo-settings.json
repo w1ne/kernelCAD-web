@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-19",
+  "scenario": "STEP cylindrical-bore end-cap classification",
+  "testCommand": "npx vitest run src/kernel/backends/occt/holeDetection.test.ts -t 'reports a through hole|measurable 0.1 mm end cap' --reporter=dot",
+  "captureCommand": "python3 docs/demos/step-bore-cap-classification-20261119/capture_demo.py",
+  "inspectionCommand": "python3 docs/demos/step-bore-cap-classification-20261119/inspect_demo.py",
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "codec": "h264",
+    "pixelFormat": "yuv420p",
+    "frameRate": 24,
+    "durationSeconds": 12,
+    "slideDurationSeconds": 4,
+    "sampleSeconds": [1, 5, 9]
+  },
+  "scope": "Local OCCT/B-rep classification and regression test; no deployment or physical inspection."
+}

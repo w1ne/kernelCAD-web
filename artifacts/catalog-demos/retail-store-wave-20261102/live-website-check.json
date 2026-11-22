@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-11-02T23:10:26Z",
+  "homepage": "https://kernelcad.com/",
+  "homepageBrowserTitle": "kernelCAD — vibe manufacturing from idea to part",
+  "homepageH1": "Vibe manufacturing. From idea to part.",
+  "homepageCatalogNavigationLinks": 0,
+  "catalogUrl": "https://kernelcad.com/catalog/",
+  "catalogStatus": 404,
+  "methods": [
+    "Read the already-open kernelCAD homepage through the existing Chrome DevTools session (page 10).",
+    "Fetched the catalog route headers with curl."
+  ],
+  "branchDeployment": "not deployed",
+  "claim": "Live catalog behavior is not verified; the current catalog route is missing."
+}

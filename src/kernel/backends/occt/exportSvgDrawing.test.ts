@@ -7,8 +7,9 @@
 // groups, hidden/tangent styling, dedup behaviour, dimensions, title block,
 // viewBox sanity — without pinning exact pixel geometry.
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import * as replicad from 'replicad';
+import * as drawingProjection from './drawingProjection';
 import { initOcct, OcctBackend } from './occtBackend';
 import { exportSvgDrawing, renderSvgDrawing } from './exportSvgDrawing';
 
@@ -45,6 +46,90 @@ describe('exportSvgDrawing', () => {
     expect(svg).not.toContain('>30</text>');
     expect((svg.match(/class="dim"/g) ?? []).length).toBe(2);
     expect(svg).toContain('>1:2</text>');
+    const checked = renderSvgDrawing([part], { format: 'svg-drawing', sheet: 'a3', views: ['front'] });
+    expect(checked.report?.sheetPlacement).toEqual({
+      status: 'clear', checkedViews: ['front'], issues: [],
+    });
+    expect(checked.diagnostics.map(d => d.code)).not.toContain('drawing.view.placement');
+  });
+
+  it('renders an explicitly requested scale and retains true dimension labels', () => {
+    const part = { name: 'panel', shape: OcctBackend.box(100, 30, 60) };
+    const svg = decode(exportSvgDrawing([part], {
+      format: 'svg-drawing', sheet: 'a3', views: ['front'], scale: 0.2,
+    }));
+    expect(svg).toContain('>1:5</text>');
+    expect(svg).toContain('>100</text>');
+    expect(svg).toContain('>60</text>');
+  });
+
+  it('repairs a clipped rendered annotation by growing A4 to A3, without touching geometry', () => {
+    const opts = { format: 'svg-drawing' as const, sheet: 'a4' as const,
+      autoAnnotate: false, titleBlock: {},
+      annotations: [{ kind: 'note' as const, id: 'inspection',
+        at: [0, 0, 12] as const,
+        text: 'INSPECT MACHINED EDGE BEFORE ASSEMBLY AND RECORD ACTUAL LENGTH' }] };
+    const normal = renderSvgDrawing([{ name: 'block', shape: OcctBackend.box(80, 50, 12) }], opts);
+    expect(normal.report?.renderedText?.issues.some(i => i.kind === 'text-outside-page')).toBe(true);
+    expect(decode(normal.bytes)).toContain('viewBox="0 0 297 210"');
+
+    const repaired = renderSvgDrawing([{ name: 'block', shape: OcctBackend.box(80, 50, 12) }],
+      { ...opts, layoutRepair: true });
+    expect(repaired.report?.sheetRepair).toEqual({
+      applied: true, status: 'clear',
+      attempts: [
+        { sheet: 'a4', issueCount: 0, overlapped: 0, textIssueCount: 1 },
+        { sheet: 'a3', issueCount: 0, overlapped: 0, textIssueCount: 0 },
+      ],
+    });
+    expect(repaired.report?.renderedText?.issues).toEqual([]);
+    expect(repaired.report?.annotations[0]?.text).toBe(opts.annotations[0].text);
+    expect(decode(repaired.bytes)).toContain('viewBox="0 0 420 297"');
+    expect(repaired.diagnostics.map(d => d.code)).not.toContain('drawing.text.placement');
+  });
+
+  it('stops at the first non-improving page and never reports a false repair', () => {
+    const r = renderSvgDrawing([{ name: 'block', shape: OcctBackend.box(80, 50, 12) }],
+      { format: 'svg-drawing', sheet: 'a4', titleBlock: {}, autoAnnotate: false,
+        layoutRepair: true, annotations: [{ kind: 'note', at: [0, 0, 12],
+          text: 'M'.repeat(90) }] });
+    expect(r.report?.sheetRepair?.applied).toBe(false);
+    expect(r.report?.sheetRepair?.attempts.map(a => a.sheet)).toEqual(['a4', 'a3']);
+    expect(r.report?.sheetRepair?.status).toBe('issues');
+    expect(r.report?.renderedText?.issues.some(i => i.kind === 'text-outside-page')).toBe(true);
+  });
+
+  it.each([
+    ['top', 80, 50, 12],
+    ['left', 50, 12, 80],
+  ] as const)('draws only the %s view with the corresponding overall dimensions', (view, w, h, hidden) => {
+    const result = renderSvgDrawing([{ name: 'panel', shape: OcctBackend.box(80, 50, 12) }],
+      { format: 'svg-drawing', sheet: 'a3', views: [view], hiddenLines: false });
+    const svg = decode(result.bytes);
+    expect(svg).toContain(`>${view.toUpperCase()}</text>`);
+    expect(svg).toContain(`>${w}</text>`);
+    expect(svg).toContain(`>${h}</text>`);
+    expect(svg).not.toContain(`>${hidden}</text>`);
+    expect(svg).not.toContain('>FRONT</text>');
+  });
+
+  it('projects only the requested single view', () => {
+    const prepare = drawingProjection.prepareShapeForDrawing;
+    const projections = vi.fn();
+    const spy = vi.spyOn(drawingProjection, 'prepareShapeForDrawing').mockImplementation(shape => {
+      const prepared = prepare(shape);
+      return { ...prepared, project: (camera, options) => {
+        projections();
+        return prepared.project(camera, options);
+      } };
+    });
+    try {
+      renderSvgDrawing([{ name: 'panel', shape: OcctBackend.box(80, 50, 12) }],
+        { format: 'svg-drawing', views: ['top'] });
+      expect(projections).toHaveBeenCalledTimes(1);
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('rejects isometric overlays on a front-only sheet', () => {
@@ -136,6 +221,11 @@ describe('exportSvgDrawing', () => {
     const top = viewGroup(svg, 'top');
     const topVisible = classGroup(top, 'visible');
     expect(countPaths(topVisible)).toBeGreaterThanOrEqual(2);
+
+    const clean = decode(exportSvgDrawing([part], { format: 'svg-drawing', hiddenLines: false }));
+    expect(countPaths(classGroup(viewGroup(clean, 'front'), 'hidden'))).toBe(0);
+    expect(classGroup(viewGroup(clean, 'front'), 'visible')).toBe(classGroup(front, 'visible'));
+    expect(classGroup(viewGroup(clean, 'top'), 'visible')).toBe(topVisible);
 
     // The isometric pictorial never carries hidden lines.
     const iso = viewGroup(svg, 'iso');

@@ -12,14 +12,18 @@ import type {
 import { isHdriPresetKey } from '../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata, CameraTargetSpec } from '../../shared/intent/cameraTargetRecord';
 import {
+  type AnimationAppearanceTrack,
   type AnimationKey,
   type AnimationTrack,
   type AnimationViewMetadata,
   type AnimationViewSpec,
   type AnimationViewSweepSpec,
   type AnimationViewTracksSpec,
+  ANIMATION_APPEARANCE_CHANNELS,
   ANIMATION_EASES,
   isAnimationViewTracksSpec,
+  isAppearanceTrack,
+  normalizeHexColor,
   normalizeAnimationView,
 } from '../../shared/intent/animationViewRecord';
 import type { Param } from '../../shared/intent/types';
@@ -415,6 +419,7 @@ function clampToParamRange(
           message: `animationView: track '${track.param}' key at ${key.atMs}ms has value ${key.value} outside the param's declared range [${min ?? '-inf'}, ${max ?? '+inf'}]; stored value clamped to ${clamped}.`,
           hint: HINT_TEMPLATES['animation.value.clamped'].template,
         });
+        key.authoredValue = key.value;
         key.value = clamped;
       }
     }
@@ -496,6 +501,63 @@ function validateAnimationKey(
   }
 }
 
+function validateAppearanceTrack(
+  track: AnimationAppearanceTrack,
+  i: number,
+  seen: Set<string>,
+  badKeys: (why: string) => never,
+): void {
+  if (typeof track.target !== 'string' || track.target.trim().length === 0) {
+    badKeys(`tracks[${i}].target must be a non-empty object name (part, feature or display name); got ${JSON.stringify(track.target)}`);
+  }
+  if (!(ANIMATION_APPEARANCE_CHANNELS as readonly string[]).includes(track.channel as string)) {
+    badKeys(`tracks[${i}] ('${track.target}') has unknown channel ${JSON.stringify(track.channel)}; expected one of ${ANIMATION_APPEARANCE_CHANNELS.join(' | ')}`);
+  }
+  const id = `${track.target.trim().toLowerCase()}\u0000${track.channel}`;
+  if (seen.has(id)) {
+    throw new KernelError(
+      'animation.track.duplicate-param',
+      `animationView: tracks[${i}] animates target '${track.target}' channel ${track.channel}, which an earlier track already animates; merge the keys into one track per target and channel.`,
+      undefined,
+      HINT_TEMPLATES['animation.track.duplicate-param'].template,
+    );
+  }
+  seen.add(id);
+  if (!Array.isArray(track.keys) || track.keys.length === 0) {
+    badKeys(`tracks[${i}] ('${track.target}') has an empty keys array; declare at least one key`);
+  }
+  const seenAtMs = new Set<number>();
+  for (let j = 0; j < track.keys.length; j += 1) {
+    validateColorKey(track.keys[j], i, j, track.target, seenAtMs, badKeys);
+  }
+}
+
+function validateColorKey(
+  key: AnimationAppearanceTrack['keys'][number],
+  i: number,
+  j: number,
+  target: string,
+  seenAtMs: Set<number>,
+  badKeys: (why: string) => never,
+): void {
+  if (typeof key !== 'object' || key === null) {
+    badKeys(`tracks[${i}].keys[${j}] must be an object { atMs, value, ease? }; got ${JSON.stringify(key)}`);
+  }
+  if (!Number.isFinite(key.atMs) || key.atMs < 0) {
+    badKeys(`tracks[${i}].keys[${j}] atMs must be a finite number >= 0; got ${key.atMs}`);
+  }
+  if (normalizeHexColor(key.value) === null) {
+    badKeys(`tracks[${i}].keys[${j}] value must be a '#rrggbb' or '#rgb' colour; got ${JSON.stringify(key.value)}`);
+  }
+  if (seenAtMs.has(key.atMs)) {
+    badKeys(`tracks[${i}] ('${target}') has duplicate atMs ${key.atMs}; key timestamps must be unique within a track`);
+  }
+  seenAtMs.add(key.atMs);
+  if (key.ease !== undefined && !(ANIMATION_EASES as readonly string[]).includes(key.ease as string)) {
+    badKeys(`tracks[${i}].keys[${j}] has unknown ease ${JSON.stringify(key.ease)}; expected one of ${ANIMATION_EASES.join(' | ')}`);
+  }
+}
+
 function validateAnimationTracks(
   args: AnimationViewTracksSpec,
   fps: number,
@@ -514,8 +576,14 @@ function validateAnimationTracks(
     badKeys(`'tracks' must be a non-empty array; got ${JSON.stringify(args.tracks)}`);
   }
   const seenParams = new Set<string>();
+  const seenAppearance = new Set<string>();
   for (let i = 0; i < args.tracks.length; i += 1) {
-    validateAnimationTrack(args.tracks[i], i, paramTable, seenParams, badKeys);
+    const track = args.tracks[i];
+    if (typeof track === 'object' && track !== null && isAppearanceTrack(track)) {
+      validateAppearanceTrack(track, i, seenAppearance, badKeys);
+    } else {
+      validateAnimationTrack(track as AnimationTrack, i, paramTable, seenParams, badKeys);
+    }
   }
   return normalizeAnimationView(args, fps);
 }

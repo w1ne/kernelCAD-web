@@ -55,6 +55,7 @@ describe("inspect({ of: 'bom' })", () => {
     expect(screwRow!.quantity).toBe(4);
     expect(screwRow!.instancePaths).toEqual(['screw_0', 'screw_1', 'screw_2', 'screw_3']);
     expect(screwRow!.catalog?.id).toBe('iso-4762-m2x4');
+    expect(screwRow!.catalog?.partNumber).toBe('ISO 4762 M2x4 - 8.8');
     expect(screwRow!.catalog?.license).toBe('MIT');
   }, 60000);
 
@@ -96,6 +97,7 @@ describe("inspect({ of: 'bom' })", () => {
     expect(screwRow).toBeDefined();
     expect(screwRow!.quantity).toBe(4);
     expect(screwRow!.catalog?.id).toBe('iso-4762-m2x4');
+    expect(screwRow!.catalog?.partNumber).toBe('ISO 4762 M2x4 - 8.8');
     expect(screwRow!.catalog?.license).toBe('MIT');
     expect(r.totals.partCount).toBe(9);
     expect(r.totals.uniquePartCount).toBe(4);

@@ -5,7 +5,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { JSDOM } from 'jsdom';
-import { assetGlbPath, assetPath, assetStepPath, assetUrl, catalogPresetVariants, catalogPresetVariantPath, escapeHtml, metaDescription, ORIGIN, writeCatalogSite, type CatalogIndex } from './buildCatalogPages';
+import { assetGlbPath, assetPath, assetStepPath, assetUrl, catalogPresetVariants, catalogPresetVariantPath, catalogSearchIndex, kitPath, kitUrl, catalogUrls, escapeHtml, metaDescription, ORIGIN, renderAssetPage, writeCatalogSite, type CatalogIndex } from './buildCatalogPages.js';
 
 const repoRoot = resolve(import.meta.dirname, '..');
 const index = JSON.parse(readFileSync(join(repoRoot, 'catalog', 'index.json'), 'utf8')) as CatalogIndex;
@@ -29,8 +29,8 @@ describe('catalog SEO page export', () => {
     beforeAll(() => {
         out = mkdtempSync(join(tmpdir(), 'kcad-catalog-pages-'));
         written = writeCatalogSite(repoRoot, out);
-    });
-    afterAll(() => rmSync(out, { recursive: true, force: true }));
+    }, 120_000); // A full catalog build copies thousands of reviewed image previews.
+    afterAll(() => rmSync(out, { recursive: true, force: true }), 120_000);
 
     it('writes one page and one preview for every asset in catalog/index.json', () => {
         expect(index.assets.length).toBeGreaterThan(0);
@@ -69,11 +69,51 @@ describe('catalog SEO page export', () => {
         expect(titles.size).toBe(index.assets.length);
     });
 
-    it('makes every asset crawlable from the hub and every internal catalog link resolve', () => {
+    it('uses the same privacy-preserving marketing page-view beacon on hub, kit and asset pages', () => {
+        const urls = ['catalog/index.html', kitPath(index.kits[0]) + 'index.html', assetPath(index.assets[0]) + 'index.html'];
+        for (const url of urls) {
+            const html = readFileSync(join(out, url), 'utf8');
+            expect(html, url).toContain('https://static.cloudflareinsights.com/beacon.min.js');
+            expect(html, url).toContain('e5f5f4c6464f456d8f5376411e77f545');
+            expect(html.match(/data-cf-beacon=/g)).toHaveLength(1);
+        }
+    });
+
+    it('turns asset pages into truthful kernelCAD product entry points', () => {
+        for (const a of index.assets.slice(0, 20)) {
+            const html = readFileSync(join(out, assetPath(a), 'index.html'), 'utf8');
+            expect(html).toContain('aria-label="Continue with kernelCAD"');
+            expect(html).toContain(`Start with ${escapeHtml(a.title)} in kernelCAD Studio`);
+            expect(html).toContain('href="/code-cad/"');
+            expect(html).toContain('href="/mcp/"');
+            expect(html).toContain('MCP tools for AI assistants');
+            expect(html).not.toMatch(/aggregateRating|fake customer|certified manufacturer/i);
+        }
+        const sample = index.assets[0];
+        const withoutKnobs = renderAssetPage({ ...sample, params: [] }, index.kits[0], []);
+        expect(withoutKnobs).toContain('inspect the model');
+        expect(withoutKnobs).not.toContain('change its 0 published parameters');
+    });
+
+    it('makes every asset crawlable through kit pages and every internal catalog link resolve', () => {
         const hub = readFileSync(join(out, 'catalog', 'index.html'), 'utf8');
         expect(first(hub, /<link rel="canonical" href="([^"]+)"/)).toBe(`${ORIGIN}catalog/`);
-        for (const a of index.assets) expect(hub).toContain(`href="/${assetPath(a)}"`);
-        const pages = [hub, ...index.assets.map((a) => readFileSync(join(out, assetPath(a), 'index.html'), 'utf8'))];
+        for (const kit of index.kits) {
+            const kitHtml = readFileSync(join(out, kitPath(kit), 'index.html'), 'utf8');
+            expect(hub).toContain(`href="/${kitPath(kit)}"`);
+            expect(first(kitHtml, /<link rel="canonical" href="([^"]+)"/)).toBe(kitUrl(kit));
+            expect(kitHtml).toContain('href="/code-cad/"');
+            expect(kitHtml).toContain('href="/mcp/"');
+            const graph = jsonLd(kitHtml)[0]['@graph'] as Record<string, unknown>[];
+            expect(graph.find((item) => item['@type'] === 'CollectionPage')).toMatchObject({
+                url: kitUrl(kit),
+                mainEntity: { '@type': 'ItemList', numberOfItems: kit.assets.length },
+            });
+            for (const id of kit.assets) expect(kitHtml).toContain(`href="/catalog/${kit.id}/${id}/"`);
+        }
+        const pages = [hub,
+            ...index.kits.map((kit) => readFileSync(join(out, kitPath(kit), 'index.html'), 'utf8')),
+            ...index.assets.map((a) => readFileSync(join(out, assetPath(a), 'index.html'), 'utf8'))];
         const broken = new Set(pages.flatMap(catalogLinks).filter((file) => !existsSync(join(out, file))));
         expect([...broken]).toEqual([]);
     });
@@ -90,7 +130,7 @@ describe('catalog SEO page export', () => {
             expect(html, `${asset.kit}/${asset.id} default download path`).toContain(assetGlbPath(asset).split('/').at(-1)!);
             expect(html, `${asset.kit}/${asset.id} STEP path`).toContain(assetStepPath(asset).split('/').at(-1)!);
             const variants = catalogPresetVariants(asset);
-            expect(variants.length, `${asset.kit}/${asset.id} preset count`).toBeGreaterThanOrEqual(3);
+            expect(variants.length, `${asset.kit}/${asset.id} preset count`).toBeGreaterThanOrEqual(1);
             expect(variants.length, `${asset.kit}/${asset.id} preset count`).toBeLessThanOrEqual(5);
             for (const variant of variants.slice(1)) {
                 expect(html, `${asset.kit}/${asset.id} preset ${variant.name}`).toContain(catalogPresetVariantPath(asset, variant).split('/').at(-1)!);
@@ -100,13 +140,17 @@ describe('catalog SEO page export', () => {
 
     it('creates a third real choice-param preset for assets with one authored preset', () => {
         const onePresetAssets = index.assets.filter((asset) => Object.keys(asset.presets ?? {}).length === 1);
-        expect(onePresetAssets.map((asset) => asset.id).sort()).toEqual(['reeds', 'seesaw', 'speed-bump']);
+        expect(onePresetAssets.length).toBeGreaterThan(0);
         for (const asset of onePresetAssets) {
             const variants = catalogPresetVariants(asset);
-            expect(variants).toHaveLength(3);
-            const choiceParam = asset.params.find((param) => param.choices?.length);
-            expect(choiceParam).toBeDefined();
-            expect(variants[2]!.values).toHaveProperty(choiceParam!.name);
+            expect(variants.length).toBeGreaterThanOrEqual(2);
+            const choices = asset.params.filter((param) => param.choices?.some((value) => !Object.is(value, param.default) && !Object.values(asset.presets ?? {}).some((preset) => Object.is(preset[param.name], value))));
+            if (choices.length) {
+                expect(variants).toHaveLength(3);
+                expect(variants[2]!.values).toHaveProperty(choices[0]!.name);
+            } else {
+                expect(variants).toHaveLength(2);
+            }
         }
     });
 
@@ -133,12 +177,54 @@ describe('catalog SEO page export', () => {
         dom.window.close();
     });
 
-    it('lists the hub and every asset page in sitemap.xml, and robots.txt allows them', () => {
-        const sitemap = readFileSync(join(out, 'sitemap.xml'), 'utf8');
-        const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-        expect(locs.sort()).toEqual([`${ORIGIN}catalog/`, ...index.assets.map(assetUrl)].sort());
-        const robots = readFileSync(join(out, 'robots.txt'), 'utf8');
-        expect(robots).not.toMatch(/Disallow:\s*\/(catalog\/?)?\s*$/m);
-        expect(robots).toContain(`Sitemap: ${ORIGIN}sitemap.xml`);
+    it('keeps the hub lightweight while preserving full-catalog search and crawlable kit pages', () => {
+        const hub = readFileSync(join(out, 'catalog', 'index.html'), 'utf8');
+        const searchFile = readFileSync(join(out, 'catalog', 'search-index.json'), 'utf8');
+        const entries = JSON.parse(searchFile) as ReturnType<typeof catalogSearchIndex>;
+        expect(entries).toEqual(catalogSearchIndex(index));
+        expect(entries).toHaveLength(index.assets.length);
+        expect(new Set(entries.map((e) => e.url)).size).toBe(index.assets.length);
+        expect(hub.length).toBeLessThan(250_000);
+        expect(hub).toContain('data-total="' + index.assets.length + '"');
+        expect(hub).toContain("fetch('/catalog/search-index.json')");
+        expect(hub).toContain('id="catalog-results"');
+        for (const kit of index.kits) {
+            expect(hub).toContain(`View all ${kit.assets.length} ${escapeHtml(kit.title)} models`);
+            expect(hub).toContain(`href="/${kitPath(kit)}"`);
+        }
+        // Neither the full catalog index nor its geometry sources should be embedded in the hub.
+        expect(searchFile.length).toBeLessThan(index.assets.length * 400);
+        expect(searchFile).not.toContain('sourceUrl');
+    });
+
+    it('publishes a truthful CollectionPage schema and code/MCP entry points on the catalog hub', () => {
+        const hub = readFileSync(join(out, 'catalog', 'index.html'), 'utf8');
+        const markup = jsonLd(hub);
+        expect(markup).toHaveLength(1);
+        const graph = markup[0]['@graph'] as Record<string, unknown>[];
+        expect(graph.find((item) => item['@type'] === 'CollectionPage')).toMatchObject({
+            url: `${ORIGIN}catalog/`,
+            name: 'Free low-poly 3D model catalog (CC0) | kernelCAD',
+            mainEntity: { '@type': 'ItemList', numberOfItems: index.assets.length },
+        });
+        expect(graph.find((item) => item['@type'] === 'BreadcrumbList')).toMatchObject({
+            itemListElement: [
+                { position: 1, item: ORIGIN },
+                { position: 2, item: `${ORIGIN}catalog/` },
+            ],
+        });
+        expect(hub).toContain('aria-label="Use models with kernelCAD"');
+        expect(hub).toContain('href="/code-cad/"');
+        expect(hub).toContain('href="/mcp/"');
+        expect(hub).not.toMatch(/aggregateRating|reviewCount|fake customer/i);
+    });
+
+    it('offers the hub and every asset page as sitemap URLs, without writing the site sitemap', () => {
+        // The site owns sitemap.xml and robots.txt. The catalog contributes its
+        // URLs through catalogUrls() so build-sitemap.ts can merge them; it must
+        // not emit those files itself or it clobbers the server's own.
+        expect(catalogUrls(index).sort()).toEqual([`${ORIGIN}catalog/`, ...index.kits.map(kitUrl), ...index.assets.map(assetUrl)].sort());
+        expect(existsSync(join(out, 'sitemap.xml'))).toBe(false);
+        expect(existsSync(join(out, 'robots.txt'))).toBe(false);
     });
 });

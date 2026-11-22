@@ -1,0 +1,5 @@
+{
+  "command": "npx tsx artifacts/catalog-demos/construction-equipment-quality-promotion-20261104/render_construction_equipment_variants.ts",
+  "exitCode": 0,
+  "passed": true
+}

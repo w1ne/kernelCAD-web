@@ -1,0 +1,51 @@
+{
+  "video": "solar-energy-quality-demo.mp4",
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "18.000000"
+    }
+  },
+  "decodedFrames": [
+    {
+      "timeSeconds": 1,
+      "path": "frame-01.png",
+      "size": 110057
+    },
+    {
+      "timeSeconds": 4,
+      "path": "frame-02.png",
+      "size": 168205
+    },
+    {
+      "timeSeconds": 7,
+      "path": "frame-03.png",
+      "size": 136011
+    },
+    {
+      "timeSeconds": 10,
+      "path": "frame-04.png",
+      "size": 150466
+    },
+    {
+      "timeSeconds": 13,
+      "path": "frame-05.png",
+      "size": 191345
+    },
+    {
+      "timeSeconds": 16,
+      "path": "frame-06.png",
+      "size": 139304
+    }
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "manualVisualInspection": "complete: inspected the decoded frame-02 source/material slide, frame-06 verification slide, and full contact sheet at 1280x720. Text fits at full resolution; tracker, module-array, container, variant, and contact-sheet images are legible. No misleading deployment or hardware-acceptance claim appears."
+}

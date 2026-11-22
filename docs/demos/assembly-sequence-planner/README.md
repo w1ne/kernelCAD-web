@@ -14,7 +14,8 @@ What it shows:
 - `bolt-a` retaining its helical removal while its modelled driver envelope is
   `tool-blocked`, naming `tool-clearance-rib`;
 - the press-fit gear planned as a `requires-force` step, never simulated;
-- the two fastened-mate subassemblies, the model stamp
+- the four fastened-mate subassemblies (base with posts, cover with rib, each
+  shaft with its two gears), the model stamp
   (`motionModels` includes `helical-screw` and `requires-force`,
   `toolReach: swept-envelope`) and the S2 ledger entries (`assembly.toolReach.*`
   pass/fail, `assembly.requiresForce.*` not-evaluated).
@@ -29,18 +30,17 @@ npx tsx src/agent/cli/index.ts render examples/assemblies/assembly-sequence-gear
 node docs/demos/assembly-sequence-planner/make-video.mjs
 ```
 
-`make-video.mjs` uses `FFMPEG` when set, otherwise `ffmpeg` from `PATH`. This
-host has no system ffmpeg/ffprobe; the MP4 was encoded with the static binary
-from `/tmp/opencode/node_modules/ffmpeg-static/ffmpeg` and a frame was extracted
-and visually inspected. `npm run lint-demos` therefore cannot run here; report
-that as an environment failure, not a skipped verification.
+`make-video.mjs` uses `FFMPEG` when set, otherwise `ffmpeg` from `PATH`. The
+2026-11-20 recapture used the system `/usr/bin/ffmpeg`; a frame at 36 s (the subassembly slide)
+was extracted from the MP4 and visually inspected.
 
 Evidence:
 
 - `sequence-evidence.json` — exact `verify({ check: 'assembly-path', sequence: true })`
-  result for the example: source hash, model stamp, per-part state, all
-  nineteen steps, fastener motion, tool findings, `requiresForce`,
-  `toolBlocked`, `unknown`, `search`, `stuckParts` and the S2 ledger.
+  result for the example: source hash, model stamp, per-part directions
+  (`parts`), all twenty-one steps, fastener motion, tool findings,
+  `requiresForce`, `toolBlocked`, `unknown`, `search`, `stuckParts` and the
+  S2 ledger.
 - `video-evidence.json` — input image hashes, delivered video hash, slide
   durations, exact render/plan invocations and provenance.
 - `frames/` — the exact slides the encoder consumed.

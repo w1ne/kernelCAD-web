@@ -1,0 +1,6 @@
+Static-hold regression
+
+Actuated beam; shoulder pose is explicit.
+Lowering returns no scene for mass calculation.
+
+No scene means no holding-capacity pass.

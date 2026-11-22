@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-10",
+  "commandsPlanned": [
+    "PW_CDP_URL=http://127.0.0.1:9223 node dist/cli/index.js render inspect catalog/kits/standard-components/bulkhead-adapter.kcad.ts artifacts/catalog-demos/standard-components-guide-retention-details-20261110/inspection/bulkhead-adapter --channels rgb"
+  ],
+  "invocationAttempted": "PW_CDP_URL=http://127.0.0.1:9223 node dist/cli/index.js render inspect catalog/kits/standard-components/bulkhead-adapter.kcad.ts artifacts/catalog-demos/standard-components-guide-retention-details-20261110/inspection/bulkhead-adapter --channels rgb",
+  "result": "failed before producing an inspection bundle",
+  "exitCode": 1,
+  "error": "browserType.connectOverCDP timed out after 30000ms while connecting to the existing Chrome at 127.0.0.1:9223",
+  "replacementBrowserLaunched": false,
+  "reason": "PW_CDP_URL requires attachment; the renderer does not fall back to launching another browser",
+  "fallbackVisualEvidence": {
+    "renderer": "scripts/renderCatalogPreviews.ts with scripts/lib/glbSoftwareRender.ts",
+    "previewSources": [
+      "catalog/kits/standard-components/previews/bulkhead-adapter.png",
+      "catalog/kits/standard-components/previews/linear-guide-rail.png",
+      "catalog/kits/standard-components/previews/shaft-coupling.png"
+    ],
+    "variantRenderer": "artifacts/catalog-demos/standard-components-guide-retention-details-20261110/render_variants.ts",
+    "manualVisualInspection": "The adapter shows its hex locknut and dark sealing washer; the guide shows the four-hole carriage and orange wipers; the coupling variants show raised set screws or a visible split and crossing clamp bolts."
+  }
+}

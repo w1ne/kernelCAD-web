@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-04",
+  "branch": "feat/catalog-2000",
+  "runtimeVersions": {
+    "node": "v22.23.4",
+    "python": "3.14.9",
+    "ffmpeg": "6.1.1-3ubuntu5"
+  },
+  "kit": "construction-equipment",
+  "existingAssets": 60,
+  "newAssetIds": 0,
+  "sourceReplay": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/construction-equipment-wave-20261102/generate_construction_equipment_assets.py",
+  "promotion": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/construction-equipment-quality-promotion-20261104/promote_construction_equipment_assets.py",
+  "previewAssetIds": "preview-asset-ids.txt (60 existing IDs, one per line)",
+  "previewRender": "mapfile -t asset_ids < artifacts/catalog-demos/construction-equipment-quality-promotion-20261104/preview-asset-ids.txt; PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH npx tsx scripts/renderCatalogPreviews.ts \"${asset_ids[@]}\"",
+  "indexBuild": "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH npx tsx scripts/buildAssetCatalog.ts",
+  "localPages": "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-construction-equipment-quality-promotion-20261104",
+  "materialControls": 162,
+  "materialControlRangePerAsset": [2, 4],
+  "namedPresetsPerAsset": ["weathered", "highVisibility"],
+  "presets": 120,
+  "geometryEnhancements": "Articulated dump-truck linkage, concrete pump boom/hopper/outriggers, crawler blade and track details, lowboy ramps/drawbar, paver hopper, cab glazing and machine details.",
+  "previewRendererLog": "catalog-preview-render-output.txt",
+  "indexBuildLog": "catalog-index-build-output.txt",
+  "verification": {
+    "sourceHashAudit": "promotion-audit.json",
+    "eslint": "catalog-eslint-status.json",
+    "catalogIntegration": "catalog-test-status.json",
+    "localPages": "catalog-pages-check.json",
+    "presetRender": "variant-render-status.json"
+  },
+  "claimBoundary": "Local catalog source/export/software-render/page evidence only. No deployment, physical equipment operation, field behavior or hardware acceptance is claimed."
+}

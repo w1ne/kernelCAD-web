@@ -50,7 +50,7 @@ export const RETIRED_TOOL_NAMES: Record<string, string> = {
   add_part_connector_source: 'use add_connector({ code, part_binding, name, type, origin })',
   add_mate_source: "use add_mate({ relation: 'mate', code, assembly_binding, name, a, b, type })",
   add_mate_coupling_source: "use add_mate({ relation: 'coupling', code, assembly_binding, driven, source, ratio })",
-  add_transmission_source: "use add_mate({ relation: 'transmission', code, assembly_binding, name, kind, sourceMate, drivenMates, path })",
+  add_transmission_source: "use add_mate({ relation: 'transmission', code, assembly_binding, name, kind, source_mate, driven_mates, path })",
   add_workspace_target_source: 'use add_workspace_target({ code, assembly_binding, connector_ref, reachable })',
   set_scene_return_source: 'use set_scene_return({ code, assembly_binding, mode })',
 

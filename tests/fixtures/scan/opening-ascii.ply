@@ -1,0 +1,21 @@
+ply
+format ascii 1.0
+comment kernelCAD scan fixture, millimetres
+element vertex 8
+property float x
+property float y
+property float z
+property uchar red
+property uchar green
+property uchar blue
+element face 0
+property list uchar int vertex_indices
+end_header
+0 0 0 10 20 30
+12 0 0 10 20 30
+12 22 0 10 20 30
+0 22 0 10 20 30
+0 0 32 10 20 30
+12 0 32 10 20 30
+12 22 32 10 20 30
+0 22 32 10 20 30

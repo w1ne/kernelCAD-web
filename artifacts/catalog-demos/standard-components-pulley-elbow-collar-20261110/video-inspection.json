@@ -1,0 +1,42 @@
+{
+  "video": "artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/standard-components-pulley-elbow-collar.mp4",
+  "durationSeconds": 15.041667,
+  "streams": [
+    {
+      "codec_name": "h264",
+      "width": 1280,
+      "height": 720,
+      "r_frame_rate": "24/1"
+    }
+  ],
+  "expected": {
+    "width": 1280,
+    "height": 720,
+    "codec": "h264",
+    "durationSeconds": 15
+  },
+  "samples": [
+    {
+      "timeSeconds": 0.5,
+      "file": "decoded-01.png"
+    },
+    {
+      "timeSeconds": 3.9,
+      "file": "decoded-02.png"
+    },
+    {
+      "timeSeconds": 7.7,
+      "file": "decoded-03.png"
+    },
+    {
+      "timeSeconds": 11.5,
+      "file": "decoded-04.png"
+    },
+    {
+      "timeSeconds": 14.541667,
+      "file": "decoded-05.png"
+    }
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "visualReview": "Reviewed all five decoded sample frames and the full-size before/after and results frames. Asset labels and check captions are legible, the geometry and material variants are visible, and no clipping or layout defects were found."
+}

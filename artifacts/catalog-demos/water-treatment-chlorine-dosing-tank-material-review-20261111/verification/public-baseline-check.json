@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-11-11T17:01:24.102382+00:00",
+  "assets": {
+    "preview": {
+      "url": "https://kernelcad.com/assets/water-treatment-chlorine-dosing-skid.png",
+      "httpStatus": 200,
+      "contentType": "image/png",
+      "baselineSha256": "1c76d136e62d2d7d1f8ca021ca3459bf5398e3f4c6bc04c98f25efd82333b2da",
+      "publicSha256": "1c76d136e62d2d7d1f8ca021ca3459bf5398e3f4c6bc04c98f25efd82333b2da",
+      "matchesBaseline": true
+    },
+    "source": {
+      "url": "https://kernelcad.com/assets/water-treatment-chlorine-dosing-skid.kcad.ts",
+      "httpStatus": 200,
+      "contentType": "video/mp2t",
+      "baselineSha256": "67118697138e902f59dfbd058d85a73bc9707019798a1a3497d8e129c62d4867",
+      "publicSha256": "67118697138e902f59dfbd058d85a73bc9707019798a1a3497d8e129c62d4867",
+      "matchesBaseline": true
+    }
+  },
+  "note": "Public files remain the pre-edit baseline; the branch change is not deployed."
+}

@@ -1,0 +1,889 @@
+{
+  "checkedAt": "2026-11-02T22:13:09.478Z",
+  "totalAssets": 955,
+  "kit": "lab-infrastructure",
+  "addedAssets": 60,
+  "query": {
+    "tool": "search_assets",
+    "q": "laboratory bench",
+    "coverage": "ok",
+    "rows": [
+      "cantilever-lab-bench",
+      "center-island-lab-bench",
+      "l-shaped-laboratory-bench",
+      "stainless-lab-bench",
+      "wall-lab-bench",
+      "balance-isolation-bench",
+      "bench-service-pegboard",
+      "cleanroom-gowning-bench"
+    ]
+  },
+  "assets": [
+    {
+      "id": "acid-corrosive-storage-cabinet",
+      "triangles": 84,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "articulated-extraction-snorkel",
+      "triangles": 148,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "balance-isolation-bench",
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "bench-service-pegboard",
+      "triangles": 312,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "benchtop-extraction-enclosure",
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "canopy-extraction-hood",
+      "triangles": 60,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cantilever-lab-bench",
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "ceiling-service-carrier",
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "center-island-lab-bench",
+      "triangles": 228,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "chemical-weighing-enclosure",
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cleanroom-ceiling-light-panel",
+      "triangles": 48,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cleanroom-fan-filter-unit",
+      "triangles": 120,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cleanroom-gowning-bench",
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cleanroom-gowning-locker-bank",
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cleanroom-partition-panel",
+      "triangles": 60,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cleanroom-pass-through-chamber",
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cleanroom-shoe-cubby",
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cleanroom-single-door-module",
+      "triangles": 72,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cleanroom-tacky-mat-tray",
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cleanroom-viewing-window",
+      "triangles": 84,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cold-room-door-module",
+      "triangles": 72,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cold-room-wall-panel",
+      "triangles": 60,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cryogenic-dewar-storage-rack",
+      "triangles": 348,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "ductless-fume-enclosure",
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "flammable-liquid-storage-cabinet",
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "fume-exhaust-riser",
+      "triangles": 72,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "glassware-drying-cabinet",
+      "triangles": 120,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "l-shaped-laboratory-bench",
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "lab-gas-manifold-panel",
+      "triangles": 320,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-base-cabinet",
+      "triangles": 72,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-drawer-cabinet",
+      "triangles": 408,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-electrical-service-rail",
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-faucet-set",
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-floor-drain-trough",
+      "triangles": 188,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-fume-hood",
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-gas-cylinder-cabinet",
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-refrigerator",
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-safety-shower",
+      "triangles": 400,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-service-spine",
+      "triangles": 372,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-sink-base-cabinet",
+      "triangles": 84,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-utility-turret",
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-vacuum-service-panel",
+      "triangles": 316,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-wall-eyewash-station",
+      "triangles": 224,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-washup-station",
+      "triangles": 212,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laboratory-water-service-console",
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "laminar-flow-workbench",
+      "triangles": 168,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "mobile-underbench-cabinet",
+      "triangles": 296,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "open-laboratory-shelving",
+      "triangles": 192,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "overhead-reagent-shelf",
+      "triangles": 448,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "overhead-service-bridge",
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "reagent-wall-shelf",
+      "triangles": 624,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "solvent-storage-cabinet",
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "stainless-lab-bench",
+      "triangles": 192,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "ultra-low-temperature-freezer",
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "undercounter-laboratory-freezer",
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "vibration-isolation-table",
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "walk-in-fume-hood",
+      "triangles": 168,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "wall-lab-bench",
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "wall-reagent-cabinet",
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "wet-lab-sink-bench",
+      "triangles": 188,
+      "triangleBudget": 1800,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    }
+  ],
+  "variants": [
+    {
+      "id": "laboratory-fume-hood",
+      "want": "scale 1.15 blue body yellow accent",
+      "params": {
+        "scale": 1.15,
+        "body": "#2e6fd8",
+        "accent": "#f1c40f"
+      },
+      "unmatched": [],
+      "matched": [
+        {
+          "term": "scale 1.15",
+          "param": "scale",
+          "value": 1.15
+        },
+        {
+          "term": "blue body",
+          "param": "body",
+          "value": "#2e6fd8"
+        },
+        {
+          "term": "yellow accent",
+          "param": "accent",
+          "value": "#f1c40f"
+        }
+      ],
+      "defaultTriangles": 144,
+      "resolvedTriangles": 144,
+      "triangleBudget": 1800,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "defaultGlbSha256": "2f92be2cdd0509c1a1b2cd785ea23430574673c18c717aa943edfc3d82a518b4",
+      "resolvedGlbSha256": "eb8cd8d6fe81bdb47f013d6c408137e95d859621e364e3ebfca66117b0c677e0"
+    },
+    {
+      "id": "wall-lab-bench",
+      "want": "scale 0.85 green body orange accent",
+      "params": {
+        "scale": 0.85,
+        "body": "#2e8b57",
+        "accent": "#e67e22"
+      },
+      "unmatched": [],
+      "matched": [
+        {
+          "term": "scale 0.85",
+          "param": "scale",
+          "value": 0.85
+        },
+        {
+          "term": "green body",
+          "param": "body",
+          "value": "#2e8b57"
+        },
+        {
+          "term": "orange accent",
+          "param": "accent",
+          "value": "#e67e22"
+        }
+      ],
+      "defaultTriangles": 108,
+      "resolvedTriangles": 108,
+      "triangleBudget": 1800,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "defaultGlbSha256": "f4301e883fbfb6304a5c534efb9ef543a5779e868950f06b56d9a7330c083cca",
+      "resolvedGlbSha256": "2f8119f1eb4a75c3d9ad1b369907086ee7198396f74cece284eafe92687f81c2"
+    },
+    {
+      "id": "cleanroom-pass-through-chamber",
+      "want": "scale 1.2 red body yellow accent",
+      "params": {
+        "scale": 1.2,
+        "body": "#c0392b",
+        "accent": "#f1c40f"
+      },
+      "unmatched": [],
+      "matched": [
+        {
+          "term": "scale 1.2",
+          "param": "scale",
+          "value": 1.2
+        },
+        {
+          "term": "red body",
+          "param": "body",
+          "value": "#c0392b"
+        },
+        {
+          "term": "yellow accent",
+          "param": "accent",
+          "value": "#f1c40f"
+        }
+      ],
+      "defaultTriangles": 108,
+      "resolvedTriangles": 108,
+      "triangleBudget": 1800,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "defaultGlbSha256": "67907b7933e25f8735358e78cd33988b7a3001299784c4b8e5ab578005143bb6",
+      "resolvedGlbSha256": "ddff28ca5295c344bbae3ac42dec286deefa5c0bbae15ed70ab5e0e46579471a"
+    }
+  ],
+  "settings": {
+    "kit": "lab-infrastructure",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 2,
+    "videoFrameRate": 24,
+    "videoCodec": "libx264",
+    "pixelFormat": "yuv420p",
+    "crf": 23,
+    "render": "software-rendered GLB triangles from local catalog source and parameter resolution",
+    "assetsPerOverviewFrame": 20,
+    "variants": [
+      {
+        "id": "laboratory-fume-hood",
+        "want": "scale 1.15 blue body yellow accent"
+      },
+      {
+        "id": "wall-lab-bench",
+        "want": "scale 0.85 green body orange accent"
+      },
+      {
+        "id": "cleanroom-pass-through-chamber",
+        "want": "scale 1.2 red body yellow accent"
+      }
+    ]
+  },
+  "claims": {
+    "originalGeometry": true,
+    "localCatalogSearchAndVariantWorkflow": true,
+    "glbExport": true,
+    "softwareRender": true,
+    "threeJsRendered": false,
+    "deployedBehavior": false,
+    "simulation": false,
+    "hardwareAcceptance": false
+  }
+}

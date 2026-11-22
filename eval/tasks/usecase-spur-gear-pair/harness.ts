@@ -45,7 +45,7 @@ async function cookbookRecipeBuilds(): Promise<boolean> {
   if (!code) return false;
   try {
     const r = await buildUsecase(RECIPE.replace(/\.md$/, '.kcad.ts'), code);
-    return r.clean && r.parts.length === 2 && r.parts.every((p) => isClosedSolid(p.shape));
+    return r.clean && r.parts.length === 3 && r.parts.every((p) => isClosedSolid(p.shape));
   } catch {
     return false;
   }

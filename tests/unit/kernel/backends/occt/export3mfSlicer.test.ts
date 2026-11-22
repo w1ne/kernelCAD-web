@@ -266,7 +266,10 @@ describe('export3mfAsync — slicer-ready output', () => {
     expect(vols[1][0]).toBe(vols[0][1] + 1);
     expect(vols[1][1]).toBe(triCount - 1);
     // The inlay's triangles carry their own colour in the core model.
-    expect(model).toMatch(/<triangle[^>]*pid="1" p1="1"/);
+    const colouredTriangles = [...p.doc.getElementsByTagNameNS(CORE_NS, 'triangle')]
+      .filter((t) => t.getAttribute('p1') === '1');
+    expect(colouredTriangles.length).toBeGreaterThan(0);
+    for (const triangle of colouredTriangles) expect(triangle.getAttribute('pid')).toBe(p.basematerialsId);
     // The bed position is in the vertices, not a build-item transform:
     // PrusaSlicer applies that transform to the first volume only.
     expect(p.items[0].t).toEqual([0, 0, 0]);

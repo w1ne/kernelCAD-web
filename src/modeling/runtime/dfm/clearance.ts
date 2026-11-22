@@ -71,6 +71,8 @@ export interface ClearanceCheckOptions {
    *  bbox lower bound already clears the threshold. Rest-pose DFM keeps the
    *  default false; sampled pose envelopes require exact distances. */
   forceExact?: boolean;
+  /** Omit overlap volume when the caller only needs contact edges. */
+  distanceOnly?: boolean;
 }
 
 /** One scene part, cloned into the world frame for measurement. `shape` and
@@ -121,6 +123,19 @@ export function checkClearance(
   diagnostics: CompilerDiagnostic[] = [],
   options: ClearanceCheckOptions = {},
 ): ClearancePairReport[] {
+  return Array.from(iterateClearance(scene, minClearance, ignoredPairs, matedPairs, diagnostics, options));
+}
+
+/** Stream reports so a caller can skip pairs using evidence from earlier measurements. */
+export function* iterateClearance(
+  scene: SceneBackend,
+  minClearance: number,
+  ignoredPairs: ReadonlySet<string>,
+  matedPairs: ReadonlySet<string>,
+  diagnostics: CompilerDiagnostic[] = [],
+  options: ClearanceCheckOptions = {},
+  includePair?: (a: string, b: string) => boolean,
+): IterableIterator<ClearancePairReport> {
   // Clone + apply each part's worldTransform once, up front (the
   // detectInterferences / STEP-exporter pattern). Guarded per part: a
   // clone/transform kernel failure leaves `shape` undefined — every pair
@@ -129,34 +144,33 @@ export function checkClearance(
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  const reports: ClearancePairReport[] = [];
 
   for (let i = 0; i < transformed.length; i++) {
     for (let j = i + 1; j < transformed.length; j++) {
       const a = transformed[i];
       const b = transformed[j];
+      if (includePair && !includePair(a.name, b.name)) continue;
       const key = pairKey(a.name, b.name);
 
       if (ignoredPairs.has(key)) {
-        reports.push({ a: a.name, b: b.name, distanceMm: NaN, status: 'ignored', exact: false });
+        yield { a: a.name, b: b.name, distanceMm: NaN, status: 'ignored', exact: false };
         continue;
       }
       if (matedPairs.has(key)) {
-        reports.push({ a: a.name, b: b.name, distanceMm: NaN, status: 'mated', exact: false });
+        yield { a: a.name, b: b.name, distanceMm: NaN, status: 'mated', exact: false };
         continue;
       }
 
       // Either side failed the up-front clone/transform stage (warn
       // diagnostic already emitted, once per part): nothing to measure.
       if (!hasMeasurableGeometry(a) || !hasMeasurableGeometry(b)) {
-        reports.push({ a: a.name, b: b.name, distanceMm: NaN, status: 'unknown', exact: false });
+        yield { a: a.name, b: b.name, distanceMm: NaN, status: 'unknown', exact: false };
         continue;
       }
 
-      reports.push(classifyMeasuredPair(a, b, minClearance, options.forceExact, oc, diagnostics));
+      yield classifyMeasuredPair(a, b, minClearance, options, oc, diagnostics);
     }
   }
-  return reports;
 }
 
 /** One scene part whose clone/applyTransform stage succeeded: `shape` and
@@ -201,12 +215,12 @@ function classifyMeasuredPair(
   a: MeasuredPart,
   b: MeasuredPart,
   minClearance: number,
-  forceExact: boolean | undefined,
+  options: ClearanceCheckOptions,
   oc: unknown,
   diagnostics: CompilerDiagnostic[],
 ): ClearancePairReport {
   const lowerBound = bboxGap(a.bbox, b.bbox);
-  if (!forceExact && lowerBound >= minClearance) {
+  if (!options.forceExact && lowerBound >= minClearance) {
     return { a: a.name, b: b.name, distanceMm: lowerBound, status: 'ok', exact: false };
   }
 
@@ -230,6 +244,7 @@ function classifyMeasuredPair(
   }
 
   if (d < CONTACT_EPS_MM) {
+    if (options.distanceOnly) return { a: a.name, b: b.name, distanceMm: 0, status: 'violated', exact: true };
     // Touching or crossing: a boolean-intersection volume probe decides
     // which (volume-only; neither operand is consumed).
     let volume: number | undefined;

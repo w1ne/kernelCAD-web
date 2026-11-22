@@ -15,6 +15,7 @@ meta({
   triangleBudget: 520,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const body = param('body', '#f2f2ee', { label: 'Body' });
 const glass = param('glass', '#3d5566', { label: 'Glass' });
 const stripe = param('stripe', '#2a7fc8', { label: 'Livery stripe' });
@@ -45,20 +46,20 @@ const wheelAt = (x: number, y: number, r: number, w: number, s = 10) =>
 
 const W = 1980;
 const van = assembly('delivery-van');
-van.part('body', elev([[-2600, 380], [2550, 380], [2620, 750], [2380, 1250], [1750, 2400], [-2600, 2400]], W).color(body));
-van.part('cab-glass', elev([[2420, 1230], [1840, 2300], [1350, 2300], [1350, 1230]], W + 20).color(glass));
-van.part('stripe', blk(-2585, -W / 2 - 10, 900, 1300, W / 2 + 10, 1150).color(stripe));
-van.part('bumper-front', blk(2540, -W / 2 - 10, 360, 2680, W / 2 + 10, 520).color(tyre));
-van.part('bumper-rear', blk(-2680, -W / 2 - 10, 360, -2580, W / 2 + 10, 520).color(tyre));
-van.part('door-seam', blk(-2612, -8, 560, -2596, 8, 2300).color(tyre));
+van.part('body', elev([[-2600, 380], [2550, 380], [2620, 750], [2380, 1250], [1750, 2400], [-2600, 2400]], W).color(body).scale(overallScale));
+van.part('cab-glass', elev([[2420, 1230], [1840, 2300], [1350, 2300], [1350, 1230]], W + 20).color(glass).scale(overallScale));
+van.part('stripe', blk(-2585, -W / 2 - 10, 900, 1300, W / 2 + 10, 1150).color(stripe).scale(overallScale));
+van.part('bumper-front', blk(2540, -W / 2 - 10, 360, 2680, W / 2 + 10, 520).color(tyre).scale(overallScale));
+van.part('bumper-rear', blk(-2680, -W / 2 - 10, 360, -2580, W / 2 + 10, 520).color(tyre).scale(overallScale));
+van.part('door-seam', blk(-2612, -8, 560, -2596, 8, 2300).color(tyre).scale(overallScale));
 for (const side of [-1, 1]) {
   const s = side < 0 ? 'l' : 'r';
-  van.part(`headlight-${s}`, blk(2540, side * 760 - 150, 780, 2605, side * 760 + 150, 900).color(lights));
-  van.part(`taillight-${s}`, blk(-2615, side * 860 - 90, 700, -2595, side * 860 + 90, 1200).color(tail));
-  van.part(`mirror-${s}`, blk(2100, side * (W / 2) - 60, 1500, 2180, side * (W / 2 + 160), 1700).color(tyre));
+  van.part(`headlight-${s}`, blk(2540, side * 760 - 150, 780, 2605, side * 760 + 150, 900).color(lights).scale(overallScale));
+  van.part(`taillight-${s}`, blk(-2615, side * 860 - 90, 700, -2595, side * 860 + 90, 1200).color(tail).scale(overallScale));
+  van.part(`mirror-${s}`, blk(2100, side * (W / 2) - 60, 1500, 2180, side * (W / 2 + 160), 1700).color(tyre).scale(overallScale));
   for (const [k, x] of [['front', 1750], ['rear', -1700]] as const) {
-    van.part(`wheel-${k}-${s}`, wheelAt(x, side * (W / 2 - 110), 360, 240).color(tyre));
-    van.part(`hub-${k}-${s}`, wheelAt(x, side * (W / 2 - 100), 160, 240, 6).translate(0, 0, 200).color(body));
+    van.part(`wheel-${k}-${s}`, wheelAt(x, side * (W / 2 - 110), 360, 240).color(tyre).scale(overallScale));
+    van.part(`hub-${k}-${s}`, wheelAt(x, side * (W / 2 - 100), 160, 240, 6).translate(0, 0, 200).color(body).scale(overallScale));
   }
 }
 

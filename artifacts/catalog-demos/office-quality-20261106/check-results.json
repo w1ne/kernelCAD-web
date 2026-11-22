@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-06",
+  "commands": {
+    "previewRender": {
+      "command": "npx tsx scripts/renderCatalogPreviews.ts <40 office asset IDs>",
+      "exitCode": 0,
+      "assets": 40
+    },
+    "catalogBuild": {
+      "command": "npx tsx scripts/buildAssetCatalog.ts",
+      "exitCode": 0
+    },
+    "officeQuality": {
+      "command": "python3 scripts/checkCatalogQuality.py --kit office",
+      "exitCode": 0,
+      "passRate": "40/40"
+    },
+    "wholeCatalogQuality": {
+      "command": "python3 scripts/checkCatalogQuality.py",
+      "exitCode": 1,
+      "passRate": "2371/2390 (99.2%)",
+      "remainingThin": 19,
+      "note": "The remaining 19 thin assets are in other kits; this office round promotes one kit only."
+    },
+    "eslint": {
+      "command": "npx eslint catalog/kits/office/",
+      "exitCode": 0
+    },
+    "catalogIntegration": {
+      "command": "npx vitest run tests/integration/catalog/",
+      "exitCode": 0,
+      "files": 4,
+      "tests": 15,
+      "durationSeconds": 249.01
+    },
+    "catalogPages": {
+      "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-office-pages-20261106",
+      "exitCode": 0,
+      "workspacePages": 2390,
+      "officePagesChecked": 40,
+      "deployed": false
+    },
+    "presetRenders": {
+      "command": "npx tsx artifacts/catalog-demos/office-quality-20261106/render_office_presets.ts",
+      "exitCode": 0,
+      "variants": 4
+    }
+  }
+}

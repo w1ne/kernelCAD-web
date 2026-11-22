@@ -5,7 +5,7 @@
 // Kept out of assemblyJoints.ts so the mate API file stays inside its size
 // budget; the record builder only copies already-validated fields.
 import { invalidArgs } from '../../shared/intent/invalidArgs';
-import { parseConnectorRef, type FastenerMateMetadata, type FitMateMetadata, type MateRecord } from '../mates/mate';
+import { ADHESIVE_FACES, parseConnectorRef, type AdhesiveMateMetadata, type FastenerMateMetadata, type FitMateMetadata, type MateRecord } from '../mates/mate';
 import type { MateType } from '../mates/mateTypes';
 import { normalizeToolEnvelope } from '../runtime/assemblyFastener';
 
@@ -131,4 +131,19 @@ export function fastenerRecordOf(opts: FastenerMateOptionsFields | undefined): P
 
 export function fitRecordOf(opts: FastenerMateOptionsFields | undefined): Pick<MateRecord, 'fit'> | Record<string, never> {
     return opts?.fit === undefined ? {} : { fit: { ...opts.fit } };
+}
+
+export function validateAdhesiveMateMetadata(type: MateType, bond: AdhesiveMateMetadata | undefined): void {
+    if (bond === undefined) return;
+    if (type !== 'fastened' || !bond || !ADHESIVE_FACES.includes(bond.faceA) || !ADHESIVE_FACES.includes(bond.faceB)) {
+        invalidArgs({
+            api: 'assembly.mate', path: 'opts.adhesive', got: bond,
+            requires: 'a fastened mate with faceA and faceB set to canonical planar face names',
+            example: "{ adhesive: { faceA: 'right', faceB: 'left' } }",
+        });
+    }
+}
+
+export function adhesiveRecordOf(bond: AdhesiveMateMetadata | undefined): Pick<MateRecord, 'adhesive'> {
+    return bond ? { adhesive: { ...bond } } : {};
 }

@@ -1,0 +1,17 @@
+{
+  "workflow": "case-01 Pi 4 tray floor parameter regression",
+  "fixture": "tests/fixtures/manufacturing/pcb-enclosure-m3.kcad.ts",
+  "test": "tests/integration/manufacturing/pcbEnclosureBenchmark.test.ts",
+  "edit": "set Floor from 2 mm to 3.5 mm",
+  "mutation": "replace pilot cutter start floor+1 with fixed z=3 mm before applying the Floor edit",
+  "result": "clean STEP keeps four 2.5 mm pilots open at z=8.5 mm; stale cutter is measured at z=3 mm with reversed axes while volume and bounds pass",
+  "toleranceMm": 0.01,
+  "canvas": "1280x720",
+  "durationSeconds": 12,
+  "fps": 24,
+  "audio": false,
+  "encoding": "H.264, yuv420p, faststart",
+  "capture": "python3 docs/demos/benchmark-pi4-floor-param-1227-20261119/capture_demo.py",
+  "verification": "npx vitest run tests/integration/manufacturing/pcbEnclosureBenchmark.test.ts -t 'Floor edit|old height after a Floor edit' --reporter=dot",
+  "inspection": "python3 docs/demos/benchmark-pi4-floor-param-1227-20261119/inspect_demo.py"
+}

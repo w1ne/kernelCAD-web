@@ -1,0 +1,334 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/theatre-production-silhouette-20261106/render_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/theatre-production/ellipsoidal-reflector-spotlight.kcad.ts",
+      "sourceSha256": "5b5aef7295805923d01d72fd67ce12b03230493da5aeedbe13ca80414a3b5167",
+      "triangleBudget": 1800,
+      "presets": {
+        "houseShow": {
+          "powderCoat": "#1d2024",
+          "aluminum": "#c7cecf",
+          "hardware": "#c5a052",
+          "glass": "#ffd15d"
+        },
+        "touring": {
+          "powderCoat": "#e8e8e2",
+          "aluminum": "#3a4148",
+          "hardware": "#e2b347",
+          "glass": "#31b9d2"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/theatre-production/fresnel-wash-fixture.kcad.ts",
+      "sourceSha256": "12726b921d9e6e67db897b06091e2cc3696556b1f18cbbb3844467d51d62573b",
+      "triangleBudget": 1800,
+      "presets": {
+        "houseShow": {
+          "powderCoat": "#1f2428",
+          "hardware": "#c5a052",
+          "aluminum": "#c7cecf",
+          "glass": "#ffd15d"
+        },
+        "touring": {
+          "powderCoat": "#315465",
+          "hardware": "#e2b347",
+          "aluminum": "#dce3e2",
+          "glass": "#31b9d2"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/theatre-production/par-can-fixture.kcad.ts",
+      "sourceSha256": "10140127f87fd1a72c7467e7b9cc668246307e2867b1ccb3e7d9ea2b79183ffe",
+      "triangleBudget": 1800,
+      "presets": {
+        "houseShow": {
+          "hardware": "#c5a052",
+          "powderCoat": "#1d2125",
+          "aluminum": "#c7cecf",
+          "glass": "#ffd15d"
+        },
+        "touring": {
+          "hardware": "#2b2f33",
+          "powderCoat": "#cfd6d8",
+          "aluminum": "#8b969b",
+          "glass": "#d8327a"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/theatre-production/motorized-chain-hoist.kcad.ts",
+      "sourceSha256": "9b3c15ad9d0a0601800912684350e0c655753494f8a2025977135121c80eaab1",
+      "triangleBudget": 2400,
+      "presets": {
+        "houseShow": {
+          "paintedSteel": "#2b3137",
+          "galvanizedSteel": "#c0c8ca",
+          "rubber": "#1d2023",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "paintedSteel": "#dda21f",
+          "galvanizedSteel": "#dce2e2",
+          "rubber": "#5b2a7a",
+          "hardware": "#e2b347"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/theatre-production/spotlight-followspot-stand.kcad.ts",
+      "sourceSha256": "101ac1cee313f1dd5fb5050c4379b76f72e6170604e8f93d20c13d47b48a3709",
+      "triangleBudget": 2400,
+      "presets": {
+        "houseShow": {
+          "powderCoat": "#22272c",
+          "hardware": "#c5a052",
+          "glass": "#ffd15d",
+          "rubber": "#141618"
+        },
+        "touring": {
+          "powderCoat": "#315465",
+          "hardware": "#e2b347",
+          "glass": "#31b9d2",
+          "rubber": "#2a2d30"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "ellipsoidal-reflector-spotlight",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1442,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/ellipsoidal-reflector-spotlight-default.png"
+    },
+    {
+      "assetId": "ellipsoidal-reflector-spotlight",
+      "variant": "19deg",
+      "view": "3/4",
+      "values": {
+        "lensTube": "19deg"
+      },
+      "triangles": 1442,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/ellipsoidal-reflector-spotlight-19deg.png"
+    },
+    {
+      "assetId": "ellipsoidal-reflector-spotlight",
+      "variant": "50deg",
+      "view": "3/4",
+      "values": {
+        "lensTube": "50deg"
+      },
+      "triangles": 1428,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/ellipsoidal-reflector-spotlight-50deg.png"
+    },
+    {
+      "assetId": "ellipsoidal-reflector-spotlight",
+      "variant": "houseShow",
+      "view": "3/4",
+      "values": {
+        "powderCoat": "#1d2024",
+        "aluminum": "#c7cecf",
+        "hardware": "#c5a052",
+        "glass": "#ffd15d"
+      },
+      "triangles": 1442,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/ellipsoidal-reflector-spotlight-houseShow.png"
+    },
+    {
+      "assetId": "ellipsoidal-reflector-spotlight",
+      "variant": "touring",
+      "view": "3/4",
+      "values": {
+        "powderCoat": "#e8e8e2",
+        "aluminum": "#3a4148",
+        "hardware": "#e2b347",
+        "glass": "#31b9d2"
+      },
+      "triangles": 1442,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/ellipsoidal-reflector-spotlight-touring.png"
+    },
+    {
+      "assetId": "fresnel-wash-fixture",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1144,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/fresnel-wash-fixture-default.png"
+    },
+    {
+      "assetId": "fresnel-wash-fixture",
+      "variant": "no-barn-door",
+      "view": "3/4",
+      "values": {
+        "barnDoor": "none"
+      },
+      "triangles": 1000,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/fresnel-wash-fixture-no-barn-door.png"
+    },
+    {
+      "assetId": "fresnel-wash-fixture",
+      "variant": "houseShow",
+      "view": "3/4",
+      "values": {
+        "powderCoat": "#1f2428",
+        "hardware": "#c5a052",
+        "aluminum": "#c7cecf",
+        "glass": "#ffd15d"
+      },
+      "triangles": 1144,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/fresnel-wash-fixture-houseShow.png"
+    },
+    {
+      "assetId": "fresnel-wash-fixture",
+      "variant": "touring",
+      "view": "3/4",
+      "values": {
+        "powderCoat": "#315465",
+        "hardware": "#e2b347",
+        "aluminum": "#dce3e2",
+        "glass": "#31b9d2"
+      },
+      "triangles": 1144,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/fresnel-wash-fixture-touring.png"
+    },
+    {
+      "assetId": "par-can-fixture",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1056,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/par-can-fixture-default.png"
+    },
+    {
+      "assetId": "par-can-fixture",
+      "variant": "floor",
+      "view": "3/4",
+      "values": {
+        "mounting": "floor"
+      },
+      "triangles": 964,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/par-can-fixture-floor.png"
+    },
+    {
+      "assetId": "par-can-fixture",
+      "variant": "houseShow",
+      "view": "3/4",
+      "values": {
+        "hardware": "#c5a052",
+        "powderCoat": "#1d2125",
+        "aluminum": "#c7cecf",
+        "glass": "#ffd15d"
+      },
+      "triangles": 1056,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/par-can-fixture-houseShow.png"
+    },
+    {
+      "assetId": "par-can-fixture",
+      "variant": "touring",
+      "view": "3/4",
+      "values": {
+        "hardware": "#2b2f33",
+        "powderCoat": "#cfd6d8",
+        "aluminum": "#8b969b",
+        "glass": "#d8327a"
+      },
+      "triangles": 1056,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/par-can-fixture-touring.png"
+    },
+    {
+      "assetId": "motorized-chain-hoist",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1796,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/motorized-chain-hoist-default.png"
+    },
+    {
+      "assetId": "motorized-chain-hoist",
+      "variant": "climbing",
+      "view": "3/4",
+      "values": {
+        "rig": "climbing"
+      },
+      "triangles": 1736,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/motorized-chain-hoist-climbing.png"
+    },
+    {
+      "assetId": "motorized-chain-hoist",
+      "variant": "houseShow",
+      "view": "3/4",
+      "values": {
+        "paintedSteel": "#2b3137",
+        "galvanizedSteel": "#c0c8ca",
+        "rubber": "#1d2023",
+        "hardware": "#c5a052"
+      },
+      "triangles": 1796,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/motorized-chain-hoist-houseShow.png"
+    },
+    {
+      "assetId": "motorized-chain-hoist",
+      "variant": "touring",
+      "view": "3/4",
+      "values": {
+        "paintedSteel": "#dda21f",
+        "galvanizedSteel": "#dce2e2",
+        "rubber": "#5b2a7a",
+        "hardware": "#e2b347"
+      },
+      "triangles": 1796,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/motorized-chain-hoist-touring.png"
+    },
+    {
+      "assetId": "spotlight-followspot-stand",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 2024,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/spotlight-followspot-stand-default.png"
+    },
+    {
+      "assetId": "spotlight-followspot-stand",
+      "variant": "pedestal",
+      "view": "3/4",
+      "values": {
+        "stand": "pedestal"
+      },
+      "triangles": 1864,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/spotlight-followspot-stand-pedestal.png"
+    },
+    {
+      "assetId": "spotlight-followspot-stand",
+      "variant": "houseShow",
+      "view": "3/4",
+      "values": {
+        "powderCoat": "#22272c",
+        "hardware": "#c5a052",
+        "glass": "#ffd15d",
+        "rubber": "#141618"
+      },
+      "triangles": 2024,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/spotlight-followspot-stand-houseShow.png"
+    },
+    {
+      "assetId": "spotlight-followspot-stand",
+      "variant": "touring",
+      "view": "3/4",
+      "values": {
+        "powderCoat": "#315465",
+        "hardware": "#e2b347",
+        "glass": "#31b9d2",
+        "rubber": "#2a2d30"
+      },
+      "triangles": 2024,
+      "png": "artifacts/catalog-demos/theatre-production-silhouette-20261106/variants/spotlight-followspot-stand-touring.png"
+    }
+  ]
+}

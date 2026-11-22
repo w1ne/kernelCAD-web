@@ -1,0 +1,96 @@
+{
+  "id": "converter-cabinet",
+  "kit": "wind-energy",
+  "title": "Power converter cabinet",
+  "description": "Tall converter cabinet with top lip, twin service doors and side cooling louvres. Controls: scale, powder-coated steel and yellow electrical warning labels; weathered and high-visibility presets.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "wind",
+    "energy",
+    "renewable",
+    "low poly",
+    "scene prop"
+  ],
+  "compat": [
+    "wind",
+    "energy",
+    "industrial",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/wind-energy/converter-cabinet.kcad.ts",
+  "preview": "/assets/wind-energy-converter-cabinet.png",
+  "sourceSha256": "36b5d323dade3c4b864b60c9c68b200d7279e6afea2820fca8ae90cc924b83b6",
+  "triangleBudget": 300,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "powderCoatedSteel",
+      "type": "color",
+      "default": "#287082",
+      "label": "Powder-coated steel"
+    },
+    {
+      "name": "safetyPaint",
+      "type": "color",
+      "default": "#efb532",
+      "label": "Safety paint"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "powderCoatedSteel": "#1f5765",
+      "safetyPaint": "#ffc336"
+    },
+    "highVisibility": {
+      "safetyPaint": "#f7c331",
+      "powderCoatedSteel": "#236372"
+    }
+  },
+  "stats": {
+    "triangles": 132,
+    "sizeM": [
+      0.98,
+      1.51,
+      0.7
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "powderCoatedSteel",
+      "color": "#287082",
+      "parts": [
+        "body",
+        "top",
+        "panel-left",
+        "panel-right",
+        "louver-0",
+        "louver-1",
+        "louver-2",
+        "louver-3",
+        "louver-4"
+      ],
+      "param": "powderCoatedSteel"
+    },
+    {
+      "name": "safetyPaint",
+      "color": "#efb532",
+      "parts": [
+        "warning-label-left",
+        "warning-label-right"
+      ],
+      "param": "safetyPaint"
+    }
+  ]
+}

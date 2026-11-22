@@ -1,0 +1,38 @@
+{
+  "commands": {
+    "eslint": {
+      "command": "npx eslint catalog/kits/city-street/",
+      "exitCode": 0,
+      "output": "no diagnostics"
+    },
+    "catalogIntegration": {
+      "command": "npx vitest run tests/integration/catalog/",
+      "exitCode": 0,
+      "files": 4,
+      "tests": 15,
+      "durationSeconds": 251.9,
+      "output": "4 test files passed; 15 tests passed"
+    },
+    "catalogKitQuality": {
+      "command": "python3 scripts/checkCatalogQuality.py --kit city-street",
+      "exitCode": 0,
+      "outputFile": "city-street-quality-output.txt"
+    },
+    "catalogWholeQuality": {
+      "command": "python3 scripts/checkCatalogQuality.py",
+      "exitCode": 1,
+      "reason": "The four remaining thin assets are in nature (3) and props (1).",
+      "outputFile": "catalog-quality-output.txt"
+    },
+    "catalogBuild": {
+      "command": "npx tsx scripts/buildAssetCatalog.ts",
+      "exitCode": 0,
+      "outputFile": "catalog-build-output.txt"
+    },
+    "catalogPages": {
+      "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-city-street-pages-20261106",
+      "exitCode": 0,
+      "outputFile": "local-page-build-output.txt"
+    }
+  }
+}

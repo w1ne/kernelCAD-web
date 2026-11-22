@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-11-02T19:36:21.746Z",
+  "source": "generate.mts",
+  "settings": "settings.json",
+  "encodedVideo": {
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "pixelFormat": "yuv420p",
+    "frameRate": "24/1",
+    "decodedFrames": 384,
+    "durationSeconds": 16,
+    "bytes": 160666
+  },
+  "decodedReview": {
+    "sampledFrames": 8,
+    "contactSheet": "decoded-contact-sheet.png",
+    "visualReview": "All 12 kit previews are visible in the overview. The three variant sections show default and resolved exports side by side at matching scale; the sleeping bag is fully framed. The labels and local-rendering footer remain visible, with no blank or corrupt frames in the sampled decode."
+  },
+  "claims": {
+    "localCatalogAndExport": true,
+    "softwareRenderedGeometry": true,
+    "deployedBehavior": false,
+    "engineImport": false,
+    "simulation": false,
+    "hardwareAcceptance": false
+  }
+}

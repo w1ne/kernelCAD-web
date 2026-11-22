@@ -23,9 +23,7 @@
 //   6. Connectors returned by reference — caller binds the mate to them and
 //      lets `arm.mate(...)` do the coordinate math.
 //
-// Spec: `docs/specs/2026-05-30-kinematic-grounding-mechanism-delivery-design.md`
 //        slice G1.
-// Plan: `docs/plans/2026-05-31-mechanism-delivery-G1-joint-clevis-primitive.md`.
 
 import type { KernelCadApi } from '../api';
 import type { Shape } from '../capture/proxy';

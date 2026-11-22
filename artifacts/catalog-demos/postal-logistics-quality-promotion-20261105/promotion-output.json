@@ -1,0 +1,1476 @@
+{
+  "kit": "postal-logistics",
+  "assetsPromoted": 52,
+  "newAssetIds": 0,
+  "materialControls": 166,
+  "controlsPerAsset": {
+    "min": 2,
+    "max": 4
+  },
+  "presetEntries": 104,
+  "assetsWithLoftedChamferGeometry": 52,
+  "geometryOrPlacementChanges": 82,
+  "geometryChangesByAsset": {
+    "automated-label-applicator": 4,
+    "carrier-satchel": 7,
+    "conveyor-merge-module": 3,
+    "conveyor-transfer-bridge": 4,
+    "gravity-roller-conveyor": 6,
+    "handheld-postal-scanner": 1,
+    "high-capacity-mail-cart": 5,
+    "in-motion-weigh-deck": 4,
+    "mail-tray-dispatch-cart": 5,
+    "package-induction-conveyor": 5,
+    "parcel-belt-diverter": 4,
+    "parcel-dimensioning-arch": 3,
+    "parcel-tray-transfer-cart": 5,
+    "postage-meter-workstation": 1,
+    "postal-label-printer": 1,
+    "postal-pallet-roller-deck": 5,
+    "postal-sack-loader": 5,
+    "powered-roller-conveyor": 6,
+    "rolling-postal-container": 5,
+    "telescopic-parcel-conveyor": 3
+  },
+  "records": [
+    {
+      "id": "automated-label-applicator",
+      "title": "Automated label applicator",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "paper"
+      ],
+      "partAssignments": {
+        "conveyor": "paintedSteel",
+        "frame-left": "structuralSteel",
+        "frame-right": "structuralSteel",
+        "upright-left": "structuralSteel",
+        "upright-right": "structuralSteel",
+        "crossbeam": "structuralSteel",
+        "label-roll": "paper",
+        "applicator-head": "stainlessSteel",
+        "press-pad": "stainlessSteel",
+        "control-box": "paintedSteel",
+        "roller-a": "stainlessSteel",
+        "roller-b": "stainlessSteel",
+        "roller-c": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 4
+    },
+    {
+      "id": "barcode-tunnel-scanner",
+      "title": "Barcode tunnel scanner",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "instrumentGlass"
+      ],
+      "partAssignments": {
+        "belt": "paintedSteel",
+        "left-leg-front": "structuralSteel",
+        "right-leg-front": "structuralSteel",
+        "left-leg-back": "structuralSteel",
+        "right-leg-back": "structuralSteel",
+        "arch-left": "paintedSteel",
+        "arch-right": "paintedSteel",
+        "arch-top": "paintedSteel",
+        "scan-head-front": "stainlessSteel",
+        "scan-head-back": "stainlessSteel",
+        "side-window-left": "instrumentGlass",
+        "side-window-right": "instrumentGlass"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "bulk-mail-hamper",
+      "title": "Bulk mail hamper",
+      "materialControls": [
+        "paintedSteel",
+        "timber",
+        "structuralSteel",
+        "fabric"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "front-wall": "paintedSteel",
+        "back-wall": "paintedSteel",
+        "left-wall": "paintedSteel",
+        "right-wall": "paintedSteel",
+        "liner": "fabric",
+        "corner-a": "paintedSteel",
+        "corner-b": "paintedSteel",
+        "corner-c": "paintedSteel",
+        "corner-d": "paintedSteel",
+        "skid-left": "timber",
+        "skid-right": "timber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "bulk-mail-sack",
+      "title": "Bulk mail sack",
+      "materialControls": [
+        "fabric",
+        "structuralSteel",
+        "paper"
+      ],
+      "partAssignments": {
+        "sack-body": "fabric",
+        "folded-collar": "fabric",
+        "front-tab-left": "fabric",
+        "front-tab-right": "fabric",
+        "tie-bar": "fabric",
+        "base-seam": "structuralSteel",
+        "label-patch": "paper"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "carrier-caseload-sorter",
+      "title": "Carrier caseload sorter",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "left-wall": "paintedSteel",
+        "right-wall": "paintedSteel",
+        "back-wall": "paintedSteel",
+        "front-wall": "paintedSteel",
+        "divider-a": "paintedSteel",
+        "divider-b": "paintedSteel",
+        "divider-c": "paintedSteel",
+        "handle-left": "paintedSteel",
+        "handle-right": "paintedSteel",
+        "handle": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "carrier-route-sequence-rack",
+      "title": "Carrier route sequence rack",
+      "materialControls": [
+        "paintedSteel",
+        "paper"
+      ],
+      "partAssignments": {
+        "backboard": "paintedSteel",
+        "top-cap": "paintedSteel",
+        "left-side": "paintedSteel",
+        "right-side": "paintedSteel",
+        "shelf-a": "paintedSteel",
+        "shelf-b": "paintedSteel",
+        "divider-a": "paintedSteel",
+        "divider-b": "paintedSteel",
+        "divider-c": "paintedSteel",
+        "divider-d": "paintedSteel",
+        "label-rail-a": "paper",
+        "label-rail-b": "paper"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "carrier-satchel",
+      "title": "Carrier satchel",
+      "materialControls": [
+        "fabric",
+        "stainlessSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "bag-body": "fabric",
+        "front-pocket": "polymer",
+        "flap": "fabric",
+        "side-gusset-left": "fabric",
+        "side-gusset-right": "fabric",
+        "strap-left": "fabric",
+        "strap-right": "fabric",
+        "shoulder-strap": "fabric",
+        "strap-end-left": "stainlessSteel",
+        "strap-end-right": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 7
+    },
+    {
+      "id": "conveyor-drive-unit",
+      "title": "Conveyor drive unit",
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "mounting-plate": "structuralSteel",
+        "motor-body": "stainlessSteel",
+        "motor-end": "stainlessSteel",
+        "gearbox": "stainlessSteel",
+        "output-block": "paintedSteel",
+        "vent-a": "stainlessSteel",
+        "vent-b": "stainlessSteel",
+        "vent-c": "stainlessSteel",
+        "terminal-box": "paintedSteel",
+        "foot-left": "structuralSteel",
+        "foot-right": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "conveyor-guard-section",
+      "title": "Conveyor guard section",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "foot-left": "structuralSteel",
+        "foot-right": "structuralSteel",
+        "post-left": "structuralSteel",
+        "post-right": "structuralSteel",
+        "top-rail": "structuralSteel",
+        "bottom-rail": "structuralSteel",
+        "bar-a": "paintedSteel",
+        "bar-b": "paintedSteel",
+        "bar-c": "paintedSteel",
+        "bar-d": "paintedSteel",
+        "bar-e": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "conveyor-merge-module",
+      "title": "Conveyor merge module",
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "merge-deck": "paintedSteel",
+        "infeed-left": "paintedSteel",
+        "infeed-right": "paintedSteel",
+        "left-guide": "stainlessSteel",
+        "right-guide": "stainlessSteel",
+        "center-guide": "stainlessSteel",
+        "support-left": "structuralSteel",
+        "support-right": "structuralSteel",
+        "cross-brace": "structuralSteel",
+        "roller-row-a": "stainlessSteel",
+        "roller-row-b": "stainlessSteel",
+        "roller-row-c": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 3
+    },
+    {
+      "id": "conveyor-transfer-bridge",
+      "title": "Conveyor transfer bridge",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "safetyAmber"
+      ],
+      "partAssignments": {
+        "bridge-deck": "paintedSteel",
+        "left-rail": "structuralSteel",
+        "right-rail": "structuralSteel",
+        "stand-left": "structuralSteel",
+        "stand-right": "structuralSteel",
+        "crossbar": "structuralSteel",
+        "roller-1": "stainlessSteel",
+        "roller-2": "stainlessSteel",
+        "roller-3": "stainlessSteel",
+        "roller-4": "stainlessSteel",
+        "alignment-stop": "safetyAmber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 4
+    },
+    {
+      "id": "crossbelt-sorter-section",
+      "title": "Crossbelt sorter section",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "polymer",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "track-base": "structuralSteel",
+        "side-left": "paintedSteel",
+        "side-right": "paintedSteel",
+        "support-left-front": "structuralSteel",
+        "support-right-front": "structuralSteel",
+        "support-left-back": "structuralSteel",
+        "support-right-back": "structuralSteel",
+        "tray-1": "polymer",
+        "tray-2": "polymer",
+        "tray-3": "polymer",
+        "tray-4": "polymer",
+        "drive-panel": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "delivery-sequence-case",
+      "title": "Delivery sequence case",
+      "materialControls": [
+        "paintedSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "case-body": "polymer",
+        "top-lip": "paintedSteel",
+        "left-side": "paintedSteel",
+        "right-side": "paintedSteel",
+        "divider-a": "paintedSteel",
+        "divider-b": "paintedSteel",
+        "divider-c": "paintedSteel",
+        "divider-d": "paintedSteel",
+        "divider-e": "paintedSteel",
+        "return-pocket": "polymer",
+        "carry-handle": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "gravity-roller-conveyor",
+      "title": "Gravity roller conveyor",
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "roller-bed": "paintedSteel",
+        "left-guide": "stainlessSteel",
+        "right-guide": "stainlessSteel",
+        "front-leg-left": "structuralSteel",
+        "front-leg-right": "structuralSteel",
+        "rear-leg-left": "structuralSteel",
+        "rear-leg-right": "structuralSteel",
+        "roller-1": "stainlessSteel",
+        "roller-2": "stainlessSteel",
+        "roller-3": "stainlessSteel",
+        "roller-4": "stainlessSteel",
+        "roller-5": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 6
+    },
+    {
+      "id": "handheld-postal-scanner",
+      "title": "Handheld postal scanner",
+      "materialControls": [
+        "paintedSteel",
+        "safetyAmber",
+        "stainlessSteel",
+        "instrumentGlass"
+      ],
+      "partAssignments": {
+        "scanner-head": "stainlessSteel",
+        "reader-window": "instrumentGlass",
+        "handle": "paintedSteel",
+        "handle-end": "paintedSteel",
+        "trigger": "safetyAmber",
+        "top-key-a": "safetyAmber",
+        "top-key-b": "safetyAmber",
+        "top-key-c": "safetyAmber",
+        "battery-pack": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 1
+    },
+    {
+      "id": "high-capacity-mail-cart",
+      "title": "High-capacity mail cart",
+      "materialControls": [
+        "paintedSteel",
+        "rubber",
+        "structuralSteel",
+        "safetyAmber"
+      ],
+      "partAssignments": {
+        "lower-deck": "paintedSteel",
+        "upper-deck": "paintedSteel",
+        "upright-left": "structuralSteel",
+        "upright-right": "structuralSteel",
+        "push-handle": "paintedSteel",
+        "wheel-front-left": "rubber",
+        "wheel-front-right": "rubber",
+        "wheel-back-left": "rubber",
+        "wheel-back-right": "rubber",
+        "lower-stop": "safetyAmber",
+        "upper-stop": "safetyAmber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 5
+    },
+    {
+      "id": "in-motion-weigh-deck",
+      "title": "In-motion weigh deck",
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "structuralSteel",
+        "instrumentGlass"
+      ],
+      "partAssignments": {
+        "scale-base": "structuralSteel",
+        "weigh-deck": "paintedSteel",
+        "roller-a": "stainlessSteel",
+        "roller-b": "stainlessSteel",
+        "roller-c": "stainlessSteel",
+        "roller-d": "stainlessSteel",
+        "indicator-post": "structuralSteel",
+        "indicator-head": "stainlessSteel",
+        "display": "instrumentGlass",
+        "foot-left": "structuralSteel",
+        "foot-right": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 4
+    },
+    {
+      "id": "mail-tray-dispatch-cart",
+      "title": "Mail tray dispatch cart",
+      "materialControls": [
+        "paintedSteel",
+        "rubber",
+        "structuralSteel",
+        "safetyAmber"
+      ],
+      "partAssignments": {
+        "wheel-left-front": "rubber",
+        "wheel-right-front": "rubber",
+        "wheel-left-back": "rubber",
+        "wheel-right-back": "rubber",
+        "bottom-shelf": "paintedSteel",
+        "middle-shelf": "paintedSteel",
+        "top-shelf": "paintedSteel",
+        "left-rail": "structuralSteel",
+        "right-rail": "structuralSteel",
+        "handle": "paintedSteel",
+        "tray-stop": "safetyAmber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 5
+    },
+    {
+      "id": "mail-tray-stack",
+      "title": "Mail tray stack",
+      "materialControls": [
+        "paintedSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "tray-bottom": "polymer",
+        "tray-2": "polymer",
+        "tray-3": "polymer",
+        "tray-top": "polymer",
+        "rim-front": "paintedSteel",
+        "rim-back": "paintedSteel",
+        "hand-slot-left": "paintedSteel",
+        "hand-slot-right": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "mailbag-closing-machine",
+      "title": "Mailbag closing machine",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "fabric"
+      ],
+      "partAssignments": {
+        "tabletop": "paintedSteel",
+        "leg-left": "structuralSteel",
+        "leg-right": "structuralSteel",
+        "rear-leg-left": "structuralSteel",
+        "rear-leg-right": "structuralSteel",
+        "machine-head": "stainlessSteel",
+        "thread-post": "structuralSteel",
+        "thread-guide": "stainlessSteel",
+        "bag-guide": "fabric",
+        "foot-pedal": "structuralSteel",
+        "crossbar": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "mailpiece-thickness-gauge",
+      "title": "Mailpiece thickness gauge",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "safetyAmber"
+      ],
+      "partAssignments": {
+        "base-plate": "structuralSteel",
+        "left-post": "structuralSteel",
+        "right-post": "structuralSteel",
+        "bridge": "paintedSteel",
+        "gauge-slider": "paintedSteel",
+        "measuring-foot": "structuralSteel",
+        "stop-block": "safetyAmber",
+        "index-rail": "structuralSteel",
+        "dial": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "mailroom-workbench",
+      "title": "Mailroom workbench",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "top": "paintedSteel",
+        "left-leg": "structuralSteel",
+        "right-leg": "structuralSteel",
+        "left-rear-leg": "structuralSteel",
+        "right-rear-leg": "structuralSteel",
+        "back-rail": "structuralSteel",
+        "cubby-base": "structuralSteel",
+        "cubby-top": "paintedSteel",
+        "cubby-left": "paintedSteel",
+        "cubby-right": "paintedSteel",
+        "divider-a": "paintedSteel",
+        "divider-b": "paintedSteel",
+        "keyboard-tray": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "overhead-scan-gantry",
+      "title": "Overhead scan gantry",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "instrumentGlass"
+      ],
+      "partAssignments": {
+        "base-bed": "structuralSteel",
+        "post-left": "structuralSteel",
+        "post-right": "structuralSteel",
+        "post-left-back": "structuralSteel",
+        "post-right-back": "structuralSteel",
+        "gantry-front": "paintedSteel",
+        "gantry-back": "paintedSteel",
+        "camera-a": "instrumentGlass",
+        "camera-b": "instrumentGlass",
+        "side-camera-left": "instrumentGlass",
+        "side-camera-right": "instrumentGlass",
+        "status-box": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "package-induction-conveyor",
+      "title": "Package induction conveyor",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "belt": "paintedSteel",
+        "side-rail-left": "structuralSteel",
+        "side-rail-right": "structuralSteel",
+        "leg-front-left": "structuralSteel",
+        "leg-front-right": "structuralSteel",
+        "leg-back-left": "structuralSteel",
+        "leg-back-right": "structuralSteel",
+        "roller-row-a": "stainlessSteel",
+        "roller-row-b": "stainlessSteel",
+        "roller-row-c": "stainlessSteel",
+        "roller-row-d": "stainlessSteel",
+        "roller-row-e": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 5
+    },
+    {
+      "id": "parcel-belt-diverter",
+      "title": "Parcel belt diverter",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "belt": "paintedSteel",
+        "side-left": "paintedSteel",
+        "side-right": "paintedSteel",
+        "support-1": "structuralSteel",
+        "support-2": "structuralSteel",
+        "support-3": "structuralSteel",
+        "support-4": "structuralSteel",
+        "actuator": "stainlessSteel",
+        "pusher-arm": "paintedSteel",
+        "paddle": "paintedSteel",
+        "roller-a": "stainlessSteel",
+        "roller-b": "stainlessSteel",
+        "roller-c": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 4
+    },
+    {
+      "id": "parcel-dimensioning-arch",
+      "title": "Parcel dimensioning arch",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "conveyor": "paintedSteel",
+        "left-foot": "structuralSteel",
+        "right-foot": "structuralSteel",
+        "left-post": "structuralSteel",
+        "right-post": "structuralSteel",
+        "crossbar": "structuralSteel",
+        "top-sensor": "paintedSteel",
+        "side-sensor-left": "paintedSteel",
+        "side-sensor-right": "paintedSteel",
+        "roller-a": "stainlessSteel",
+        "roller-b": "stainlessSteel",
+        "roller-c": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 3
+    },
+    {
+      "id": "parcel-overflow-container",
+      "title": "Parcel overflow container",
+      "materialControls": [
+        "polymer",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "tub-base": "polymer",
+        "front-wall": "polymer",
+        "back-wall": "polymer",
+        "left-wall": "polymer",
+        "right-wall": "polymer",
+        "rim-front": "polymer",
+        "rim-back": "polymer",
+        "rim-left": "polymer",
+        "rim-right": "polymer",
+        "handle-left": "polymer",
+        "handle-right": "polymer",
+        "foot-left": "structuralSteel",
+        "foot-right": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "parcel-singulator",
+      "title": "Parcel singulator",
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "structuralSteel",
+        "safetyAmber"
+      ],
+      "partAssignments": {
+        "feed-deck": "paintedSteel",
+        "guide-left": "stainlessSteel",
+        "guide-right": "stainlessSteel",
+        "throat-left": "paintedSteel",
+        "throat-right": "paintedSteel",
+        "separator-a": "paintedSteel",
+        "separator-b": "paintedSteel",
+        "separator-c": "paintedSteel",
+        "separator-d": "paintedSteel",
+        "stand-left": "structuralSteel",
+        "stand-right": "structuralSteel",
+        "infeed-stop": "safetyAmber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "parcel-staging-rack",
+      "title": "Parcel staging rack",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "upright-left": "structuralSteel",
+        "upright-right": "structuralSteel",
+        "front-post-left": "structuralSteel",
+        "front-post-right": "structuralSteel",
+        "rear-post-left": "structuralSteel",
+        "rear-post-right": "structuralSteel",
+        "shelf-bottom": "paintedSteel",
+        "shelf-middle": "paintedSteel",
+        "shelf-top": "paintedSteel",
+        "beam-front-a": "structuralSteel",
+        "beam-back-a": "structuralSteel",
+        "beam-front-b": "structuralSteel",
+        "beam-back-b": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "parcel-tray-transfer-cart",
+      "title": "Parcel tray transfer cart",
+      "materialControls": [
+        "structuralSteel",
+        "rubber",
+        "safetyAmber",
+        "polymer"
+      ],
+      "partAssignments": {
+        "deck": "structuralSteel",
+        "front-stop": "safetyAmber",
+        "back-stop": "safetyAmber",
+        "wheel-left-front": "rubber",
+        "wheel-right-front": "rubber",
+        "wheel-left-back": "rubber",
+        "wheel-right-back": "rubber",
+        "handle-left": "structuralSteel",
+        "handle-right": "structuralSteel",
+        "handle": "structuralSteel",
+        "tray-rack": "polymer"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 5
+    },
+    {
+      "id": "parcel-weigh-station",
+      "title": "Parcel weigh station",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "instrumentGlass"
+      ],
+      "partAssignments": {
+        "platform": "paintedSteel",
+        "top-plate": "paintedSteel",
+        "indicator-stem": "paintedSteel",
+        "indicator-head": "stainlessSteel",
+        "display": "instrumentGlass",
+        "shelf-left": "paintedSteel",
+        "shelf-right": "paintedSteel",
+        "foot-left": "structuralSteel",
+        "foot-right": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "postage-meter-workstation",
+      "title": "Postage meter workstation",
+      "materialControls": [
+        "paintedSteel",
+        "polymer",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "cabinet": "polymer",
+        "countertop": "paintedSteel",
+        "meter-base": "structuralSteel",
+        "meter-head": "stainlessSteel",
+        "display": "paintedSteel",
+        "scale-platform": "paintedSteel",
+        "catch-tray": "polymer",
+        "paper-roll": "paintedSteel",
+        "lower-door": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 1
+    },
+    {
+      "id": "postal-dispatch-cage",
+      "title": "Postal dispatch cage",
+      "materialControls": [
+        "timber",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "pallet-base": "timber",
+        "skid-a": "timber",
+        "skid-b": "timber",
+        "skid-c": "timber",
+        "post-left-front": "structuralSteel",
+        "post-right-front": "structuralSteel",
+        "post-left-back": "structuralSteel",
+        "post-right-back": "structuralSteel",
+        "top-front": "timber",
+        "top-back": "timber",
+        "top-left": "timber",
+        "top-right": "timber",
+        "mid-rail": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "postal-dispatch-seal-station",
+      "title": "Postal dispatch seal station",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "fabric"
+      ],
+      "partAssignments": {
+        "table": "paintedSteel",
+        "leg-left": "structuralSteel",
+        "leg-right": "structuralSteel",
+        "leg-back-left": "structuralSteel",
+        "leg-back-right": "structuralSteel",
+        "sealer-post": "structuralSteel",
+        "sealer-head": "stainlessSteel",
+        "press-foot": "structuralSteel",
+        "bag-guide": "fabric",
+        "lower-shelf": "paintedSteel",
+        "control-box": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "postal-label-printer",
+      "title": "Postal label printer",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "printer-base": "structuralSteel",
+        "printer-body": "paintedSteel",
+        "lid": "paintedSteel",
+        "feed-roll": "stainlessSteel",
+        "output-tray": "polymer",
+        "front-panel": "paintedSteel",
+        "button": "paintedSteel",
+        "left-foot": "structuralSteel",
+        "right-foot": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 1
+    },
+    {
+      "id": "postal-pallet-roller-deck",
+      "title": "Postal pallet roller deck",
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "safetyAmber",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "deck-frame": "structuralSteel",
+        "left-side": "paintedSteel",
+        "right-side": "paintedSteel",
+        "roller-a": "stainlessSteel",
+        "roller-b": "stainlessSteel",
+        "roller-c": "stainlessSteel",
+        "roller-d": "stainlessSteel",
+        "roller-e": "stainlessSteel",
+        "fork-channel-left": "paintedSteel",
+        "fork-channel-right": "paintedSteel",
+        "end-stop-front": "safetyAmber",
+        "end-stop-back": "safetyAmber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 5
+    },
+    {
+      "id": "postal-route-marker-board",
+      "title": "Postal route marker board",
+      "materialControls": [
+        "polymer",
+        "structuralSteel",
+        "paper",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "panel": "polymer",
+        "header": "stainlessSteel",
+        "post-left": "structuralSteel",
+        "post-right": "structuralSteel",
+        "foot-left": "structuralSteel",
+        "foot-right": "structuralSteel",
+        "label-ledge": "paper",
+        "route-row-a": "paper",
+        "route-row-b": "paper",
+        "route-row-c": "paper"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "postal-sack-loader",
+      "title": "Postal sack loader",
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "safetyAmber",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "deck": "paintedSteel",
+        "roller-a": "stainlessSteel",
+        "roller-b": "stainlessSteel",
+        "roller-c": "stainlessSteel",
+        "handle-left": "paintedSteel",
+        "handle-right": "paintedSteel",
+        "handle-top": "paintedSteel",
+        "stop-left": "safetyAmber",
+        "stop-right": "safetyAmber",
+        "wheel-front": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 5
+    },
+    {
+      "id": "postal-sack-rack",
+      "title": "Postal sack rack",
+      "materialControls": [
+        "paintedSteel",
+        "fabric",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "base-left": "structuralSteel",
+        "base-right": "structuralSteel",
+        "post-left": "structuralSteel",
+        "post-right": "structuralSteel",
+        "top-bar": "paintedSteel",
+        "middle-bar": "paintedSteel",
+        "bay-divider-left": "paintedSteel",
+        "bay-divider-right": "paintedSteel",
+        "sack-a": "fabric",
+        "sack-b": "fabric",
+        "sack-c": "fabric",
+        "sack-collar-a": "fabric",
+        "sack-collar-b": "fabric",
+        "sack-collar-c": "fabric"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "postal-sortation-tray-cabinet",
+      "title": "Postal sortation tray cabinet",
+      "materialControls": [
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "plinth": "structuralSteel",
+        "left-side": "structuralSteel",
+        "right-side": "structuralSteel",
+        "top": "structuralSteel",
+        "back": "structuralSteel",
+        "shelf-a": "structuralSteel",
+        "shelf-b": "structuralSteel",
+        "shelf-c": "structuralSteel",
+        "shelf-d": "structuralSteel",
+        "divider-a": "structuralSteel",
+        "divider-b": "structuralSteel",
+        "divider-c": "structuralSteel",
+        "divider-d": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "powered-roller-conveyor",
+      "title": "Powered roller conveyor",
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "bed-frame": "structuralSteel",
+        "left-side": "paintedSteel",
+        "right-side": "paintedSteel",
+        "leg-a-left": "structuralSteel",
+        "leg-a-right": "structuralSteel",
+        "leg-b-left": "structuralSteel",
+        "leg-b-right": "structuralSteel",
+        "roller-a": "stainlessSteel",
+        "roller-b": "stainlessSteel",
+        "roller-c": "stainlessSteel",
+        "roller-d": "stainlessSteel",
+        "roller-e": "stainlessSteel",
+        "roller-f": "stainlessSteel",
+        "drive-housing": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 6
+    },
+    {
+      "id": "powered-sack-dumper",
+      "title": "Powered sack dumper",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "left-upright": "structuralSteel",
+        "right-upright": "structuralSteel",
+        "top-beam": "structuralSteel",
+        "cradle-platform": "paintedSteel",
+        "back-plate": "paintedSteel",
+        "left-side": "paintedSteel",
+        "right-side": "paintedSteel",
+        "actuator-left": "stainlessSteel",
+        "actuator-right": "stainlessSteel",
+        "control-post": "structuralSteel",
+        "control-head": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "rolling-postal-container",
+      "title": "Rolling postal container",
+      "materialControls": [
+        "structuralSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "wheel-left-front": "rubber",
+        "wheel-right-front": "rubber",
+        "wheel-left-back": "rubber",
+        "wheel-right-back": "rubber",
+        "post-left": "structuralSteel",
+        "post-right": "structuralSteel",
+        "post-left-back": "structuralSteel",
+        "post-right-back": "structuralSteel",
+        "top-front": "structuralSteel",
+        "top-back": "structuralSteel",
+        "shelf": "structuralSteel",
+        "gate": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 5
+    },
+    {
+      "id": "scanner-sensor-post",
+      "title": "Scanner sensor post",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "instrumentGlass"
+      ],
+      "partAssignments": {
+        "foot": "structuralSteel",
+        "mast": "paintedSteel",
+        "arm": "paintedSteel",
+        "sensor": "paintedSteel",
+        "lens": "instrumentGlass",
+        "junction-box": "paintedSteel",
+        "cable-gland": "paintedSteel",
+        "anchor-left": "paintedSteel",
+        "anchor-right": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "sliding-shoe-sorter-section",
+      "title": "Sliding shoe sorter section",
+      "materialControls": [
+        "paintedSteel",
+        "safetyAmber",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "sorter-bed": "paintedSteel",
+        "left-guide": "stainlessSteel",
+        "right-guide": "stainlessSteel",
+        "shoe-rail": "safetyAmber",
+        "shoe-a": "safetyAmber",
+        "shoe-b": "safetyAmber",
+        "shoe-c": "safetyAmber",
+        "shoe-d": "safetyAmber",
+        "discharge-lane": "paintedSteel",
+        "support-left-a": "structuralSteel",
+        "support-right-a": "structuralSteel",
+        "support-left-b": "structuralSteel",
+        "support-right-b": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "sorter-chute-bank",
+      "title": "Sorter chute bank",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "paper"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "upright-left": "structuralSteel",
+        "upright-right": "structuralSteel",
+        "top-beam": "structuralSteel",
+        "bay-divider-a": "paintedSteel",
+        "bay-divider-b": "paintedSteel",
+        "bay-divider-c": "paintedSteel",
+        "bay-divider-d": "paintedSteel",
+        "chute-shelf-a": "paintedSteel",
+        "chute-shelf-b": "paintedSteel",
+        "chute-shelf-c": "paintedSteel",
+        "chute-shelf-d": "paintedSteel",
+        "front-label-rail": "paper"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "sorter-emergency-stop-pedestal",
+      "title": "Sorter emergency-stop pedestal",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "safetyAmber"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "post": "structuralSteel",
+        "head": "stainlessSteel",
+        "button": "safetyAmber",
+        "guard-left": "structuralSteel",
+        "guard-right": "structuralSteel",
+        "cable-outlet": "paintedSteel",
+        "mounting-foot-left": "structuralSteel",
+        "mounting-foot-right": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "sorter-maintenance-platform",
+      "title": "Sorter maintenance platform",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "deck": "paintedSteel",
+        "post-left-front": "structuralSteel",
+        "post-right-front": "structuralSteel",
+        "post-left-back": "structuralSteel",
+        "post-right-back": "structuralSteel",
+        "rail-front": "structuralSteel",
+        "rail-back": "structuralSteel",
+        "rail-left": "structuralSteel",
+        "rail-right": "structuralSteel",
+        "leg-left": "structuralSteel",
+        "leg-right": "structuralSteel",
+        "step-a": "paintedSteel",
+        "step-b": "paintedSteel",
+        "step-c": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "sorting-operator-console",
+      "title": "Sorting operator console",
+      "materialControls": [
+        "paintedSteel",
+        "instrumentGlass",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "pedestal": "paintedSteel",
+        "desk": "paintedSteel",
+        "screen-left": "instrumentGlass",
+        "screen-right": "instrumentGlass",
+        "screen-base-left": "structuralSteel",
+        "screen-base-right": "structuralSteel",
+        "keyboard-shelf": "paintedSteel",
+        "keypad": "paintedSteel",
+        "status-post": "structuralSteel",
+        "status-light-a": "instrumentGlass",
+        "status-light-b": "instrumentGlass",
+        "status-light-c": "instrumentGlass"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "spiral-parcel-chute",
+      "title": "Spiral parcel chute",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "foot": "structuralSteel",
+        "mast": "paintedSteel",
+        "level-1": "paintedSteel",
+        "level-2": "paintedSteel",
+        "level-3": "paintedSteel",
+        "level-4": "paintedSteel",
+        "guard-a": "structuralSteel",
+        "guard-b": "structuralSteel",
+        "guard-c": "structuralSteel",
+        "guard-d": "structuralSteel",
+        "landing-pad": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    },
+    {
+      "id": "telescopic-parcel-conveyor",
+      "title": "Telescopic parcel conveyor",
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "rubber"
+      ],
+      "partAssignments": {
+        "base-frame": "structuralSteel",
+        "lower-boom": "paintedSteel",
+        "middle-boom": "paintedSteel",
+        "inner-boom": "paintedSteel",
+        "left-support": "structuralSteel",
+        "right-support": "structuralSteel",
+        "crossbar": "structuralSteel",
+        "left-wheel": "rubber",
+        "right-wheel": "rubber",
+        "control-box": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 3
+    },
+    {
+      "id": "tray-induction-loader",
+      "title": "Tray induction loader",
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "polymer",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "feed-deck": "paintedSteel",
+        "backstop": "paintedSteel",
+        "guide-left": "stainlessSteel",
+        "guide-right": "stainlessSteel",
+        "tray-stack-a": "polymer",
+        "tray-stack-b": "polymer",
+        "tray-stack-c": "polymer",
+        "control-post": "structuralSteel",
+        "control-head": "stainlessSteel",
+        "display": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "geometryChanges": 0
+    }
+  ],
+  "casterPlacementCorrections": [
+    "high-capacity-mail-cart",
+    "mail-tray-dispatch-cart",
+    "parcel-tray-transfer-cart",
+    "postal-sack-loader",
+    "rolling-postal-container"
+  ]
+}

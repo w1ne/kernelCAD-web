@@ -1,0 +1,12 @@
+{
+  "kit": "mining",
+  "documentedAssets": 50,
+  "allHavePreviewPaths": true,
+  "allHaveMaterialControls": true,
+  "allHavePresets": true,
+  "triangleRange": [
+    144,
+    600
+  ],
+  "readme": "catalog/kits/mining/README.md"
+}

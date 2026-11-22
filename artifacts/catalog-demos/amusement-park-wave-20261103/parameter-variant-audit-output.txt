@@ -1,0 +1,4 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/checkCatalogAsset.ts artifacts/catalog-demos/amusement-park-wave-20261103/parameter-variant/amusement-park/park-observation-wheel.kcad.ts --png artifacts/catalog-demos/amusement-park-wave-20261103/park-observation-wheel-scale-1.25.png --yaw 35
+{"id":"park-observation-wheel","triangles":620,"budget":1800,"sizeM":[2.225,6.923245,4.54375],"minUpM":0,"materials":1,"knobs":["scale:number","color:color"],"palette":["color=#6e8885"]}
+wrote artifacts/catalog-demos/amusement-park-wave-20261103/park-observation-wheel-scale-1.25.png

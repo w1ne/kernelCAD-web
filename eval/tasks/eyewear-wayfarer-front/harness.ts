@@ -12,7 +12,6 @@ import type { HarnessCtx, HarnessResult } from '../../types';
 import { computeFidelityGates, allFidelityGatesPass, type FidelityGate, type FidelityBundle } from '../../oracle/fidelityGates';
 
 // Reference photo: front-right product shot from approximately az=30°, el=15°.
-// See ../../docs/specs/2026-05-15-from-prompt-to-object-eval-loop-roadmap.md
 // Phase 1 — first L5 task wired through the new oracle (render + pose + scorer).
 const REFERENCE_POSE = '30,15';
 // Composite-score thresholds. Today's manual A/B baseline on the same target:

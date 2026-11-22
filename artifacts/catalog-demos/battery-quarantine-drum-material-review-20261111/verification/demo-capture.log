@@ -1,0 +1,45 @@
+Input #0, png_pipe, from 'artifacts/catalog-demos/battery-quarantine-drum-material-review-20261111/previews/before.png':
+  Duration: N/A, bitrate: N/A
+  Stream #0:0: Video: png, rgba(pc, gbr/unknown/unknown), 512x512 [SAR 1000:1000 DAR 1:1], 24 fps, 24 tbr, 24 tbn
+Input #1, png_pipe, from 'artifacts/catalog-demos/battery-quarantine-drum-material-review-20261111/previews/after.png':
+  Duration: N/A, bitrate: N/A
+  Stream #1:0: Video: png, rgba(pc, gbr/unknown/unknown), 512x512 [SAR 1000:1000 DAR 1:1], 24 fps, 24 tbr, 24 tbn
+Stream mapping:
+  Stream #0:0 (png) -> pad:default
+  Stream #1:0 (png) -> pad:default
+  format:default -> Stream #0:0 (libx264)
+Press [q] to stop, [?] for help
+[libx264 @ 0x5ddb81925a40] using SAR=1/1
+[libx264 @ 0x5ddb81925a40] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2
+[libx264 @ 0x5ddb81925a40] profile High, level 3.1, 4:2:0, 8-bit
+[libx264 @ 0x5ddb81925a40] 264 - core 165 - H.264/MPEG-4 AVC codec - Copyleft 2003-2025 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=20 lookahead_threads=3 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=24 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=22.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+Output #0, mp4, to 'artifacts/catalog-demos/battery-quarantine-drum-material-review-20261111/demo.mp4':
+  Metadata:
+    encoder         : Lavf63.1.101
+  Stream #0:0: Video: h264 (avc1 / 0x31637661), yuv420p(tv, progressive), 720x640 [SAR 1:1 DAR 9:8], q=2-31, 24 fps, 12288 tbn
+    Metadata:
+      encoder         : Lavc63.1.101 libx264
+    Side data:
+      CPB properties: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A
+frame=    0 fps=0.0 q=0.0 size=       0KiB time=N/A bitrate=N/A speed=N/A elapsed=0:00:00.50
+frame=  113 fps=113 q=27.0 size=       0KiB time=00:00:04.62 bitrate=   0.1kbits/s speed=4.61x elapsed=0:00:01.00
+[mp4 @ 0x5ddb8193cd80] Starting second pass: moving the moov atom to the beginning of the file
+[out#0/mp4 @ 0x5ddb8193cc80] video:64KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 6.610346%
+frame=  288 fps=200 q=-1.0 Lsize=      68KiB time=00:00:11.91 bitrate=  46.8kbits/s speed=8.28x elapsed=0:00:01.43
+[libx264 @ 0x5ddb81925a40] frame I:2     Avg QP:11.03  size: 24542
+[libx264 @ 0x5ddb81925a40] frame P:73    Avg QP:11.25  size:   108
+[libx264 @ 0x5ddb81925a40] frame B:213   Avg QP:11.67  size:    37
+[libx264 @ 0x5ddb81925a40] consecutive B-frames:  1.4%  0.0%  0.0% 98.6%
+[libx264 @ 0x5ddb81925a40] mb I  I16..4: 58.8% 21.0% 20.2%
+[libx264 @ 0x5ddb81925a40] mb P  I16..4:  0.0%  0.0%  0.0%  P16..4:  0.1%  0.0%  0.0%  0.0%  0.0%    skip:99.8%
+[libx264 @ 0x5ddb81925a40] mb B  I16..4:  0.0%  0.0%  0.0%  B16..8:  0.4%  0.0%  0.0%  direct: 0.0%  skip:99.6%  L0:59.9% L1:40.1% BI: 0.0%
+[libx264 @ 0x5ddb81925a40] 8x8 transform intra:20.7% inter:23.4%
+[libx264 @ 0x5ddb81925a40] coded y,uvDC,uvAC intra: 14.2% 20.6% 18.7% inter: 0.0% 0.0% 0.0%
+[libx264 @ 0x5ddb81925a40] i16 v,h,dc,p: 86%  9%  5%  0%
+[libx264 @ 0x5ddb81925a40] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 77%  6% 16%  0%  0%  0%  0%  0%  0%
+[libx264 @ 0x5ddb81925a40] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 35% 24% 15%  2%  3%  3%  9%  2%  7%
+[libx264 @ 0x5ddb81925a40] i8c dc,h,v,p: 75% 15% 10%  1%
+[libx264 @ 0x5ddb81925a40] Weighted P-Frames: Y:0.0% UV:0.0%
+[libx264 @ 0x5ddb81925a40] ref P L0: 86.4% 10.4%  3.2%
+[libx264 @ 0x5ddb81925a40] ref B L0: 52.4% 47.6%
+[libx264 @ 0x5ddb81925a40] kb/s:43.19

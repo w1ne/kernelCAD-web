@@ -1,0 +1,29 @@
+
+> kernelcad@0.17.4 build
+> npm run build:cli && npm run build:player
+
+
+> kernelcad@0.17.4 build:cli
+> tsc --noEmit -p tsconfig.cli.json && node scripts/build-cli.mjs
+
+▲ [WARNING] Comparison with NaN using the "==" operator here is always false [equals-nan]
+
+    vendor/verb-nurbs/build/verb.es.js:3631:8:
+      3631 │     if(f0 == NaN) {
+           ╵           ~~
+
+  Floating-point equality is defined such that NaN is never equal to anything, so "x === NaN" always returns false. You need to use "Number.isNaN(x)" instead to test for NaN.
+
+dist/cli/index.js built
+
+> kernelcad@0.17.4 build:player
+> vite build -c vite.player.config.ts
+
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 66 modules transformed.
+rendering chunks...
+computing gzip size...
+../../../dist/headless-player/index.html                  0.93 kB │ gzip:   0.58 kB
+../../../dist/headless-player/assets/index-DvGrAtNw.js  802.77 kB │ gzip: 220.58 kB
+✓ built in 2.08s

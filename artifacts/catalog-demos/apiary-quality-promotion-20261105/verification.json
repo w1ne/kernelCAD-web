@@ -1,0 +1,92 @@
+{
+  "date": "2026-11-05",
+  "kit": "apiary",
+  "assetsBefore": 50,
+  "assetsAfter": 50,
+  "assetsPromotedInPlace": 49,
+  "assetIdsAddedOrRenamed": 0,
+  "materialControlsAdded": 121,
+  "materialControlsPerPromotedAsset": [
+    2,
+    4
+  ],
+  "presetEntriesAdded": 98,
+  "presetsPerAsset": 2,
+  "defaultPreviewsRendered": 50,
+  "defaultPreviewRerendersAfterFinalCorrection": 1,
+  "indexRowsWithPreviewAndFreshSourceHash": 50,
+  "kitQuality": {
+    "passed": 50,
+    "total": 50
+  },
+  "catalogQuality": {
+    "before": {
+      "passed": 1954,
+      "total": 2390,
+      "ratePercent": 81.76
+    },
+    "after": {
+      "passed": 2003,
+      "total": 2390,
+      "ratePercent": 83.81
+    },
+    "thinRemaining": 387,
+    "thinRatePercent": 16.19,
+    "wholeCatalogGatePasses": false,
+    "fullyThinKitsRemaining": 9
+  },
+  "eslint": {
+    "command": "npx eslint catalog/kits/apiary/",
+    "passed": true
+  },
+  "catalogIntegration": {
+    "command": "npx vitest run tests/integration/catalog/",
+    "passed": true,
+    "filesPassed": 4,
+    "testsPassed": 15,
+    "initialFailure": "First run found honey-jar exported 2 materials because of a fixed PBR material on the tinted neck; removed the extra PBR material and reran successfully. Initial log retained in catalog-integration-initial-failure.txt."
+  },
+  "localCatalogPages": {
+    "totalAssetsGenerated": 2390,
+    "apiaryDetailPagesChecked": 50,
+    "previewCopiesChecked": 50,
+    "sourceHashesChecked": 50,
+    "parameterCountRangeIncludingScale": [
+      3,
+      4
+    ],
+    "passed": true
+  },
+  "npmPackageBoundary": {
+    "passed": true,
+    "apiarySourcesIncluded": 50,
+    "apiaryPreviewsIncluded": 50,
+    "catalogIndexIncluded": true,
+    "packageExportsUnchanged": true,
+    "productImplementationPaths": []
+  },
+  "presetRenders": {
+    "sourceDriven": true,
+    "assets": 3,
+    "renders": 6,
+    "passed": true
+  },
+  "visualReview": {
+    "defaultPreviewsReviewed": [
+      "langstroth-hive",
+      "bee-smoker",
+      "honey-extractor",
+      "apiary-shade-canopy",
+      "honey-jar"
+    ],
+    "presetPairReviewed": "honey-jar/goldenHarvest+paleSpring",
+    "videoDecodedFramesReviewed": 6,
+    "videoVisuallyReviewed": true
+  },
+  "deployment": {
+    "branchDeployed": false,
+    "postDeploymentPublicPageVerified": false,
+    "liveBaselineCheckedBeforeChange": true
+  },
+  "hardwareAcceptance": false
+}

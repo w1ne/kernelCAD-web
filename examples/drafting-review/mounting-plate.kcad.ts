@@ -9,9 +9,10 @@ const boreDiameter = param('boreDiameter', 30, { min: 20, max: 36 });
 const x = width.divide(2).subtract(12);
 const y = depth.divide(2).subtract(12);
 
-return box(width, depth, thickness)
-  .fillet(6, { parallel: [0, 0, 1] })
-  .chamfer(0.5, { face: 'top' })
+const stock = box(width, depth, thickness);
+return stock
+  .fillet(6, q.edge(q.createdBy(stock.id)).and(q.withLabel('corner')))
+  .chamfer(0.5, q.edge(q.createdBy(stock.id)).and(q.withLabel('top-perimeter')))
   .holes('top', {
     positions: [
       { u: x.negate(), v: y.negate() }, { u: x, v: y.negate() },

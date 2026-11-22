@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-05",
+  "kit": "alpine-expedition",
+  "assetIdsAdded": 0,
+  "assetsPromoted": 50,
+  "materialControls": 143,
+  "presetNames": ["stormWorn", "highVisibility"],
+  "presetEntries": 100,
+  "geometryUpdates": [
+    "alpine-helmet: faceted shell, exposed liner, ear pads and shaped chin webbing",
+    "avalanche-transceiver: chamfered housing, raised screen, controls and speaker grille",
+    "basecamp-dome-tent: lofted canopy, raised groundsheet and two visible support arches",
+    "four-season-tent: pitched A-frame canopy and separate support poles",
+    "glacier-goggles: visible paired lenses and frame",
+    "ice-axe: profiled pick, adze and spike; centered metal head and shaft"
+  ],
+  "previewRender": {
+    "script": "scripts/renderCatalogPreviews.ts",
+    "targetCount": 50,
+    "fullCommandFile": "preview-render-invocation.txt"
+  },
+  "indexBuild": "npx tsx scripts/buildAssetCatalog.ts",
+  "presetRender": {
+    "asset": "alpine-expedition/alpine-dry-bag",
+    "preset": "highVisibility",
+    "script": "render_preset_variant.ts",
+    "output": "high-visibility/alpine-dry-bag.highVisibility.png"
+  },
+  "video": {
+    "source": "capture_alpine_demo.py",
+    "resolution": "1280x720",
+    "durationSeconds": 20,
+    "frameRate": 24,
+    "encoding": "H.264, yuv420p, CRF 24",
+    "output": "alpine-expedition-quality-promotion.mp4"
+  },
+  "claimBoundary": "Local source, software preview, index, lint, integration and page validation only; no deployment, simulation or hardware acceptance claimed."
+}

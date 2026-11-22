@@ -476,7 +476,15 @@ export interface ResolvedPart {
 
 /** Resolve the model's parts: the LAST record whose lowered shape is a
  *  SceneBackend wins; single-shape scripts fall back to
- *  `rootShape ?? tailShape` as one pseudo-part 'shape'. */
+ *  `rootShape ?? tailShape` as one pseudo-part 'shape'.
+ *
+ *  TODO(stock-on-part): declared blank size lives on `AssemblyPartStored.stock`
+ *  and on `assemblyPart` feature metadata (`stock`). These gates still measure
+ *  the finished body only. `price_part` is not in this repository — supplier
+ *  quotes stay private — so do not invent a partner quote API here. Offline
+ *  order-of-magnitude cost is `estimate_cost` (shared/cost), labelled as a
+ *  heuristic. A later check can compare the finished bbox with `part.stock`
+ *  when it is present. */
 export function resolveParts(model: BuiltModel): { scene?: SceneBackend; parts: ResolvedPart[] } {
   for (let i = model.records.length - 1; i >= 0; i--) {
     const s = model.shapes.get(model.records[i].id);

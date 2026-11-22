@@ -1,0 +1,1 @@
+wrote 60 construction equipment assets to /home/andrii/worktrees/kernelCAD-web/catalog-2000/catalog/kits/construction-equipment

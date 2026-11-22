@@ -1,0 +1,6 @@
+{
+  "command": "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/grid-substation-quality-promotion-20261104/node-preload.mjs --import tsx scripts/buildAssetCatalog.ts",
+  "indexedAssets": 2390,
+  "exitCode": 0,
+  "passed": true
+}

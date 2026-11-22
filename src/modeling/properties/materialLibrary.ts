@@ -14,7 +14,7 @@
 // BOM under one name.
 //
 // Canonical names are the engineering grades (`mild-steel`, `aluminum-6061`,
-// `pla`, `petg`, `abs`, `nylon`); the bulk spellings `steel`, `aluminum`,
+// `pla`, `petg`, `abs`, `asa`, `nylon`); the bulk spellings `steel`, `aluminum`,
 // `aluminium`, `pet` are explicit aliases. Coverage gaps stay honest:
 //   * `petg` has a density but no natural finish token → `finish` is
 //     undefined; assigning it seeds density only.

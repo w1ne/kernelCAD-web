@@ -1,0 +1,53 @@
+{
+  "scope": "Local kernelCAD Node API: STEP export of a coloured part, text check of the colour entity, and read-back through the OCCT XCAF STEP reader.",
+  "invocation": "node --import tsx docs/demos/step-colour-space/capture-demo.mts",
+  "source": "docs/demos/step-single-body-roundtrip/motor-plate.kcad.ts",
+  "sourceSha256": "538a7067968b3aedee2c736088eaab98477f3aea9d188f7118fc8f677edc4ed9",
+  "implementationSha256": {
+    "src/kernel/backends/occt/stepColour.ts": "321981a35fee6d6319c8d51d165cb61bb7b26b444d436c7fba5487483f5491c9",
+    "src/kernel/backends/occt/stepAssemblyExport.ts": "f2e1ca9e0af2a60908f3484758481b527fa3002d6f8c105af565ef66e15e2a5b",
+    "src/kernel/import/stepAssemblyImport.ts": "04b6899c5296e15d4335b41f0b5f8409c2300389751f2ed05ee08329b500dfad"
+  },
+  "scriptColour": "#3366cc",
+  "scriptChannels": [
+    0.2,
+    0.4,
+    0.8
+  ],
+  "write": {
+    "file": "../step-single-body-roundtrip/motor-plate.step",
+    "bytes": 48932,
+    "sha256": "436498b19c6f7d6d53b82cb09ab87ae859f5fa832713ce25c5d2357a07015363",
+    "colourEntity": "COLOUR_RGB('',0.199999998682,0.399999997426,0.800000010877)",
+    "channels": [
+      0.199999998682,
+      0.399999997426,
+      0.800000010877
+    ],
+    "asHex": "#3366cc",
+    "maxChannelError": 1.1e-8
+  },
+  "read": {
+    "roundTripColour": "#3366cc",
+    "foreignEntity": "COLOUR_RGB('',0.2,0.4,0.8)",
+    "foreignColour": "#3366cc"
+  },
+  "before": {
+    "commit": "9b7ba3241",
+    "writtenChannels": [
+      0.484529207832,
+      0.665185089102,
+      0.906331759313
+    ],
+    "writtenAsHex": "#7caae7",
+    "foreignReadAsHex": "#08229a"
+  },
+  "limits": [
+    "Other CAD systems were not used to open the file.",
+    "The values under \"before\" are recorded from a run on the named commit; this script does not measure them again.",
+    "A project imported from STEP with an earlier kernelCAD version holds the darker colour that version read."
+  ],
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}

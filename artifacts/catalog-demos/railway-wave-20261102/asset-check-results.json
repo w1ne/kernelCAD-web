@@ -1,0 +1,542 @@
+{
+  "checkedAt": "2026-11-02",
+  "kit": "railway",
+  "totalAssets": 755,
+  "kitAssets": 40,
+  "passed": 40,
+  "total": 40,
+  "catalogIndexSource": "catalog/index.json",
+  "verificationCommands": [
+    "python3 artifacts/catalog-demos/railway-wave-20261102/generate_railway_assets.py",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx eslint catalog/",
+    "npx vitest run tests/integration/catalog/"
+  ],
+  "auditScope": "Each source builds to a non-empty one-material mesh within its indexed triangle budget, opens with exactly scale and color knobs, and has base origin.",
+  "triangleRange": [
+    48,
+    512
+  ],
+  "assets": [
+    {
+      "id": "baggage-cart",
+      "source": "catalog/kits/railway/baggage-cart.kcad.ts",
+      "sourceSha256": "95c19aba30bf862c6ff5c9d43bb8e84d06dcd55b7ba48bb96e7d61426ae8b2cf",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 172,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "buffer-stop",
+      "source": "catalog/kits/railway/buffer-stop.kcad.ts",
+      "sourceSha256": "adcaf2f846dfa3f7b12cae1271208f83872138b3f6603de10a500edde0cbc322",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 184,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "caboose",
+      "source": "catalog/kits/railway/caboose.kcad.ts",
+      "sourceSha256": "ef2cda513bf560fc420d4beeabb935337c0737e7df4bb7ab486c954e24158ccd",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 284,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "commuter-car",
+      "source": "catalog/kits/railway/commuter-car.kcad.ts",
+      "sourceSha256": "acf56a99dfeb0e0ed60c54375ecbb19fae48381b2d925c18e432c4c24b41d5bd",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 332,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "crossing-gate",
+      "source": "catalog/kits/railway/crossing-gate.kcad.ts",
+      "sourceSha256": "6592ce74c29c1d6fad52ab8c005e92aae4ec768655134701ec30ede97c323a91",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 116,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "crossing-warning-light",
+      "source": "catalog/kits/railway/crossing-warning-light.kcad.ts",
+      "sourceSha256": "632ed37555af9e44b7db3ba39a7a16e04881a9164eb8cbb98d2b56e659f97b23",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 224,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "curved-track",
+      "source": "catalog/kits/railway/curved-track.kcad.ts",
+      "sourceSha256": "5f1209c8dc3e35534b60d05cea62b6280e7cf41f25efdf8421f7ec81857dc810",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 432,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "diesel-locomotive",
+      "source": "catalog/kits/railway/diesel-locomotive.kcad.ts",
+      "sourceSha256": "9528eaa522d18da8cac033f9f52738e25e55e20f6552d31a202d27d36c21ca93",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 436,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "dining-car",
+      "source": "catalog/kits/railway/dining-car.kcad.ts",
+      "sourceSha256": "ea254325d7daec9aee621f392ec64381ca52a726d994d707b6052044159d9b56",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 296,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "electric-locomotive",
+      "source": "catalog/kits/railway/electric-locomotive.kcad.ts",
+      "sourceSha256": "c0ad6a06b59194e12745e93e0bc0ac493983de30e15d0b2f2b00ce6460ce832e",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 384,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "flatbed-wagon",
+      "source": "catalog/kits/railway/flatbed-wagon.kcad.ts",
+      "sourceSha256": "75de96722d8bb68ddd1283212d06b54d7098ea22e8c8419660c62048900e0014",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 272,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "freight-boxcar",
+      "source": "catalog/kits/railway/freight-boxcar.kcad.ts",
+      "sourceSha256": "d10d6f4656f15fbac0ae1d6e8835b7a454b2e6d4c9328f61a54fdadff1f2fec8",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 308,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "handcar",
+      "source": "catalog/kits/railway/handcar.kcad.ts",
+      "sourceSha256": "6f35c2f99d1300cc46f17756af5c2a904a6f29a39332fc59cc4b5614bc2cc6b9",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 312,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "hopper-wagon",
+      "source": "catalog/kits/railway/hopper-wagon.kcad.ts",
+      "sourceSha256": "3317103ce8d9228e7d9640b639c34f46ed58d80cf88efe70d6dade586b3e4c7e",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 272,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "inspection-trolley",
+      "source": "catalog/kits/railway/inspection-trolley.kcad.ts",
+      "sourceSha256": "c48a5972ecdf726f2f0cfb571facfe4a86d40e6fe9ba89c1b45f29b02b320b10",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 248,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "level-crossing",
+      "source": "catalog/kits/railway/level-crossing.kcad.ts",
+      "sourceSha256": "aaa42596cfb51ba594a1d2cac05a3227ab3c04ed227a0f49e9a5382c3042993b",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "luggage-stack",
+      "source": "catalog/kits/railway/luggage-stack.kcad.ts",
+      "sourceSha256": "5c741311e59d9d754839ee6fe7f8e0aa3421e418c2c48b52891f5cf76bb47a74",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "lumber-wagon",
+      "source": "catalog/kits/railway/lumber-wagon.kcad.ts",
+      "sourceSha256": "3d38f3339f03d1dff2b672544a8e43f911b246888998dd2c75f2467529af2ee9",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 356,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "mail-car",
+      "source": "catalog/kits/railway/mail-car.kcad.ts",
+      "sourceSha256": "06640003b1a90396d54a91b940ebc2336aa986f9ed0f62c37a708252337b6eea",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 284,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "maintenance-railcar",
+      "source": "catalog/kits/railway/maintenance-railcar.kcad.ts",
+      "sourceSha256": "c92ea7e34f49dfd8ff02865c37ec0ac147afe67a4c83d510569e79b64a764b17",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 280,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "milepost",
+      "source": "catalog/kits/railway/milepost.kcad.ts",
+      "sourceSha256": "6e63c0c809968ae8bdd10d06b4aaa0e7858191f70919110f46c82d86cb69e0a3",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 48,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "passenger-coach",
+      "source": "catalog/kits/railway/passenger-coach.kcad.ts",
+      "sourceSha256": "3a57aa3c1bba0ae971a4cc16b2bd2414bbfaea5bcdd0db88779a86fd4b3f0235",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 332,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "platform-canopy",
+      "source": "catalog/kits/railway/platform-canopy.kcad.ts",
+      "sourceSha256": "729fe960c0e25778b7c6cb4dd962840f92207addf4bffb0471a7f93316b863df",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rail-sleeper",
+      "source": "catalog/kits/railway/rail-sleeper.kcad.ts",
+      "sourceSha256": "e559fbda76f7fb957f3cf238e7b2412b195c82b0b23164857c72032b1fad2959",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "railway-lantern",
+      "source": "catalog/kits/railway/railway-lantern.kcad.ts",
+      "sourceSha256": "7c6b0cb503c4b42d081aece81c4488486225bb56af3f24ce9491b3888f0da003",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "railway-ticket-machine",
+      "source": "catalog/kits/railway/railway-ticket-machine.kcad.ts",
+      "sourceSha256": "12d4185cb430fca89a9f100a1b969ec155f9d2e49a9ff5a31c0870996657f931",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 72,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "semaphore-signal",
+      "source": "catalog/kits/railway/semaphore-signal.kcad.ts",
+      "sourceSha256": "e349dbb9fbce2a60060615f62b363010e8b442517218a5ab056e2f2346fea706",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 216,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "signal-gantry",
+      "source": "catalog/kits/railway/signal-gantry.kcad.ts",
+      "sourceSha256": "effa24e143a3b561d7c79726ee62f389644dd0a087d5c4b796038a9b7dfbbfb8",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 184,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "signal-light",
+      "source": "catalog/kits/railway/signal-light.kcad.ts",
+      "sourceSha256": "63b8de02431bfec66e4020910ccf8e5c348d9bc3d0bc9f01cd7eabc630fb323d",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 268,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "station-bench",
+      "source": "catalog/kits/railway/station-bench.kcad.ts",
+      "sourceSha256": "c4888e9f7774d7a0367b406721f727d5183ecb5664a353000d956b3a6213ba3a",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "station-clock",
+      "source": "catalog/kits/railway/station-clock.kcad.ts",
+      "sourceSha256": "177c37a2e87c559c40e1331f3b594620cdb656c396de766002f9c5a3009cad16",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 176,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "station-platform",
+      "source": "catalog/kits/railway/station-platform.kcad.ts",
+      "sourceSha256": "c60d3ee9fefac09340ae5fe25cacb2bda4385a66d26b7dc80ad9a63fcfa3099e",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 60,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "steam-locomotive",
+      "source": "catalog/kits/railway/steam-locomotive.kcad.ts",
+      "sourceSha256": "a086bf7fc2f839b2a144051cd8961f513cdb861f399692c07a3c39a53c1212f1",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 512,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "straight-track",
+      "source": "catalog/kits/railway/straight-track.kcad.ts",
+      "sourceSha256": "a148ee428d709a546c8455ea94799fefbb0aef2a97873f58b6241a2a76d046db",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "subway-car",
+      "source": "catalog/kits/railway/subway-car.kcad.ts",
+      "sourceSha256": "77d76337b18a956547c01de5caaa0ceeff195cd6628b8b95dc00e9fd73f7ca9c",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 320,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "tank-wagon",
+      "source": "catalog/kits/railway/tank-wagon.kcad.ts",
+      "sourceSha256": "32f97cd4161c14fafc046397d47ddc04f43c928364bf4f0c50bcec4dcd0f7396",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 400,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "ticket-barrier",
+      "source": "catalog/kits/railway/ticket-barrier.kcad.ts",
+      "sourceSha256": "9e9e711fe2091cf0805a0f8044c61e799f704b60701fa443b93eaae9bbca9501",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 116,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "timetable-board",
+      "source": "catalog/kits/railway/timetable-board.kcad.ts",
+      "sourceSha256": "74bd86b67564320c5c1d22896d7bdcf83f47ebaea315722ee5632af9b3d4975c",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 84,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "track-switch-lever",
+      "source": "catalog/kits/railway/track-switch-lever.kcad.ts",
+      "sourceSha256": "b26e9cfa3ba7370a3d1d9b148d87530cdac8e1a2f4a00c72c9d10fef19564341",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 136,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "turnout-track",
+      "source": "catalog/kits/railway/turnout-track.kcad.ts",
+      "sourceSha256": "786428876414063d59699f16e767b73936a8f79bbf4c57d04b9edb8cb555cccf",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    }
+  ]
+}

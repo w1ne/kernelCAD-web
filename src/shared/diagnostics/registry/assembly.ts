@@ -153,10 +153,10 @@ export const ASSEMBLY_CODES = {
   },
   'assembly.solver.did-not-converge': {
     hintTemplate:
-      "UNSUPPORTED on v0.6: articulated closed-loop FK (4-bar / scissor / pin_slot loop). Do not invent joint.scissorLift or gear-contact types. Rewrite as an open chain (drop one loop-closing mate; keep a ground/base root) or use fastened-only mates in the loop. For industrial scissor tables: lookup_cookbook('scissor lift closed loop'). limitsDeg/jointSupport help open chains only.",
+      "Check the loop's link lengths and connector origins/axes, and set each prismatic mate's pose to its as-built slider offset. Drive only the loop's independent degrees of freedom, then solve again.",
     nextAction: {
       kind: 'rewrite-feature',
-      guidance: 'rewrite as an open chain or fastened-only loop; for scissor tables lookup_cookbook(scissor lift closed loop); do not invent joint.scissorLift',
+      guidance: 'correct the loop link lengths, prismatic slider pose, or connector placement so the named mate closes',
     },
     defaultSeverity: 'error',
     group: 'assembly',
@@ -218,6 +218,13 @@ export const ASSEMBLY_CODES = {
     description: 'A connector ref tracked by the pose envelope could not be resolved at a sampled pose.',
   },
   // Assembly validator — v0.6.2 limit-missing warning (1)
+  'assembly.mate.adhesive-contact': {
+    hintTemplate: 'Select opposing planar faces that share a positive contact area in the solved assembly.',
+    nextAction: { kind: 'fix-arg', field: 'adhesive' },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'The declared adhesive interface could not be verified on the solved geometry.',
+  },
   'assembly.mate.limit-missing': {
     hintTemplate:
       "Declare limitsDeg:[min,max] (or limitsMm for prismatic) on this mate so the kernel can verify the mechanism does not self-collide across its declared range.",
@@ -270,6 +277,14 @@ export const ASSEMBLY_CODES = {
     defaultSeverity: 'warn',
     group: 'assembly',
     description: 'A revolute mate has no joint-support / mechanical-joint intent declaring which parts carry it (advisory; geometric support is gated separately).',
+  },
+  'assembly.joint-topology.coupled-pose-conflict': {
+    hintTemplate:
+      "Remove the pose from the coupleMates driven mate so it follows its source, or set it to ratio × source + offset. Its own pose moves the model geometry, but solve_mates, review and physics check the coupled pose.",
+    nextAction: { kind: 'fix-arg', field: 'pose' },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'A coupleMates driven mate declares its own pose that differs from ratio × source + offset, so the rendered pose and the checked pose differ.',
   },
   'assembly.joint-topology.connector-missing': {
     hintTemplate:
@@ -360,6 +375,14 @@ export const ASSEMBLY_CODES = {
     group: 'assembly',
     description: 'A joint declared a maxLoad that is exceeded by the applied externalLoads.',
   },
+  'assembly.joint.load-unverified': {
+    hintTemplate:
+      'This declared load rating was not compared. For topology origins, confirm the connector references and use vec3-origin connectors; for unsupported load kinds, use an analysis that supports the declared rating.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'A declared legacy joint load rating was not compared because a connector origin or load kind is unsupported.',
+  },
   'assembly.joint.not-visible': {
     hintTemplate:
       "Widen the fork-plate gap (FORK_GAP_Y) versus the tongue thickness (TONGUE_Y), and/or extend the pivot pin (PIN_LEN) so the joint hardware is visible at typical viewing distance.",
@@ -398,6 +421,28 @@ export const ASSEMBLY_CODES = {
     group: 'assembly',
     description: 'checkStaticHold found a revolute/prismatic joint whose worst-sampled-pose gravitational holding requirement exceeds the declared actuator torque/force capacity.',
   },
+  'assembly.joint.static-hold.no-actuator': {
+    hintTemplate:
+      'Declare actuator: { torqueNm } on an arm.revolute(...) joint or actuator: { forceN } on arm.prismatic(...). checkStaticHold does not yet evaluate mate-only mechanicalJoint chains, so a result with no actuator coverage cannot establish that the mechanism can hold. For a mechanicalJoint torqueNm rating, run verify with check motion-load and quasi_static: true.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'declare an actuator capacity on an arm.revolute/arm.prismatic joint; mate-only mechanicalJoint chains are not covered by checkStaticHold yet',
+    },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'checkStaticHold evaluated no arm.revolute/arm.prismatic joint with a declared actuator capacity, so the result has no holding-capacity coverage.',
+  },
+  'assembly.joint.static-hold.mass-unavailable': {
+    hintTemplate:
+      'Repair the assembly geometry or resolve the lowering failure, then run checkStaticHold again. A holding-capacity result cannot be calculated until the assembly scene and its part mass properties are available.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'repair the assembly geometry or lowering failure so static-hold can measure part mass properties',
+    },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'checkStaticHold could not lower the assembly scene and therefore did not measure part mass or evaluate actuator holding capacity.',
+  },
   // Assembly validator — v0.7 Slice 1 workspace reachability (1)
   'assembly.workspace.unreachable': {
     hintTemplate:
@@ -434,7 +479,7 @@ export const ASSEMBLY_CODES = {
     nextAction: { kind: 'fix-arg', field: 'connectorOrigin' },
     defaultSeverity: 'error',
     group: 'assembly',
-    description: 'A mate connector origin lies outside its part\'s modeled material by more than the support tolerance.',
+    description: 'A mate connector origin lies more than 6 mm outside the bounding box of its part and of every part fastened to it (transitively, at the rest pose; the mate\'s own fastened partner does not count). The message names the support region and the nearest supported origin on the mate axis (part-local), or says that no point on the axis is supported.',
   },
   'assembly.mechanical.mate-contact-missing': {
     hintTemplate:
@@ -467,7 +512,7 @@ export const ASSEMBLY_CODES = {
     },
     defaultSeverity: 'error',
     group: 'assembly',
-    description: 'A revolute mate connector origin is outside the modeled support material of its part.',
+    description: 'A revolute mate connector origin lies more than 1 mm outside the bounding box of its part and of every part fastened to it (transitively, at the rest pose). The message names the support region and the nearest supported origin on the mate axis (part-local), or says that no point on the axis is supported.',
   },
   'assembly.mechanical.revolute-contact-missing': {
     hintTemplate:

@@ -1,0 +1,3 @@
+rendered construction-equipment/articulated-dump-truck from indexed highVisibility preset (4 material controls)
+rendered construction-equipment/concrete-pump-truck from indexed highVisibility preset (4 material controls)
+rendered construction-equipment/lowboy-equipment-trailer from indexed highVisibility preset (3 material controls)

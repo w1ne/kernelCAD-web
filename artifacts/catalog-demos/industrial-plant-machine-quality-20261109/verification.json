@@ -1,0 +1,126 @@
+{
+  "date": "2026-11-09",
+  "kit": "industrial-plant",
+  "catalogAssetCountBefore": 2402,
+  "catalogAssetCountAfter": 2402,
+  "kitAssetCount": 60,
+  "quality": {
+    "kit": {
+      "passing": 60,
+      "total": 60,
+      "passRate": "100.00%"
+    },
+    "catalog": {
+      "passing": 2402,
+      "total": 2402,
+      "passRate": "100.00%",
+      "richKits": 50,
+      "thinKits": 0
+    }
+  },
+  "changes": {
+    "existingAssetsRefined": 3,
+    "materialColorControlsAdded": 6,
+    "namedPresetsAdded": 3,
+    "previewsRerendered": 60,
+    "assetIdsAdded": 0,
+    "kitsAdded": 0
+  },
+  "assets": [
+    {
+      "id": "diesel-generator-set",
+      "sourceSha256": "1c393c6d47dffd38e0acbc29024e542f1747d4b0b01a6010a4ce5aa0b6d57283",
+      "materialControls": [
+        "enclosurePaint",
+        "steel",
+        "radiatorCore",
+        "rubber"
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility",
+        "cleanPlant"
+      ],
+      "triangles": 564,
+      "triangleBudget": 1800,
+      "geometryVariant": {
+        "id": "generator-ten-louvers",
+        "triangles": 588
+      }
+    },
+    {
+      "id": "belt-conveyor",
+      "sourceSha256": "346071e15bd2b01041454c8aff453cd65ea9e0e638b8ce2dbfe6ab5c7cc3ef90",
+      "materialControls": [
+        "frameSteel",
+        "beltRubber",
+        "rollerSteel",
+        "safetyPaint"
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility",
+        "cleanPlant"
+      ],
+      "triangles": 992,
+      "triangleBudget": 2600,
+      "geometryVariant": {
+        "id": "conveyor-four-stations",
+        "triangles": 1052
+      }
+    },
+    {
+      "id": "industrial-transformer",
+      "sourceSha256": "2b7c9c6510054dc7b00e6fab3baba2074d5c0a3f30faf4aca0952bd51457354d",
+      "materialControls": [
+        "tankPaint",
+        "steel",
+        "porcelain",
+        "copper"
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility",
+        "utilityGreen"
+      ],
+      "triangles": 2528,
+      "triangleBudget": 3200,
+      "geometryVariant": {
+        "id": "transformer-ten-fins",
+        "triangles": 2576
+      }
+    }
+  ],
+  "index": {
+    "regenerated": true,
+    "sourceHashVerification": "passed",
+    "allKitPreviewUrlsAndFiles": "passed",
+    "verifiedAt": "2026-11-10T00:12:03Z"
+  },
+  "checks": {
+    "eslint": {
+      "status": "passed",
+      "command": "npx eslint catalog/kits/industrial-plant/"
+    },
+    "catalogIntegration": {
+      "status": "passed",
+      "testFiles": 4,
+      "tests": 15,
+      "durationSeconds": 464.35,
+      "command": "npx vitest run tests/integration/catalog/"
+    },
+    "localCatalogPages": "passed for the three edited assets; final source and preview hashes match",
+    "mp4": {
+      "status": "decoded and visually inspected",
+      "file": "industrial-plant-machine-refinement.mp4",
+      "codec": "h264",
+      "resolution": "1280x720",
+      "fps": 30,
+      "durationSeconds": 18.033,
+      "sizeBytes": 252461
+    }
+  },
+  "deploymentVerified": false,
+  "hardwareAcceptanceVerified": false,
+  "processPerformanceOrElectricalRatingVerified": false
+}

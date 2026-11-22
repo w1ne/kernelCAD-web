@@ -1,0 +1,20 @@
+[
+  {
+    "case": "sweep-skipped-rest-broken",
+    "verdict": "broken",
+    "coverage": { "sweep": false, "physics": false },
+    "diagnostics": [
+      { "code": "mechanism.rest-interpenetration", "severity": "error" },
+      { "code": "mechanism.unverified-budget-exceeded", "severity": "warn" }
+    ]
+  },
+  {
+    "case": "physics-skipped-rest-clean",
+    "verdict": "unverified",
+    "coverage": { "sweep": true, "physics": false },
+    "diagnostics": [
+      { "code": "mechanism.physics-budget-exceeded", "severity": "warn" }
+    ],
+    "physicsSessionCalls": 0
+  }
+]

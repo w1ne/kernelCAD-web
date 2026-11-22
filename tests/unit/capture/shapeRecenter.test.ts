@@ -124,3 +124,35 @@ describe('Shape.seatOnFloor', () => {
     expect(bb.max[0]).toBeCloseTo(10);
   });
 });
+
+describe('placement option keys', () => {
+  it('seatOnFloor rejects a misspelled center instead of moving x/y', async () => {
+    const kcad = createModelingApi({ session: new CaptureSession() });
+    const b = kcad.box(10, 20, 30).translate(100, 0, 0);
+    await expect(b.seatOnFloor({ centre: false } as never)).rejects.toThrow(/opts\.centre[\s\S]*unknown option 'centre'[\s\S]*center/);
+    const seated = await b.seatOnFloor({ center: false });
+    const bb = await seated.boundingBox();
+    expect(bb.center[0]).toBeCloseTo(105);
+    expect(bb.min[2]).toBeCloseTo(0);
+  });
+
+  it('recenter rejects an unknown key, a non-boolean axis and a positional option', async () => {
+    const kcad = createModelingApi({ session: new CaptureSession() });
+    const b = kcad.box(10, 20, 30);
+    await expect(b.recenter({ axes: 'xy' } as never)).rejects.toThrow(/opts\.axes[\s\S]*one of x, y, z/);
+    await expect(b.recenter({ z: 0 } as never)).rejects.toThrow(/opts\.z[\s\S]*true or false/);
+    await expect(b.recenter('xy' as never)).rejects.toThrow(/feature\.invalid-args|opts/);
+    const moved = await b.recenter({ x: true, y: true, z: false });
+    const bb = await moved.boundingBox();
+    expect(bb.center[0]).toBeCloseTo(0);
+    expect(bb.center[2]).toBeCloseTo(15);
+  });
+
+  it('boundingBox rejects an unknown key', async () => {
+    const kcad = createModelingApi({ session: new CaptureSession() });
+    const b = kcad.box(10, 20, 30);
+    await expect(b.boundingBox({ tight: true } as never)).rejects.toThrow(/opts\.tight[\s\S]*one of exact/);
+    const bb = await b.boundingBox({ exact: true });
+    expect(bb.size[0]).toBeCloseTo(10);
+  });
+});

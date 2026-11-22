@@ -1,0 +1,361 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-ev-charging-quality-pages",
+  "kit": "ev-charging-infrastructure",
+  "assets": 50,
+  "pagePreviewPairs": 50,
+  "allParametersListed": true,
+  "passed": true,
+  "deployed": false,
+  "checks": [
+    {
+      "id": "ac-charging-bollard",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "battery-buffer-charger-container",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "bus-depot-pantograph-post",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "ccs-combo-1-connector",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "ccs-combo-2-connector",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "chademo-connector",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "charger-cable-holster-bollard",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "charger-cable-retractor",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "charger-canopy-column-base",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "charger-load-management-panel",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "charger-status-display-post",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "charging-island-plinth",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "charging-payment-terminal",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "charging-station-direction-sign",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "coiled-charging-cable-reel",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "compact-dc-fast-charger",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "curbside-ac-charger-post",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "curbside-lamp-charger",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "destination-charging-pedestal",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "dual-connector-dc-dispenser",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "dual-outlet-wallbox",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "dual-port-ac-pedestal",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "ev-charger-protection-bollard",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "ev-emergency-stop-station",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "ev-metering-pedestal",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "ev-parking-bay-sign",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "ev-service-disconnect-cabinet",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "ev-site-distribution-panel",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "fleet-charging-canopy",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "fleet-depot-dc-dispenser",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "high-power-charge-dispenser",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "home-ac-wallbox",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "j1772-ac-connector",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "liquid-cooled-charging-cable",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "mobile-fast-charge-cart",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "modular-charger-power-stack",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "nacs-connector",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "outdoor-charger-switchboard",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "overhead-cable-balance-arm",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "overhead-cable-management-boom",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "overhead-pantograph-head",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "parking-cable-protection-ramp",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "parking-wheel-stop",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "remote-charger-power-cabinet",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "rfid-access-reader-pedestal",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "site-energy-management-controller",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "solar-ev-carport",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "streetlight-charger-arm",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "vehicle-to-grid-power-cabinet",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    },
+    {
+      "id": "wall-mounted-connector-holster",
+      "pageExists": true,
+      "previewExists": true,
+      "pageReferencesPreview": true,
+      "pageMentionsParameters": true
+    }
+  ]
+}

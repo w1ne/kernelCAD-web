@@ -1,0 +1,1107 @@
+{
+  "checkedAt": "2026-11-05T04:57:35.700Z",
+  "method": "npx tsx artifacts/catalog-demos/telecom-infrastructure-quality-promotion-20261105/check_telecom_pages.mts",
+  "localOnly": true,
+  "totalIndexedAssets": 2390,
+  "generatedAssetPages": 2390,
+  "kitPages": 56,
+  "pageAndPreviewPairs": 56,
+  "checkedPages": [
+    {
+      "id": "antenna-sector-frame",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 84,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "battery-backup-cabinet",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "polymer",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 72,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cable-entry-gland-plate",
+      "params": [
+        "scale",
+        "polymer",
+        "powderCoat",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 364,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cable-ladder-section",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "polymer",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cable-splice-pit-frame",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 60,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cable-support-hanger",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 72,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cable-tray-elbow",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "polymer"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 120,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cell-site-cabinet",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 84,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "conduit-riser-frame",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "polymer",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 312,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "dual-sector-panel-array",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "polymer",
+        "powderCoat",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 84,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "equipment-fan-panel",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 148,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "fiber-coil-reel",
+      "params": [
+        "scale",
+        "powderCoat",
+        "galvanizedSteel",
+        "polymer",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 380,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "fiber-distribution-cabinet",
+      "params": [
+        "scale",
+        "powderCoat",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 92,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "fiber-dome-closure",
+      "params": [
+        "scale",
+        "polymer",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 308,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "fiber-drop-terminal",
+      "params": [
+        "scale",
+        "polymer",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 300,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "fiber-handhole-cover",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 60,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "fiber-route-marker",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 48,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "fiber-service-loop-rack",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "polymer",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 252,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "fiber-splice-closure",
+      "params": [
+        "scale",
+        "polymer",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 200,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "fiber-terminal-box",
+      "params": [
+        "scale",
+        "polymer",
+        "powderCoat",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 168,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "gnss-timing-antenna",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "polymer",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 176,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "grounding-bar",
+      "params": [
+        "scale",
+        "copper",
+        "galvanizedSteel",
+        "polymer"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 300,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "grounding-rod-kit",
+      "params": [
+        "scale",
+        "copper",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 276,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "guy-wire-mast-anchor",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 256,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "lattice-mast-section",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 260,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "lightning-air-terminal",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 144,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "mast-extension-section",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 156,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "mast-outrigger-frame",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 116,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "microwave-backhaul-shelter",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 96,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "microwave-dish-antenna",
+      "params": [
+        "scale",
+        "aluminum",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 140,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "monopole-mast",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 144,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "omnidirectional-whip-antenna",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "polymer",
+        "powderCoat",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 176,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "optical-patch-panel",
+      "params": [
+        "scale",
+        "polymer",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 476,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "outdoor-network-cabinet",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 84,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "parapet-mast-clamp",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat",
+        "rubber",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 116,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "pedestal-fiber-terminal",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 136,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "pole-mount-radio-cabinet",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 104,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "radome-cylinder",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 176,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "remote-power-shelf",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 72,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "remote-radio-unit",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "polymer",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 148,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rf-hazard-marker",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 48,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "roof-penetration-seal",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat",
+        "rubber",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 188,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rooftop-microwave-dish",
+      "params": [
+        "scale",
+        "aluminum",
+        "galvanizedSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 172,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rooftop-network-cabinet",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 72,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rooftop-tripod-mast",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 264,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "sector-panel-antenna",
+      "params": [
+        "scale",
+        "polymer",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 60,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "site-id-placard",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 136,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "split-cable-duct",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 60,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "surge-protector-enclosure",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 124,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "telecom-cable-marker-post",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 60,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "telecom-equipment-shelter",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 84,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "telecom-warning-sign",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 60,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "wall-mast-bracket",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 148,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "waveguide-bridge",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "polymer",
+        "powderCoat"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 144,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "weatherproof-junction-box",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "powderCoat",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 332,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "yagi-radio-antenna",
+      "params": [
+        "scale",
+        "galvanizedSteel",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "fieldSite",
+        "highVisibility"
+      ],
+      "triangles": 104,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    }
+  ],
+  "liveDeployment": "not verified; the feature branch has not been deployed"
+}

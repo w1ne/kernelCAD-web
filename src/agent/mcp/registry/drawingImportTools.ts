@@ -32,7 +32,7 @@ const drawingToCadToolEntry: ToolRegistryEntry = {
       type: 'object',
       properties: {
         path: { type: 'string', description: 'Path to the drawing PDF on the machine running kernelCAD.' },
-        pdfBase64: {
+        pdf_base64: {
           type: 'string',
           description: 'The PDF inline, base64-encoded. Use this instead of `path` against a hosted kernelCAD server.',
         },

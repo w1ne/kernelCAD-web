@@ -25,3 +25,10 @@ only their owned processes after each check and keep the user's browser running.
 ## Commercial source boundary
 
 This repository owns reusable CAD/kernel/tooling and the generic renderer. Hosted product UI, billing/checkout/entitlements, supplier quotes/routing/integrations, commissions, commercial orchestration and proprietary manufacturing policy belong in private repositories, including their tests, fixtures and strategy. Mixed modules stay private until reusable geometry is separated. Audit both source and built npm artifacts; do not restore product deployment workflows or package exports here.
+
+## Implementation documentation policy
+
+Do not create Markdown implementation plans, design specs, or archived plan copies.
+Track unfinished implementation and acceptance criteria in GitHub issues.
+Track decisions and proof of implementation in PRs, code, and executable tests.
+Keep only current API/user guides, operational runbooks, and measured evidence.

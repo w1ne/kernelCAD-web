@@ -1,0 +1,21 @@
+{
+  "capture": "local source review and software-rendered before/after previews",
+  "date": "2026-11-13",
+  "video": {
+    "width": 720,
+    "height": 640,
+    "fps": 24,
+    "durationSeconds": 18,
+    "codec": "H.264",
+    "pixelFormat": "yuv420p",
+    "crf": 22
+  },
+  "slides": [
+    "five-preview shipyard manufacturing audit",
+    "rigid outlet source material assignment",
+    "before software-rendered preview",
+    "after software-rendered preview",
+    "local verification summary"
+  ],
+  "evidenceBoundary": "Local source, software renders and tests only; no simulation, deployment or physical acceptance is shown."
+}

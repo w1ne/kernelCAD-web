@@ -14,7 +14,11 @@ import { getActiveMcpSession } from '../activeSession';
 
 export interface SolveMatesInput {
   assembly?: string;
-  /** Optional per-mate numeric pose overrides. */
+  /**
+   * Optional numeric pose overrides keyed by mate name. Only mate types with
+   * solver-supported pose coordinates accept overrides; fastened and planar
+   * mates reject them with feature.invalid-args.
+   */
   poses?: Record<string, number | [number, number, number]>;
 }
 

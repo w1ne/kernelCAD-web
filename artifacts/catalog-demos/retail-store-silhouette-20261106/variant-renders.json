@@ -1,0 +1,324 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/retail-store-silhouette-20261106/render_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/retail-store/shopping-cart.kcad.ts",
+      "sourceSha256": "cba358c59ea17ecd7338223039a67acc41a16b8dd5ce1738abe46dd1983a4ca3",
+      "triangleBudget": 2200,
+      "presets": {
+        "cleanStore": {
+          "stainless": "#d3dadd",
+          "chassis": "#8f9ba0",
+          "polypropylene": "#2f8a52",
+          "rubber": "#40474b"
+        },
+        "nightRestock": {
+          "stainless": "#6c7a80",
+          "chassis": "#2f383d",
+          "polypropylene": "#45614e",
+          "rubber": "#1f2326"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/retail-store/stock-ladder.kcad.ts",
+      "sourceSha256": "865ea81a6384783e33ed01dea7b1abf32277e7ae4567a68aa85f66719ed8a083",
+      "triangleBudget": 1800,
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "aluminium": "#c4cdd0",
+          "nosing": "#f2c230",
+          "rubber": "#40474b"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "aluminium": "#6b7a80",
+          "nosing": "#d8a12a",
+          "rubber": "#262b2e"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/retail-store/trolley-corral.kcad.ts",
+      "sourceSha256": "1b3b7551e3dd68cd095fe716e2f84b3b7affcad16907966ad767ce241902ce24",
+      "triangleBudget": 2600,
+      "presets": {
+        "cleanStore": {
+          "galvanizedSteel": "#c3cccd",
+          "powderCoat": "#e5ebed",
+          "rubber": "#40474b",
+          "signFace": "#2f8a52"
+        },
+        "nightRestock": {
+          "galvanizedSteel": "#5c6a6e",
+          "powderCoat": "#354750",
+          "rubber": "#1f2326",
+          "signFace": "#8a2f2b"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/retail-store/barcode-scanner.kcad.ts",
+      "sourceSha256": "78e48b3b1718fe5789c635c9b1b659230227385f6e56fc1600931a0b01f4a697",
+      "triangleBudget": 1800,
+      "presets": {
+        "cleanStore": {
+          "abs": "#e5e9e9",
+          "glass": "#9ccfd6",
+          "polycarbonate": "#3aa267",
+          "rubber": "#59646a"
+        },
+        "nightRestock": {
+          "abs": "#364a55",
+          "glass": "#3e6677",
+          "polycarbonate": "#d84b3a",
+          "rubber": "#1a1d1f"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/retail-store/payment-terminal.kcad.ts",
+      "sourceSha256": "09044c07c18560172033827b2c58cb247c5d722f61032e170509e8736fe5a566",
+      "triangleBudget": 1800,
+      "presets": {
+        "cleanStore": {
+          "abs": "#e5e9e9",
+          "glass": "#9ccfd6",
+          "rubber": "#9aa5aa",
+          "enterKey": "#2f9a55"
+        },
+        "nightRestock": {
+          "abs": "#1d262b",
+          "glass": "#3e6677",
+          "rubber": "#262b2e",
+          "enterKey": "#d8a12a"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "shopping-cart",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1932,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/shopping-cart-default.png"
+    },
+    {
+      "assetId": "shopping-cart",
+      "variant": "no-seat",
+      "view": "3/4",
+      "values": {
+        "childSeat": "none"
+      },
+      "triangles": 1892,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/shopping-cart-no-seat.png"
+    },
+    {
+      "assetId": "shopping-cart",
+      "variant": "cleanStore",
+      "view": "3/4",
+      "values": {
+        "stainless": "#d3dadd",
+        "chassis": "#8f9ba0",
+        "polypropylene": "#2f8a52",
+        "rubber": "#40474b"
+      },
+      "triangles": 1932,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/shopping-cart-cleanStore.png"
+    },
+    {
+      "assetId": "shopping-cart",
+      "variant": "nightRestock",
+      "view": "3/4",
+      "values": {
+        "stainless": "#6c7a80",
+        "chassis": "#2f383d",
+        "polypropylene": "#45614e",
+        "rubber": "#1f2326"
+      },
+      "triangles": 1932,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/shopping-cart-nightRestock.png"
+    },
+    {
+      "assetId": "stock-ladder",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1236,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/stock-ladder-default.png"
+    },
+    {
+      "assetId": "stock-ladder",
+      "variant": "no-handrail",
+      "view": "3/4",
+      "values": {
+        "handrail": "none"
+      },
+      "triangles": 900,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/stock-ladder-no-handrail.png"
+    },
+    {
+      "assetId": "stock-ladder",
+      "variant": "cleanStore",
+      "view": "3/4",
+      "values": {
+        "powderCoat": "#e5ebed",
+        "aluminium": "#c4cdd0",
+        "nosing": "#f2c230",
+        "rubber": "#40474b"
+      },
+      "triangles": 1236,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/stock-ladder-cleanStore.png"
+    },
+    {
+      "assetId": "stock-ladder",
+      "variant": "nightRestock",
+      "view": "3/4",
+      "values": {
+        "powderCoat": "#354750",
+        "aluminium": "#6b7a80",
+        "nosing": "#d8a12a",
+        "rubber": "#262b2e"
+      },
+      "triangles": 1236,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/stock-ladder-nightRestock.png"
+    },
+    {
+      "assetId": "trolley-corral",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 2404,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/trolley-corral-default.png"
+    },
+    {
+      "assetId": "trolley-corral",
+      "variant": "two",
+      "view": "3/4",
+      "values": {
+        "bays": "two"
+      },
+      "triangles": 1884,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/trolley-corral-two.png"
+    },
+    {
+      "assetId": "trolley-corral",
+      "variant": "cleanStore",
+      "view": "3/4",
+      "values": {
+        "galvanizedSteel": "#c3cccd",
+        "powderCoat": "#e5ebed",
+        "rubber": "#40474b",
+        "signFace": "#2f8a52"
+      },
+      "triangles": 2404,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/trolley-corral-cleanStore.png"
+    },
+    {
+      "assetId": "trolley-corral",
+      "variant": "nightRestock",
+      "view": "3/4",
+      "values": {
+        "galvanizedSteel": "#5c6a6e",
+        "powderCoat": "#354750",
+        "rubber": "#1f2326",
+        "signFace": "#8a2f2b"
+      },
+      "triangles": 2404,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/trolley-corral-nightRestock.png"
+    },
+    {
+      "assetId": "barcode-scanner",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 942,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/barcode-scanner-default.png"
+    },
+    {
+      "assetId": "barcode-scanner",
+      "variant": "bioptic",
+      "view": "3/4",
+      "values": {
+        "style": "bioptic"
+      },
+      "triangles": 188,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/barcode-scanner-bioptic.png"
+    },
+    {
+      "assetId": "barcode-scanner",
+      "variant": "cleanStore",
+      "view": "3/4",
+      "values": {
+        "abs": "#e5e9e9",
+        "glass": "#9ccfd6",
+        "polycarbonate": "#3aa267",
+        "rubber": "#59646a"
+      },
+      "triangles": 942,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/barcode-scanner-cleanStore.png"
+    },
+    {
+      "assetId": "barcode-scanner",
+      "variant": "nightRestock",
+      "view": "3/4",
+      "values": {
+        "abs": "#364a55",
+        "glass": "#3e6677",
+        "polycarbonate": "#d84b3a",
+        "rubber": "#1a1d1f"
+      },
+      "triangles": 942,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/barcode-scanner-nightRestock.png"
+    },
+    {
+      "assetId": "payment-terminal",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 592,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/payment-terminal-default.png"
+    },
+    {
+      "assetId": "payment-terminal",
+      "variant": "portable",
+      "view": "3/4",
+      "values": {
+        "type": "portable"
+      },
+      "triangles": 428,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/payment-terminal-portable.png"
+    },
+    {
+      "assetId": "payment-terminal",
+      "variant": "cleanStore",
+      "view": "3/4",
+      "values": {
+        "abs": "#e5e9e9",
+        "glass": "#9ccfd6",
+        "rubber": "#9aa5aa",
+        "enterKey": "#2f9a55"
+      },
+      "triangles": 592,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/payment-terminal-cleanStore.png"
+    },
+    {
+      "assetId": "payment-terminal",
+      "variant": "nightRestock",
+      "view": "3/4",
+      "values": {
+        "abs": "#1d262b",
+        "glass": "#3e6677",
+        "rubber": "#262b2e",
+        "enterKey": "#d8a12a"
+      },
+      "triangles": 592,
+      "png": "artifacts/catalog-demos/retail-store-silhouette-20261106/variants/payment-terminal-nightRestock.png"
+    }
+  ]
+}

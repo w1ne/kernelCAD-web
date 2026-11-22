@@ -1,0 +1,58 @@
+[
+  {
+    "name": "kit-quality",
+    "command": "python3 scripts/checkCatalogQuality.py --kit music",
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "output": "artifacts/catalog-demos/music-quality-20261106/kit-quality-output.txt",
+    "passedExpectedStatus": true
+  },
+  {
+    "name": "catalog-quality",
+    "command": "python3 scripts/checkCatalogQuality.py --top 1",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "output": "artifacts/catalog-demos/music-quality-20261106/catalog-quality-output.txt",
+    "passedExpectedStatus": true
+  },
+  {
+    "name": "eslint",
+    "command": "npx eslint catalog/kits/music/",
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "output": "artifacts/catalog-demos/music-quality-20261106/eslint-output.txt",
+    "passedExpectedStatus": true
+  },
+  {
+    "name": "catalog-integration",
+    "command": "npx vitest run tests/integration/catalog/",
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "output": "artifacts/catalog-demos/music-quality-20261106/catalog-integration-output.txt",
+    "passedExpectedStatus": true
+  },
+  {
+    "name": "catalog-pages",
+    "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-music-quality-pages",
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "output": "artifacts/catalog-demos/music-quality-20261106/catalog-pages-output.txt",
+    "passedExpectedStatus": true
+  },
+  {
+    "name": "catalog-pages-verify",
+    "command": "python3 artifacts/catalog-demos/music-quality-20261106/verify_music_pages.py /tmp/kernelcad-music-quality-pages",
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "output": "artifacts/catalog-demos/music-quality-20261106/catalog-pages-verify-output.txt",
+    "passedExpectedStatus": true
+  },
+  {
+    "name": "index-check",
+    "command": "npx tsx scripts/buildAssetCatalog.ts --check",
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "output": "artifacts/catalog-demos/music-quality-20261106/index-check-output.txt",
+    "passedExpectedStatus": true
+  }
+]

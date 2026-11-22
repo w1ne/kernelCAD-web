@@ -1,0 +1,17 @@
+{
+  "kind": "generated local catalog page check; no deployment performed",
+  "page": "/tmp/kernelcad-office-scissors-20261106/catalog/office/scissors/index.html",
+  "asset": "office/scissors",
+  "checks": {
+    "pageGenerated": true,
+    "previewCopied": true,
+    "indexSourceHashMatches": true,
+    "previewIndexed": true,
+    "materialControlsVisible": true,
+    "namedPresetsVisible": true,
+    "triangleBudgetVisible": true
+  },
+  "passed": 7,
+  "total": 7,
+  "pass": true
+}

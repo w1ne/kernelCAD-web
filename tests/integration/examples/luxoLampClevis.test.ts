@@ -13,8 +13,6 @@
 // physics-grounded loop with `mechanism: 'real'` and empty failures
 // at every sampled pose.
 //
-// Spec:  docs/specs/2026-06-01-physics-grounded-loop-design.md
-// Plan:  docs/plans/2026-06-01-physics-loop-P5-luxo-geometric-rebuild.md
 //
 // NOTE: companion files were split out for CI shard balance (per-file
 // vitest sharding):

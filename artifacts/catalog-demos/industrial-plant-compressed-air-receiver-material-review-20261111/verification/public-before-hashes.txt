@@ -1,0 +1,3 @@
+Checked 2026-11-11: https://kernelcad.com/assets/industrial-plant-compressed-air-receiver.png
+HTTP 200; SHA-256 1f5a30dee6fb918e7446b970a1cb6df66f3893455544800dc3d2424b945364dd
+The public image hash matches the committed local before preview.

@@ -1,0 +1,171 @@
+{
+  "checkedAt": "2026-11-12",
+  "items": [
+    {
+      "kit": "mining",
+      "id": "rotary-blasthole-drill",
+      "sourceSha256": "98f68b2b120bde31f248b3c4f0d6ac939ca34002fac518d01944a10d25ac2c51",
+      "previewSha256": "6902b2c5a0524eeec0db6e90dbc0aff0d93a09dc0a47787e120bd0216e91270a",
+      "indexSourceSha256": "98f68b2b120bde31f248b3c4f0d6ac939ca34002fac518d01944a10d25ac2c51",
+      "indexPreview": "/assets/mining-rotary-blasthole-drill.png",
+      "triangles": 5676,
+      "sizeM": [
+        12.2,
+        19.54,
+        7.2
+      ],
+      "colorParams": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "rubber"
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility",
+        "blueFleet"
+      ],
+      "liveSourceSha256": "98f68b2b120bde31f248b3c4f0d6ac939ca34002fac518d01944a10d25ac2c51",
+      "livePreviewSha256": "6902b2c5a0524eeec0db6e90dbc0aff0d93a09dc0a47787e120bd0216e91270a",
+      "baselineSourceMatchesLive": true,
+      "baselinePreviewMatchesLive": true,
+      "localSourceMatchesLive": true,
+      "localPreviewMatchesLive": true,
+      "liveTitle": "Rotary blasthole drill rig - free low-poly prop model (CC0) | kernelCAD",
+      "sourceIndexFresh": true,
+      "previewExists": true
+    },
+    {
+      "kit": "mining",
+      "id": "shaft-headframe",
+      "sourceSha256": "947fbbbf8b860cba78fadb567b9c908e7d50ba712c0e5611ef90bfca63c79c69",
+      "previewSha256": "153a5614a6e252dd8300d65551987390701aa424c14b6ff136b4f4575213888d",
+      "indexSourceSha256": "947fbbbf8b860cba78fadb567b9c908e7d50ba712c0e5611ef90bfca63c79c69",
+      "indexPreview": "/assets/mining-shaft-headframe.png",
+      "triangles": 3564,
+      "sizeM": [
+        35.4,
+        28.506474,
+        11.2
+      ],
+      "colorParams": [
+        "structuralSteel",
+        "stainlessSteel",
+        "cladding",
+        "concrete"
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility",
+        "redOxide"
+      ],
+      "liveSourceSha256": "947fbbbf8b860cba78fadb567b9c908e7d50ba712c0e5611ef90bfca63c79c69",
+      "livePreviewSha256": "153a5614a6e252dd8300d65551987390701aa424c14b6ff136b4f4575213888d",
+      "baselineSourceMatchesLive": true,
+      "baselinePreviewMatchesLive": true,
+      "localSourceMatchesLive": true,
+      "localPreviewMatchesLive": true,
+      "liveTitle": "Mine shaft headframe - free low-poly prop model (CC0) | kernelCAD",
+      "sourceIndexFresh": true,
+      "previewExists": true
+    },
+    {
+      "kit": "construction-equipment",
+      "id": "concrete-batch-plant",
+      "sourceSha256": "8b3d625a196277d9e72ce494494f63d92dfe040eb58c5c5791591a345bcc677b",
+      "previewSha256": "4eafef3970c612c3445cc0720ff546886ad7bd268d48199151e1c4d97783472a",
+      "indexSourceSha256": "8b3d625a196277d9e72ce494494f63d92dfe040eb58c5c5791591a345bcc677b",
+      "indexPreview": "/assets/construction-equipment-concrete-batch-plant.png",
+      "triangles": 1500,
+      "sizeM": [
+        1.917,
+        2.176,
+        1.476402
+      ],
+      "colorParams": [
+        "equipmentPaintColor",
+        "structuralSteelColor",
+        "aggregateColor",
+        "cementSiloColor"
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "liveSourceSha256": "8b3d625a196277d9e72ce494494f63d92dfe040eb58c5c5791591a345bcc677b",
+      "livePreviewSha256": "4eafef3970c612c3445cc0720ff546886ad7bd268d48199151e1c4d97783472a",
+      "baselineSourceMatchesLive": true,
+      "baselinePreviewMatchesLive": true,
+      "localSourceMatchesLive": true,
+      "localPreviewMatchesLive": true,
+      "liveTitle": "Compact concrete batch plant - free low-poly structure model (CC0) | kernelCAD",
+      "sourceIndexFresh": true,
+      "previewExists": true
+    },
+    {
+      "kit": "construction-equipment",
+      "id": "towable-light-tower",
+      "sourceSha256": "1a6a8a75abf9c307a79531339cfd27346f4cb2d5c2e1bbdd7a5bb57c8a82f680",
+      "previewSha256": "c7989048c0b360c1065816eb5a1d8f575c498ec60570dcc6625fcfbee12a2d2f",
+      "indexSourceSha256": "1a6a8a75abf9c307a79531339cfd27346f4cb2d5c2e1bbdd7a5bb57c8a82f680",
+      "indexPreview": "/assets/construction-equipment-towable-light-tower.png",
+      "triangles": 1328,
+      "sizeM": [
+        1.605,
+        2.562,
+        0.868
+      ],
+      "colorParams": [
+        "equipmentPaintColor",
+        "structuralSteelColor",
+        "tireRubberColor",
+        "lampLensColor"
+      ],
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "liveSourceSha256": "1a6a8a75abf9c307a79531339cfd27346f4cb2d5c2e1bbdd7a5bb57c8a82f680",
+      "livePreviewSha256": "c7989048c0b360c1065816eb5a1d8f575c498ec60570dcc6625fcfbee12a2d2f",
+      "baselineSourceMatchesLive": true,
+      "baselinePreviewMatchesLive": true,
+      "localSourceMatchesLive": true,
+      "localPreviewMatchesLive": true,
+      "liveTitle": "Towable site light tower - free low-poly prop model (CC0) | kernelCAD",
+      "sourceIndexFresh": true,
+      "previewExists": true
+    },
+    {
+      "kit": "data-center-infrastructure",
+      "id": "rear-door-heat-exchanger",
+      "sourceSha256": "628243f9eb9da684de3ade599ed379687e73753ced465a5d6daa98044b49275e",
+      "previewSha256": "20424898acfbf3f7a5ab0c52f449c55d4dec19f427e36602eb49b0c80eebff1e",
+      "indexSourceSha256": "628243f9eb9da684de3ade599ed379687e73753ced465a5d6daa98044b49275e",
+      "indexPreview": "/assets/data-center-infrastructure-rear-door-heat-exchanger.png",
+      "triangles": 532,
+      "sizeM": [
+        0.885,
+        2.1,
+        0.61
+      ],
+      "colorParams": [
+        "steel",
+        "polymer",
+        "copper"
+      ],
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "liveSourceSha256": "aa4175870793589203308a173ba8787bfe73c36802d46c083c30d820e0c40867",
+      "livePreviewSha256": "36da9a6a44e2417a74fede475ea5b2283343752c79c96885cd4846bdedf4a0d1",
+      "baselineSourceMatchesLive": true,
+      "baselinePreviewMatchesLive": true,
+      "localSourceMatchesLive": false,
+      "localPreviewMatchesLive": false,
+      "liveTitle": "Rear-door heat exchanger - free low-poly prop model (CC0) | kernelCAD",
+      "sourceIndexFresh": true,
+      "previewExists": true
+    }
+  ]
+}

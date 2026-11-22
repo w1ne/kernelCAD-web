@@ -1,0 +1,43 @@
+{
+  "date": "2026-11-05",
+  "branch": "feat/catalog-2000",
+  "baseCommit": "db781beccb72ba2e42e7693ece6e1ef190d47546",
+  "kit": "mining",
+  "existingAssets": 50,
+  "newAssetIds": 0,
+  "baselineQuality": "1754/2390 (73.39%)",
+  "afterQuality": "1804/2390 (75.48%)",
+  "thinAssetsAfter": 586,
+  "materialControls": 144,
+  "materialControlsPerAsset": [2, 4],
+  "presets": ["weathered", "highVisibility"],
+  "presetEntries": 100,
+  "geometryEnhancements": {
+    "loftProfiledSources": 50,
+    "continuousMinerTrackShoes": 20,
+    "continuousMinerCutterPicks": 10,
+    "locomotiveCabWindows": 3
+  },
+  "triangleRange": [144, 600],
+  "maximumDeclaredTriangleBudget": 1800,
+  "renderedPreviews": 50,
+  "sourcePromotion": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/mining-quality-promotion-20261105/promote_mining_assets.py --write",
+  "previewRender": "mapfile -t asset_ids < artifacts/catalog-demos/mining-quality-promotion-20261105/preview-asset-ids.txt; npx tsx scripts/renderCatalogPreviews.ts \"${asset_ids[@]}\"",
+  "indexBuild": "npx tsx scripts/buildAssetCatalog.ts",
+  "readmeUpdate": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/mining-quality-promotion-20261105/write_mining_readme.py",
+  "qualityGate": "python3 scripts/checkCatalogQuality.py --kit mining",
+  "eslint": "npx eslint catalog/kits/mining/",
+  "catalogIntegration": "npx vitest run tests/integration/catalog/",
+  "localPages": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-mining-quality-20261105; PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/mining-quality-promotion-20261105/verify_mining_pages.py /tmp/kernelcad-mining-quality-20261105",
+  "presetRender": "npx tsx artifacts/catalog-demos/mining-quality-promotion-20261105/render_mining_variant.ts",
+  "audit": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/mining-quality-promotion-20261105/record_mining_audit.py",
+  "demoCapture": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/mining-quality-promotion-20261105/capture_mining_quality_demo.py",
+  "demoInspection": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/mining-quality-promotion-20261105/inspect_mining_quality_demo.py",
+  "runtimeVersions": {
+    "node": "v26.12.1",
+    "python": "Python 3.14.9",
+    "ffmpeg": "6.1.1-3ubuntu5"
+  },
+  "privateComparison": "/home/andrii/worktrees/kernelCAD-private/catalog-mining-compare-20261105/COMPARISON.md",
+  "claimBoundary": "Local source, preview, index, test, and page verification only. Branch was not deployed. No mining performance, safety, installation, or physical acceptance is claimed."
+}

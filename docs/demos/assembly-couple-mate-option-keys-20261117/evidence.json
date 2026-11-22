@@ -1,0 +1,63 @@
+{
+  "generatedAt": "2026-11-17T12:26:17.588Z",
+  "replay": "Local CaptureSession + createModelingApi; no browser, geometry solver, simulation, or deployed runtime used.",
+  "baseline": {
+    "baseRevision": "origin/develop e8d2a904a54b2872c57332604d609b795a3500c9",
+    "reproduction": "The misspelled offest option was accepted and the coupling was recorded with offset omitted.",
+    "focusedRegressionRun": "Before the fix, the new regression suite reported 2 failures: unknown key accepted and class instance accepted."
+  },
+  "fixedReplay": {
+    "invalidOptions": {
+      "code": "feature.invalid-args",
+      "path": "opts.offest",
+      "message": "assembly.coupleMates('output', opts): opts.offest — got an unknown option 'offest'; requires one of source, ratio, offset. Example: arm.coupleMates('output', { source: 'input', ratio: -0.25, offset: 0 })",
+      "recordedCoupling": false
+    },
+    "validCoupling": {
+      "driven": "output",
+      "source": "input",
+      "ratio": -0.25,
+      "offset": 12
+    }
+  },
+  "source": {
+    "path": "docs/demos/assembly-couple-mate-option-keys-20261117/capture-demo.mts",
+    "sha256": "659c06798722a6533f405a517be8b3c415a78c6015aae224bb029fc49d84062b"
+  },
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerSlide": 3,
+    "slides": 3,
+    "encoder": "libx264",
+    "crf": 24,
+    "pixelFormat": "yuv420p"
+  },
+  "video": {
+    "path": "docs/demos/assembly-couple-mate-option-keys-20261117/demo.mp4",
+    "sha256": "3d1b9bda76d3311152adeba53b88c11c92aab64d48421b21a13385079888490e",
+    "bytes": 84923
+  },
+  "verification": {
+    "focusedTest": {
+      "command": "npx vitest run src/modeling/capture/assemblyCoupleMateOptionKeys.test.ts src/modeling/capture/assemblyMateOptionKeys.test.ts",
+      "result": "2 files passed; 14 tests passed"
+    },
+    "lint": {
+      "command": "npx eslint src/modeling/capture/assemblyOptionRecords.ts src/modeling/capture/assemblyMateOptionKeys.ts src/modeling/capture/assemblyCoupleMateOptionKeys.ts src/modeling/capture/assemblyJoints.ts src/modeling/capture/assemblyCoupleMateOptionKeys.test.ts",
+      "result": "passed"
+    },
+    "typecheck": {
+      "command": "npm run typecheck",
+      "result": "passed"
+    }
+  },
+  "claimBoundary": {
+    "localCaptureReplay": true,
+    "geometrySolver": false,
+    "simulation": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

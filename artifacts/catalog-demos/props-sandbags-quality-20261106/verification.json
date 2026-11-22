@@ -1,0 +1,537 @@
+{
+  "date": "2026-11-06",
+  "kit": "props",
+  "assetsPromoted": 1,
+  "assetIdsAdded": 0,
+  "assetIdsRenamed": 0,
+  "kitAssetCount": 45,
+  "materialKnobs": [
+    "canvasColor",
+    "alternateCanvasColor",
+    "stitchingThreadColor"
+  ],
+  "materialKnobsAdded": 1,
+  "materialParamNamesAligned": 2,
+  "presetEntriesAdded": 1,
+  "presetEntriesUpdated": 2,
+  "presetVariantsRendered": 4,
+  "previewCount": 45,
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts <all 45 props asset ids>",
+  "indexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "kitQuality": {
+    "before": {
+      "passing": 44,
+      "total": 45
+    },
+    "passing": 45,
+    "total": 45
+  },
+  "quality": {
+    "before": {
+      "passing": 2389,
+      "total": 2390,
+      "passRate": "99.96%",
+      "thin": 1
+    },
+    "after": {
+      "passing": 2390,
+      "total": 2390,
+      "passRate": "100.00%",
+      "thin": 0
+    }
+  },
+  "triangleCount": 748,
+  "triangleBudget": 900,
+  "sourceSha256": "6ff17580991eee7b3c471c7990d4b89922d6ac40e1e8680f90c4d906f257a7d4",
+  "sourceIndexPreviewRecords": [
+    {
+      "id": "anvil",
+      "sourceSha256": "428cde62d44581999ec44ebfef831f588dc4089aa4201819d03a1d15bc19897e",
+      "indexSourceSha256": "428cde62d44581999ec44ebfef831f588dc4089aa4201819d03a1d15bc19897e",
+      "preview": "/assets/props-anvil.png",
+      "previewFile": "catalog/kits/props/previews/anvil.png",
+      "triangleCount": 128,
+      "triangleBudget": 220
+    },
+    {
+      "id": "axe",
+      "sourceSha256": "96f3f869c7e6a1f1269ba93fac513363f2e77f2a89eab54b7d46682ef28f863b",
+      "indexSourceSha256": "96f3f869c7e6a1f1269ba93fac513363f2e77f2a89eab54b7d46682ef28f863b",
+      "preview": "/assets/props-axe.png",
+      "previewFile": "catalog/kits/props/previews/axe.png",
+      "triangleCount": 100,
+      "triangleBudget": 160
+    },
+    {
+      "id": "barrel-stack",
+      "sourceSha256": "1b03c7296bb8cda9dc9b50c4f28269c0ee4b4bdc26e957ed11a711bb6b5d0450",
+      "indexSourceSha256": "1b03c7296bb8cda9dc9b50c4f28269c0ee4b4bdc26e957ed11a711bb6b5d0450",
+      "preview": "/assets/props-barrel-stack.png",
+      "previewFile": "catalog/kits/props/previews/barrel-stack.png",
+      "triangleCount": 408,
+      "triangleBudget": 600
+    },
+    {
+      "id": "barrel",
+      "sourceSha256": "d52307b8fbcacdb4af4bd0fbd1a1f24e6e5990b8ba92e8c98df8c9c7e99ca45d",
+      "indexSourceSha256": "d52307b8fbcacdb4af4bd0fbd1a1f24e6e5990b8ba92e8c98df8c9c7e99ca45d",
+      "preview": "/assets/props-barrel.png",
+      "previewFile": "catalog/kits/props/previews/barrel.png",
+      "triangleCount": 316,
+      "triangleBudget": 420
+    },
+    {
+      "id": "beehive",
+      "sourceSha256": "e0b7fa881258639dff3892ceb049b91fd5bc9a170f8f2d43b27c7186c0bf108f",
+      "indexSourceSha256": "e0b7fa881258639dff3892ceb049b91fd5bc9a170f8f2d43b27c7186c0bf108f",
+      "preview": "/assets/props-beehive.png",
+      "previewFile": "catalog/kits/props/previews/beehive.png",
+      "triangleCount": 188,
+      "triangleBudget": 440
+    },
+    {
+      "id": "bucket",
+      "sourceSha256": "dd09f762a5e407b0a92b628024f6692f5206d740180936658e4445b41f350fc7",
+      "indexSourceSha256": "dd09f762a5e407b0a92b628024f6692f5206d740180936658e4445b41f350fc7",
+      "preview": "/assets/props-bucket.png",
+      "previewFile": "catalog/kits/props/previews/bucket.png",
+      "triangleCount": 332,
+      "triangleBudget": 400
+    },
+    {
+      "id": "campfire",
+      "sourceSha256": "94a2cba4b58c8a08212626627c5cebb4f303ee48a50f2fe166127f54f7bd027e",
+      "indexSourceSha256": "94a2cba4b58c8a08212626627c5cebb4f303ee48a50f2fe166127f54f7bd027e",
+      "preview": "/assets/props-campfire.png",
+      "previewFile": "catalog/kits/props/previews/campfire.png",
+      "triangleCount": 338,
+      "triangleBudget": 440
+    },
+    {
+      "id": "candelabra",
+      "sourceSha256": "52e261def35275af90a253d65df783434edfad62c8e39e12be3484c9442b7f17",
+      "indexSourceSha256": "52e261def35275af90a253d65df783434edfad62c8e39e12be3484c9442b7f17",
+      "preview": "/assets/props-candelabra.png",
+      "previewFile": "catalog/kits/props/previews/candelabra.png",
+      "triangleCount": 296,
+      "triangleBudget": 480
+    },
+    {
+      "id": "cardboard-boxes",
+      "sourceSha256": "c8667611a1da8aba9ed442cabc5f824cd550cc7ed2f2e7760419aff9bad731b5",
+      "indexSourceSha256": "c8667611a1da8aba9ed442cabc5f824cd550cc7ed2f2e7760419aff9bad731b5",
+      "preview": "/assets/props-cardboard-boxes.png",
+      "previewFile": "catalog/kits/props/previews/cardboard-boxes.png",
+      "triangleCount": 352,
+      "triangleBudget": 460
+    },
+    {
+      "id": "cauldron",
+      "sourceSha256": "eb345304823039c02e3f6f49a2152233c576b45c9cd055c6c81e9b21e6badef9",
+      "indexSourceSha256": "eb345304823039c02e3f6f49a2152233c576b45c9cd055c6c81e9b21e6badef9",
+      "preview": "/assets/props-cauldron.png",
+      "previewFile": "catalog/kits/props/previews/cauldron.png",
+      "triangleCount": 364,
+      "triangleBudget": 460
+    },
+    {
+      "id": "covered-wagon",
+      "sourceSha256": "9e3b8dc892e374acb2b4ecbe64d35badd0c6389f45241dd49e11adc99f55c4cb",
+      "indexSourceSha256": "9e3b8dc892e374acb2b4ecbe64d35badd0c6389f45241dd49e11adc99f55c4cb",
+      "preview": "/assets/props-covered-wagon.png",
+      "previewFile": "catalog/kits/props/previews/covered-wagon.png",
+      "triangleCount": 524,
+      "triangleBudget": 600
+    },
+    {
+      "id": "firewood-stack",
+      "sourceSha256": "3f85f4e24bf2cf5e7b3ae7a64e42150058ca6be5817bf8e4ee37d919edcc63c6",
+      "indexSourceSha256": "3f85f4e24bf2cf5e7b3ae7a64e42150058ca6be5817bf8e4ee37d919edcc63c6",
+      "preview": "/assets/props-firewood-stack.png",
+      "previewFile": "catalog/kits/props/previews/firewood-stack.png",
+      "triangleCount": 352,
+      "triangleBudget": 580
+    },
+    {
+      "id": "gas-cylinder",
+      "sourceSha256": "1078a8ad23826df5cca78cd946231fc3db96daaf12c819743fb13884fc480114",
+      "indexSourceSha256": "1078a8ad23826df5cca78cd946231fc3db96daaf12c819743fb13884fc480114",
+      "preview": "/assets/props-gas-cylinder.png",
+      "previewFile": "catalog/kits/props/previews/gas-cylinder.png",
+      "triangleCount": 208,
+      "triangleBudget": 480
+    },
+    {
+      "id": "hand-cart",
+      "sourceSha256": "9b42ed50df90517bd88728e1ee1b2f6e01b25448891727d90e9107cd19f5a8aa",
+      "indexSourceSha256": "9b42ed50df90517bd88728e1ee1b2f6e01b25448891727d90e9107cd19f5a8aa",
+      "preview": "/assets/props-hand-cart.png",
+      "previewFile": "catalog/kits/props/previews/hand-cart.png",
+      "triangleCount": 556,
+      "triangleBudget": 600
+    },
+    {
+      "id": "hand-truck",
+      "sourceSha256": "8b041f0c0ec782253f6ade45998d8a4638e4fb2a69ca22310e914483d96af8cb",
+      "indexSourceSha256": "8b041f0c0ec782253f6ade45998d8a4638e4fb2a69ca22310e914483d96af8cb",
+      "preview": "/assets/props-hand-truck.png",
+      "previewFile": "catalog/kits/props/previews/hand-truck.png",
+      "triangleCount": 372,
+      "triangleBudget": 440
+    },
+    {
+      "id": "hanging-sign",
+      "sourceSha256": "b45c3cc16b0ae8f7abc48fe070304f2db1a1a1634c7c6806aaba1cd131eaa85c",
+      "indexSourceSha256": "b45c3cc16b0ae8f7abc48fe070304f2db1a1a1634c7c6806aaba1cd131eaa85c",
+      "preview": "/assets/props-hanging-sign.png",
+      "previewFile": "catalog/kits/props/previews/hanging-sign.png",
+      "triangleCount": 204,
+      "triangleBudget": 240
+    },
+    {
+      "id": "haybale",
+      "sourceSha256": "0e360a1d4c78a6f72fbc4fed60d7e6188e8aa1747c0206e5a445fd52b1e067bc",
+      "indexSourceSha256": "0e360a1d4c78a6f72fbc4fed60d7e6188e8aa1747c0206e5a445fd52b1e067bc",
+      "preview": "/assets/props-haybale.png",
+      "previewFile": "catalog/kits/props/previews/haybale.png",
+      "triangleCount": 140,
+      "triangleBudget": 480
+    },
+    {
+      "id": "jerrycan",
+      "sourceSha256": "6a625c566399d35e2bb30659f83c0c34d2797860d95814d082a7d1580fc268b4",
+      "indexSourceSha256": "6a625c566399d35e2bb30659f83c0c34d2797860d95814d082a7d1580fc268b4",
+      "preview": "/assets/props-jerrycan.png",
+      "previewFile": "catalog/kits/props/previews/jerrycan.png",
+      "triangleCount": 180,
+      "triangleBudget": 220
+    },
+    {
+      "id": "ladder",
+      "sourceSha256": "ea603eb4d39d5243b1cfab76dba5e01111b889bb504bdee61d38fbeb30f11938",
+      "indexSourceSha256": "ea603eb4d39d5243b1cfab76dba5e01111b889bb504bdee61d38fbeb30f11938",
+      "preview": "/assets/props-ladder.png",
+      "previewFile": "catalog/kits/props/previews/ladder.png",
+      "triangleCount": 184,
+      "triangleBudget": 360
+    },
+    {
+      "id": "lantern",
+      "sourceSha256": "cbf61cf0b9c21cff5a031e163bdc2c18ec4ce2744d84e9870f6c6ecb493f72ea",
+      "indexSourceSha256": "cbf61cf0b9c21cff5a031e163bdc2c18ec4ce2744d84e9870f6c6ecb493f72ea",
+      "preview": "/assets/props-lantern.png",
+      "previewFile": "catalog/kits/props/previews/lantern.png",
+      "triangleCount": 164,
+      "triangleBudget": 300
+    },
+    {
+      "id": "market-stall",
+      "sourceSha256": "6896e74a71d5ed4da174c723b9a65b05f0dd9bef105cb22f3a181a88ef00d4d4",
+      "indexSourceSha256": "6896e74a71d5ed4da174c723b9a65b05f0dd9bef105cb22f3a181a88ef00d4d4",
+      "preview": "/assets/props-market-stall.png",
+      "previewFile": "catalog/kits/props/previews/market-stall.png",
+      "triangleCount": 432,
+      "triangleBudget": 600
+    },
+    {
+      "id": "mine-cart",
+      "sourceSha256": "38064b98b3fda6ae740277d1a0fde349d0f16860db053ed2d2ae325b468327f8",
+      "indexSourceSha256": "38064b98b3fda6ae740277d1a0fde349d0f16860db053ed2d2ae325b468327f8",
+      "preview": "/assets/props-mine-cart.png",
+      "previewFile": "catalog/kits/props/previews/mine-cart.png",
+      "triangleCount": 392,
+      "triangleBudget": 420
+    },
+    {
+      "id": "notice-board",
+      "sourceSha256": "45614d1603617d52a27a90c4f07791e4053b117e275de8744bea1a7dee21e9dd",
+      "indexSourceSha256": "45614d1603617d52a27a90c4f07791e4053b117e275de8744bea1a7dee21e9dd",
+      "preview": "/assets/props-notice-board.png",
+      "previewFile": "catalog/kits/props/previews/notice-board.png",
+      "triangleCount": 156,
+      "triangleBudget": 360
+    },
+    {
+      "id": "oil-drum",
+      "sourceSha256": "94402607701d4150364109edcfc32dde0b5a83361e78311eb120dd47748bbb12",
+      "indexSourceSha256": "94402607701d4150364109edcfc32dde0b5a83361e78311eb120dd47748bbb12",
+      "preview": "/assets/props-oil-drum.png",
+      "previewFile": "catalog/kits/props/previews/oil-drum.png",
+      "triangleCount": 388,
+      "triangleBudget": 480
+    },
+    {
+      "id": "pallet",
+      "sourceSha256": "61b07601d9805188a5dd905b5b1f82a399820a8e2a49b72773f120400fb7cbbc",
+      "indexSourceSha256": "61b07601d9805188a5dd905b5b1f82a399820a8e2a49b72773f120400fb7cbbc",
+      "preview": "/assets/props-pallet.png",
+      "previewFile": "catalog/kits/props/previews/pallet.png",
+      "triangleCount": 240,
+      "triangleBudget": 420
+    },
+    {
+      "id": "plastic-crate",
+      "sourceSha256": "5cf444e4d6db5bb8dc6e802b04035bf864d8ff96f8dbfcec4e3d03907500299b",
+      "indexSourceSha256": "5cf444e4d6db5bb8dc6e802b04035bf864d8ff96f8dbfcec4e3d03907500299b",
+      "preview": "/assets/props-plastic-crate.png",
+      "previewFile": "catalog/kits/props/previews/plastic-crate.png",
+      "triangleCount": 232,
+      "triangleBudget": 480
+    },
+    {
+      "id": "potion-bottles",
+      "sourceSha256": "d979e0c6e8123cb72a7c3a570a0c023802e713fadb912b48f6866b92e17bf8af",
+      "indexSourceSha256": "d979e0c6e8123cb72a7c3a570a0c023802e713fadb912b48f6866b92e17bf8af",
+      "preview": "/assets/props-potion-bottles.png",
+      "previewFile": "catalog/kits/props/previews/potion-bottles.png",
+      "triangleCount": 332,
+      "triangleBudget": 480
+    },
+    {
+      "id": "rowboat",
+      "sourceSha256": "fed62da085a8a71101c384e1fedfc1b7dc176330168ab71f3d6dc92fd3243c64",
+      "indexSourceSha256": "fed62da085a8a71101c384e1fedfc1b7dc176330168ab71f3d6dc92fd3243c64",
+      "preview": "/assets/props-rowboat.png",
+      "previewFile": "catalog/kits/props/previews/rowboat.png",
+      "triangleCount": 324,
+      "triangleBudget": 420
+    },
+    {
+      "id": "sack",
+      "sourceSha256": "fa56d440cbe883c593c7ba8ae0081b7e04f254b13fe54dbd1cb706a6da4c2621",
+      "indexSourceSha256": "fa56d440cbe883c593c7ba8ae0081b7e04f254b13fe54dbd1cb706a6da4c2621",
+      "preview": "/assets/props-sack.png",
+      "previewFile": "catalog/kits/props/previews/sack.png",
+      "triangleCount": 148,
+      "triangleBudget": 240
+    },
+    {
+      "id": "sandbags",
+      "sourceSha256": "6ff17580991eee7b3c471c7990d4b89922d6ac40e1e8680f90c4d906f257a7d4",
+      "indexSourceSha256": "6ff17580991eee7b3c471c7990d4b89922d6ac40e1e8680f90c4d906f257a7d4",
+      "preview": "/assets/props-sandbags.png",
+      "previewFile": "catalog/kits/props/previews/sandbags.png",
+      "triangleCount": 748,
+      "triangleBudget": 900
+    },
+    {
+      "id": "scarecrow",
+      "sourceSha256": "d59291a4ea708c3ffde468d35799f33e0bfb67ce0b30f9d142a956de81d982c5",
+      "indexSourceSha256": "d59291a4ea708c3ffde468d35799f33e0bfb67ce0b30f9d142a956de81d982c5",
+      "preview": "/assets/props-scarecrow.png",
+      "previewFile": "catalog/kits/props/previews/scarecrow.png",
+      "triangleCount": 324,
+      "triangleBudget": 360
+    },
+    {
+      "id": "shipping-container",
+      "sourceSha256": "477ce631e2f990224437b019369428566e6e592aa1ad0c91f983823e23b2012e",
+      "indexSourceSha256": "477ce631e2f990224437b019369428566e6e592aa1ad0c91f983823e23b2012e",
+      "preview": "/assets/props-shipping-container.png",
+      "previewFile": "catalog/kits/props/previews/shipping-container.png",
+      "triangleCount": 408,
+      "triangleBudget": 600
+    },
+    {
+      "id": "signpost",
+      "sourceSha256": "69569b75e536e05d53adfd093ddaf561d186e2052e8b6e5f101686eb5a909e88",
+      "indexSourceSha256": "69569b75e536e05d53adfd093ddaf561d186e2052e8b6e5f101686eb5a909e88",
+      "preview": "/assets/props-signpost.png",
+      "previewFile": "catalog/kits/props/previews/signpost.png",
+      "triangleCount": 124,
+      "triangleBudget": 240
+    },
+    {
+      "id": "tent",
+      "sourceSha256": "a4de8ffc1449785ae751b508538be8fcac443b9b9723f206aa67726d259681ff",
+      "indexSourceSha256": "a4de8ffc1449785ae751b508538be8fcac443b9b9723f206aa67726d259681ff",
+      "preview": "/assets/props-tent.png",
+      "previewFile": "catalog/kits/props/previews/tent.png",
+      "triangleCount": 128,
+      "triangleBudget": 360
+    },
+    {
+      "id": "tool-rack",
+      "sourceSha256": "f4edda3ad4533f464d5527a4918fab9c4110be1a493b73d1e9d0ee186f54ebe7",
+      "indexSourceSha256": "f4edda3ad4533f464d5527a4918fab9c4110be1a493b73d1e9d0ee186f54ebe7",
+      "preview": "/assets/props-tool-rack.png",
+      "previewFile": "catalog/kits/props/previews/tool-rack.png",
+      "triangleCount": 380,
+      "triangleBudget": 420
+    },
+    {
+      "id": "toolbox",
+      "sourceSha256": "4ddede1ad9bcf3abf678844fd2a0a777725c46ae6a1be198edeb336819cc4df4",
+      "indexSourceSha256": "4ddede1ad9bcf3abf678844fd2a0a777725c46ae6a1be198edeb336819cc4df4",
+      "preview": "/assets/props-toolbox.png",
+      "previewFile": "catalog/kits/props/previews/toolbox.png",
+      "triangleCount": 124,
+      "triangleBudget": 300
+    },
+    {
+      "id": "trash-bags",
+      "sourceSha256": "cd0091c12d9397dd363771fab0acff2805b47367b1db1c8ef70de888ec55f122",
+      "indexSourceSha256": "cd0091c12d9397dd363771fab0acff2805b47367b1db1c8ef70de888ec55f122",
+      "preview": "/assets/props-trash-bags.png",
+      "previewFile": "catalog/kits/props/previews/trash-bags.png",
+      "triangleCount": 300,
+      "triangleBudget": 520
+    },
+    {
+      "id": "treasure-chest",
+      "sourceSha256": "5eb2711c5ba61e67bf910e82e5c2c85217a61fb59e547690ccae1b3e71db2cf7",
+      "indexSourceSha256": "5eb2711c5ba61e67bf910e82e5c2c85217a61fb59e547690ccae1b3e71db2cf7",
+      "preview": "/assets/props-treasure-chest.png",
+      "previewFile": "catalog/kits/props/previews/treasure-chest.png",
+      "triangleCount": 168,
+      "triangleBudget": 300
+    },
+    {
+      "id": "water-trough",
+      "sourceSha256": "f8bfd2fa3992b94941ccfb250085172a9326ecdb4982e916323f3873c602fd98",
+      "indexSourceSha256": "f8bfd2fa3992b94941ccfb250085172a9326ecdb4982e916323f3873c602fd98",
+      "preview": "/assets/props-water-trough.png",
+      "previewFile": "catalog/kits/props/previews/water-trough.png",
+      "triangleCount": 112,
+      "triangleBudget": 300
+    },
+    {
+      "id": "watering-can",
+      "sourceSha256": "35f67760f438489e44e11b07b058e6b14ef543b068afaba0a57c97a7b36f4dea",
+      "indexSourceSha256": "35f67760f438489e44e11b07b058e6b14ef543b068afaba0a57c97a7b36f4dea",
+      "preview": "/assets/props-watering-can.png",
+      "previewFile": "catalog/kits/props/previews/watering-can.png",
+      "triangleCount": 228,
+      "triangleBudget": 240
+    },
+    {
+      "id": "weapon-rack",
+      "sourceSha256": "88035f1059a88c5439758fb283e789175fec8dfbcf79e7c4429e11f5aa5c06b4",
+      "indexSourceSha256": "88035f1059a88c5439758fb283e789175fec8dfbcf79e7c4429e11f5aa5c06b4",
+      "preview": "/assets/props-weapon-rack.png",
+      "previewFile": "catalog/kits/props/previews/weapon-rack.png",
+      "triangleCount": 332,
+      "triangleBudget": 520
+    },
+    {
+      "id": "well",
+      "sourceSha256": "09bc0382f531efbeea139fc1b71d3319a9d908ac0a61b1d12fc62094909a2ad1",
+      "indexSourceSha256": "09bc0382f531efbeea139fc1b71d3319a9d908ac0a61b1d12fc62094909a2ad1",
+      "preview": "/assets/props-well.png",
+      "previewFile": "catalog/kits/props/previews/well.png",
+      "triangleCount": 460,
+      "triangleBudget": 520
+    },
+    {
+      "id": "wheelbarrow",
+      "sourceSha256": "8d066fe24beed5bd8569a411799348ea5f9411908ccac9bd10b64ae3bcc031bf",
+      "indexSourceSha256": "8d066fe24beed5bd8569a411799348ea5f9411908ccac9bd10b64ae3bcc031bf",
+      "preview": "/assets/props-wheelbarrow.png",
+      "previewFile": "catalog/kits/props/previews/wheelbarrow.png",
+      "triangleCount": 248,
+      "triangleBudget": 360
+    },
+    {
+      "id": "wooden-crate",
+      "sourceSha256": "73cbb0a94bb693123c06894eef80bc8342146038939f7bbcfa214033a2469ba6",
+      "indexSourceSha256": "73cbb0a94bb693123c06894eef80bc8342146038939f7bbcfa214033a2469ba6",
+      "preview": "/assets/props-wooden-crate.png",
+      "previewFile": "catalog/kits/props/previews/wooden-crate.png",
+      "triangleCount": 204,
+      "triangleBudget": 260
+    },
+    {
+      "id": "workbench",
+      "sourceSha256": "fac99b8fb94ee1fca304817fda7c8bbe5a5f95f65ed51c80e63a660769d11bea",
+      "indexSourceSha256": "fac99b8fb94ee1fca304817fda7c8bbe5a5f95f65ed51c80e63a660769d11bea",
+      "preview": "/assets/props-workbench.png",
+      "previewFile": "catalog/kits/props/previews/workbench.png",
+      "triangleCount": 220,
+      "triangleBudget": 360
+    }
+  ],
+  "localCatalogPages": {
+    "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-props-pages-20261106",
+    "outputRoot": "/tmp/kernelcad-props-pages-20261106/catalog",
+    "workspacePages": 2390,
+    "assetsChecked": 1,
+    "hubBuilt": true,
+    "deployed": false,
+    "pages": [
+      {
+        "id": "sandbags",
+        "path": "/tmp/kernelcad-props-pages-20261106/catalog/props/sandbags/index.html",
+        "materialLabels": [
+          "Woven canvas",
+          "Alternate canvas",
+          "Stitching thread"
+        ],
+        "presets": [
+          "floodControl",
+          "military",
+          "white"
+        ],
+        "previewCopied": true
+      }
+    ]
+  },
+  "checks": {
+    "previewRender": {
+      "command": "npx tsx scripts/renderCatalogPreviews.ts <all 45 props asset ids>",
+      "exitCode": 0,
+      "renderedAssets": 45,
+      "output": "preview-render-output.txt"
+    },
+    "catalogBuild": {
+      "command": "npx tsx scripts/buildAssetCatalog.ts",
+      "exitCode": 0,
+      "output": "catalog-build-output.txt"
+    },
+    "catalogIndexCheck": {
+      "command": "npx tsx scripts/buildAssetCatalog.ts --check",
+      "exitCode": 0,
+      "output": "catalog-check-output.txt"
+    },
+    "propsQuality": {
+      "command": "python3 scripts/checkCatalogQuality.py --kit props",
+      "exitCode": 0,
+      "passing": 45,
+      "total": 45,
+      "output": "props-quality-output.txt"
+    },
+    "catalogQuality": {
+      "command": "python3 scripts/checkCatalogQuality.py",
+      "exitCode": 0,
+      "passing": 2390,
+      "total": 2390,
+      "output": "catalog-quality-output.txt"
+    },
+    "eslint": {
+      "command": "npx eslint catalog/kits/props/",
+      "exitCode": 0,
+      "output": "eslint-output.txt"
+    },
+    "catalogIntegration": {
+      "command": "npx vitest run tests/integration/catalog/",
+      "exitCode": 0,
+      "files": 4,
+      "tests": 15,
+      "output": "integration-output.txt"
+    },
+    "localPages": {
+      "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-props-pages-20261106",
+      "exitCode": 0,
+      "pages": 2390,
+      "hubBuilt": true,
+      "output": "local-pages-output.txt"
+    },
+    "presetRenders": {
+      "command": "npx tsx artifacts/catalog-demos/props-sandbags-quality-20261106/render_sandbags_variants.ts",
+      "exitCode": 0,
+      "variants": 4,
+      "output": "preset-render-output.txt"
+    }
+  },
+  "deployed": false,
+  "errors": []
+}

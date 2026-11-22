@@ -1,0 +1,259 @@
+{
+  "id": "glass-crusher",
+  "kit": "recycling-facility",
+  "title": "Glass crusher",
+  "description": "Hammer-mill glass crusher at about real size: low tipping hopper and cleated inclined belt carrying whole bottles up into a drum-shaped mill housing on an open steel stand, direct-coupled motor with coupling guard, discharge chute into a floor skip heaped with cullet. Material controls: mill housing, stand and conveyor frame, belt, skip. plant, weathered, stainless and highVisibility presets; green, amber or clear (flint) glass.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "recycling",
+    "glass crusher",
+    "hammer mill",
+    "cullet",
+    "bottle crusher",
+    "glass recycling",
+    "materials recovery",
+    "waste management",
+    "low poly",
+    "scene prop"
+  ],
+  "compat": [
+    "recycling-facility",
+    "materials-recovery",
+    "waste-management",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/recycling-facility/glass-crusher.kcad.ts",
+  "preview": "/assets/recycling-facility-glass-crusher.png",
+  "sourceSha256": "0dcdc9c441a03f0deeeb9d7f25c247a76440e67ecdc8dde7bb53965f44b9a985",
+  "triangleBudget": 3600,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "housing",
+      "type": "color",
+      "default": "#2f6f8f",
+      "label": "Mill housing (paint)"
+    },
+    {
+      "name": "stand",
+      "type": "color",
+      "default": "#3b4248",
+      "label": "Stand and conveyor frame"
+    },
+    {
+      "name": "belt",
+      "type": "color",
+      "default": "#24272a",
+      "label": "Rubber belt and cleats"
+    },
+    {
+      "name": "skip",
+      "type": "color",
+      "default": "#d8a428",
+      "label": "Cullet skip"
+    },
+    {
+      "name": "glass",
+      "type": "choice",
+      "default": "green",
+      "label": "Glass colour",
+      "choices": [
+        "green",
+        "amber",
+        "flint"
+      ]
+    }
+  ],
+  "presets": {
+    "plant": {
+      "housing": "#2f6f8f",
+      "stand": "#3b4248",
+      "belt": "#24272a",
+      "skip": "#d8a428"
+    },
+    "weathered": {
+      "housing": "#4e5f66",
+      "stand": "#4a4642",
+      "belt": "#2b2a28",
+      "skip": "#9a7f45"
+    },
+    "stainless": {
+      "housing": "#c6cbcd",
+      "stand": "#7b858a",
+      "belt": "#24272a",
+      "skip": "#2f5d9a"
+    },
+    "highVisibility": {
+      "housing": "#d9692a",
+      "stand": "#2f3438",
+      "belt": "#24272a",
+      "skip": "#f2d21b"
+    }
+  },
+  "stats": {
+    "triangles": 2212,
+    "sizeM": [
+      2.64,
+      2.98,
+      6.264172
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "stand",
+      "color": "#3b4248",
+      "parts": [
+        "leg-l-f",
+        "leg-r-f",
+        "leg-l-b",
+        "leg-r-b",
+        "brace-f",
+        "brace-b",
+        "stand-top",
+        "stand-beam-f",
+        "stand-beam-b",
+        "drum-ring-l",
+        "drum-ring-r",
+        "bearing-l",
+        "bearing-r",
+        "motor-bracket",
+        "bracket-strut-f",
+        "bracket-strut-b",
+        "motor-feet",
+        "skip-lug-l",
+        "skip-lug-r",
+        "belt-frame",
+        "belt-side-l",
+        "belt-side-r",
+        "belt-leg-1600-l",
+        "belt-leg-1600-r",
+        "belt-leg-3000-l",
+        "belt-leg-3000-r",
+        "hopper-leg-l-f",
+        "hopper-leg-r-f",
+        "hopper-leg-l-b",
+        "hopper-leg-r-b"
+      ],
+      "param": "stand"
+    },
+    {
+      "name": "housing",
+      "color": "#2f6f8f",
+      "parts": [
+        "mill-drum",
+        "mill-base",
+        "inlet-throat",
+        "motor",
+        "discharge-chute",
+        "tipping-hopper"
+      ],
+      "param": "housing"
+    },
+    {
+      "name": "belt",
+      "color": "#24272a",
+      "parts": [
+        "curtain-0",
+        "curtain-1",
+        "curtain-2",
+        "curtain-3",
+        "curtain-4",
+        "curtain-5",
+        "belt",
+        "cleat-0",
+        "cleat-1",
+        "cleat-2",
+        "cleat-3",
+        "cleat-4",
+        "cleat-5",
+        "cleat-6",
+        "cleat-7",
+        "cleat-8",
+        "cleat-9",
+        "cleat-10",
+        "cleat-11"
+      ],
+      "param": "belt"
+    },
+    {
+      "name": "shaft",
+      "color": "#c3c9cc",
+      "parts": [
+        "shaft",
+        "head-pulley"
+      ]
+    },
+    {
+      "name": "coupling-guard",
+      "color": "#f0ae32",
+      "parts": [
+        "coupling-guard"
+      ]
+    },
+    {
+      "name": "motor-cowl",
+      "color": "#20262b",
+      "parts": [
+        "motor-cowl",
+        "terminal-box"
+      ]
+    },
+    {
+      "name": "skip",
+      "color": "#d8a428",
+      "parts": [
+        "skip",
+        "skip-rim"
+      ],
+      "param": "skip"
+    },
+    {
+      "name": "cullet-heap",
+      "color": "#2f7a3e",
+      "parts": [
+        "cullet-heap",
+        "cullet-0",
+        "cullet-1",
+        "cullet-2",
+        "cullet-3",
+        "cullet-4",
+        "cullet-5",
+        "cullet-6",
+        "cullet-7",
+        "cullet-8",
+        "cullet-9",
+        "cullet-10",
+        "cullet-11",
+        "cullet-12",
+        "cullet-13",
+        "bottle-0",
+        "bottle-2",
+        "bottle-3",
+        "bottle-5",
+        "bottle-6",
+        "bottle-8"
+      ]
+    },
+    {
+      "name": "bottle-1",
+      "color": "#9a5a1e",
+      "parts": [
+        "bottle-1",
+        "bottle-4",
+        "bottle-7"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/medical-materials-quality-20261106/render_medical_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", options={ format: \"glb\", style: \"lowpoly\", lowpoly: { maxTriangles: indexed triangleBudget } })",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "variants": [
+    {
+      "assetId": "wheelchair",
+      "preset": "clinic",
+      "values": {
+        "anodizedAluminum": "#c2cbcd",
+        "vinylUpholstery": "#3189b5",
+        "rubber": "#414c4f",
+        "medicalPolymer": "#2d9893"
+      },
+      "source": "catalog/kits/medical/wheelchair.kcad.ts",
+      "sourceSha256": "3d72b40c35aa15d073212239f9085b620ac07bea6d48f86a669ef085a95690d6",
+      "triangles": 332,
+      "triangleBudget": 500,
+      "png": "preset-variants/wheelchair-clinic.png"
+    },
+    {
+      "assetId": "wheelchair",
+      "preset": "emergency",
+      "values": {
+        "anodizedAluminum": "#bcb7b0",
+        "vinylUpholstery": "#ebe5dc",
+        "rubber": "#4e4946",
+        "medicalPolymer": "#c9413b"
+      },
+      "source": "catalog/kits/medical/wheelchair.kcad.ts",
+      "sourceSha256": "3d72b40c35aa15d073212239f9085b620ac07bea6d48f86a669ef085a95690d6",
+      "triangles": 332,
+      "triangleBudget": 500,
+      "png": "preset-variants/wheelchair-emergency.png"
+    },
+    {
+      "assetId": "diagnostic-monitor",
+      "preset": "clinic",
+      "values": {
+        "medicalPolymer": "#edf1f2",
+        "displayGlass": "#2d9893",
+        "anodizedAluminum": "#a9b5b8",
+        "rubber": "#526368"
+      },
+      "source": "catalog/kits/medical/diagnostic-monitor.kcad.ts",
+      "sourceSha256": "b0522497deda577c990188f91891e1cda5352b242f0a168d1db8c362d3b6b7cc",
+      "triangles": 224,
+      "triangleBudget": 400,
+      "png": "preset-variants/diagnostic-monitor-clinic.png"
+    },
+    {
+      "assetId": "diagnostic-monitor",
+      "preset": "emergency",
+      "values": {
+        "medicalPolymer": "#e9e6de",
+        "displayGlass": "#c9413b",
+        "anodizedAluminum": "#9d9d97",
+        "rubber": "#54504c"
+      },
+      "source": "catalog/kits/medical/diagnostic-monitor.kcad.ts",
+      "sourceSha256": "b0522497deda577c990188f91891e1cda5352b242f0a168d1db8c362d3b6b7cc",
+      "triangles": 224,
+      "triangleBudget": 400,
+      "png": "preset-variants/diagnostic-monitor-emergency.png"
+    },
+    {
+      "assetId": "erlenmeyer-flask",
+      "preset": "clinic",
+      "values": {
+        "borosilicateGlass": "#c3dfda",
+        "solution": "#56a49b",
+        "graduationInk": "#43716d"
+      },
+      "source": "catalog/kits/medical/erlenmeyer-flask.kcad.ts",
+      "sourceSha256": "47579c8c2fcf24d88fc655bf8dc3499243c82c49283f3c854fe24a8b6a4a2140",
+      "triangles": 188,
+      "triangleBudget": 260,
+      "png": "preset-variants/erlenmeyer-flask-clinic.png"
+    },
+    {
+      "assetId": "erlenmeyer-flask",
+      "preset": "emergency",
+      "values": {
+        "borosilicateGlass": "#c7d8d5",
+        "solution": "#cf7663",
+        "graduationInk": "#704f4b"
+      },
+      "source": "catalog/kits/medical/erlenmeyer-flask.kcad.ts",
+      "sourceSha256": "47579c8c2fcf24d88fc655bf8dc3499243c82c49283f3c854fe24a8b6a4a2140",
+      "triangles": 188,
+      "triangleBudget": 260,
+      "png": "preset-variants/erlenmeyer-flask-emergency.png"
+    }
+  ]
+}

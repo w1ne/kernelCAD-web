@@ -1,0 +1,110 @@
+{
+  "reviewDate": "2026-11-12",
+  "kit": "grid-substation",
+  "samples": [
+    {
+      "asset": "grid-substation/substation-dead-tank-breaker",
+      "baselineEnvelopeM": [
+        5.17,
+        5.77905,
+        3.059784
+      ],
+      "triangleCount": 6544,
+      "triangleBudget": 7000,
+      "baselineSourceSha256": "7fc584990499423cf2dfe78bd33056c3d46c32f56f759fba2a2dca06b70db667",
+      "baselinePreviewSha256": "1abd218a9b36cc01a368948848ecf9a5822cb4b04467d9e908cdbb53a5fe2b7c",
+      "publicPreviewSha256": "1abd218a9b36cc01a368948848ecf9a5822cb4b04467d9e908cdbb53a5fe2b7c",
+      "publicPreviewRoute": "https://kernelcad.com/catalog/grid-substation/substation-dead-tank-breaker/preview.png",
+      "publicDetailRoute": "https://kernelcad.com/catalog/grid-substation/substation-dead-tank-breaker/",
+      "publicDetailStatus": 200,
+      "publicPreviewStatus": 200,
+      "observation": "Three horizontal breaker tanks, six ribbed brown bushings, braced frame, concrete feet, and mechanism cabinet are visible; tank, porcelain, metal, and concrete zones read coherently.",
+      "result": "No material mismatch found."
+    },
+    {
+      "asset": "grid-substation/substation-capacitive-voltage-transformer",
+      "baselineEnvelopeM": [
+        1.25,
+        2.755,
+        0.95
+      ],
+      "triangleCount": 252,
+      "triangleBudget": 1800,
+      "baselineSourceSha256": "d33831797dcb40717a33d98ea15728deaef4538947c86674ea5d456e72c9b499",
+      "baselinePreviewSha256": "4836fd3b796d206f4019edbad3af72bd51389e572402ccf3787d210ff14b5417",
+      "publicPreviewSha256": "4836fd3b796d206f4019edbad3af72bd51389e572402ccf3787d210ff14b5417",
+      "publicPreviewRoute": "https://kernelcad.com/catalog/grid-substation/substation-capacitive-voltage-transformer/preview.png",
+      "publicDetailRoute": "https://kernelcad.com/catalog/grid-substation/substation-capacitive-voltage-transformer/",
+      "publicDetailStatus": 200,
+      "publicPreviewStatus": 200,
+      "observation": "Four exposed divider sections were dark green like the powder-coated secondary box, while the asset had no porcelain or composite-insulation control.",
+      "result": "Material mismatch found and corrected: divider sections now map to porcelain; steel base and secondary box remain separate.",
+      "afterSourceSha256": "109268ee135c1a909592388f4ae6d92c6c9401979adc95a460a84e187a144e91",
+      "afterPreviewSha256": "8982ae35aee405d927c629f553e8340e234e18871fbd38d134790b5c77fd50e4",
+      "afterTriangleCount": 252,
+      "afterEnvelopeM": [
+        1.25,
+        2.755,
+        0.95
+      ],
+      "geometryChanged": false
+    },
+    {
+      "asset": "grid-substation/substation-transformer-cooling-fan",
+      "baselineEnvelopeM": [
+        1.3,
+        1.552,
+        1.0415
+      ],
+      "triangleCount": 300,
+      "triangleBudget": 1800,
+      "baselineSourceSha256": "2236ad9dfd04e1f4c0bb97f6714f03724873a1afb3d1e037231bd4c6ad0c5fb1",
+      "baselinePreviewSha256": "d585ca65df22be23ffb33af2ef146f38d9ce5f8c6f108df8413c12b8c00cff3a",
+      "publicPreviewSha256": "d585ca65df22be23ffb33af2ef146f38d9ce5f8c6f108df8413c12b8c00cff3a",
+      "publicPreviewRoute": "https://kernelcad.com/catalog/grid-substation/substation-transformer-cooling-fan/preview.png",
+      "publicDetailRoute": "https://kernelcad.com/catalog/grid-substation/substation-transformer-cooling-fan/",
+      "publicDetailStatus": 200,
+      "publicPreviewStatus": 200,
+      "observation": "Three front-facing fan housings/blades sit in a gray guard and skid; powder-coated housing, galvanized support, and stainless blades are distinct.",
+      "result": "No material mismatch found."
+    },
+    {
+      "asset": "grid-substation/substation-station-battery-rack",
+      "baselineEnvelopeM": [
+        2.4,
+        1.85,
+        0.9
+      ],
+      "triangleCount": 248,
+      "triangleBudget": 1800,
+      "baselineSourceSha256": "4436ebdebb46508610752fe24b88091acaacb5f61806d95a3ce9b9bc916b6bd1",
+      "baselinePreviewSha256": "c98068b9c0f29e40fff237d9f5586bf0ae8004e2f38122fb16c0ac9f81a22307",
+      "publicPreviewSha256": "c98068b9c0f29e40fff237d9f5586bf0ae8004e2f38122fb16c0ac9f81a22307",
+      "publicPreviewRoute": "https://kernelcad.com/catalog/grid-substation/substation-station-battery-rack/preview.png",
+      "publicDetailRoute": "https://kernelcad.com/catalog/grid-substation/substation-station-battery-rack/",
+      "publicDetailStatus": 200,
+      "publicPreviewStatus": 200,
+      "observation": "Two tiers of blue battery cases sit on gray metal shelves and uprights; insulating case and rack zones are distinct.",
+      "result": "No material mismatch found."
+    },
+    {
+      "asset": "grid-substation/substation-bus-post-insulator",
+      "baselineEnvelopeM": [
+        0.52,
+        1.55,
+        0.52
+      ],
+      "triangleCount": 1552,
+      "triangleBudget": 1800,
+      "baselineSourceSha256": "71a7b95ad9416034f0597b5597d6a46ac15bf7c762114fe5f5169dd6d839746e",
+      "baselinePreviewSha256": "bb49257d4f1ffdab32ddec61fe721330f4dea319b437e021ff33e643e0ecf7c1",
+      "publicPreviewSha256": "bb49257d4f1ffdab32ddec61fe721330f4dea319b437e021ff33e643e0ecf7c1",
+      "publicPreviewRoute": "https://kernelcad.com/catalog/grid-substation/substation-bus-post-insulator/preview.png",
+      "publicDetailRoute": "https://kernelcad.com/catalog/grid-substation/substation-bus-post-insulator/",
+      "publicDetailStatus": 200,
+      "publicPreviewStatus": 200,
+      "observation": "Cream ribbed porcelain stack stands between a dark metal foot and light top cap; the insulating and mounting materials read separately.",
+      "result": "No material mismatch found."
+    }
+  ]
+}

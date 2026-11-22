@@ -1,0 +1,22 @@
+{
+  "baseline": "git archive HEAD: catalog/kits/airfield plus original airfield wave generator",
+  "replayedAssetSources": 40,
+  "matchingSourceFiles": 40,
+  "mismatches": [],
+  "promotionPlanMatches": true,
+  "commands": [
+    {
+      "command": "python3 artifacts/catalog-demos/airfield-wave-20261102/generate_airfield_assets.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 artifacts/catalog-demos/airfield-quality-promotion-20261105/promote_airfield_quality.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 artifacts/catalog-demos/airfield-quality-promotion-20261105/promote_airfield_quality.py --apply",
+      "exitCode": 0
+    }
+  ],
+  "passed": true
+}

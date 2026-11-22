@@ -1,0 +1,14 @@
+<svg width="1920" height="1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1920" height="1080" fill="#ffffff"/>
+  <text x="100" y="100" font-family="DejaVu Sans" font-size="52" font-weight="700" fill="#18212b">Mate-axis explode · standalone first part</text>
+  <text x="102" y="150" font-family="DejaVu Sans" font-size="26" font-weight="400" fill="#52606d">Regression: an unmated context part must not hide the mates in another component.</text>
+  <line x1="100" y1="988" x2="1820" y2="988" stroke="#d6dce1" stroke-width="2"/>
+  <text x="100" y="1032" font-family="DejaVu Sans" font-size="19" font-weight="400" fill="#52606d">Schematic from passing geometry regression · not a renderer capture · mechanism status unverified</text>
+  <text x="1788" y="1032" font-family="DejaVu Sans" font-size="19" font-weight="400" fill="#52606d">01</text>
+
+    <rect x="100" y="250" width="1720" height="560" rx="18" fill="#f5f7f9" stroke="#d6dce1" stroke-width="2"/>
+    <text x="160" y="330" font-family="DejaVu Sans" font-size="25" font-weight="700" fill="#52606d">MODEL ORDER</text>
+    <text x="160" y="405" font-family="DejaVu Sans" font-size="42" font-weight="700" fill="#18212b">table (unmated)  →  base  →  mid  →  top</text>
+    <text x="160" y="490" font-family="DejaVu Sans" font-size="30" font-weight="400" fill="#52606d">Mates: base–mid and mid–top · fastened · connector axis +Z</text>
+    <text x="160" y="610" font-family="DejaVu Sans" font-size="30" font-weight="400" fill="#18212b">The test checks the resulting offsets in millimetres.</text>
+  </svg>

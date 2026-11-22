@@ -1,0 +1,73 @@
+{
+  "scope": "Local .kcad.ts API capture and OCCT B-rep recompute; no deployed behavior or hardware acceptance.",
+  "invocation": "node --import tsx docs/demos/from3mf-brep-import/capture-demo.mts",
+  "script": "import-and-drill.kcad.ts",
+  "sourceSha256": "67bfd02e701fc0ad9ab7629bf32d0676653f08789d1f2b56d109bca7ed85454f",
+  "implementation": {
+    "src/modeling/api.ts": "61af94eab6f02fbe5808118ef1fe1d3c48d5d9dd8c61ba5aec1c46663073241b",
+    "src/modeling/apiPartsLib.ts": "e63fedb7353f99ef9c6f45e369cf2b8d0dac3e3a3943b5adfd3fd248c847416a",
+    "src/modeling/parts/fromMeshFormats.ts": "ced9ee8f6467df5af7063775cef7256601c7ec6684987cb1ddc434c44199e1a4",
+    "src/kernel/backends/occt/import3mf.ts": "2a838786460fe2ff0d0f47acba51ed48a4f95e1f24e9349d5630f2eaf5ccbb22"
+  },
+  "fixture": "generic-cube.3mf",
+  "fixtureSha256": "0a74710c565b0fb9fb2b9625253a3633913a8d45ddd7acb134395254e4a1174c",
+  "environment": {
+    "node": "v22.23.4",
+    "meshing": {
+      "toleranceMm": 0.05,
+      "angularToleranceRadians": 0.3
+    }
+  },
+  "input": {
+    "format": "3mf",
+    "unit": "millimeter",
+    "triangleCount": 12
+  },
+  "source": {
+    "volumeMm3": 1000,
+    "boundsMm": {
+      "min": [
+        0,
+        0,
+        0
+      ],
+      "max": [
+        10,
+        10,
+        10
+      ]
+    },
+    "brepCheckValid": true
+  },
+  "boolean": {
+    "operation": "subtract a radius 2 mm cylinder through the 10 mm cube",
+    "volumeMm3": 874.3362938564082,
+    "removedVolumeMm3": 125.66370614359175,
+    "expectedRemovedVolumeMm3": 125.66370614359172,
+    "boundsMm": {
+      "min": [
+        0,
+        0,
+        0
+      ],
+      "max": [
+        10,
+        10,
+        10
+      ]
+    },
+    "brepCheckValid": true
+  },
+  "checks": {
+    "metadataPreserved": true,
+    "sourceBrepValid": true,
+    "booleanBrepValid": true,
+    "noErrorDiagnostics": true,
+    "volumeMatches": true
+  },
+  "diagnostics": [],
+  "geometryFile": "geometry.json",
+  "deployed": false,
+  "simulationRun": false,
+  "hardwareAccepted": false
+}

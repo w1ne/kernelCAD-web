@@ -1,0 +1,12 @@
+
+ RUN  v4.0.18 /Volumes/LabWired/kc-work/kcw-fix-1269
+
+ ✓ src/modeling/runtime/mateClosure.test.ts (4 tests) 8ms
+ ✓ src/modeling/mates/solver.test.ts (16 tests) 21ms
+ ✓ tests/integration/examples/kinematicScissorJackClosedLoop.test.ts (1 test) 3239ms
+     ✓ closes at rest, has realized connector frames, and sweeps cleanly  3135ms
+
+ Test Files  3 passed (3)
+      Tests  21 passed (21)
+   Start at  22:18:47
+   Duration  5.17s (transform 3.07s, setup 176ms, import 4.14s, tests 3.27s, environment 0ms)

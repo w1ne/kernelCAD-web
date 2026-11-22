@@ -1,0 +1,7 @@
+{
+  "command": "python3 scripts/checkCatalogQuality.py --kit data-center-infrastructure",
+  "exitCode": 0,
+  "status": "pass",
+  "assetsPassing": 50,
+  "assetsTotal": 50
+}

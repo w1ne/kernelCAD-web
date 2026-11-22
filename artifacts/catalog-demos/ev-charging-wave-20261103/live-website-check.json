@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-11-03T02:06:46.868813+00:00",
+  "command": "curl -L --max-time 25 -sS -w \"\\n%{http_code}\"",
+  "homepageStatus": 200,
+  "homepageContainsAssetRail": true,
+  "assetsJsonStatus": 200,
+  "liveAssetCount": 1291,
+  "livePreviewAssets": 1291,
+  "liveAssetsWithoutPreview": 0,
+  "catalogStatus": 404,
+  "branchDeployed": false,
+  "note": "Current live-site snapshot; this branch is not deployed."
+}

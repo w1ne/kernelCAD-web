@@ -1,0 +1,530 @@
+{
+ "date": "2026-11-19",
+ "method": "One forked Node child per run with the vendor evaluator flags (--max-old-space-size=768 --no-wasm-tier-up --no-wasm-dynamic-tiering, KERNELCAD_MCP_MODE=hosted) loads an esbuild bundle of src/agent/mcp/toolRegistry.ts and runs callMcpTool. Peak RSS is VmHWM of the child; when the child aborted it is the highest 250 ms /proc statm sample. Turbojet rows run export only; other rows run evaluate_script and then export in the same child.",
+ "rssCapMb": 1024,
+ "heapCapMb": 768,
+ "sources": {
+  "base": "c8a11fc32",
+  "firstFix": "758f4cac7",
+  "final": "this commit"
+ },
+ "parts": {
+  "arm": {
+   "source": "examples/robot-arm/compact-supported-arm.kcad.ts",
+   "base": [
+    {
+     "exportPeakRssMb": 389,
+     "evaluatePeakRssMb": 331,
+     "exportSeconds": 3.9,
+     "exportOk": true,
+     "triangles": 69688,
+     "triangleDataSha256": "87555533029463cb24e6216156f3fbc6adfadfb1d175c289a54d000c91740925",
+     "exportWarnCodes": [],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 445,
+     "evaluatePeakRssMb": 364,
+     "exportSeconds": 4.6,
+     "exportOk": true,
+     "triangles": 69688,
+     "triangleDataSha256": "87555533029463cb24e6216156f3fbc6adfadfb1d175c289a54d000c91740925",
+     "exportWarnCodes": [],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 384,
+     "evaluatePeakRssMb": 330,
+     "exportSeconds": 4.9,
+     "exportOk": true,
+     "triangles": 69688,
+     "triangleDataSha256": "87555533029463cb24e6216156f3fbc6adfadfb1d175c289a54d000c91740925",
+     "exportWarnCodes": [],
+     "failure": null
+    }
+   ],
+   "firstFix": [
+    {
+     "exportPeakRssMb": 387,
+     "evaluatePeakRssMb": 334,
+     "exportSeconds": 4.3,
+     "exportOk": true,
+     "triangles": 69688,
+     "triangleDataSha256": "87555533029463cb24e6216156f3fbc6adfadfb1d175c289a54d000c91740925",
+     "exportWarnCodes": [],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 376,
+     "evaluatePeakRssMb": 322,
+     "exportSeconds": 3.8,
+     "exportOk": true,
+     "triangles": 69688,
+     "triangleDataSha256": "87555533029463cb24e6216156f3fbc6adfadfb1d175c289a54d000c91740925",
+     "exportWarnCodes": [],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 328,
+     "evaluatePeakRssMb": 325,
+     "exportSeconds": 3.9,
+     "exportOk": true,
+     "triangles": 69688,
+     "triangleDataSha256": "87555533029463cb24e6216156f3fbc6adfadfb1d175c289a54d000c91740925",
+     "exportWarnCodes": [],
+     "failure": null
+    }
+   ],
+   "final": [
+    {
+     "exportPeakRssMb": 367,
+     "evaluatePeakRssMb": 313,
+     "exportSeconds": 3.6,
+     "exportOk": true,
+     "triangles": 69688,
+     "triangleDataSha256": "87555533029463cb24e6216156f3fbc6adfadfb1d175c289a54d000c91740925",
+     "exportWarnCodes": [],
+     "failure": null
+    }
+   ]
+  },
+  "gear": {
+   "source": "examples/gallery/gearfinity-planetary-stage.kcad.ts",
+   "base": [
+    {
+     "exportPeakRssMb": 516,
+     "evaluatePeakRssMb": 462,
+     "exportSeconds": 34,
+     "exportOk": true,
+     "triangles": 56782,
+     "triangleDataSha256": "ac587dd4e96017ea13fa427e870770d2902766cda9798fd00b3e622eabde06c8",
+     "exportWarnCodes": [
+      "export.geometry-quality.short-edges",
+      "export.mesh.fused-seam-fallback"
+     ],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 561,
+     "evaluatePeakRssMb": 471,
+     "exportSeconds": 38.6,
+     "exportOk": true,
+     "triangles": 56782,
+     "triangleDataSha256": "ac587dd4e96017ea13fa427e870770d2902766cda9798fd00b3e622eabde06c8",
+     "exportWarnCodes": [
+      "export.geometry-quality.short-edges",
+      "export.mesh.fused-seam-fallback"
+     ],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 594,
+     "evaluatePeakRssMb": 470,
+     "exportSeconds": 40.4,
+     "exportOk": true,
+     "triangles": 56782,
+     "triangleDataSha256": "ac587dd4e96017ea13fa427e870770d2902766cda9798fd00b3e622eabde06c8",
+     "exportWarnCodes": [
+      "export.geometry-quality.short-edges",
+      "export.mesh.fused-seam-fallback"
+     ],
+     "failure": null
+    }
+   ],
+   "firstFix": [
+    {
+     "exportPeakRssMb": 516,
+     "evaluatePeakRssMb": 511,
+     "exportSeconds": 49.8,
+     "exportOk": true,
+     "triangles": 56782,
+     "triangleDataSha256": "ac587dd4e96017ea13fa427e870770d2902766cda9798fd00b3e622eabde06c8",
+     "exportWarnCodes": [
+      "export.geometry-quality.short-edges",
+      "export.mesh.fused-seam-fallback"
+     ],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 502,
+     "evaluatePeakRssMb": 477,
+     "exportSeconds": 36.9,
+     "exportOk": true,
+     "triangles": 56782,
+     "triangleDataSha256": "ac587dd4e96017ea13fa427e870770d2902766cda9798fd00b3e622eabde06c8",
+     "exportWarnCodes": [
+      "export.geometry-quality.short-edges",
+      "export.mesh.fused-seam-fallback"
+     ],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 499,
+     "evaluatePeakRssMb": 462,
+     "exportSeconds": 34.8,
+     "exportOk": true,
+     "triangles": 56782,
+     "triangleDataSha256": "ac587dd4e96017ea13fa427e870770d2902766cda9798fd00b3e622eabde06c8",
+     "exportWarnCodes": [
+      "export.geometry-quality.short-edges",
+      "export.mesh.fused-seam-fallback"
+     ],
+     "failure": null
+    }
+   ],
+   "final": [
+    {
+     "exportPeakRssMb": 495,
+     "evaluatePeakRssMb": 474,
+     "exportSeconds": 34.1,
+     "exportOk": true,
+     "triangles": 56782,
+     "triangleDataSha256": "ac587dd4e96017ea13fa427e870770d2902766cda9798fd00b3e622eabde06c8",
+     "exportWarnCodes": [
+      "export.geometry-quality.short-edges",
+      "export.mesh.fused-seam-fallback"
+     ],
+     "failure": null
+    }
+   ]
+  },
+  "bracket": {
+   "source": "examples/bracket-with-hole.kcad.ts",
+   "base": [
+    {
+     "exportPeakRssMb": 391,
+     "evaluatePeakRssMb": 238,
+     "exportSeconds": 2.2,
+     "exportOk": true,
+     "triangles": 98864,
+     "triangleDataSha256": "55c07de0528150cbe2e7f8d2ab6c8e022306e501433d1fac5dc14a560312aa5e",
+     "exportWarnCodes": [],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 397,
+     "evaluatePeakRssMb": 239,
+     "exportSeconds": 2.7,
+     "exportOk": true,
+     "triangles": 98864,
+     "triangleDataSha256": "55c07de0528150cbe2e7f8d2ab6c8e022306e501433d1fac5dc14a560312aa5e",
+     "exportWarnCodes": [],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 382,
+     "evaluatePeakRssMb": 241,
+     "exportSeconds": 2.9,
+     "exportOk": true,
+     "triangles": 98864,
+     "triangleDataSha256": "55c07de0528150cbe2e7f8d2ab6c8e022306e501433d1fac5dc14a560312aa5e",
+     "exportWarnCodes": [],
+     "failure": null
+    }
+   ],
+   "firstFix": [
+    {
+     "exportPeakRssMb": 293,
+     "evaluatePeakRssMb": 240,
+     "exportSeconds": 1.9,
+     "exportOk": true,
+     "triangles": 98864,
+     "triangleDataSha256": "55c07de0528150cbe2e7f8d2ab6c8e022306e501433d1fac5dc14a560312aa5e",
+     "exportWarnCodes": [],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 295,
+     "evaluatePeakRssMb": 239,
+     "exportSeconds": 2.5,
+     "exportOk": true,
+     "triangles": 98864,
+     "triangleDataSha256": "55c07de0528150cbe2e7f8d2ab6c8e022306e501433d1fac5dc14a560312aa5e",
+     "exportWarnCodes": [],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 290,
+     "evaluatePeakRssMb": 240,
+     "exportSeconds": 1.9,
+     "exportOk": true,
+     "triangles": 98864,
+     "triangleDataSha256": "55c07de0528150cbe2e7f8d2ab6c8e022306e501433d1fac5dc14a560312aa5e",
+     "exportWarnCodes": [],
+     "failure": null
+    }
+   ],
+   "final": [
+    {
+     "exportPeakRssMb": 291,
+     "evaluatePeakRssMb": 240,
+     "exportSeconds": 1.7,
+     "exportOk": true,
+     "triangles": 98864,
+     "triangleDataSha256": "55c07de0528150cbe2e7f8d2ab6c8e022306e501433d1fac5dc14a560312aa5e",
+     "exportWarnCodes": [],
+     "failure": null
+    }
+   ]
+  },
+  "plate": {
+   "source": "evaluator-harness/sphere-plate.txt",
+   "base": [
+    {
+     "exportPeakRssMb": 813,
+     "evaluatePeakRssMb": 250,
+     "exportSeconds": 27.1,
+     "exportOk": true,
+     "triangles": 636284,
+     "triangleDataSha256": "432718fccf53c99d9cd89da51ada7afe01ce6df76fca5815b480ba3e31336155",
+     "exportWarnCodes": [],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 816,
+     "evaluatePeakRssMb": 252,
+     "exportSeconds": 26.3,
+     "exportOk": true,
+     "triangles": 636284,
+     "triangleDataSha256": "432718fccf53c99d9cd89da51ada7afe01ce6df76fca5815b480ba3e31336155",
+     "exportWarnCodes": [],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 733,
+     "evaluatePeakRssMb": 251,
+     "exportSeconds": 26.7,
+     "exportOk": true,
+     "triangles": 636284,
+     "triangleDataSha256": "432718fccf53c99d9cd89da51ada7afe01ce6df76fca5815b480ba3e31336155",
+     "exportWarnCodes": [],
+     "failure": null
+    }
+   ],
+   "firstFix": [
+    {
+     "exportPeakRssMb": 449,
+     "evaluatePeakRssMb": 252,
+     "exportSeconds": 21.7,
+     "exportOk": true,
+     "triangles": 636284,
+     "triangleDataSha256": "432718fccf53c99d9cd89da51ada7afe01ce6df76fca5815b480ba3e31336155",
+     "exportWarnCodes": [],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 448,
+     "evaluatePeakRssMb": 251,
+     "exportSeconds": 20.7,
+     "exportOk": true,
+     "triangles": 636284,
+     "triangleDataSha256": "432718fccf53c99d9cd89da51ada7afe01ce6df76fca5815b480ba3e31336155",
+     "exportWarnCodes": [],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 442,
+     "evaluatePeakRssMb": 251,
+     "exportSeconds": 20.3,
+     "exportOk": true,
+     "triangles": 636284,
+     "triangleDataSha256": "432718fccf53c99d9cd89da51ada7afe01ce6df76fca5815b480ba3e31336155",
+     "exportWarnCodes": [],
+     "failure": null
+    }
+   ],
+   "final": [
+    {
+     "exportPeakRssMb": 474,
+     "evaluatePeakRssMb": 252,
+     "exportSeconds": 18.5,
+     "exportOk": true,
+     "triangles": 636284,
+     "triangleDataSha256": "432718fccf53c99d9cd89da51ada7afe01ce6df76fca5815b480ba3e31336155",
+     "exportWarnCodes": [],
+     "failure": null
+    }
+   ]
+  },
+  "axis3": {
+   "source": "examples/robot-arm/desktop-3axis-mates.kcad.ts",
+   "base": [],
+   "firstFix": [
+    {
+     "exportPeakRssMb": 487,
+     "evaluatePeakRssMb": 346,
+     "exportSeconds": 14.7,
+     "exportOk": true,
+     "triangles": 562804,
+     "triangleDataSha256": "29f732c19b49562fcb9aceb35e3f755d5662af13bfc945773cf9a4c022263257",
+     "exportWarnCodes": [
+      "export.geometry-quality.short-edges"
+     ],
+     "failure": null
+    }
+   ],
+   "final": [
+    {
+     "exportPeakRssMb": 506,
+     "evaluatePeakRssMb": 346,
+     "exportSeconds": 12.4,
+     "exportOk": true,
+     "triangles": 562804,
+     "triangleDataSha256": "29f732c19b49562fcb9aceb35e3f755d5662af13bfc945773cf9a4c022263257",
+     "exportWarnCodes": [
+      "export.geometry-quality.short-edges"
+     ],
+     "failure": null
+    }
+   ]
+  },
+  "klift": {
+   "source": "examples/gallery/kspray-klift.kcad.ts",
+   "base": [],
+   "firstFix": [
+    {
+     "exportPeakRssMb": 436,
+     "evaluatePeakRssMb": 397,
+     "exportSeconds": 12.7,
+     "exportOk": true,
+     "triangles": 57212,
+     "triangleDataSha256": "5b817ae9b74dccfb8793bb1e154adb05bd677297a6f1d4404589a388651b0943",
+     "exportWarnCodes": [
+      "export.mesh.fused-seam-fallback"
+     ],
+     "failure": null
+    }
+   ],
+   "final": [
+    {
+     "exportPeakRssMb": 483,
+     "evaluatePeakRssMb": 400,
+     "exportSeconds": 9.4,
+     "exportOk": true,
+     "triangles": 57212,
+     "triangleDataSha256": "5b817ae9b74dccfb8793bb1e154adb05bd677297a6f1d4404589a388651b0943",
+     "exportWarnCodes": [
+      "export.mesh.fused-seam-fallback"
+     ],
+     "failure": null
+    }
+   ]
+  },
+  "watch": {
+   "source": "examples/portfolio/pocket-watch-v2/build.kcad.ts",
+   "base": [],
+   "firstFix": [
+    {
+     "exportPeakRssMb": 431,
+     "evaluatePeakRssMb": 299,
+     "exportSeconds": 16.5,
+     "exportOk": true,
+     "triangles": 153478,
+     "triangleDataSha256": "10b875d56a74ffcabe57b5e5004a6b2de17cb4ae77ff29b20ddc5d6c64e4c59a",
+     "exportWarnCodes": [
+      "export.geometry-quality.tiny-faces",
+      "export.geometry-quality.short-edges"
+     ],
+     "failure": null
+    }
+   ],
+   "final": [
+    {
+     "exportPeakRssMb": 421,
+     "evaluatePeakRssMb": 296,
+     "exportSeconds": 15.4,
+     "exportOk": true,
+     "triangles": 153478,
+     "triangleDataSha256": "10b875d56a74ffcabe57b5e5004a6b2de17cb4ae77ff29b20ddc5d6c64e4c59a",
+     "exportWarnCodes": [
+      "export.geometry-quality.tiny-faces",
+      "export.geometry-quality.short-edges"
+     ],
+     "failure": null
+    }
+   ]
+  },
+  "turbojet": {
+   "source": "examples/gallery/turbojet-engine.kcad.ts",
+   "base": [
+    {
+     "exportPeakRssMb": 1269,
+     "evaluatePeakRssMb": null,
+     "exportSeconds": 230.9,
+     "exportOk": false,
+     "triangles": null,
+     "triangleDataSha256": null,
+     "exportWarnCodes": [],
+     "failure": "child exit null SIGABRT"
+    }
+   ],
+   "firstFix": [
+    {
+     "exportPeakRssMb": 1224,
+     "evaluatePeakRssMb": null,
+     "exportSeconds": 256.9,
+     "exportOk": true,
+     "triangles": 3611538,
+     "triangleDataSha256": "87910cad810a37195f42317da321f862cd66352820aa3a1838c4bad717f710cb",
+     "exportWarnCodes": [
+      "export.mesh.fused-seam-fallback"
+     ],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 1227,
+     "evaluatePeakRssMb": null,
+     "exportSeconds": 295.6,
+     "exportOk": true,
+     "triangles": 3611538,
+     "triangleDataSha256": "87910cad810a37195f42317da321f862cd66352820aa3a1838c4bad717f710cb",
+     "exportWarnCodes": [
+      "export.mesh.fused-seam-fallback"
+     ],
+     "failure": null
+    }
+   ],
+   "final": [
+    {
+     "exportPeakRssMb": 827,
+     "evaluatePeakRssMb": null,
+     "exportSeconds": 286.9,
+     "exportOk": true,
+     "triangles": 3611538,
+     "triangleDataSha256": "87910cad810a37195f42317da321f862cd66352820aa3a1838c4bad717f710cb",
+     "exportWarnCodes": [
+      "export.mesh.fused-seam-fallback"
+     ],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 826,
+     "evaluatePeakRssMb": null,
+     "exportSeconds": 248.1,
+     "exportOk": true,
+     "triangles": 3611538,
+     "triangleDataSha256": "87910cad810a37195f42317da321f862cd66352820aa3a1838c4bad717f710cb",
+     "exportWarnCodes": [
+      "export.mesh.fused-seam-fallback"
+     ],
+     "failure": null
+    },
+    {
+     "exportPeakRssMb": 837,
+     "evaluatePeakRssMb": null,
+     "exportSeconds": 254.1,
+     "exportOk": true,
+     "triangles": 3611538,
+     "triangleDataSha256": "87910cad810a37195f42317da321f862cd66352820aa3a1838c4bad717f710cb",
+     "exportWarnCodes": [
+      "export.mesh.fused-seam-fallback"
+     ],
+     "failure": null
+    }
+   ]
+  }
+ },
+ "evaluateScriptTurbojet": {
+  "note": "evaluate_script (not export) of examples/gallery/turbojet-engine.kcad.ts aborted at the 768 MB JavaScript heap limit after about 168 s in the same harness, on the base and on the first fix. Highest RSS sample: 1382 MB (base), 1373 MB (first fix). Not re-run on the final commit; the change does not touch evaluate_script."
+ }
+}

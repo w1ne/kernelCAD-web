@@ -1,0 +1,28 @@
+{
+  "reviewDate": "2026-11-04",
+  "reviewMethod": "Opened the final rendered PNG previews at original resolution.",
+  "passed": true,
+  "assets": [
+    {
+      "id": "dock-gate-caisson",
+      "preview": "catalog/kits/shipyard/previews/dock-gate-caisson.png",
+      "sha256": "6b6c700b9d8fb4e12b00d57d9ba508352b65a1495c009d73a4717a5e21ef9015",
+      "recognizableInColor": true,
+      "visualObservation": "Six raised steel stiffeners break up the broad gray-green caisson face; teal flotation cells sit below and bright cleats cap the deck. The preview reads as a drydock gate module."
+    },
+    {
+      "id": "welding-gas-cylinder-trolley",
+      "preview": "catalog/kits/shipyard/previews/welding-gas-cylinder-trolley.png",
+      "sha256": "6b03b8f4c3f177a9b93f99e578eb411cad85f84d8aeb35860d5d7521fb65eaf3",
+      "recognizableInColor": true,
+      "visualObservation": "Two upright cylinder bodies sit on the trolley plate; yellow retaining bands, black wheels, a silver pull handle and visible valve caps separate the components. The preview reads as a gas-cylinder trolley."
+    },
+    {
+      "id": "grit-recovery-hopper",
+      "preview": "catalog/kits/shipyard/previews/grit-recovery-hopper.png",
+      "sha256": "5878ff7d7d576158508f7df04fda6d73c1c128a3c6f2d63ce279b1880b5139fb",
+      "recognizableInColor": true,
+      "visualObservation": "A broad brown bin tapers to its lower discharge neck; the pale slatted screen deck and gray fork supports remain visible. The preview reads as a grit-recovery hopper."
+    }
+  ]
+}

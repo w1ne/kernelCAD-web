@@ -16,6 +16,7 @@ meta({
   triangleBudget: 260,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const body = param('body', '#4a6b58', { label: 'Body' });
 const door = param('door', '#b8bdc2', { label: 'Door' });
 const roof = param('roof', '#d8d6d0', { label: 'Roof and ramp' });
@@ -44,13 +45,13 @@ const outline = (e: number): [number, number][] => {
 };
 
 const pt = assembly('public-toilet');
-pt.part('cabin', extrudePolygon(outline(0), H).color(body));
-pt.part('band', extrudePolygon(outline(12), 140).translate(0, 0, H - 300).color(accent));
-pt.part('roof', extrudePolygon(outline(140), 120).translate(0, 0, H).color(roof));
-pt.part('roof-top', extrudePolygon(outline(-200), 90).translate(0, 0, H + 115).color(roof));
-pt.part('door-frame', blk(-560, -D / 2 - 8, 100, 560, -D / 2 + 1, 2250).color(accent));
-pt.part('door', blk(-480, -D / 2 - 16, 100, 480, -D / 2 + 1, 2170).color(door));
-pt.part('door-seam', blk(-10, -D / 2 - 22, 100, 10, -D / 2 - 10, 2170).color(body));
-pt.part('ramp', sideProfile([[-D / 2 - 600, 0], [-D / 2 + 5, 0], [-D / 2 + 5, 100], [-D / 2 - 100, 100]], -700, 1400).color(roof));
+pt.part('cabin', extrudePolygon(outline(0), H).color(body).scale(overallScale));
+pt.part('band', extrudePolygon(outline(12), 140).translate(0, 0, H - 300).color(accent).scale(overallScale));
+pt.part('roof', extrudePolygon(outline(140), 120).translate(0, 0, H).color(roof).scale(overallScale));
+pt.part('roof-top', extrudePolygon(outline(-200), 90).translate(0, 0, H + 115).color(roof).scale(overallScale));
+pt.part('door-frame', blk(-560, -D / 2 - 8, 100, 560, -D / 2 + 1, 2250).color(accent).scale(overallScale));
+pt.part('door', blk(-480, -D / 2 - 16, 100, 480, -D / 2 + 1, 2170).color(door).scale(overallScale));
+pt.part('door-seam', blk(-10, -D / 2 - 22, 100, 10, -D / 2 - 10, 2170).color(body).scale(overallScale));
+pt.part('ramp', sideProfile([[-D / 2 - 600, 0], [-D / 2 + 5, 0], [-D / 2 + 5, 100], [-D / 2 - 100, 100]], -700, 1400).color(roof).scale(overallScale));
 
 return pt.model();

@@ -1,0 +1,376 @@
+{
+  "air-cooled-chiller": {
+    "params": [
+      {
+        "default": 1,
+        "label": "Overall scale",
+        "max": 1.3,
+        "min": 0.7,
+        "name": "scale",
+        "step": 0.05,
+        "type": "number"
+      },
+      {
+        "default": "#dddcd3",
+        "label": "Casing paint",
+        "name": "casing",
+        "type": "color"
+      },
+      {
+        "default": "#9db1b5",
+        "label": "Condenser coil fins",
+        "name": "coil",
+        "type": "color"
+      },
+      {
+        "default": "#26292b",
+        "label": "Fan guards and blades",
+        "name": "guard",
+        "type": "color"
+      },
+      {
+        "default": "#4d5a61",
+        "label": "Base frame",
+        "name": "frame",
+        "type": "color"
+      },
+      {
+        "default": "#2f6db5",
+        "label": "Chilled-water piping",
+        "name": "piping",
+        "type": "color"
+      }
+    ],
+    "presets": {
+      "coatedCoil": {
+        "coil": "#c39a52"
+      },
+      "graphite": {
+        "casing": "#5b6166",
+        "frame": "#2c3135",
+        "guard": "#141618",
+        "piping": "#c9472f"
+      },
+      "weathered": {
+        "casing": "#c6c2b4",
+        "coil": "#8a958f",
+        "frame": "#5d5850",
+        "guard": "#3a3936",
+        "piping": "#4f6e8f"
+      }
+    },
+    "preview": "/assets/data-center-infrastructure-air-cooled-chiller.png",
+    "sourceSha256": "70a1a798cd95b6d6e9c13188b1f26e2249aa06cad7ac66b5f5dce7ce50232a01",
+    "stats": {
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        3.968,
+        2.434,
+        2.28
+      ],
+      "triangles": 5236
+    },
+    "triangleBudget": 12000
+  },
+  "clean-agent-cylinder-bank": {
+    "params": [
+      {
+        "default": 1,
+        "label": "Overall scale",
+        "max": 1.3,
+        "min": 0.7,
+        "name": "scale",
+        "step": 0.05,
+        "type": "number"
+      },
+      {
+        "default": "#c42a22",
+        "label": "Cylinder paint",
+        "name": "cylinderPaint",
+        "type": "color"
+      },
+      {
+        "default": "#c9a24a",
+        "label": "Valves and gauges (brass)",
+        "name": "valveBrass",
+        "type": "color"
+      },
+      {
+        "default": "#a9b1b4",
+        "label": "Strut rack and straps (galvanised)",
+        "name": "rackSteel",
+        "type": "color"
+      },
+      {
+        "default": "#34383b",
+        "label": "Manifold and hoses",
+        "name": "pipe",
+        "type": "color"
+      },
+      {
+        "default": "#f1efe6",
+        "label": "Hazard labels",
+        "name": "label",
+        "type": "color"
+      }
+    ],
+    "presets": {
+      "inertGas": {
+        "cylinderPaint": "#8e979b",
+        "label": "#2f8a4a",
+        "valveBrass": "#b9b3a2"
+      },
+      "nitrogen": {
+        "cylinderPaint": "#2c2f33",
+        "label": "#e9e6dc",
+        "valveBrass": "#c4a256"
+      },
+      "weathered": {
+        "cylinderPaint": "#9a3a31",
+        "label": "#d8d2c0",
+        "pipe": "#3d3a36",
+        "rackSteel": "#8b8f8c",
+        "valveBrass": "#9b8250"
+      }
+    },
+    "preview": "/assets/data-center-infrastructure-clean-agent-cylinder-bank.png",
+    "sourceSha256": "b01db3a8da44c040da9a23086c9d77b8f857970753a0ce7147634719755ed291",
+    "stats": {
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.952,
+        2.08,
+        0.392
+      ],
+      "triangles": 5316
+    },
+    "triangleBudget": 9000
+  },
+  "cooling-tower-cell": {
+    "params": [
+      {
+        "default": 1,
+        "label": "Overall scale",
+        "max": 1.3,
+        "min": 0.7,
+        "name": "scale",
+        "step": 0.05,
+        "type": "number"
+      },
+      {
+        "default": "#6f9fb2",
+        "label": "Casing FRP panels",
+        "name": "casing",
+        "type": "color"
+      },
+      {
+        "default": "#34505c",
+        "label": "Air-inlet louvres",
+        "name": "louvre",
+        "type": "color"
+      },
+      {
+        "default": "#e6e8e3",
+        "label": "Fan stack",
+        "name": "stack",
+        "type": "color"
+      },
+      {
+        "default": "#a6adb0",
+        "label": "Galvanised ladder and handrail",
+        "name": "galv",
+        "type": "color"
+      },
+      {
+        "default": "#2d5c99",
+        "label": "Condenser-water piping",
+        "name": "piping",
+        "type": "color"
+      }
+    ],
+    "presets": {
+      "greyFRP": {
+        "casing": "#9ea4a6",
+        "louvre": "#3a3e40",
+        "piping": "#6b7c3a",
+        "stack": "#d4d7d6"
+      },
+      "sandFRP": {
+        "casing": "#d2c39f",
+        "louvre": "#5b5242",
+        "stack": "#ece5d2"
+      },
+      "weathered": {
+        "casing": "#7f9aa1",
+        "galv": "#8f8f88",
+        "louvre": "#3d4a4c",
+        "piping": "#4b6178",
+        "stack": "#c9cbc2"
+      }
+    },
+    "preview": "/assets/data-center-infrastructure-cooling-tower-cell.png",
+    "sourceSha256": "71ab02706158e1f37717ed210a5917df71e526099ad328b3288401de156598e1",
+    "stats": {
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        3.3,
+        3.906,
+        2.53
+      ],
+      "triangles": 2110
+    },
+    "triangleBudget": 9000
+  },
+  "dry-type-transformer": {
+    "params": [
+      {
+        "default": 1,
+        "label": "Overall scale",
+        "max": 1.3,
+        "min": 0.7,
+        "name": "scale",
+        "step": 0.05,
+        "type": "number"
+      },
+      {
+        "default": "#7d93a3",
+        "label": "Cast-resin coils",
+        "name": "resin",
+        "type": "color"
+      },
+      {
+        "default": "#33373a",
+        "label": "Laminated core steel",
+        "name": "coreSteel",
+        "type": "color"
+      },
+      {
+        "default": "#8b99a3",
+        "label": "Clamp frame and base paint",
+        "name": "frame",
+        "type": "color"
+      },
+      {
+        "default": "#c37a3d",
+        "label": "Copper links and busbars",
+        "name": "copper",
+        "type": "color"
+      },
+      {
+        "default": "#d9d1bd",
+        "label": "Insulators and spacers",
+        "name": "insulator",
+        "type": "color"
+      }
+    ],
+    "presets": {
+      "castResinRed": {
+        "frame": "#7c8a91",
+        "insulator": "#e2d9c3",
+        "resin": "#8c3b2b"
+      },
+      "utilityBlue": {
+        "frame": "#c8ccc8",
+        "insulator": "#b8452f",
+        "resin": "#3f5f80"
+      },
+      "weathered": {
+        "copper": "#8f6a45",
+        "coreSteel": "#4a4540",
+        "frame": "#7e7f78",
+        "insulator": "#bdb39c",
+        "resin": "#5e6061"
+      }
+    },
+    "preview": "/assets/data-center-infrastructure-dry-type-transformer.png",
+    "sourceSha256": "9ca7672501816a4878458734ede8b856c1af6f7ed24d6b76d85a54c14218cabb",
+    "stats": {
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.86,
+        2.06,
+        0.664
+      ],
+      "triangles": 5160
+    },
+    "triangleBudget": 9000
+  },
+  "standby-generator-enclosure": {
+    "params": [
+      {
+        "default": 1,
+        "label": "Overall scale",
+        "max": 1.3,
+        "min": 0.7,
+        "name": "scale",
+        "step": 0.05,
+        "type": "number"
+      },
+      {
+        "default": "#d8d5c7",
+        "label": "Canopy paint",
+        "name": "canopy",
+        "type": "color"
+      },
+      {
+        "default": "#3a3e42",
+        "label": "Louvres, seams and hardware",
+        "name": "trim",
+        "type": "color"
+      },
+      {
+        "default": "#2a2c2e",
+        "label": "Sub-base fuel tank",
+        "name": "tank",
+        "type": "color"
+      },
+      {
+        "default": "#9a958d",
+        "label": "Exhaust silencer and pipe",
+        "name": "exhaust",
+        "type": "color"
+      },
+      {
+        "default": "#c8221c",
+        "label": "Emergency stop and fill cap",
+        "name": "accent",
+        "type": "color"
+      }
+    ],
+    "presets": {
+      "constructionYellow": {
+        "canopy": "#e7b416",
+        "trim": "#25272a"
+      },
+      "utilityGreen": {
+        "canopy": "#3f6b4a",
+        "tank": "#26292a",
+        "trim": "#1f2522"
+      },
+      "weathered": {
+        "accent": "#a5352a",
+        "canopy": "#bdb7a3",
+        "exhaust": "#7a5c45",
+        "tank": "#38342f",
+        "trim": "#45443f"
+      }
+    },
+    "preview": "/assets/data-center-infrastructure-standby-generator-enclosure.png",
+    "sourceSha256": "584f05bc3ea6f9773a0dde861eae8238f92239e68466ce095ef547172bd0ad36",
+    "stats": {
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        4.025,
+        3.131926,
+        1.51
+      ],
+      "triangles": 2540
+    },
+    "triangleBudget": 8000
+  }
+}

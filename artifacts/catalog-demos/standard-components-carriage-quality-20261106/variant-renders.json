@@ -1,0 +1,91 @@
+{
+  "source": "catalog/kits/standard-components/linear-guide-carriage.kcad.ts",
+  "sourceSha256": "8b3f533436454ad9516cfe681bb3a5f26642eedbf7c2328e4373845cfc2a1726",
+  "invocation": "npx tsx artifacts/catalog-demos/standard-components-carriage-quality-20261106/render_carriage_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", options={ format: \"glb\", style: \"lowpoly\", lowpoly: { maxTriangles: 460 } })",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "renders": [
+    {
+      "id": "standard-default",
+      "values": {},
+      "dimensionsMm": [
+        46,
+        29.2,
+        40
+      ],
+      "triangles": 408,
+      "png": "artifacts/catalog-demos/standard-components-carriage-quality-20261106/variants/standard-default.png"
+    },
+    {
+      "id": "compact-default",
+      "values": {
+        "size": "compact"
+      },
+      "dimensionsMm": [
+        34.5,
+        21.9,
+        30
+      ],
+      "triangles": 408,
+      "png": "artifacts/catalog-demos/standard-components-carriage-quality-20261106/variants/compact-default.png"
+    },
+    {
+      "id": "large-default",
+      "values": {
+        "size": "large"
+      },
+      "dimensionsMm": [
+        57.5,
+        36.5,
+        50
+      ],
+      "triangles": 408,
+      "png": "artifacts/catalog-demos/standard-components-carriage-quality-20261106/variants/large-default.png"
+    },
+    {
+      "id": "standard-dark",
+      "values": {
+        "steel": "#3e484e",
+        "polymer": "#181c1e",
+        "brass": "#5a503d"
+      },
+      "dimensionsMm": [
+        46,
+        29.2,
+        40
+      ],
+      "triangles": 408,
+      "png": "artifacts/catalog-demos/standard-components-carriage-quality-20261106/variants/standard-dark.png"
+    },
+    {
+      "id": "standard-brass",
+      "values": {
+        "steel": "#646f75",
+        "polymer": "#244956",
+        "brass": "#d0a458"
+      },
+      "dimensionsMm": [
+        46,
+        29.2,
+        40
+      ],
+      "triangles": 408,
+      "png": "artifacts/catalog-demos/standard-components-carriage-quality-20261106/variants/standard-brass.png"
+    },
+    {
+      "id": "standard-weathered",
+      "values": {
+        "steel": "#665b4d",
+        "polymer": "#514438",
+        "brass": "#64734c"
+      },
+      "dimensionsMm": [
+        46,
+        29.2,
+        40
+      ],
+      "triangles": 408,
+      "png": "artifacts/catalog-demos/standard-components-carriage-quality-20261106/variants/standard-weathered.png"
+    }
+  ]
+}

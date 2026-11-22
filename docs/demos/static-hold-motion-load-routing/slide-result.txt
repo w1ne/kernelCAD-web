@@ -1,0 +1,8 @@
+verify motion-load, quasi-static, pose 0 deg
+ok: false
+peak torque: 693.1 N.mm  rating: 0.001 N.mm
+code: mechanism.load.torque-exceeded
+
+Static-hold: no coverage, not a pass.
+Motion-load: rating evaluated and exceeded.
+Hand calc m*g*L/2 = 0.4710 kg * 9.81 * 0.15 m = 0.6931 N.m

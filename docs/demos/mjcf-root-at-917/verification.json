@@ -1,0 +1,63 @@
+{
+  "checkedAt": "2026-11-11T18:42:45.332Z",
+  "source": "docs/demos/mjcf-root-at-917/capture-demo.mts",
+  "invocation": "npx tsx docs/demos/mjcf-root-at-917/capture-demo.mts",
+  "exporter": "assemblyToMjcf(arm)",
+  "model": "docs/demos/mjcf-root-at-917/model.xml",
+  "modelSha256": "050d9f00ab67e2f3c01caf0ecf94419f231e08bfb026f9887696e6ffbb1e972e",
+  "authoredAtMm": [
+    125,
+    -40,
+    60
+  ],
+  "emittedRootBody": "<body name=\"offset-base\" pos=\"0.125000 -0.040000 0.060000\">",
+  "compiledRestPoseM": [
+    0.125,
+    -0.04,
+    0.06
+  ],
+  "deltaFromExpectedM": [
+    0,
+    0,
+    0
+  ],
+  "checks": {
+    "localMjcfSerialization": true,
+    "mujocoModelLoad": true,
+    "forwardKinematicsAtRest": true,
+    "integrationSteps": 0,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  },
+  "video": {
+    "ffmpegArgs": [
+      "-y",
+      "-v",
+      "error",
+      "-f",
+      "concat",
+      "-safe",
+      "0",
+      "-i",
+      "<temporary-slides.txt>",
+      "-t",
+      "7.5",
+      "-vf",
+      "fps=20,format=yuv420p",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "medium",
+      "-crf",
+      "22",
+      "-movflags",
+      "+faststart",
+      "demo.mp4"
+    ],
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "frameRate": "20/1",
+    "durationSeconds": 7.5
+  }
+}

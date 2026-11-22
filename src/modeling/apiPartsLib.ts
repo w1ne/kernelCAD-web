@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ApiContext, KernelCadApi } from './api';
-// Parts features (fromSTEP/fromBREP/fromSTL/findPart/fetchPart/standard) are
+// Parts features (fromSTEP/fromBREP/fromSTL/from3MF/findPart/fetchPart/standard) are
 // node-only: they read files and the parts catalog cache. They are reached
 // through the capability-guarded façade so this module stays importable in a
 // browser — see parts/hostParts.ts.
@@ -9,6 +9,7 @@ import {
   fromSTEPViaHost,
   fromBREPViaHost,
   fromSTLViaHost,
+  from3MFViaHost,
   meshFromSTLViaHost,
   findPartViaHost,
   fetchPartViaHost,
@@ -28,6 +29,8 @@ export function makePartsLib(ctx: ApiContext): Pick<KernelCadApi, 'lib'> {
       fromBREP: (path) => fromBREPViaHost({ session, scriptDir: ctx.scriptDir }, path),
       fromSTL: (path, opts) =>
         fromSTLViaHost({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
+      from3MF: (path, opts) =>
+        from3MFViaHost({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
       meshFromSTL: (path) => meshFromSTLViaHost({ session, scriptDir: ctx.scriptDir }, path),
       fromDXF: (path, opts) =>
         fromDXFViaHost({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),

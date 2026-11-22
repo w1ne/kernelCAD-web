@@ -1,0 +1,13 @@
+  RICH   nature                       66/66   colours/asset=2.70
+
+  66/66 assets pass (1 rich kits, 0 thin kits)
+
+  worst 8:
+    2c 1p 1g  catalog/kits/nature/cypress-tree.kcad.ts
+    2c 1p 1g  catalog/kits/nature/ground-tile.kcad.ts
+    2c 1p 1g  catalog/kits/nature/maple-tree.kcad.ts
+    2c 1p 1g  catalog/kits/nature/pine-tree.kcad.ts
+    2c 1p 1g  catalog/kits/nature/poplar-tree.kcad.ts
+    2c 1p 2g  catalog/kits/nature/boulder-cluster.kcad.ts
+    2c 1p 2g  catalog/kits/nature/bush.kcad.ts
+    2c 1p 2g  catalog/kits/nature/rock-arch.kcad.ts

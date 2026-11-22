@@ -1,0 +1,1 @@
+rendered mobile-ultrasound-cart scale=1.15 color=#4b817b

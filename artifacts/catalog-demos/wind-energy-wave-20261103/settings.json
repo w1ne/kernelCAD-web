@@ -1,0 +1,47 @@
+{
+  "date": "2026-11-03",
+  "kit": "wind-energy",
+  "assetCount": 50,
+  "demo": {
+    "source": "capture_wind_demo.py",
+    "output": "wind-energy-kit.mp4",
+    "codec": "H.264 / libx264",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 24,
+    "frameHoldSeconds": 3,
+    "frameCount": 10,
+    "pixelFormat": "yuv420p",
+    "quality": "CRF 25",
+    "previewFrames": 7,
+    "assetsPerPreviewFrame": 8
+  },
+  "commands": [
+    "python3 artifacts/catalog-demos/wind-energy-wave-20261103/generate_wind_assets.py",
+    "npx eslint catalog/",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx vitest run src/kernel/backends/occt/occtResetPoison.test.ts",
+    "npx vitest run tests/integration/catalog/",
+    "python3 artifacts/catalog-demos/wind-energy-wave-20261103/render_wind_previews.py",
+    "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-wind-pages",
+    "python3 artifacts/catalog-demos/wind-energy-wave-20261103/verify_wind_pages.py /tmp/kernelcad-wind-pages",
+    "python3 artifacts/catalog-demos/wind-energy-wave-20261103/capture_wind_demo.py",
+    "python3 artifacts/catalog-demos/wind-energy-wave-20261103/inspect_wind_video.py --manual-inspection-passed"
+  ],
+  "verificationScope": {
+    "covered": [
+      "local source and index",
+      "local mesh export and triangle/material audit",
+      "catalog integration suite",
+      "local generated static pages",
+      "rendered previews",
+      "OCCT reset listener lifecycle"
+    ],
+    "notCovered": [
+      "deployed website behavior",
+      "wind performance",
+      "structural suitability",
+      "physical acceptance"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/renderCatalogPreviews.ts basket-muzzle hard-sided-pet-carrier kennel-bowl-rail exam-step-stool specimen-transport-cooler
+(node:802647) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+vet-clinic/basket-muzzle: 1260 tris
+vet-clinic/exam-step-stool: 864 tris
+vet-clinic/hard-sided-pet-carrier: 1060 tris
+vet-clinic/kennel-bowl-rail: 1632 tris
+vet-clinic/specimen-transport-cooler: 744 tris

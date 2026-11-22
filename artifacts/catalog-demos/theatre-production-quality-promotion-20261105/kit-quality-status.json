@@ -1,0 +1,6 @@
+{
+  "command": "/home/andrii/.hermes/installs/f36c80c7025f0073/environments/33c2707112b94a668e83b8716de5470c/venv/bin/python scripts/checkCatalogQuality.py --kit theatre-production",
+  "environment": {},
+  "exitCode": 0,
+  "status": "pass"
+}

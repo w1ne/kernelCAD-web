@@ -1,0 +1,2 @@
+Command: npm run typecheck
+Result: passed (exit code 0; TypeScript project build and CLI typecheck)

@@ -16,7 +16,7 @@
 //                fit / clash / installation check measures: a modeled thread
 //                in a tapped or clearance hole, or in its nut, is not a clash.
 //
-// Dimensions are nominal values from the standards' tables (familyTable.ts);
+// Dimensions are nominal values from the standards' tables (fastenerStockTables.ts);
 // they are not certified geometry.
 //
 // Cost model: a thread is ONE screw-motion sweep of the thread's transverse
@@ -258,7 +258,13 @@ function revolvedHead(part: ResolvedPart, iso: FastenerIsoDims, shankEnd: number
   return revolveProfile([0, k], [line(rk - ch, k), line(rk, k - ch), line(rk, eb), line(rk - eb, 0), ...shank]);
 }
 
-/** ISO 4017 head: chamfered hex over a washer face, fillet into the shank. */
+/** Hexagon head shared by ISO 4017 (full thread) and ISO 4014 (partial thread):
+ *  chamfered hex over a washer face, fillet into the shank. Washer-face
+ *  diameter comes from the family's own table via `iso`. */
+function isHexHeadFamily(family: string): boolean {
+  return family === 'hex-head-bolt' || family === 'hex-head-bolt-partial';
+}
+
 function hexHead(part: ResolvedPart, iso: FastenerIsoDims, shankEnd: number): OcctBackend {
   const d = part.nominalMm;
   const c = iso.washerFaceHeightMm ?? 0.5;
@@ -270,7 +276,7 @@ function hexHead(part: ResolvedPart, iso: FastenerIsoDims, shankEnd: number): Oc
 }
 
 function headWithSocket(part: ResolvedPart, iso: FastenerIsoDims, shankEnd: number): OcctBackend {
-  if (part.family === 'hex-head-bolt') return hexHead(part, iso, shankEnd);
+  if (isHexHeadFamily(part.family)) return hexHead(part, iso, shankEnd);
   const head = revolvedHead(part, iso, shankEnd);
   if (iso.socketAcrossFlatsMm === undefined || iso.socketDepthMm === undefined) return head;
   const top = part.family === 'flat-head-countersunk' ? 0 : part.headHeightMm;
@@ -388,7 +394,7 @@ function screwEnvelope(part: ResolvedPart): OcctBackend {
   if (part.family === 'flat-head-countersunk') {
     return countersunkScrewSolid(part.nominalMm, part.headDiameterMm, part.headHeightMm, part.lengthMm);
   }
-  if (part.family === 'hex-head-bolt') {
+  if (isHexHeadFamily(part.family)) {
     return hexHeadBoltSolid(part.nominalMm, part.acrossFlatsMm, part.headHeightMm, part.lengthMm);
   }
   if (part.family === 'set-screw' || part.family === 'threaded-rod') {

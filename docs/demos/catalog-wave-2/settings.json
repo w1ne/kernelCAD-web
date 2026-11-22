@@ -1,0 +1,26 @@
+{
+  "kit": "outdoor-gear",
+  "width": 1280,
+  "height": 720,
+  "frameRate": 2,
+  "videoFrameRate": 24,
+  "videoCodec": "libx264",
+  "pixelFormat": "yuv420p",
+  "crf": 24,
+  "render": "software render of exported low-poly GLB triangles",
+  "auditAllChoices": true,
+  "variants": [
+    {
+      "id": "camp-stove",
+      "want": "remote fuel canister"
+    },
+    {
+      "id": "sleeping-bag",
+      "want": "rectangular cut"
+    },
+    {
+      "id": "camping-backpack",
+      "want": "60 L alpine pack"
+    }
+  ]
+}

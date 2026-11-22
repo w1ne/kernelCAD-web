@@ -1,0 +1,542 @@
+{
+  "checkedAt": "2026-11-02",
+  "kit": "marine",
+  "totalAssets": 715,
+  "kitAssets": 40,
+  "passed": 40,
+  "total": 40,
+  "catalogIndexSource": "catalog/index.json",
+  "verificationCommands": [
+    "python3 artifacts/catalog-demos/marine-wave-20261102/generate_marine_assets.py",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx eslint catalog/",
+    "npx vitest run tests/integration/catalog/"
+  ],
+  "auditScope": "Each source builds to a non-empty one-material mesh within its indexed triangle budget, opens with exactly scale and color knobs, and has base origin.",
+  "triangleRange": [
+    100,
+    524
+  ],
+  "assets": [
+    {
+      "id": "anchor-chain",
+      "source": "catalog/kits/marine/anchor-chain.kcad.ts",
+      "sourceSha256": "ec92460c02f0ae5d122d2f67d4358e45c014984c5ac4bb5a1600a23e39e4c3ef",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 524,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "anchor-winch",
+      "source": "catalog/kits/marine/anchor-winch.kcad.ts",
+      "sourceSha256": "c44f97a7deb93fb8e97140cb17878f8273144e616dc7af81fa3dc7f207a2aa9a",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 224,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "anchor",
+      "source": "catalog/kits/marine/anchor.kcad.ts",
+      "sourceSha256": "373bd5eb7a27311684c17ac4978eeaab3e3f12729edf3360b7fadd26f1088941",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 170,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "bait-bucket",
+      "source": "catalog/kits/marine/bait-bucket.kcad.ts",
+      "sourceSha256": "20d3c0e6c5dbf57f6a339b354e180d3e6f0eda40e5a411cb8c3b447f0525d9c2",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 244,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "binnacle-compass",
+      "source": "catalog/kits/marine/binnacle-compass.kcad.ts",
+      "sourceSha256": "99d3e35ca4f2556f0c4bc4f04eb755afac0505f434f504830790690478f635cb",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 238,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "boat-cleat",
+      "source": "catalog/kits/marine/boat-cleat.kcad.ts",
+      "sourceSha256": "1c05d9086799b64cdb18f2fcf6547921cf42f444b438cafc8756341203247524",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 200,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "boat-fender",
+      "source": "catalog/kits/marine/boat-fender.kcad.ts",
+      "sourceSha256": "f728928a5569ff3d506b63f3655883fea03814ee0f5b68f7d6dbcc4b1675f782",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 314,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "boat-hook",
+      "source": "catalog/kits/marine/boat-hook.kcad.ts",
+      "sourceSha256": "abe731af8b10882815687781caaf877f8103b45b6449ebb8982b921597853351",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 190,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "boat-oar",
+      "source": "catalog/kits/marine/boat-oar.kcad.ts",
+      "sourceSha256": "a700cd664e81d29942c51e372cfdee9be5932f73fff04e38f804ef980bb4cb33",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "boat-paddle",
+      "source": "catalog/kits/marine/boat-paddle.kcad.ts",
+      "sourceSha256": "60b3e0f7ff854f99029e7ad25db7eef43cb531036a47aab9d544521ba3e77455",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 172,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "boat-trailer",
+      "source": "catalog/kits/marine/boat-trailer.kcad.ts",
+      "sourceSha256": "37240c865d6dec519437d85cc2720c57a59bca431bc3e23b98d76be747d225a7",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 324,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cargo-ship",
+      "source": "catalog/kits/marine/cargo-ship.kcad.ts",
+      "sourceSha256": "85a545052ffbc3357aa6b410bcfcd6383832090d4e0c888cd78538dca35bdcf1",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 136,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "channel-marker-buoy",
+      "source": "catalog/kits/marine/channel-marker-buoy.kcad.ts",
+      "sourceSha256": "ac82a7d8e08620f67902ff3588c0e600bcdd40b082ca2801542f759585d1c1e0",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 266,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "coiled-mooring-rope",
+      "source": "catalog/kits/marine/coiled-mooring-rope.kcad.ts",
+      "sourceSha256": "37b10eedcd9934a99b2bee71eb0b2c9a3f4c5542c57b33189a7508493d6115fb",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 428,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "crab-trap",
+      "source": "catalog/kits/marine/crab-trap.kcad.ts",
+      "sourceSha256": "e907722fd3e1888975df09c441410be0d325fe253a44dd031660772910cfd876",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 264,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "dock-bollard",
+      "source": "catalog/kits/marine/dock-bollard.kcad.ts",
+      "sourceSha256": "0cf895ff19340795ce6f44fb04b896f102057fab3388ff2cf92aa37fe9a9d232",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 220,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "dock-ladder",
+      "source": "catalog/kits/marine/dock-ladder.kcad.ts",
+      "sourceSha256": "ace550bb89db2dc60af55046b657098bc0fad9006dfb3eb55f96f2ee0afafd9f",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 308,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "dock-piling",
+      "source": "catalog/kits/marine/dock-piling.kcad.ts",
+      "sourceSha256": "7e82ad417e446cd78d294f900bf5a4a481c5cbaaede3f03cce937c8544c2dbe7",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "fish-crate",
+      "source": "catalog/kits/marine/fish-crate.kcad.ts",
+      "sourceSha256": "e86310a83dd3cd4973fcd3c1f5cbb9f970ab5e856b674aeb8beabe8d7958c8e1",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "fishing-boat",
+      "source": "catalog/kits/marine/fishing-boat.kcad.ts",
+      "sourceSha256": "e79c609328505804715aa49f8b67ee15062a179903f3e65ec19c816f2ef7e09f",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "fishing-net",
+      "source": "catalog/kits/marine/fishing-net.kcad.ts",
+      "sourceSha256": "bf497dbf0f1e7587cf8eaf7ba36509b41f8895f89ca52e5e63504017055c4d9a",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "inflatable-life-raft",
+      "source": "catalog/kits/marine/inflatable-life-raft.kcad.ts",
+      "sourceSha256": "e91600f18604d78a7f492504df4412a8fc344a8985f0f7947c00930f425360f9",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 244,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "life-jacket",
+      "source": "catalog/kits/marine/life-jacket.kcad.ts",
+      "sourceSha256": "7ba4e3926bdf4d36c529fa338f011b1a144879a188064649f04b6208ab06e551",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 136,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "life-raft-canister",
+      "source": "catalog/kits/marine/life-raft-canister.kcad.ts",
+      "sourceSha256": "4b67c66e613d213c2abb3de3a2537254ac3246564054fe12611babd612ef51eb",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 248,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "life-ring",
+      "source": "catalog/kits/marine/life-ring.kcad.ts",
+      "sourceSha256": "ddae30d210d5377b0cb043020e45906a24784322d05fe682229383227f3f2662",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 240,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "lobster-pot",
+      "source": "catalog/kits/marine/lobster-pot.kcad.ts",
+      "sourceSha256": "875b56862b3428d4b2ebc136d61973bb37063dc48047366fdb3eefa70a3e1917",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 172,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "magnetic-compass",
+      "source": "catalog/kits/marine/magnetic-compass.kcad.ts",
+      "sourceSha256": "cc18b2ca8a4a8c7735b218dbd9c45aac80bc767cfad7c32638814842d495f73e",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 168,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "mooring-buoy",
+      "source": "catalog/kits/marine/mooring-buoy.kcad.ts",
+      "sourceSha256": "f55a7c93bf8c1f4b432386e873277adcc05e42a4f3f69858d07a1bd82a81fbe3",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 222,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "motorboat",
+      "source": "catalog/kits/marine/motorboat.kcad.ts",
+      "sourceSha256": "7d1a8e83415fa051aaf68df93558ab5ac4778af46e96f8d564e7e847fb01b588",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 100,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "outboard-motor",
+      "source": "catalog/kits/marine/outboard-motor.kcad.ts",
+      "sourceSha256": "14d770ada83a9d0d362de81513d36abcfb4b8bd8d56994c2f238f5375f6c7cb8",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 230,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "porthole",
+      "source": "catalog/kits/marine/porthole.kcad.ts",
+      "sourceSha256": "51d2b023f8250a551a4eaafd0caecea0162e2c3e62bbc934abc58b8c2f6aa361",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 316,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rescue-lifeboat",
+      "source": "catalog/kits/marine/rescue-lifeboat.kcad.ts",
+      "sourceSha256": "08b3e84f797db26d4a38ccb83ad15ae023f232ca5adbdf9ea110ce80ad871476",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "sailboat",
+      "source": "catalog/kits/marine/sailboat.kcad.ts",
+      "sourceSha256": "9c913c088898f62f007c7559a5d51102c4ab9cac21fea2724fb6b5f2f5a9f690",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 164,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "sextant",
+      "source": "catalog/kits/marine/sextant.kcad.ts",
+      "sourceSha256": "f29d764a8bae0f353c28b601b9c61b66feb0c82ce271180b4c3afad3e911fb54",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 232,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "ship-bell",
+      "source": "catalog/kits/marine/ship-bell.kcad.ts",
+      "sourceSha256": "45588ec653347e02d98dec17d0de1e9bd7e06d543ec6d6f85d39f21c0f230f35",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 310,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "ship-horn",
+      "source": "catalog/kits/marine/ship-horn.kcad.ts",
+      "sourceSha256": "0d94f35f39901d7d7ca82fb2f69657cd56fef29f1017c5fc107e06d5538d07e7",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 220,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "ship-wheel",
+      "source": "catalog/kits/marine/ship-wheel.kcad.ts",
+      "sourceSha256": "b0ff84bfd485c7230acdf865527e61ac7b8fcf02cc7bff666c0c8f06a0d508b0",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 308,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "throw-rope-bag",
+      "source": "catalog/kits/marine/throw-rope-bag.kcad.ts",
+      "sourceSha256": "2cab4dbcc635f6123f1e8129102fba915059925ee714bba7bed5b785c7e9fefe",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 240,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "tugboat",
+      "source": "catalog/kits/marine/tugboat.kcad.ts",
+      "sourceSha256": "7ca1c325dd9bf539167c88a1846c602e647cdd0713f9d41803c6ad1e8422e70f",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 202,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "yacht",
+      "source": "catalog/kits/marine/yacht.kcad.ts",
+      "sourceSha256": "f9fb577ac52dd6db8b1f44910e09af4d98a92f4a6dd0b0d6f45a7693dcb67609",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 112,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    }
+  ]
+}

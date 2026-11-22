@@ -1,0 +1,128 @@
+{
+  "recordedAt": "2026-11-06T12:49:14.520638+00:00",
+  "round": "office scissors default-view geometry repair",
+  "scope": {
+    "existingKit": "office",
+    "existingAssetId": "scissors",
+    "assetsRefined": 1,
+    "kitsAdded": 0,
+    "assetIdsAdded": 0
+  },
+  "geometry": {
+    "addedParts": [
+      "lower-handle-tang",
+      "upper-handle-tang"
+    ],
+    "purpose": "connect each finger loop to the blade shoulders and brass pivot"
+  },
+  "materialsAndPresets": {
+    "materialControlsAdded": 0,
+    "existingMaterialControls": [
+      "stainlessSteel",
+      "polymer",
+      "brass"
+    ],
+    "presetsAdded": 0,
+    "existingPresets": [
+      "professional",
+      "classroom"
+    ]
+  },
+  "mesh": {
+    "triangles": 316,
+    "budgetBefore": 280,
+    "budgetAfter": 360,
+    "withinBudget": true
+  },
+  "kitQuality": {
+    "kit": "office",
+    "passing": 40,
+    "total": 40,
+    "passRate": "100%",
+    "previewsRendered": 40
+  },
+  "catalogQuality": {
+    "passing": 2390,
+    "total": 2390,
+    "passRate": "100.00%",
+    "thin": 0
+  },
+  "catalogIndex": {
+    "source": "catalog/kits/office/scissors.kcad.ts",
+    "sourceSha256": "7ba93a1efb5a6a335f26f4c39d8e7109ebd8dc5f20b20112b08d64ae0b28fd35",
+    "indexedSourceSha256": "7ba93a1efb5a6a335f26f4c39d8e7109ebd8dc5f20b20112b08d64ae0b28fd35",
+    "sourceHashMatches": true,
+    "preview": "/assets/office-scissors.png",
+    "previewIndexed": true
+  },
+  "commands": {
+    "previewRender": {
+      "command": "npx tsx scripts/renderCatalogPreviews.ts <40 office asset IDs>",
+      "exitCode": 0,
+      "assetsRendered": 40
+    },
+    "indexBuild": {
+      "command": "npx tsx scripts/buildAssetCatalog.ts",
+      "exitCode": 0
+    },
+    "qualityGate": {
+      "command": "python3 scripts/checkCatalogQuality.py",
+      "exitCode": 0,
+      "passing": 2390,
+      "total": 2390,
+      "passRate": "100.00%"
+    },
+    "kitQualityGate": {
+      "command": "python3 scripts/checkCatalogQuality.py --kit office",
+      "exitCode": 0,
+      "passing": 40,
+      "total": 40
+    },
+    "eslint": {
+      "command": "npx eslint catalog/kits/office/",
+      "exitCode": 0
+    },
+    "catalogIntegration": {
+      "command": "npx vitest run tests/integration/catalog/",
+      "exitCode": 0,
+      "files": 4,
+      "tests": 15,
+      "durationSeconds": 249.91
+    },
+    "catalogPages": {
+      "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-office-scissors-20261106",
+      "exitCode": 0,
+      "pagesGenerated": 2390
+    },
+    "localScissorsPage": {
+      "passed": 7,
+      "total": 7,
+      "pass": true
+    },
+    "namedPresetRenders": {
+      "command": "npx tsx artifacts/catalog-demos/office-scissors-detail-20261106/render_scissors_presets.ts",
+      "exitCode": 0,
+      "variants": 2,
+      "eachTriangles": 316
+    }
+  },
+  "visualReview": {
+    "scissors": "The red polymer tangs bridge both rings to the brass pivot; the silver blades open into a recognizable pair of shears.",
+    "fountainPen": "The dark blue upright barrel and cap with a silver band and clip read as a fountain pen.",
+    "paperShredder": "The graphite cabinet, top feed slot, greenish bin window and two front casters read as an office shredder."
+  },
+  "deploymentAndAcceptance": {
+    "deployment": "not deployed",
+    "publicPage": "not checked post-deployment; local generated page only",
+    "physicalHardwareAcceptance": "not performed"
+  },
+  "demo": {
+    "video": "office-scissors-detail.mp4",
+    "durationSeconds": 15,
+    "codec": "h264",
+    "resolution": "1280x720",
+    "frameRate": "24 fps",
+    "visuallyInspected": true,
+    "inspectionEvidence": "video-inspection.json and video-review/"
+  }
+}

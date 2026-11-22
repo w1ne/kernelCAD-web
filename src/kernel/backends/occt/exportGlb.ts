@@ -38,6 +38,7 @@ import * as THREE from 'three';
 // `three-stdlib` path is the documented backup; we use the backup since Node
 // is the runtime.
 import { GLTFExporter } from 'three-stdlib';
+import * as replicad from 'replicad';
 import { createRequire } from 'node:module';
 import { Document, NodeIO } from '@gltf-transform/core';
 import sharp from 'sharp';
@@ -52,11 +53,12 @@ import { computeProjectedUVs } from '../../../shared/intent/textureProjection';
 import { resolveAndLoadTextureBytes } from '../../../shared/textures';
 import { attributionGenerator } from '../../../shared/links/attribution';
 import { createMaterialNameRegistry } from '../../export/materialNaming';
+import { measureGlbStats, rigStatsFlags } from '../../export/assetStats';
+import { creasedNormalMesh } from '../../export/creasedNormals';
 import {
   createPaletteCollector,
   flatColoredGeometry,
   lowPolyDeflection,
-  measureMeshes,
   needsOwnMaterial,
   paletteMaterial,
   type GlbStats,
@@ -102,8 +104,9 @@ export interface ExportGlbOptions {
   style?: 'pbr' | 'lowpoly';
   /** Tessellation and triangle budget for `style: 'lowpoly'`. */
   lowpoly?: LowPolyGlbOptions;
-  /** Length unit of the written file. Default `mm` for `pbr` (historical)
-   *  and `m` for `lowpoly` (glTF's unit; game engines expect metres). */
+  /** Length unit of the written file. Defaults to `m`, as required by glTF.
+   *  `mm` preserves native kernelCAD coordinates for consumers that read the
+   *  `asset.extras.kernelcad.units` metadata. */
   units?: 'mm' | 'm';
   /** Directory relative-path texture refs resolve against. Mirrors
    *  `referenceImage()` / material texture-loading convention. Only needed
@@ -147,10 +150,13 @@ export async function exportGlbAsync(
     throw new Error('exportGlbAsync: no parts to write.');
   }
 
-  const { meshed, layout, stats } = meshPartsForGlb(parts, options);
-  const rigTree = options.hierarchy !== 'flat' && solvedAssembly !== undefined && solvedAssembly.mates.length > 0
+  const { meshed, layout, stats: measured } = meshPartsForGlb(parts, options);
+  const solvedRig = solvedAssembly !== undefined && solvedAssembly.mates.length > 0
     ? buildRigTree(solvedAssembly)
     : undefined;
+  const rigTree = options.hierarchy === 'flat' ? undefined : solvedRig;
+  const rigMetadata = solvedRig === undefined ? undefined : rigMetadataFromTree(solvedRig);
+  const stats = { ...measured, ...rigStatsFlags(rigMetadata) };
   const { scene, wrappedParts, palette } = createExportScene(meshed, layout, rigTree, solvedAssembly);
 
   const exporter = new GLTFExporter();
@@ -199,10 +205,9 @@ export async function exportGlbAsync(
     stats,
   };
   if (palette !== undefined) kernelcadExtras.palette = palette;
-  if (rigTree !== undefined) {
-    const metadata = rigMetadataFromTree(rigTree);
-    kernelcadExtras.rig = metadata.rig;
-    kernelcadExtras.rigWarnings = metadata.warnings;
+  if (rigTree !== undefined && rigMetadata !== undefined) {
+    kernelcadExtras.rig = rigMetadata.rig;
+    kernelcadExtras.rigWarnings = rigMetadata.warnings;
   }
   return injectAssetExtras(out, { kernelcad: kernelcadExtras }, attributionGenerator(KERNELCAD_VERSION));
 }
@@ -215,17 +220,21 @@ function meshPartsForGlb(
 ): { meshed: MeshedGlbPart[]; layout: ExportSceneLayout; stats: GlbStats } {
   const style = options.style ?? 'pbr';
   const deflection = style === 'lowpoly' ? lowPolyDeflection(options.lowpoly) : undefined;
-  const meshed = parts.map((p): MeshedGlbPart =>
-    hasMesh(p)
-      ? p
-      : { ...p, mesh: meshShapeForExport(p.shape.getReplicadShape(), deflection) },
+  const meshed = parts.flatMap((p): MeshedGlbPart[] =>
+    hasMesh(p) ? [p] : meshPartForGlb(p, deflection),
   );
   const layout: ExportSceneLayout = {
     axis: options.axis ?? 'y-up',
-    units: options.units ?? (style === 'lowpoly' ? 'm' : 'mm'),
+    units: options.units ?? 'm',
     style,
   };
-  const stats = measureMeshes(meshed.map((p) => p.mesh), layout.axis);
+  const stats = measureGlbStats(meshed.map((part) => ({
+    mesh: part.mesh,
+    name: part.name,
+    material: part.material,
+    color: part.color,
+    colorParamName: part.colorParamName,
+  })), { axis: layout.axis, style: layout.style });
   const maxTriangles = options.lowpoly?.maxTriangles;
   if (maxTriangles !== undefined && stats.triangles > maxTriangles) {
     throw new Error(
@@ -331,13 +340,16 @@ function createPartGeometry(
 ): THREE.BufferGeometry {
   // Projected UVs are serialized with the mesh; Node image bytes are embedded
   // later by the glTF-Transform post-process because GLTFExporter needs Canvas.
+  const creased = creasedNormalMesh(part.mesh.vertices, part.mesh.triangles);
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(part.mesh.vertices, 3));
-  geometry.setIndex(Array.from(part.mesh.triangles));
-  geometry.computeVertexNormals();
+  geometry.setAttribute('position', new THREE.BufferAttribute(creased.positions, 3));
+  geometry.setAttribute('normal', new THREE.BufferAttribute(creased.normals, 3));
+  // Keep 16-bit indices for meshes that fit, as three's number[] path did.
+  const indices = creased.positions.length / 3 <= 65536 ? new Uint16Array(creased.indices) : creased.indices;
+  geometry.setIndex(new THREE.BufferAttribute(indices, 1));
   const projection = part.material?.textureProjection;
   if (projection !== undefined && part.material?.textures?.albedo !== undefined) {
-    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(computeProjectedUVs(part.mesh.vertices, projection), 2));
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(computeProjectedUVs(creased.positions, projection), 2));
     wrappedParts.push({ name: part.name, projection });
   }
   return geometry;
@@ -505,6 +517,53 @@ function injectAssetExtras(
   out.set(newJsonBytes, 20);
   // BIN chunk (copy as-is — header + payload + any padding the original had).
   out.set(binBytes, 20 + newJsonBytes.byteLength);
+  return out;
+}
+
+/**
+ * Mesh one part. A part whose faces carry `union()` member finishes
+ * (`materialByFaceIndex`) is meshed once per distinct finish: each face group
+ * becomes its own primitive with its own material under the part's name, so
+ * a dark case keeps its metal horn in the file. The first entry is the body
+ * default (faces not listed, `material` / `color` of the part).
+ */
+function meshPartForGlb(
+  p: WorldFramePart,
+  deflection: Parameters<typeof meshShapeForExport>[1],
+): MeshedGlbPart[] {
+  const byFace = p.materialByFaceIndex;
+  const shape = p.shape.getReplicadShape();
+  if (byFace === undefined || Object.keys(byFace).length === 0) {
+    return [{ ...p, mesh: meshShapeForExport(shape, deflection) }];
+  }
+  const faces = shape.faces;
+  const groups = new Map<string, { material?: PBRMaterial; faces: replicad.Face[] }>([['', { faces: [] }]]);
+  faces.forEach((face, index) => {
+    const material = byFace[index];
+    const key = material === undefined ? '' : JSON.stringify(material);
+    let group = groups.get(key);
+    if (group === undefined) {
+      group = { material, faces: [] };
+      groups.set(key, group);
+    }
+    group.faces.push(face);
+  });
+  const out: MeshedGlbPart[] = [];
+  for (const [key, group] of groups) {
+    if (group.faces.length === 0) continue;
+    const compound = replicad.makeCompound(group.faces) as unknown as replicad.Shape3D;
+    const mesh = meshShapeForExport(compound, deflection);
+    if (key === '') {
+      out.push({ ...p, mesh });
+    } else {
+      // A member group renders with the member's own finish only: drop the
+      // body's colour so it cannot shadow the member material.
+      const member: MeshedGlbPart = { ...p, material: group.material, mesh };
+      delete (member as { color?: string }).color;
+      delete (member as { colorParamName?: string }).colorParamName;
+      out.push(member);
+    }
+  }
   return out;
 }
 

@@ -2,10 +2,12 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureId, Vec3, Vec3Param, EditableVec3 } from '../../shared/intent/types';
 import type { FabProcess } from '../../shared/fab';
+import type { StockSpec } from '../../shared/stock';
 import type { Connector, ConnectorOriginInput, ConnectorType, FluidPort } from '../mates/connector';
 import type { WrapGeomOptions, WrapGeomRecord } from '../mates/tendon';
 import type { Editable } from '../../shared/runtime/paramRef';
 import type { Shape } from './proxy';
+import type { PartConfigurationIdentity } from './partConfigurationTypes';
 import type { Scene } from '../validation/scene';
 import type { Assembly, SolvedKinematics } from './assembly';
 
@@ -147,6 +149,21 @@ export interface AssemblyJointRef {
   kind: 'revolute' | 'prismatic' | 'fixed' | 'ball';
 }
 
+/** `subAssembly(name, other, opts)` options. */
+export interface SubAssemblyImportOpts {
+  /**
+   * Variant declared on the child with `variant()`. The import copies that
+   * set and does not change which parts the child itself shows.
+   */
+  variant?: string;
+}
+
+/** `variant(name, opts)` options. Omitted `suppress` keeps every part. */
+export interface AssemblyVariantOpts {
+  /** Part names to leave out. A part connected to one of these is left out too. */
+  suppress?: readonly string[];
+}
+
 /**
  * Returned by `Assembly.subAssembly(name, other)`. Lets the caller mate
  * INTO the imported parts without manually re-spelling the namespace
@@ -213,13 +230,16 @@ export interface AssemblyPartOpts {
    *  carries mass AND looks. Both are DEFAULTS: an explicit `density` here wins
    *  for mass, and an explicit `.finish()` / `.color()` / `.material()` already
    *  on the shape wins for appearance. Valid: `steel`, `aluminum` (alias
-   *  `aluminium`), `pla`, `abs`, `pet`. An unknown name throws
+   *  `aluminium`), `pla`, `abs`, `asa`, `pet`. An unknown name throws
    *  `feature.invalid-args` naming the valid materials — never a silent
    *  fallback to water density or a default finish. */
   material?: string;
   /** Declared manufacturing process; the order pack and BOM group by it.
    *  Omitted = inferred by the existing capture-graph heuristic. */
   process?: FabProcess;
+  /** Declared blank the part is made from. Dimensions are millimetres.
+   *  Omitted when the blank size is unknown. Read by the BOM. */
+  stock?: StockSpec;
   /** Known part mass in kg (catalog or datasheet, e.g. an SG90 is 0.009).
    *  Mass-based checks (`verify({ check: 'motion-load' })`) use it instead of
    *  volume x density; the centre of mass and inertia still come from the
@@ -425,6 +445,8 @@ export interface AssemblyPartStored extends AssemblyPartRef {
   readonly material?: string;
   /** Declared process, copied from `AssemblyPartOpts.process`. */
   readonly process?: FabProcess;
+  /** Declared blank, copied from `AssemblyPartOpts.stock`. */
+  readonly stock?: StockSpec;
   /** Declared part mass in kg, copied from `AssemblyPartOpts.massKg`. */
   readonly massKg?: number;
   /** Beam cross-section, copied from `AssemblyPartOpts.crossSection`. Read
@@ -434,6 +456,16 @@ export interface AssemblyPartStored extends AssemblyPartRef {
   /** Display-clip / intentional-overlay flag, copied from
    *  `AssemblyPartOpts.overlay`. */
   readonly overlay?: boolean;
+  /** Set when the part was created by `assembly.instance`. */
+  readonly configuration?: PartConfigurationIdentity;
+}
+
+/** `assembly.instance` options. Connectors come from the part file. */
+export interface AssemblyInstanceOpts extends Omit<AssemblyPartOpts, 'connectors' | 'connect'> {
+  /** Part file, relative to this assembly script or absolute. */
+  source: string;
+  /** Name passed to `configurations()` in that file. */
+  configuration: string;
 }
 
 /** SRDF planning group. Either chain-form (base/tip) or enumeration. */

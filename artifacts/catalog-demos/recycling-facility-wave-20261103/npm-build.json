@@ -1,0 +1,12 @@
+{
+  "command": "npm run build",
+  "runtime": "Node v22.23.4",
+  "passed": true,
+  "outputs": [
+    "dist/cli/index.js",
+    "dist/headless-player/index.html"
+  ],
+  "warnings": [
+    "bundled vendor/verb-nurbs/build/verb.es.js compares a value with NaN using ==; build completed successfully"
+  ]
+}

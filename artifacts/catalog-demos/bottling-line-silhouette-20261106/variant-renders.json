@@ -1,0 +1,334 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/bottling-line-silhouette-20261106/render_bottling_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/beverage-bottling-line/rotary-filler.kcad.ts",
+      "sourceSha256": "05e6214ab84cc8e9cf18fa95ec05b9f24ca857d4064b872fe5e4e1fe72c8c1af",
+      "triangleBudget": 6800,
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c",
+          "safetyPaint": "#f0b336"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75",
+          "safetyPaint": "#bd7b24"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/beverage-bottling-line/carbonation-vessel.kcad.ts",
+      "sourceSha256": "265eb5a08de7e96360f0f5d5f32acee0276fd5b1deb89346717f943fbeb40ce6",
+      "triangleBudget": 2400,
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c",
+          "safetyPaint": "#f0b336"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75",
+          "safetyPaint": "#bd7b24"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/beverage-bottling-line/sanitary-lobe-pump.kcad.ts",
+      "sourceSha256": "b91fc409e35e3d16c0d67fd70a6ba9aebf22a053f678ffcf73fe2bb61965174f",
+      "triangleBudget": 2000,
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "safetyPaint": "#f0b336",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "safetyPaint": "#bd7b24",
+          "foodPolymer": "#286c75"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/beverage-bottling-line/stretch-wrapper.kcad.ts",
+      "sourceSha256": "a05cc2b96930e208818fc80092306f0bb142a020631058f77c772e8e2b8fde71",
+      "triangleBudget": 1200,
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#dcebee",
+          "palletTimber": "#c99b68"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#9fbcc0",
+          "palletTimber": "#8f6a45"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/beverage-bottling-line/bottle-infeed-conveyor.kcad.ts",
+      "sourceSha256": "0d8c365798c36192331c0327c9a8179111842c567096dd1307b8dd584c8b9668",
+      "triangleBudget": 3000,
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c",
+          "petBottle": "#a6dbe3"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75",
+          "petBottle": "#5d9a72"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "rotary-filler",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 5404,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/rotary-filler-default.png"
+    },
+    {
+      "assetId": "rotary-filler",
+      "variant": "heads-10",
+      "view": "3/4",
+      "values": {
+        "heads": "10"
+      },
+      "triangles": 4864,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/rotary-filler-heads-10.png"
+    },
+    {
+      "assetId": "rotary-filler",
+      "variant": "heads-16",
+      "view": "3/4",
+      "values": {
+        "heads": "16"
+      },
+      "triangles": 6484,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/rotary-filler-heads-16.png"
+    },
+    {
+      "assetId": "rotary-filler",
+      "variant": "sanitaryLine",
+      "view": "3/4",
+      "values": {
+        "stainlessSteel": "#d2dfe1",
+        "powderCoat": "#4b95a4",
+        "foodPolymer": "#2c828c",
+        "safetyPaint": "#f0b336"
+      },
+      "triangles": 5404,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/rotary-filler-sanitaryLine.png"
+    },
+    {
+      "assetId": "rotary-filler",
+      "variant": "legacyPlant",
+      "view": "3/4",
+      "values": {
+        "stainlessSteel": "#858f91",
+        "powderCoat": "#315b70",
+        "foodPolymer": "#286c75",
+        "safetyPaint": "#bd7b24"
+      },
+      "triangles": 5404,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/rotary-filler-legacyPlant.png"
+    },
+    {
+      "assetId": "carbonation-vessel",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 2142,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/carbonation-vessel-default.png"
+    },
+    {
+      "assetId": "carbonation-vessel",
+      "variant": "cone",
+      "view": "3/4",
+      "values": {
+        "bottom": "cone"
+      },
+      "triangles": 2106,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/carbonation-vessel-cone.png"
+    },
+    {
+      "assetId": "carbonation-vessel",
+      "variant": "sanitaryLine",
+      "view": "3/4",
+      "values": {
+        "stainlessSteel": "#d2dfe1",
+        "powderCoat": "#4b95a4",
+        "foodPolymer": "#2c828c",
+        "safetyPaint": "#f0b336"
+      },
+      "triangles": 2142,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/carbonation-vessel-sanitaryLine.png"
+    },
+    {
+      "assetId": "carbonation-vessel",
+      "variant": "legacyPlant",
+      "view": "3/4",
+      "values": {
+        "stainlessSteel": "#858f91",
+        "powderCoat": "#315b70",
+        "foodPolymer": "#286c75",
+        "safetyPaint": "#bd7b24"
+      },
+      "triangles": 2142,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/carbonation-vessel-legacyPlant.png"
+    },
+    {
+      "assetId": "sanitary-lobe-pump",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1584,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/sanitary-lobe-pump-default.png"
+    },
+    {
+      "assetId": "sanitary-lobe-pump",
+      "variant": "vertical",
+      "view": "3/4",
+      "values": {
+        "ports": "vertical"
+      },
+      "triangles": 1716,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/sanitary-lobe-pump-vertical.png"
+    },
+    {
+      "assetId": "sanitary-lobe-pump",
+      "variant": "sanitaryLine",
+      "view": "3/4",
+      "values": {
+        "stainlessSteel": "#d2dfe1",
+        "powderCoat": "#4b95a4",
+        "safetyPaint": "#f0b336",
+        "foodPolymer": "#2c828c"
+      },
+      "triangles": 1584,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/sanitary-lobe-pump-sanitaryLine.png"
+    },
+    {
+      "assetId": "sanitary-lobe-pump",
+      "variant": "legacyPlant",
+      "view": "3/4",
+      "values": {
+        "stainlessSteel": "#858f91",
+        "powderCoat": "#315b70",
+        "safetyPaint": "#bd7b24",
+        "foodPolymer": "#286c75"
+      },
+      "triangles": 1584,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/sanitary-lobe-pump-legacyPlant.png"
+    },
+    {
+      "assetId": "stretch-wrapper",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1004,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/stretch-wrapper-default.png"
+    },
+    {
+      "assetId": "stretch-wrapper",
+      "variant": "empty",
+      "view": "3/4",
+      "values": {
+        "load": "empty"
+      },
+      "triangles": 536,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/stretch-wrapper-empty.png"
+    },
+    {
+      "assetId": "stretch-wrapper",
+      "variant": "sanitaryLine",
+      "view": "3/4",
+      "values": {
+        "stainlessSteel": "#d2dfe1",
+        "powderCoat": "#4b95a4",
+        "foodPolymer": "#dcebee",
+        "palletTimber": "#c99b68"
+      },
+      "triangles": 1004,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/stretch-wrapper-sanitaryLine.png"
+    },
+    {
+      "assetId": "stretch-wrapper",
+      "variant": "legacyPlant",
+      "view": "3/4",
+      "values": {
+        "stainlessSteel": "#858f91",
+        "powderCoat": "#315b70",
+        "foodPolymer": "#9fbcc0",
+        "palletTimber": "#8f6a45"
+      },
+      "triangles": 1004,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/stretch-wrapper-legacyPlant.png"
+    },
+    {
+      "assetId": "bottle-infeed-conveyor",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 2300,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/bottle-infeed-conveyor-default.png"
+    },
+    {
+      "assetId": "bottle-infeed-conveyor",
+      "variant": "double",
+      "view": "3/4",
+      "values": {
+        "lanes": "double"
+      },
+      "triangles": 2808,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/bottle-infeed-conveyor-double.png"
+    },
+    {
+      "assetId": "bottle-infeed-conveyor",
+      "variant": "sanitaryLine",
+      "view": "3/4",
+      "values": {
+        "stainlessSteel": "#d2dfe1",
+        "powderCoat": "#4b95a4",
+        "foodPolymer": "#2c828c",
+        "petBottle": "#a6dbe3"
+      },
+      "triangles": 2300,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/bottle-infeed-conveyor-sanitaryLine.png"
+    },
+    {
+      "assetId": "bottle-infeed-conveyor",
+      "variant": "legacyPlant",
+      "view": "3/4",
+      "values": {
+        "stainlessSteel": "#858f91",
+        "powderCoat": "#315b70",
+        "foodPolymer": "#286c75",
+        "petBottle": "#5d9a72"
+      },
+      "triangles": 2300,
+      "png": "artifacts/catalog-demos/bottling-line-silhouette-20261106/variants/bottle-infeed-conveyor-legacyPlant.png"
+    }
+  ]
+}

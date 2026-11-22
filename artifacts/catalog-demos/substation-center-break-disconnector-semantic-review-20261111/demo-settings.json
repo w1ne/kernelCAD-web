@@ -1,0 +1,39 @@
+{
+  "asset": "grid-substation/substation-center-break-disconnector",
+  "source": "catalog/kits/grid-substation/substation-center-break-disconnector.kcad.ts",
+  "states": [
+    {
+      "name": "before",
+      "source": "source/substation-center-break-disconnector.before.kcad.ts",
+      "preview": "previews/before.png"
+    },
+    {
+      "name": "after-open",
+      "parameter": { "switchState": "open" },
+      "source": "source/substation-center-break-disconnector.after.kcad.ts",
+      "preview": "previews/after.png"
+    },
+    {
+      "name": "after-closed",
+      "parameter": { "switchState": "closed" },
+      "renderScript": "render-closed-variant.ts",
+      "preview": "previews/closed.png"
+    }
+  ],
+  "video": {
+    "output": "demo.mp4",
+    "invocation": "bash artifacts/catalog-demos/substation-center-break-disconnector-semantic-review-20261111/build-demo.sh",
+    "frameSize": "720x640",
+    "fps": 24,
+    "durationSeconds": 15,
+    "codec": "libx264",
+    "audio": false
+  },
+  "evidenceKind": "local software-rendered catalog previews",
+  "notClaimed": [
+    "deployed behavior",
+    "electrical simulation",
+    "vendor product geometry",
+    "physical hardware acceptance"
+  ]
+}

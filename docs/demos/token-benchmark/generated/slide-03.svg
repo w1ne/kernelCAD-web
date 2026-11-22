@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101827"/><stop offset="1" stop-color="#1b293a"/></linearGradient></defs>
+    <style>
+      text { font-family: 'DejaVu Sans Mono', monospace; }
+      .eyebrow { fill: #80d6c8; font-size: 23px; letter-spacing: 3px; }
+      .title { fill: #f4f7fb; font-size: 46px; font-weight: 700; }
+      .subtitle { fill: #bdcbd8; font-size: 25px; }
+      .body { fill: #e7eef5; font-size: 23px; }
+      .muted { fill: #8da2b5; font-size: 18px; }
+      .accent { fill: #f6c76f; }
+    </style>
+    <rect width="1600" height="900" fill="url(#bg)"/>
+    <rect x="82" y="88" width="8" height="700" rx="4" fill="#63c5b5"/>
+    <text x="112" y="138" class="eyebrow">MEASURED RESULT</text>
+    <text x="112" y="228" class="title">Distribution and source-size audit</text>
+    <text x="112" y="285" class="subtitle">Nearest-rank p90 · all numbers came from output.json</text>
+    <text x="112" y="360" class="body">with meta                 n=2100  min=207  median=635  mean=781.14  p90=1304  max=3183</text>
+<text x="112" y="426" class="body">without meta              n=2100  min=95  median=491  mean=640.79  p90=1157  max=2998</text>
+<text x="112" y="492" class="body">program only              n=2100  min=95  median=468.5  mean=606.62  p90=1078  max=2959</text>
+<text x="112" y="558" class="body">Large sources excluded: 0; largest included: 8313 bytes.</text>
+    <text x="112" y="817" class="muted">kernelCAD native catalogue source measurement · 2026-11-05</text>
+    <text x="1468" y="817" class="muted">03 / 4</text>
+  </svg>

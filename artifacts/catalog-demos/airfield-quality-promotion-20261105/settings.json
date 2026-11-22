@@ -1,0 +1,50 @@
+{
+  "date": "2026-11-05",
+  "kit": "airfield",
+  "scope": "Promoted all 40 existing IDs in place; no IDs added or renamed.",
+  "materialControls": {
+    "newNamedControls": 142,
+    "perAssetRange": [2, 4],
+    "averagePerAsset": 3.55
+  },
+  "presets": {
+    "blocks": 40,
+    "entries": 80,
+    "names": ["weathered", "highVisibility"]
+  },
+  "defaultPreviews": {
+    "renderer": "scripts/renderCatalogPreviews.ts",
+    "targets": 40,
+    "view": "software-rendered 3/4 view",
+    "parameters": "source defaults"
+  },
+  "presetReplay": {
+    "renderer": "render_airfield_presets.ts",
+    "assets": ["airport-fire-engine", "airport-control-tower", "aircraft-hangar"],
+    "presetsPerAsset": 2,
+    "values": "read from each source presets() block and replayed as parameter defaults"
+  },
+  "demo": {
+    "storyboardFrames": 6,
+    "frameDurationSeconds": 3.5,
+    "resolution": [1280, 720],
+    "frameRate": 24,
+    "videoCodec": "libx264",
+    "crf": 22,
+    "pixelFormat": "yuv420p",
+    "caption": "Local source-to-preview workflow; no deployment or hardware acceptance claim."
+  },
+  "baseline": {
+    "kitQuality": "0/40 assets passed before this round",
+    "catalogQuality": "2051/2390 (85.82%)"
+  },
+  "kitQualityAfter": {
+    "passing": "40/40",
+    "passRate": "100%"
+  },
+  "catalogQualityAfter": {
+    "passing": "2091/2390",
+    "passRate": "87.49%",
+    "thinRemaining": "299/2390 (12.51%)"
+  }
+}

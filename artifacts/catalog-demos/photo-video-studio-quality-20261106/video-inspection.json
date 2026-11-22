@@ -1,0 +1,52 @@
+{
+  "video": "artifacts/catalog-demos/photo-video-studio-quality-20261106/photo-video-studio-quality-demo.mp4",
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "18.000000"
+    }
+  },
+  "decodedFrames": [
+    {
+      "timeSeconds": 1,
+      "path": "frame-01.png",
+      "size": 109932
+    },
+    {
+      "timeSeconds": 4,
+      "path": "frame-02.png",
+      "size": 142065
+    },
+    {
+      "timeSeconds": 7,
+      "path": "frame-03.png",
+      "size": 114656
+    },
+    {
+      "timeSeconds": 10,
+      "path": "frame-04.png",
+      "size": 140308
+    },
+    {
+      "timeSeconds": 13,
+      "path": "frame-05.png",
+      "size": 182918
+    },
+    {
+      "timeSeconds": 16,
+      "path": "frame-06.png",
+      "size": 136152
+    }
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "manualVisualInspection": "passed",
+  "visualReview": "Inspected the contact sheet and decoded frames at 4s and 10s. Text and panels are legible, all six workflow stages render without clipping, and the two preset renders visibly change the camera shell from charcoal to orange while retaining distinct glass and hardware. The catalog images read as a DSLR, telephoto lens, and softbox. Captions identify the material as a local preview workflow and state that deployment is not shown."
+}

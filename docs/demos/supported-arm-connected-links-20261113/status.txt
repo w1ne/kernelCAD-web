@@ -1,0 +1,2 @@
+Five targeted smoke checks passed
+Static geometry only; mechanism verification skipped (#352 remains open)

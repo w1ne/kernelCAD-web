@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-11-10T10:35:06+00:00",
+  "asset": "interior/table-lamp",
+  "sourceSha256MatchesIndex": true,
+  "previewPath": "/assets/interior-table-lamp.png",
+  "previewBytes": 19892,
+  "interiorAssets": 72,
+  "interiorPreviewsPresent": 72,
+  "triangleCount": 144,
+  "triangleBudget": 240,
+  "params": [
+    "baseStyle",
+    "ceramic",
+    "textile",
+    "hardware"
+  ],
+  "presets": [
+    "midCentury",
+    "monochrome",
+    "terracotta"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "command": "npx vitest run tests/integration/catalog/",
+  "indexedAssetsTotal": 2000,
+  "recyclingFacilitySources": 153,
+  "triangleRange": [
+    108,
+    436
+  ],
+  "triangleBudgetMax": 1800,
+  "materialCounts": [
+    1
+  ],
+  "knobsExactScaleAndColor": true,
+  "integration": {
+    "filesPassed": 4,
+    "testsPassed": 15,
+    "passed": true
+  },
+  "passed": true
+}

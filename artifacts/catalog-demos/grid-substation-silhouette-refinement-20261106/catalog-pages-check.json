@@ -1,0 +1,12 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-grid-substation-silhouette-refinement-20261106",
+  "assetIds": [
+    "substation-dead-tank-breaker",
+    "substation-oil-containment-bund",
+    "substation-grading-ring-stand"
+  ],
+  "pagesAndPreviewsChecked": 3,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

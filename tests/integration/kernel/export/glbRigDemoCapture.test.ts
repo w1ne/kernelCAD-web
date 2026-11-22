@@ -58,4 +58,36 @@ describe('GLB rig demo evidence capture', () => {
       }, null, 2)}\n`);
     }
   });
+
+  it('records a coupleMates coupling on the driven pivot so it is not animated alone', async () => {
+    const code = `
+      const arm = assembly('coupled-rig');
+      arm.part('base', box(4, 4, 4))
+        .connector('input', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
+        .connector('output', { type: 'axis', origin: { kind: 'vec3', value: [20, 0, 0] }, axis: [0, 0, 1] });
+      arm.part('driver', box(10, 2, 2))
+        .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.part('driven', box(12, 3, 3))
+        .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('input', 'base.input', 'driver.axis', 'revolute', { pose: 30, limitsDeg: [-90, 90] });
+      arm.mate('output', 'base.output', 'driven.axis', 'revolute', { limitsDeg: [-180, 180] });
+      arm.coupleMates('output', { source: 'input', ratio: -2, offset: 5 });
+      return arm.model();
+    `;
+    const result = await runAndExport({ code, fileName: 'coupled-rig.kcad.ts', format: 'glb' });
+    expect(result.diagnostics.filter((diagnostic) => diagnostic.severity === 'error')).toEqual([]);
+
+    const view = new DataView(result.bytes.buffer, result.bytes.byteOffset, result.bytes.byteLength);
+    const jsonLength = view.getUint32(12, true);
+    const gltf = JSON.parse(new TextDecoder().decode(result.bytes.subarray(20, 20 + jsonLength))) as {
+      asset?: { extras?: { kernelcad?: { rig?: Record<string, Record<string, unknown>> } } };
+    };
+    const rig = gltf.asset?.extras?.kernelcad?.rig;
+    expect(rig?.input).toMatchObject({ type: 'rotate', range: [-120, 60], node: 'pivot:input' });
+    expect(rig?.input?.coupling).toBeUndefined();
+    // Rest pose -2 * 30 + 5 = -55, so the driven range is relative to -55.
+    expect(rig?.output).toMatchObject({
+      type: 'rotate', range: [-125, 235], node: 'pivot:output', coupling: { source: 'input', ratio: -2 },
+    });
+  });
 });

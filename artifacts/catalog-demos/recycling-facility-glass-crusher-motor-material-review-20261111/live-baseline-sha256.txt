@@ -1,0 +1,10 @@
+c5fc6e09793d953450957f25d1b0d4cc01b3d44b1e748d5ad56728173a357992  /tmp/kernelcad-live-primary-shredder.png
+ae65ef75a5d79984ae267962e5534e5befd67ab44d5c43171e433a9c454e6ef0  /tmp/kernelcad-live-primary-shredder.kcad.ts
+8457583ea5f527942d68651bd9e65ef5007fa5a31cfe3291d9e45fd7cbd9017e  /tmp/kernelcad-live-glass-crusher.png
+cbf04528eedf73d6e76ec70dceeb055eadd9a79415f07e62787a855dc04afbab  /tmp/kernelcad-live-glass-crusher.kcad.ts
+ecba589468ac8b6a5ecb456728602316b60fbb1ddf8a8e578ed9e7fc29e72b2d  /tmp/kernelcad-live-food-waste-depackager.png
+03f9fb37cdb674bac031acdfbc204e678262c8891b3c6becd3a46cb9919b3c8a  /tmp/kernelcad-live-food-waste-depackager.kcad.ts
+92bc47aa2be048b7db0784c02e952800e0878af1b5e425c695288dbcf939454c  /tmp/kernelcad-live-eddy-current-separator.png
+cb239f525f6713f600c74050e2e3bf57c5984eaec4b17f313542052d094f6fb9  /tmp/kernelcad-live-eddy-current-separator.kcad.ts
+78e74ab493b2895e472e892e702c39dec1df46e6e379d73ddabf550428989da4  /tmp/kernelcad-live-recycling-trommel-screen.png
+60ea2ddfa957547b4b920bca8b35c013b87e544201f67a97332028fae4224ee6  /tmp/kernelcad-live-recycling-trommel-screen.kcad.ts

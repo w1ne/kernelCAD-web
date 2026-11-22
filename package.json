@@ -15,7 +15,7 @@
     "url": "https://github.com/w1ne/kernelCAD-web/issues"
   },
   "engines": {
-    "node": ">=22.12.0",
+    "node": ">=24.0.0",
     "npm": ">=10.0.0"
   },
   "bin": {
@@ -55,6 +55,7 @@
     "cookbook:validate": "npx tsx scripts/cookbookValidate.ts",
     "catalog:build": "npx tsx scripts/buildAssetCatalog.ts",
     "catalog:check": "npx tsx scripts/buildAssetCatalog.ts --check",
+    "benchmark:tokens": "tsx scripts/tokenBenchmark.ts",
     "catalog:previews": "npx tsx scripts/renderCatalogPreviews.ts",
     "catalog:pages": "npx tsx scripts/buildCatalogPages.ts",
     "catalog:site": "KCAD_CATALOG_BUILD=1 npx vitest run scripts/buildCatalogDownloads.test.ts --testNamePattern='writes complete static catalog site'",
@@ -90,7 +91,7 @@
     "proof:mates": "npm run proof:assembly-contract && npm test -- src/modeling/mates/ src/shared/numeric/ tests/unit/assemblies/solvedModelValidate.test.ts tests/unit/assemblies/solvedModelGroundingGates.test.ts tests/integration/examples/desktop3axisMates.test.ts tests/integration/examples/desktop3axisMates.interference.test.ts tests/integration/mcp/addConnector.test.ts tests/integration/mcp/addMate.test.ts tests/integration/mcp/listMates.test.ts tests/integration/mcp/validateAssembly.test.ts tests/integration/mcp/solveMates.test.ts tests/unit/cli/evaluateValidateGate.test.ts",
     "test:watch": "vitest",
     "typecheck": "tsc -b --noEmit && tsc --noEmit -p tsconfig.cli.json",
-    "typecheck:examples": "tsx scripts/typecheckExamples.ts examples/gallery/turbojet-engine.kcad.ts examples/gallery/hand-coffee-grinder.kcad.ts tests/e2e/fixtures/twisted-blade.kcad.ts",
+    "typecheck:examples": "tsx scripts/typecheckExamples.ts examples/gallery/turbojet-engine.kcad.ts examples/gallery/hand-coffee-grinder.kcad.ts examples/gallery/kspray-klift.kcad.ts examples/gallery/kspray-facade-robot.kcad.ts tests/e2e/fixtures/twisted-blade.kcad.ts",
     "typecheck:examples:all": "tsx scripts/typecheckExamples.ts --all",
     "test:ratchet": "vitest run tests/unit/scripts/qualityRatchet.test.ts tests/unit/scripts/cycleRatchet.test.ts",
     "qc:lint": "npm run lint && npm run cookbook:validate",
@@ -184,6 +185,7 @@
     "fast-check": "^4.5.3",
     "globals": "^16.5.0",
     "happy-dom": "^20.4.0",
+    "js-tiktoken": "1.0.21",
     "jsdom": "^27.4.0",
     "madge": "^8.0.0",
     "meshoptimizer": "^0.22.0",

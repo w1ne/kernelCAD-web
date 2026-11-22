@@ -1,0 +1,36 @@
+# Run from the repository root. Baseline source and previews in before-source/
+# and before/ were captured from HEAD e101d61f6 before editing.
+
+# Render all 60 existing assets in the kit; this command takes IDs from sources.
+find catalog/kits/industrial-plant -maxdepth 1 -type f -name '*.kcad.ts' -printf '%f\n' | sed 's/\.kcad\.ts$//' | sort | xargs npx tsx scripts/renderCatalogPreviews.ts
+
+# Rebuild generated index rows after rendering. Never edit catalog/index.json by hand.
+npx tsx scripts/buildAssetCatalog.ts
+python3 artifacts/catalog-demos/industrial-plant-machine-quality-20261109/verify_catalog_index.py
+
+# Source-driven geometry choices and named appearance presets.
+npx tsx artifacts/catalog-demos/industrial-plant-machine-quality-20261109/render_variants.ts
+
+# Quality gate and required checks.
+python3 scripts/checkCatalogQuality.py --kit industrial-plant
+python3 scripts/checkCatalogQuality.py
+npx eslint catalog/kits/industrial-plant/
+npx vitest run tests/integration/catalog/
+
+# Build representative public catalog pages locally and verify visible page data,
+# copied previews, source hashes, model controls, presets and Studio links.
+npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-industrial-plant-machine-pages-20261109
+python3 artifacts/catalog-demos/industrial-plant-machine-quality-20261109/verify_local_pages.py /tmp/kernelcad-industrial-plant-machine-pages-20261109
+
+# Capture and inspect the short MP4 handoff.
+python3 artifacts/catalog-demos/industrial-plant-machine-quality-20261109/capture_demo.py
+python3 artifacts/catalog-demos/industrial-plant-machine-quality-20261109/inspect_video.py
+
+# Final-tree refresh after restoring SPDX comments: regenerate the index, verify
+# its exact hashes and all 60 kit previews, rebuild the representative pages,
+# then run the long catalog integration suite with retained status/output.
+npx tsx scripts/buildAssetCatalog.ts
+python3 artifacts/catalog-demos/industrial-plant-machine-quality-20261109/verify_catalog_index.py
+npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-industrial-plant-machine-pages-20261109-final
+python3 artifacts/catalog-demos/industrial-plant-machine-quality-20261109/verify_local_pages.py /tmp/kernelcad-industrial-plant-machine-pages-20261109-final
+python3 artifacts/catalog-demos/industrial-plant-machine-quality-20261109/run_catalog_tests.py

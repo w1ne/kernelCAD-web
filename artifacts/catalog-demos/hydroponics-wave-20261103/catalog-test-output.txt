@@ -1,0 +1,16 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 2018ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 216ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 121707ms
+     ✓ nature/pine-tree opens with its five knobs at their defaults  312ms
+     ✓ every committed catalog asset opens with exactly the knobs its index row lists  119422ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 192381ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  191146ms
+
+ Test Files  4 passed (4)
+      Tests  15 passed (15)
+   Start at  06:00:38
+   Duration  203.11s (transform 32.37s, setup 382ms, import 45.95s, tests 316.32s, environment 1ms)
+

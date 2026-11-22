@@ -1,0 +1,24 @@
+{
+  "captureSource": "artifacts/catalog-demos/railway-wave-20261102/capture_railway_demo.py",
+  "captureCommand": "python3 artifacts/catalog-demos/railway-wave-20261102/capture_railway_demo.py",
+  "video": "railway-kit.mp4",
+  "codec": "H.264 / libx264",
+  "resolution": "1280x720",
+  "sourceFrameRate": "1 frame every 3 seconds",
+  "encodedFrameRate": "24 fps",
+  "durationSeconds": 24,
+  "pixelFormat": "yuv420p",
+  "crf": 25,
+  "movflags": [
+    "+faststart"
+  ],
+  "frameSequence": [
+    "title",
+    "steam-locomotive source and preview",
+    "five eight-asset preview groups",
+    "local audit and page evidence"
+  ],
+  "previewCommand": "python3 artifacts/catalog-demos/railway-wave-20261102/render_railway_previews.py",
+  "pageCommand": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-railway-pages",
+  "liveDeployment": "unverified pending review and merge"
+}

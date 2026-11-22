@@ -89,6 +89,54 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: 'A shape.faceSketch target face is non-planar or produced no closed boundary loops.',
   },
+  'feature.sketch-offset.collapsed': {
+    hintTemplate:
+      'The inward offset is at least half the narrowest width of the profile, so nothing is left. Use a smaller distance.',
+    nextAction: { kind: 'retry-with-smaller-param', param: 'offset-distance', factor: 0.5 },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A Sketch.offset distance removes the whole profile.',
+  },
+  'feature.sketch-offset.split': {
+    hintTemplate:
+      'The offset is not one profile: a neck or gap closes, or a hole reaches the boundary. Use a smaller distance, or offset each region as its own sketch.',
+    nextAction: { kind: 'retry-with-smaller-param', param: 'offset-distance', factor: 0.5 },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A Sketch.offset result is several separate regions, or touches itself at the requested distance, so it is not one outer loop with holes.',
+  },
+  'feature.sketch-offset.failed': {
+    hintTemplate:
+      "The kernel could not offset this profile. Try corners: 'round', a smaller distance, or a simpler profile.",
+    nextAction: { kind: 'fix-arg', field: 'offset.distance' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A Sketch.offset source profile could not be built, or the kernel returned no closed offset curve.',
+  },
+  'feature.sketch-boolean.empty': {
+    hintTemplate:
+      'The sketch boolean leaves no profile: the subtracted profiles cover the whole sketch, or the intersected profiles do not overlap. Move or resize a profile.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'Move or resize a profile so that the result keeps some area.' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A Sketch.subtract or Sketch.intersect result has no area.',
+  },
+  'feature.sketch-boolean.split': {
+    hintTemplate:
+      'The sketch boolean is not one profile: the result is several separate regions, or it touches itself at a point. Overlap the profiles, or extrude each sketch and combine the solids.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'Overlap the profiles so that the result is one outline with holes, or extrude each sketch and combine the solids.' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A Sketch.union, Sketch.subtract or Sketch.intersect result is several separate regions, or touches itself at a point, so it is not one outer loop with holes.',
+  },
+  'feature.sketch-boolean.failed': {
+    hintTemplate:
+      'The kernel could not combine these profiles. Check that every sketch is one closed, non-self-intersecting profile, or extrude the sketches and combine the solids.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A sketch boolean operand could not be built, or the kernel returned no closed boundary.',
+  },
   'feature.async-result.missing-await': {
     hintTemplate:
       'This method returns a Promise — chain it directly on the awaited value, e.g. `(await shape.sectionSketch(...)).extrude(...)`.',
@@ -156,11 +204,11 @@ export const FEATURE_CODES = {
   },
   'feature.project-curve.no-intersection': {
     hintTemplate:
-      'projectCurve could not intersect the source curve with the target face. For closed-curve mode, ensure the curve overlaps the face bounds. asEdge:true is not implemented — use closed-curve projection or pre-tessellate the open wire into a closed sketch.',
-    nextAction: { kind: 'rewrite-feature', guidance: 'use closed-curve projection or shift the curve into the face bounds' },
+      'projectCurve could not intersect the source curve with the target face. For open mode, move the source plane or reverse/adjust the world-space direction so the path reaches the selected face. For closed mode, ensure the curve overlaps the face bounds.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'move the open source plane or adjust its direction; for closed projection, shift the curve into the face bounds' },
     defaultSeverity: 'error',
     group: 'feature',
-    description: 'projectCurve found no intersection between the supplied 2D curve and the target face, or the asEdge:true path was requested (not implemented).',
+    description: 'projectCurve found no intersection between the supplied source path and the selected face in the requested projection direction.',
   },
   'feature.project-curve.curve-empty': {
     hintTemplate:
@@ -404,6 +452,14 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: 'BRepOffsetAPI_DraftAngle could not taper the requested faces.',
   },
+  'feature.extrude.taper-failed': {
+    hintTemplate:
+      'Reduce taperDeg or depth. An inward taper must not close the profile before the far end: depth × tan(taperDeg) must stay below the smallest half-width of the profile.',
+    nextAction: { kind: 'fix-arg', field: 'taperDeg' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A tapered sketch extrude did not produce one valid frustum-like solid; the profile closed or OCCT could not draft the side faces (spline and Bézier segments give side faces OCCT does not draft).',
+  },
   'feature.draft.unchanged': {
     hintTemplate:
       'A draft that leaves the volume and the face count alone did not taper the face. Pick a side face and a pull direction that is not parallel to that face.',
@@ -582,6 +638,13 @@ export const FEATURE_CODES = {
     defaultSeverity: 'error',
     group: 'feature',
     description: 'A texture image was loaded with a dimension greater than 8192 px; the kernel rejects it as oversized.',
+  },
+  'feature.color.unresolved': {
+    hintTemplate: 'Shape.color() takes a role token (servo, gear, beam, shaft, plate, pin, frame, tool) or a #rrggbb hex. Use the hex for a CSS colour name, or .finish(name) for a material look.',
+    nextAction: { kind: 'fix-arg', field: 'name' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'Shape.color() received a string that is neither a role token nor a #hex colour; renders and exports fall back to the default colour.',
   },
   // Finish (1) — named-finish front door over raw .material()
   'feature.finish.unknown-token': {

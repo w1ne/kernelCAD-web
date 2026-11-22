@@ -1,0 +1,6 @@
+(node:452765) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+airfield/aircraft-hangar: 76 tris
+airfield/airport-control-tower: 72 tris
+airfield/airport-fire-engine: 388 tris
+airfield/terminal-gate-front: 84 tris

@@ -10,7 +10,11 @@
 // extrudes back to the same volume.
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { getOC } from 'replicad';
 import { initOcct, type OcctBackend } from '../../src/kernel/backends/occt/occtBackend';
+import { isValidShape } from '../../src/kernel/backends/occt/booleanRecovery';
+import { extractFlatProfile } from '../../src/kernel/backends/occt/planarProfile';
+import { segmentsPerimeter, segmentsSignedArea } from '../../src/kernel/backends/occt/sketchFromShape';
 import { runScript } from '../../src/modeling/runtime/runScript';
 import { RecomputeEngine } from '../../src/modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../src/modeling/backends/occt/occtLowerer';
@@ -105,6 +109,66 @@ describe('shape.faceSketch — planar face boundaries', () => {
     const prism = lastShape(shapes, records);
     const expected = (40 * 20 - Math.PI * 16) * 10;
     expect(prism.volume()).toBeCloseTo(expected, -1);
+  });
+
+  // A rounded plate: 40 × 20 × 10 with the four vertical edges filleted at
+  // R3. Its top and bottom faces are a rounded rectangle whose corner arcs
+  // are 90° each; OCCT stores some of them clockwise in the sketch frame.
+  const ROUNDED_PLATE = `box(40, 20, 10).fillet(3, { parallelTo: 'z' })`;
+  const ROUNDED_AREA = 40 * 20 - (4 - Math.PI) * 3 * 3;
+
+  for (const face of ['top', 'bottom'] as const) {
+    it(`keeps the 90° corner arcs of a rounded plate (${face} face)`, async () => {
+      const code = `
+        const plate = ${ROUNDED_PLATE};
+        const outline = await plate.faceSketch('${face}');
+        return outline.extrude(10);
+      `;
+      const { records, shapes, diagnostics } = await lowerScript(code);
+      expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+
+      // Every corner is a quarter circle: |bulge| = tan(π/8). A 270° arc
+      // (|bulge| = tan(3π/8)) is the complementary arc of the same circle.
+      const sketch = records.filter(r => r.kind === 'sketch').pop()!;
+      const commands = (sketch.metadata as { commands: Array<{ kind: string; bulge?: { evaluated: number } }> }).commands;
+      const bulges = commands.filter(c => c.kind === 'bulgeArc').map(c => Math.abs(c.bulge!.evaluated));
+      expect(bulges).toHaveLength(4);
+      for (const b of bulges) expect(b).toBeCloseTo(Math.tan(Math.PI / 8), 6);
+
+      const prism = lastShape(shapes, records);
+      expect(isValidShape(getOC(), prism.getReplicadShape().wrapped)).toBe(true);
+      expect(prism.volume()).toBeCloseTo(ROUNDED_AREA * 10, 3);
+      const bbox = prism.boundingBox();
+      expect(bbox.max[0] - bbox.min[0]).toBeCloseTo(40, 6);
+      expect(bbox.max[1] - bbox.min[1]).toBeCloseTo(20, 6);
+    });
+  }
+
+  it('sections the rounded plate to the same rounded rectangle', async () => {
+    const code = `
+      const plate = ${ROUNDED_PLATE};
+      const sec = await plate.sectionSketch({ plane: 'xy', offset: 5 });
+      return sec.extrude(10);
+    `;
+    const { records, shapes, diagnostics } = await lowerScript(code);
+    expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    const prism = lastShape(shapes, records);
+    expect(isValidShape(getOC(), prism.getReplicadShape().wrapped)).toBe(true);
+    expect(prism.volume()).toBeCloseTo(ROUNDED_AREA * 10, 3);
+  });
+
+  it('gives the flat DXF profile of the rounded plate its true area', async () => {
+    const { records, shapes } = await lowerScript(`return ${ROUNDED_PLATE};`);
+    const flat = extractFlatProfile(lastShape(shapes, records));
+    expect(flat.ok).toBe(true);
+    if (!flat.ok) return;
+    expect(flat.profile.loops).toHaveLength(1);
+    const outline = flat.profile.loops[0];
+    const bulges = outline.map(s => Math.abs(s.bulge ?? 0)).filter(b => b > 0);
+    expect(bulges).toHaveLength(4);
+    for (const b of bulges) expect(b).toBeCloseTo(Math.tan(Math.PI / 8), 6);
+    expect(Math.abs(segmentsSignedArea(outline))).toBeCloseTo(ROUNDED_AREA, 6);
+    expect(segmentsPerimeter(outline)).toBeCloseTo(2 * (34 + 14) + 2 * Math.PI * 3, 6);
   });
 
   it('refuses a cylindrical face with feature.face-sketch.non-planar', async () => {

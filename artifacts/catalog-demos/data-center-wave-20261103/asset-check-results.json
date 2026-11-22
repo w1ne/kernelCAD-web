@@ -1,0 +1,814 @@
+{
+  "kit": "data-center-infrastructure",
+  "added": 50,
+  "catalogTotal": 1491,
+  "passed": 50,
+  "total": 50,
+  "triangleRange": [
+    104,
+    1060
+  ],
+  "allOneMaterial": true,
+  "allWithinBudget": true,
+  "allBaseOrigin": true,
+  "allKnobsExact": true,
+  "allSourceHashesMatch": true,
+  "allPreviewPathsAndFilesPresent": true,
+  "allCatalogAssetsPreviewBacked": true,
+  "lint": {
+    "command": "npx eslint catalog/",
+    "passed": true,
+    "exitCode": 0,
+    "outputFile": "catalog-lint-output.txt"
+  },
+  "pages": {
+    "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-data-center-pages",
+    "kitPages": 50,
+    "assetsInIndex": 1491,
+    "pageAndPreviewPairs": 50,
+    "hubListsKit": true,
+    "missing": [],
+    "passed": true
+  },
+  "liveWebsiteSnapshot": {
+    "homepageStatus": 200,
+    "livePreviewAssets": 543,
+    "branchDeployed": false
+  },
+  "npmPackageBoundary": {
+    "command": "npm pack --ignore-scripts --json --pack-destination /tmp/kernelcad-data-center-npm-pack",
+    "tarball": "/tmp/kernelcad-data-center-npm-pack/kernelcad-0.17.4.tgz",
+    "tarballBytes": 50055942,
+    "tarballSha256": "dbea3f713a828b5cdb427a62dc33a3ce6949c63369995ff94f5be3558e240762",
+    "package": "kernelcad@0.17.4",
+    "packedFileCount": 3373,
+    "catalogIndexIncluded": true,
+    "dataCenterSources": 50,
+    "dataCenterPreviews": 50,
+    "cliEntryIncluded": true,
+    "headlessPlayerIncluded": true,
+    "packageExports": {
+      "./package.json": "./package.json"
+    },
+    "privateProductPaths": [],
+    "passed": true
+  },
+  "integration": {
+    "passed": true,
+    "filesPassed": 4,
+    "testsPassed": 15,
+    "durationSeconds": 165.18
+  },
+  "assets": [
+    {
+      "id": "air-cooled-chiller",
+      "triangles": 356,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-air-cooled-chiller.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "automatic-transfer-switch-cabinet",
+      "triangles": 220,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-automatic-transfer-switch-cabinet.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "blade-server-enclosure",
+      "triangles": 220,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-blade-server-enclosure.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "busway-plug-in-unit",
+      "triangles": 124,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-busway-plug-in-unit.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "ceiling-return-plenum",
+      "triangles": 140,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-ceiling-return-plenum.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "clean-agent-cylinder-bank",
+      "triangles": 520,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-clean-agent-cylinder-bank.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "cold-aisle-roof-panel",
+      "triangles": 196,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-cold-aisle-roof-panel.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "condenser-pump-skid",
+      "triangles": 300,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-condenser-pump-skid.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "coolant-distribution-unit",
+      "triangles": 264,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-coolant-distribution-unit.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "cooling-tower-cell",
+      "triangles": 172,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-cooling-tower-cell.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "data-center-battery-cabinet",
+      "triangles": 220,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-data-center-battery-cabinet.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "data-center-plate-heat-exchanger",
+      "triangles": 304,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-data-center-plate-heat-exchanger.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "data-center-security-camera",
+      "triangles": 168,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-data-center-security-camera.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "day-fuel-tank",
+      "triangles": 200,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-day-fuel-tank.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "distribution-panelboard",
+      "triangles": 172,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-distribution-panelboard.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "dry-type-transformer",
+      "triangles": 276,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-dry-type-transformer.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "emergency-power-off-station",
+      "triangles": 136,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-emergency-power-off-station.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "enclosed-it-rack",
+      "triangles": 256,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-enclosed-it-rack.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "environmental-sensor",
+      "triangles": 124,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-environmental-sensor.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "fiber-patch-panel",
+      "triangles": 708,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-fiber-patch-panel.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "floor-air-grille",
+      "triangles": 340,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-floor-air-grille.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "floor-cable-grommet",
+      "triangles": 124,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-floor-cable-grommet.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "high-density-server-chassis",
+      "triangles": 276,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-high-density-server-chassis.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "hot-aisle-containment-door",
+      "triangles": 116,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-hot-aisle-containment-door.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "in-row-cooler",
+      "triangles": 320,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-in-row-cooler.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "leak-detection-module",
+      "triangles": 168,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-leak-detection-module.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "liquid-cooling-manifold",
+      "triangles": 552,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-liquid-cooling-manifold.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "maintenance-bypass-cabinet",
+      "triangles": 220,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-maintenance-bypass-cabinet.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "modular-ups-cabinet",
+      "triangles": 220,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-modular-ups-cabinet.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "monolithic-ups-cabinet",
+      "triangles": 220,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-monolithic-ups-cabinet.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "open-frame-it-rack",
+      "triangles": 304,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-open-frame-it-rack.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "overhead-cable-ladder",
+      "triangles": 292,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-overhead-cable-ladder.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "overhead-coolant-header",
+      "triangles": 392,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-overhead-coolant-header.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "overhead-power-busway",
+      "triangles": 140,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-overhead-power-busway.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "perforated-floor-tile",
+      "triangles": 340,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-perforated-floor-tile.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "perimeter-precision-cooler",
+      "triangles": 320,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-perimeter-precision-cooler.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "power-meter-pedestal",
+      "triangles": 104,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-power-meter-pedestal.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rack-blanking-panel",
+      "triangles": 192,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-rack-blanking-panel.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rack-kvm-console",
+      "triangles": 248,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-rack-kvm-console.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rack-mounted-battery-tray",
+      "triangles": 248,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-rack-mounted-battery-tray.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rack-power-distribution-unit",
+      "triangles": 304,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-rack-power-distribution-unit.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "raised-floor-tile",
+      "triangles": 268,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-raised-floor-tile.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rear-door-heat-exchanger",
+      "triangles": 532,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-rear-door-heat-exchanger.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "standby-generator-enclosure",
+      "triangles": 224,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-standby-generator-enclosure.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "static-transfer-switch",
+      "triangles": 220,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-static-transfer-switch.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "storage-array-chassis",
+      "triangles": 276,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-storage-array-chassis.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "switchgear-lineup",
+      "triangles": 332,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-switchgear-lineup.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "top-of-rack-network-switch",
+      "triangles": 1060,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-top-of-rack-network-switch.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "vertical-cable-manager",
+      "triangles": 260,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-vertical-cable-manager.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "wall-mount-network-cabinet",
+      "triangles": 288,
+      "triangleBudget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/data-center-infrastructure-wall-mount-network-cabinet.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,340 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/photo-video-studio-silhouette-20261106/render_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/photo-video-studio/digital-slr-camera.kcad.ts",
+      "sourceSha256": "9a2b560e514e55575e1d7408ab48169d741118f5c63cace6b9de2ab8a5399963",
+      "triangleBudget": 2000,
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3",
+          "metal": "#657780"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/photo-video-studio/telephoto-lens.kcad.ts",
+      "sourceSha256": "cd08b718544e4d978beeb07aa30c53c2be244402de64c80fe52bb26e178d7f7c",
+      "triangleBudget": 1800,
+      "presets": {
+        "studioBlack": {
+          "enamel": "#2e3337",
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "enamel": "#c9c4a8",
+          "metal": "#657780",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/photo-video-studio/camera-tripod.kcad.ts",
+      "sourceSha256": "c10ad0af1946c26a48bc36eec46efb234d64e8f33674ff38080f567c0f0df85d",
+      "triangleBudget": 2000,
+      "presets": {
+        "studioBlack": {
+          "metal": "#3a4045",
+          "rubber": "#1b2024",
+          "anodized": "#c2412d"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d",
+          "anodized": "#3f7fc4"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/photo-video-studio/softbox-light.kcad.ts",
+      "sourceSha256": "fb748d88f762619ea9fd0a6326c2a78230e5d93b289b78f4f99de6fcb0efada9",
+      "triangleBudget": 1500,
+      "presets": {
+        "studioBlack": {
+          "diffusionFabric": "#fff7e8",
+          "fabric": "#2a2d31",
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "diffusionFabric": "#fff0c8",
+          "fabric": "#6f6a5c",
+          "metal": "#657780",
+          "rubber": "#292b2d"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/photo-video-studio/cinema-camera.kcad.ts",
+      "sourceSha256": "31afeab5f80946aeea064db3cd3bb729d717f3c1d4d115afc22495c2734d3f6a",
+      "triangleBudget": 1800,
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3",
+          "metal": "#657780"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "digital-slr-camera",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1732,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/digital-slr-camera-default.png"
+    },
+    {
+      "assetId": "digital-slr-camera",
+      "variant": "prime-50",
+      "view": "3/4",
+      "values": {
+        "lens": "prime-50"
+      },
+      "triangles": 1480,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/digital-slr-camera-prime-50.png"
+    },
+    {
+      "assetId": "digital-slr-camera",
+      "variant": "studioBlack",
+      "view": "3/4",
+      "values": {
+        "polymer": "#343c43",
+        "rubber": "#1b2024",
+        "glass": "#45a6c0",
+        "metal": "#a9b5ba"
+      },
+      "triangles": 1732,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/digital-slr-camera-studioBlack.png"
+    },
+    {
+      "assetId": "digital-slr-camera",
+      "variant": "fieldRental",
+      "view": "3/4",
+      "values": {
+        "polymer": "#c75a2e",
+        "rubber": "#292b2d",
+        "glass": "#79d4e3",
+        "metal": "#657780"
+      },
+      "triangles": 1732,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/digital-slr-camera-fieldRental.png"
+    },
+    {
+      "assetId": "telephoto-lens",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1414,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/telephoto-lens-default.png"
+    },
+    {
+      "assetId": "telephoto-lens",
+      "variant": "reversed",
+      "view": "3/4",
+      "values": {
+        "hood": "reversed"
+      },
+      "triangles": 1414,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/telephoto-lens-reversed.png"
+    },
+    {
+      "assetId": "telephoto-lens",
+      "variant": "none",
+      "view": "3/4",
+      "values": {
+        "hood": "none"
+      },
+      "triangles": 1278,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/telephoto-lens-none.png"
+    },
+    {
+      "assetId": "telephoto-lens",
+      "variant": "studioBlack",
+      "view": "3/4",
+      "values": {
+        "enamel": "#2e3337",
+        "metal": "#a9b5ba",
+        "rubber": "#1b2024",
+        "glass": "#45a6c0"
+      },
+      "triangles": 1414,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/telephoto-lens-studioBlack.png"
+    },
+    {
+      "assetId": "telephoto-lens",
+      "variant": "fieldRental",
+      "view": "3/4",
+      "values": {
+        "enamel": "#c9c4a8",
+        "metal": "#657780",
+        "rubber": "#292b2d",
+        "glass": "#79d4e3"
+      },
+      "triangles": 1414,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/telephoto-lens-fieldRental.png"
+    },
+    {
+      "assetId": "camera-tripod",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1720,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/camera-tripod-default.png"
+    },
+    {
+      "assetId": "camera-tripod",
+      "variant": "pan-tilt",
+      "view": "3/4",
+      "values": {
+        "head": "pan-tilt"
+      },
+      "triangles": 1606,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/camera-tripod-pan-tilt.png"
+    },
+    {
+      "assetId": "camera-tripod",
+      "variant": "studioBlack",
+      "view": "3/4",
+      "values": {
+        "metal": "#3a4045",
+        "rubber": "#1b2024",
+        "anodized": "#c2412d"
+      },
+      "triangles": 1720,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/camera-tripod-studioBlack.png"
+    },
+    {
+      "assetId": "camera-tripod",
+      "variant": "fieldRental",
+      "view": "3/4",
+      "values": {
+        "metal": "#657780",
+        "rubber": "#292b2d",
+        "anodized": "#3f7fc4"
+      },
+      "triangles": 1720,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/camera-tripod-fieldRental.png"
+    },
+    {
+      "assetId": "softbox-light",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1212,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/softbox-light-default.png"
+    },
+    {
+      "assetId": "softbox-light",
+      "variant": "octabox",
+      "view": "3/4",
+      "values": {
+        "shape": "octabox"
+      },
+      "triangles": 1244,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/softbox-light-octabox.png"
+    },
+    {
+      "assetId": "softbox-light",
+      "variant": "strip",
+      "view": "3/4",
+      "values": {
+        "shape": "strip"
+      },
+      "triangles": 1212,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/softbox-light-strip.png"
+    },
+    {
+      "assetId": "softbox-light",
+      "variant": "studioBlack",
+      "view": "3/4",
+      "values": {
+        "diffusionFabric": "#fff7e8",
+        "fabric": "#2a2d31",
+        "metal": "#a9b5ba",
+        "rubber": "#1b2024"
+      },
+      "triangles": 1212,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/softbox-light-studioBlack.png"
+    },
+    {
+      "assetId": "softbox-light",
+      "variant": "fieldRental",
+      "view": "3/4",
+      "values": {
+        "diffusionFabric": "#fff0c8",
+        "fabric": "#6f6a5c",
+        "metal": "#657780",
+        "rubber": "#292b2d"
+      },
+      "triangles": 1212,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/softbox-light-fieldRental.png"
+    },
+    {
+      "assetId": "cinema-camera",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1466,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/cinema-camera-default.png"
+    },
+    {
+      "assetId": "cinema-camera",
+      "variant": "none",
+      "view": "3/4",
+      "values": {
+        "matteBox": "none"
+      },
+      "triangles": 1394,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/cinema-camera-none.png"
+    },
+    {
+      "assetId": "cinema-camera",
+      "variant": "studioBlack",
+      "view": "3/4",
+      "values": {
+        "polymer": "#343c43",
+        "rubber": "#1b2024",
+        "glass": "#45a6c0",
+        "metal": "#a9b5ba"
+      },
+      "triangles": 1466,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/cinema-camera-studioBlack.png"
+    },
+    {
+      "assetId": "cinema-camera",
+      "variant": "fieldRental",
+      "view": "3/4",
+      "values": {
+        "polymer": "#c75a2e",
+        "rubber": "#292b2d",
+        "glass": "#79d4e3",
+        "metal": "#657780"
+      },
+      "triangles": 1466,
+      "png": "artifacts/catalog-demos/photo-video-studio-silhouette-20261106/variants/cinema-camera-fieldRental.png"
+    }
+  ]
+}

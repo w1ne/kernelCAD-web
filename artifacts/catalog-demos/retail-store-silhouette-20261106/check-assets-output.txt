@@ -1,0 +1,5 @@
+shopping-cart: 1932/2200 tris, size 0.581586 x 1.037 x 0.970923 m, minUp 0
+stock-ladder: 1236/1800 tris, size 0.65 x 1.615 x 0.976 m, minUp 0
+trolley-corral: 2404/2600 tris, size 4.787 x 2.08 x 1.47 m, minUp 0
+barcode-scanner: 942/1800 tris, size 0.17 x 0.338 x 0.439375 m, minUp 0
+payment-terminal: 592/1800 tris, size 0.156 x 0.228798 x 0.182115 m, minUp 0

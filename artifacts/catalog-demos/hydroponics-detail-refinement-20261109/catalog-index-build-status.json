@@ -1,0 +1,6 @@
+{
+  "command": "npx tsx scripts/buildAssetCatalog.ts",
+  "exitCode": 0,
+  "assets": 2402,
+  "evidence": "catalog-index-audit-output.txt confirms all 2,402 source hashes match and all 2,402 rows have preview paths."
+}

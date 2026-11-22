@@ -1,0 +1,11 @@
+{
+  "checkedAtUTC": "2026-11-03T03:15:11+00:00",
+  "homepage": "https://kernelcad.com/",
+  "assetsEndpoint": "https://kernelcad.com/assets.json",
+  "headlineHtml": "<span class=\"accent\">Vibe manufacturing.</span> From idea to part.",
+  "liveAssets": 1291,
+  "livePreviewAssets": 1291,
+  "generatedAt": "2026-11-03T01:39:22.642Z",
+  "branchDeployment": "not deployed; this is a current-live snapshot only",
+  "passed": true
+}

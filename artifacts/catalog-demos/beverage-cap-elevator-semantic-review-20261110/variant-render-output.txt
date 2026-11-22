@@ -1,0 +1,3 @@
+(node:950375) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Rendered 2 named presets; palettes differ and both stay within 2200 triangles.

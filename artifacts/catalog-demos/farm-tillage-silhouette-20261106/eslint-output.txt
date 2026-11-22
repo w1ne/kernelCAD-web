@@ -1,0 +1,2 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'eslint' catalog/kits/farm-machinery/ artifacts/catalog-demos/farm-tillage-silhouette-20261106/render_farm_tillage_variants.ts

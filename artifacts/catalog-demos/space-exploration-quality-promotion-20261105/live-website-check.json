@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-11-05T09:31:07.613707+00:00",
+  "scope": "public baseline only; this branch has not been deployed",
+  "urls": {
+    "homepage": {
+      "url": "https://kernelcad.com/",
+      "status": 200,
+      "bytes": 59908
+    },
+    "assets": {
+      "url": "https://kernelcad.com/assets.json",
+      "status": 200,
+      "bytes": 1149081,
+      "generatedAt": "2026-11-05T07:49:43.772Z",
+      "spaceExplorationRows": 52,
+      "spaceExplorationRowsWithPreview": 52,
+      "spaceExplorationRowsWithPresets": 0
+    },
+    "catalog": {
+      "url": "https://kernelcad.com/catalog/",
+      "status": 404,
+      "bytes": 2664
+    }
+  }
+}

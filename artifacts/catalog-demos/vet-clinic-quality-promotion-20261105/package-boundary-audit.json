@@ -1,0 +1,33 @@
+{
+  "command": "npm pack --ignore-scripts --pack-destination <temporary directory> --json",
+  "packageName": "kernelcad",
+  "packageVersion": "0.17.4",
+  "fileCount": 5200,
+  "includedKitSources": 50,
+  "expectedKitSources": 50,
+  "includedKitPreviews": 50,
+  "expectedKitPreviews": 50,
+  "catalogIndexIncluded": true,
+  "builtTarballCreated": true,
+  "archiveSha256": "0ecea0baf14d34652becc40bd335f27819b02e010864e897c1b90ceaf35e13f7",
+  "archiveRetained": false,
+  "packageExportsUnchanged": true,
+  "forbiddenChangedProductPaths": [],
+  "productImplementationPaths": [],
+  "catalogAssetNameCollisionsExcludedAsReusableAssets": [
+    "catalog/kits/retail-store/assisted-checkout-till.kcad.ts",
+    "catalog/kits/retail-store/checkout-bagging-stand.kcad.ts",
+    "catalog/kits/retail-store/checkout-conveyor.kcad.ts",
+    "catalog/kits/retail-store/checkout-counter.kcad.ts",
+    "catalog/kits/retail-store/checkout-divider.kcad.ts",
+    "catalog/kits/retail-store/previews/assisted-checkout-till.png",
+    "catalog/kits/retail-store/previews/checkout-bagging-stand.png",
+    "catalog/kits/retail-store/previews/checkout-conveyor.png",
+    "catalog/kits/retail-store/previews/checkout-counter.png",
+    "catalog/kits/retail-store/previews/checkout-divider.png",
+    "catalog/kits/retail-store/previews/self-checkout-kiosk.png",
+    "catalog/kits/retail-store/self-checkout-kiosk.kcad.ts"
+  ],
+  "missing": [],
+  "passed": true
+}

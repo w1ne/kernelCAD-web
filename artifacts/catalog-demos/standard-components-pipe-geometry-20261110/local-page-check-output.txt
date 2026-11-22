@@ -1,0 +1,8 @@
+Command: npm run catalog:pages
+Outcome: wrote 2,402 asset pages, the hub, sitemap.xml, and robots.txt to
+site-build/. Full command output is in catalog-pages-output.txt.
+
+Command: python3 artifacts/catalog-demos/standard-components-pipe-geometry-20261110/verify_local_pages.py
+Outcome: all 3 edited asset pages contain their expected controls, presets,
+preview hashes, and local Studio link. Detailed evidence: local-page-check.json.
+Scope: generated local static pages only; not deployed-site behavior.

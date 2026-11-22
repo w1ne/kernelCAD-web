@@ -1,0 +1,211 @@
+{
+  "checkedAt": "2026-11-02",
+  "kit": "railway",
+  "kitPages": 40,
+  "hubContainsKit": true,
+  "pages": [
+    {
+      "id": "baggage-cart",
+      "path": "catalog/railway/baggage-cart/index.html",
+      "previewBytes": 21738
+    },
+    {
+      "id": "buffer-stop",
+      "path": "catalog/railway/buffer-stop/index.html",
+      "previewBytes": 22673
+    },
+    {
+      "id": "caboose",
+      "path": "catalog/railway/caboose/index.html",
+      "previewBytes": 26522
+    },
+    {
+      "id": "commuter-car",
+      "path": "catalog/railway/commuter-car/index.html",
+      "previewBytes": 23651
+    },
+    {
+      "id": "crossing-gate",
+      "path": "catalog/railway/crossing-gate/index.html",
+      "previewBytes": 17945
+    },
+    {
+      "id": "crossing-warning-light",
+      "path": "catalog/railway/crossing-warning-light/index.html",
+      "previewBytes": 17404
+    },
+    {
+      "id": "curved-track",
+      "path": "catalog/railway/curved-track/index.html",
+      "previewBytes": 23689
+    },
+    {
+      "id": "diesel-locomotive",
+      "path": "catalog/railway/diesel-locomotive/index.html",
+      "previewBytes": 21032
+    },
+    {
+      "id": "dining-car",
+      "path": "catalog/railway/dining-car/index.html",
+      "previewBytes": 22472
+    },
+    {
+      "id": "electric-locomotive",
+      "path": "catalog/railway/electric-locomotive/index.html",
+      "previewBytes": 25332
+    },
+    {
+      "id": "flatbed-wagon",
+      "path": "catalog/railway/flatbed-wagon/index.html",
+      "previewBytes": 19138
+    },
+    {
+      "id": "freight-boxcar",
+      "path": "catalog/railway/freight-boxcar/index.html",
+      "previewBytes": 21151
+    },
+    {
+      "id": "handcar",
+      "path": "catalog/railway/handcar/index.html",
+      "previewBytes": 26667
+    },
+    {
+      "id": "hopper-wagon",
+      "path": "catalog/railway/hopper-wagon/index.html",
+      "previewBytes": 19288
+    },
+    {
+      "id": "inspection-trolley",
+      "path": "catalog/railway/inspection-trolley/index.html",
+      "previewBytes": 26582
+    },
+    {
+      "id": "level-crossing",
+      "path": "catalog/railway/level-crossing/index.html",
+      "previewBytes": 23007
+    },
+    {
+      "id": "luggage-stack",
+      "path": "catalog/railway/luggage-stack/index.html",
+      "previewBytes": 18880
+    },
+    {
+      "id": "lumber-wagon",
+      "path": "catalog/railway/lumber-wagon/index.html",
+      "previewBytes": 23572
+    },
+    {
+      "id": "mail-car",
+      "path": "catalog/railway/mail-car/index.html",
+      "previewBytes": 20865
+    },
+    {
+      "id": "maintenance-railcar",
+      "path": "catalog/railway/maintenance-railcar/index.html",
+      "previewBytes": 24011
+    },
+    {
+      "id": "milepost",
+      "path": "catalog/railway/milepost/index.html",
+      "previewBytes": 12475
+    },
+    {
+      "id": "passenger-coach",
+      "path": "catalog/railway/passenger-coach/index.html",
+      "previewBytes": 20892
+    },
+    {
+      "id": "platform-canopy",
+      "path": "catalog/railway/platform-canopy/index.html",
+      "previewBytes": 21883
+    },
+    {
+      "id": "rail-sleeper",
+      "path": "catalog/railway/rail-sleeper/index.html",
+      "previewBytes": 17931
+    },
+    {
+      "id": "railway-lantern",
+      "path": "catalog/railway/railway-lantern/index.html",
+      "previewBytes": 21656
+    },
+    {
+      "id": "railway-ticket-machine",
+      "path": "catalog/railway/railway-ticket-machine/index.html",
+      "previewBytes": 14154
+    },
+    {
+      "id": "semaphore-signal",
+      "path": "catalog/railway/semaphore-signal/index.html",
+      "previewBytes": 20882
+    },
+    {
+      "id": "signal-gantry",
+      "path": "catalog/railway/signal-gantry/index.html",
+      "previewBytes": 19055
+    },
+    {
+      "id": "signal-light",
+      "path": "catalog/railway/signal-light/index.html",
+      "previewBytes": 16214
+    },
+    {
+      "id": "station-bench",
+      "path": "catalog/railway/station-bench/index.html",
+      "previewBytes": 20618
+    },
+    {
+      "id": "station-clock",
+      "path": "catalog/railway/station-clock/index.html",
+      "previewBytes": 16918
+    },
+    {
+      "id": "station-platform",
+      "path": "catalog/railway/station-platform/index.html",
+      "previewBytes": 15237
+    },
+    {
+      "id": "steam-locomotive",
+      "path": "catalog/railway/steam-locomotive/index.html",
+      "previewBytes": 22939
+    },
+    {
+      "id": "straight-track",
+      "path": "catalog/railway/straight-track/index.html",
+      "previewBytes": 16167
+    },
+    {
+      "id": "subway-car",
+      "path": "catalog/railway/subway-car/index.html",
+      "previewBytes": 21128
+    },
+    {
+      "id": "tank-wagon",
+      "path": "catalog/railway/tank-wagon/index.html",
+      "previewBytes": 26044
+    },
+    {
+      "id": "ticket-barrier",
+      "path": "catalog/railway/ticket-barrier/index.html",
+      "previewBytes": 19371
+    },
+    {
+      "id": "timetable-board",
+      "path": "catalog/railway/timetable-board/index.html",
+      "previewBytes": 17759
+    },
+    {
+      "id": "track-switch-lever",
+      "path": "catalog/railway/track-switch-lever/index.html",
+      "previewBytes": 22240
+    },
+    {
+      "id": "turnout-track",
+      "path": "catalog/railway/turnout-track/index.html",
+      "previewBytes": 18843
+    }
+  ],
+  "localPageGenerator": "scripts/buildCatalogPages.ts",
+  "liveRouteStatus": "unverified pending merge",
+  "deploymentVerified": false
+}

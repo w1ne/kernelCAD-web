@@ -1,0 +1,56 @@
+{
+  "bundleVersion": 1,
+  "scriptPath": "/data/kernelcad-stepped-bore-20261122/docs/demos/fastener-stepped-bore-20261122/straight.kcad.ts",
+  "generatedAt": "2026-11-22T19:59:20.515Z",
+  "requestedChannels": [
+    "rgb"
+  ],
+  "emittedChannels": [
+    "rgb"
+  ],
+  "viewport": {
+    "width": 680,
+    "height": 450
+  },
+  "views": [
+    "front",
+    "right",
+    "top",
+    "iso"
+  ],
+  "bounds": {
+    "min": [
+      0,
+      0,
+      -3
+    ],
+    "max": [
+      20,
+      20,
+      10
+    ]
+  },
+  "command": {
+    "name": "kernelcad render inspect",
+    "channels": [
+      "rgb"
+    ],
+    "views": [
+      "front",
+      "right",
+      "top",
+      "iso"
+    ]
+  },
+  "caveats": [
+    "Channels are view-dependent and reflect the same camera, visibility filter, tail-feature filtering, and reference-image visibility used for RGB."
+  ],
+  "channels": {
+    "rgb": {
+      "front": "channels/rgb/front.png",
+      "right": "channels/rgb/right.png",
+      "top": "channels/rgb/top.png",
+      "iso": "channels/rgb/iso.png"
+    }
+  }
+}

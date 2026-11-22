@@ -1,0 +1,753 @@
+{
+  "kit": "postal-logistics",
+  "added": 52,
+  "catalogTotal": 1743,
+  "passed": 52,
+  "total": 52,
+  "triangleRange": [
+    96,
+    240
+  ],
+  "allOneMaterial": true,
+  "allWithinBudget": true,
+  "allBaseOrigin": true,
+  "allKnobsExact": true,
+  "allSourceHashesMatch": true,
+  "allPreviewsPresent": true,
+  "integration": {
+    "passed": true,
+    "filesPassed": 4,
+    "testsPassed": 15,
+    "durationSeconds": 158.3
+  },
+  "assets": [
+    {
+      "id": "automated-label-applicator",
+      "triangles": 156,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "barcode-tunnel-scanner",
+      "triangles": 144,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "bulk-mail-hamper",
+      "triangles": 144,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "bulk-mail-sack",
+      "triangles": 116,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "carrier-caseload-sorter",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "carrier-route-sequence-rack",
+      "triangles": 144,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "carrier-satchel",
+      "triangles": 120,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "conveyor-drive-unit",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "conveyor-guard-section",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "conveyor-merge-module",
+      "triangles": 144,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "conveyor-transfer-bridge",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "crossbelt-sorter-section",
+      "triangles": 144,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "delivery-sequence-case",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "gravity-roller-conveyor",
+      "triangles": 144,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "handheld-postal-scanner",
+      "triangles": 108,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "high-capacity-mail-cart",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "in-motion-weigh-deck",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "mail-tray-dispatch-cart",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "mail-tray-stack",
+      "triangles": 96,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "mailbag-closing-machine",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "mailpiece-thickness-gauge",
+      "triangles": 108,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "mailroom-workbench",
+      "triangles": 156,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "overhead-scan-gantry",
+      "triangles": 144,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "package-induction-conveyor",
+      "triangles": 144,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "parcel-belt-diverter",
+      "triangles": 156,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "parcel-dimensioning-arch",
+      "triangles": 144,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "parcel-overflow-container",
+      "triangles": 156,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "parcel-singulator",
+      "triangles": 144,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "parcel-staging-rack",
+      "triangles": 156,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "parcel-tray-transfer-cart",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "parcel-weigh-station",
+      "triangles": 108,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "postage-meter-workstation",
+      "triangles": 108,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "postal-dispatch-cage",
+      "triangles": 156,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "postal-dispatch-seal-station",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "postal-label-printer",
+      "triangles": 108,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "postal-pallet-roller-deck",
+      "triangles": 144,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "postal-route-marker-board",
+      "triangles": 120,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "postal-sack-loader",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "postal-sack-rack",
+      "triangles": 168,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "postal-sortation-tray-cabinet",
+      "triangles": 156,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "powered-roller-conveyor",
+      "triangles": 168,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "powered-sack-dumper",
+      "triangles": 144,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "rolling-postal-container",
+      "triangles": 156,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "scanner-sensor-post",
+      "triangles": 108,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "sliding-shoe-sorter-section",
+      "triangles": 156,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "sorter-chute-bank",
+      "triangles": 156,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "sorter-emergency-stop-pedestal",
+      "triangles": 140,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "sorter-maintenance-platform",
+      "triangles": 168,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "sorting-operator-console",
+      "triangles": 240,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "spiral-parcel-chute",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "telescopic-parcel-conveyor",
+      "triangles": 120,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    },
+    {
+      "id": "tray-induction-loader",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "previewPresent": true,
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 766ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 321ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 200008ms
+     ✓ every committed catalog asset opens with exactly the knobs its index row lists  198832ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  322ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 287554ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  287082ms
+
+ Test Files  4 passed (4)
+      Tests  15 passed (15)
+   Start at  08:40:15
+   Duration  292.80s (transform 17.13s, setup 393ms, import 23.10s, tests 488.65s, environment 1ms)

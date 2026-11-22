@@ -18,6 +18,35 @@ const latin1 = (b: Uint8Array): string => Array.from(b, c => String.fromCharCode
 const SHEET = (body: string) =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 297 210" width="297mm" height="210mm">${body}</svg>`;
 
+describe('SVG path parser termination and command arguments', () => {
+  it('rejects numbers after close-path instead of looping', () => {
+    expect(() => pathDataToGeometry('M 0 0 Z 10 10')).toThrow(/invalid SVG path/);
+    expect(() => pathDataToGeometry('M 0 0 z -2 -2')).toThrow(/invalid SVG path/);
+  });
+
+  it('rejects incomplete SVG path groups and unsupported commands', () => {
+    for (const d of ['M 0 0 L 10', 'M 0 0 C 1 2 3 4 5', 'M 0 0 A 5 5 0 0 1 10', 'M 0 0 R 20 30']) {
+      expect(() => pathDataToGeometry(d), d).toThrow(/invalid SVG path/);
+    }
+  });
+
+  it('rejects values too large to represent in PDF without corrupting geometry', () => {
+    expect(() => pathDataToGeometry('M 0 0 L 1e309 5')).toThrow(/invalid SVG path/);
+  });
+
+  it('does not emit a PDF page for malformed serialized path data', () => {
+    const svg = '<svg viewBox="0 0 297 210" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M 0 0 Z 10 10"/></svg>';
+    expect(() => svgSheetToPdfPage(svg)).toThrow(/invalid SVG path/);
+  });
+
+  it('preserves legal relative and implicit path command sequences', () => {
+    expect(pathDataToGeometry('M 0 0 L 10 10 Z').ops).toEqual(expect.arrayContaining(['h']));
+    expect(pathDataToGeometry('m 1 1 2 0 v 3 h -2 z').ops.at(-1)).toBe('h');
+    expect(pathDataToGeometry('M 0 0 Z M 10 10 L 20 20').ops.length).toBeGreaterThan(2);
+  });
+});
+
 describe('writePdf', () => {
   it('writes a PDF whose xref offsets point at every object', () => {
     const bytes = writePdf([{ widthPt: 100, heightPt: 50, content: '0 0 m 10 10 l S' }], { title: 'Plate ⌀6' }, false);

@@ -1,0 +1,19 @@
+{
+  "packageName": "kernelcad",
+  "packageVersion": "0.17.4",
+  "amusementParkSources": 70,
+  "amusementParkPreviews": 70,
+  "amusementParkReadme": true,
+  "amusementParkKitMetadata": true,
+  "noCommercialImplementationPathsInPackage": true,
+  "noCommercialLogicTermsInNewAssets": true,
+  "builtJavaScriptFilesScanned": 2,
+  "builtCommercialWorkflowTerms": [],
+  "noCommercialWorkflowTermsInBuiltJavaScript": true,
+  "packageExportsUnchanged": true,
+  "noPackageOrDeploymentWorkflowChanges": true,
+  "unexpectedProtectedPaths": [],
+  "forbiddenPackagePaths": [],
+  "commercialLogicTerms": [],
+  "passed": true
+}

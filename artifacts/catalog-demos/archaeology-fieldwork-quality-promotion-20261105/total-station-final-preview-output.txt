@@ -1,0 +1,3 @@
+(node:4091658) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+archaeology-fieldwork/total-station: 292 tris

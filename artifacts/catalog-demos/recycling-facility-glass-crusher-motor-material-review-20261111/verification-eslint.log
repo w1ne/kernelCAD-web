@@ -1,0 +1,3 @@
+Command: npx eslint catalog/kits/recycling-facility/ tests/integration/catalog/glassCrusherMotorMaterial.test.ts
+Exit status: 0
+ESLint emitted no diagnostics.

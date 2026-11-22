@@ -1,0 +1,7 @@
+{
+  "checkedAt": "2026-11-02",
+  "command": "npx eslint catalog/",
+  "exitCode": 0,
+  "result": "passed",
+  "scope": "All committed catalog sources, including 40 railway assets."
+}

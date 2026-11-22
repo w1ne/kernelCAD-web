@@ -1,0 +1,15 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/weldInspectionLightLensMaterial.test.ts (1 test) 3198ms
+     ✓ gives the lamp lenses their own lens finish, distinct from the yellow lamp housings  2056ms
+ ✓ tests/integration/catalog/shaftCollarFidelity.test.ts (3 tests) 4462ms
+     ✓ exports a drilled, open shaft collar and separate contacting screw  1488ms
+     ✓ fails the original solid-wall negative control  449ms
+     ✓ keeps the passage, screw and intact walls for both scaled props  1112ms
+
+ Test Files  2 passed (2)
+      Tests  4 passed (4)
+   Start at  13:54:00
+   Duration  36.52s (transform 48.98s, setup 1.16s, import 61.94s, tests 7.66s, environment 0ms)
+

@@ -1,0 +1,17 @@
+{
+  "kit": "farm-machinery",
+  "width": 1280,
+  "height": 720,
+  "frameRate": 2,
+  "videoFrameRate": 24,
+  "videoCodec": "libx264",
+  "pixelFormat": "yuv420p",
+  "crf": 23,
+  "render": "software-rendered GLB triangles from local catalog source and parameter resolution",
+  "assetsPerOverviewFrame": 20,
+  "variants": [
+    { "id": "row-crop-tractor", "want": "scale 1.15 blue body yellow accent" },
+    { "id": "round-baler", "want": "scale 0.85 green body orange accent" },
+    { "id": "center-pivot-irrigation-span", "want": "scale 1.1 red body yellow accent" }
+  ]
+}

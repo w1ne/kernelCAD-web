@@ -1,0 +1,211 @@
+{
+  "checkedAt": "2026-11-02",
+  "kit": "music",
+  "musicPages": 40,
+  "hubContainsKit": true,
+  "pages": [
+    {
+      "id": "accordion",
+      "path": "catalog/music/accordion/index.html",
+      "previewBytes": 19695
+    },
+    {
+      "id": "acoustic-guitar",
+      "path": "catalog/music/acoustic-guitar/index.html",
+      "previewBytes": 19123
+    },
+    {
+      "id": "alto-saxophone",
+      "path": "catalog/music/alto-saxophone/index.html",
+      "previewBytes": 21125
+    },
+    {
+      "id": "banjo",
+      "path": "catalog/music/banjo/index.html",
+      "previewBytes": 14375
+    },
+    {
+      "id": "bass-drum",
+      "path": "catalog/music/bass-drum/index.html",
+      "previewBytes": 21681
+    },
+    {
+      "id": "bass-guitar",
+      "path": "catalog/music/bass-guitar/index.html",
+      "previewBytes": 11886
+    },
+    {
+      "id": "bassoon",
+      "path": "catalog/music/bassoon/index.html",
+      "previewBytes": 15650
+    },
+    {
+      "id": "bongos",
+      "path": "catalog/music/bongos/index.html",
+      "previewBytes": 20680
+    },
+    {
+      "id": "cajon",
+      "path": "catalog/music/cajon/index.html",
+      "previewBytes": 11907
+    },
+    {
+      "id": "cello",
+      "path": "catalog/music/cello/index.html",
+      "previewBytes": 17318
+    },
+    {
+      "id": "clarinet",
+      "path": "catalog/music/clarinet/index.html",
+      "previewBytes": 12128
+    },
+    {
+      "id": "concert-flute",
+      "path": "catalog/music/concert-flute/index.html",
+      "previewBytes": 14102
+    },
+    {
+      "id": "concert-harp",
+      "path": "catalog/music/concert-harp/index.html",
+      "previewBytes": 23286
+    },
+    {
+      "id": "conductor-podium",
+      "path": "catalog/music/conductor-podium/index.html",
+      "previewBytes": 17630
+    },
+    {
+      "id": "conga-drums",
+      "path": "catalog/music/conga-drums/index.html",
+      "previewBytes": 19137
+    },
+    {
+      "id": "double-bass",
+      "path": "catalog/music/double-bass/index.html",
+      "previewBytes": 16863
+    },
+    {
+      "id": "drum-kit",
+      "path": "catalog/music/drum-kit/index.html",
+      "previewBytes": 33393
+    },
+    {
+      "id": "electric-guitar",
+      "path": "catalog/music/electric-guitar/index.html",
+      "previewBytes": 14157
+    },
+    {
+      "id": "french-horn",
+      "path": "catalog/music/french-horn/index.html",
+      "previewBytes": 29955
+    },
+    {
+      "id": "harmonica",
+      "path": "catalog/music/harmonica/index.html",
+      "previewBytes": 15949
+    },
+    {
+      "id": "maracas",
+      "path": "catalog/music/maracas/index.html",
+      "previewBytes": 29644
+    },
+    {
+      "id": "marimba",
+      "path": "catalog/music/marimba/index.html",
+      "previewBytes": 21946
+    },
+    {
+      "id": "mechanical-metronome",
+      "path": "catalog/music/mechanical-metronome/index.html",
+      "previewBytes": 23495
+    },
+    {
+      "id": "microphone-stand",
+      "path": "catalog/music/microphone-stand/index.html",
+      "previewBytes": 16089
+    },
+    {
+      "id": "music-stand",
+      "path": "catalog/music/music-stand/index.html",
+      "previewBytes": 15085
+    },
+    {
+      "id": "oboe",
+      "path": "catalog/music/oboe/index.html",
+      "previewBytes": 12209
+    },
+    {
+      "id": "orchestral-cymbals",
+      "path": "catalog/music/orchestral-cymbals/index.html",
+      "previewBytes": 22904
+    },
+    {
+      "id": "orchestral-triangle",
+      "path": "catalog/music/orchestral-triangle/index.html",
+      "previewBytes": 26239
+    },
+    {
+      "id": "snare-drum",
+      "path": "catalog/music/snare-drum/index.html",
+      "previewBytes": 24496
+    },
+    {
+      "id": "tambourine",
+      "path": "catalog/music/tambourine/index.html",
+      "previewBytes": 29494
+    },
+    {
+      "id": "tenor-saxophone",
+      "path": "catalog/music/tenor-saxophone/index.html",
+      "previewBytes": 21182
+    },
+    {
+      "id": "timpani",
+      "path": "catalog/music/timpani/index.html",
+      "previewBytes": 23854
+    },
+    {
+      "id": "trombone",
+      "path": "catalog/music/trombone/index.html",
+      "previewBytes": 20472
+    },
+    {
+      "id": "trumpet",
+      "path": "catalog/music/trumpet/index.html",
+      "previewBytes": 20366
+    },
+    {
+      "id": "tuba",
+      "path": "catalog/music/tuba/index.html",
+      "previewBytes": 28025
+    },
+    {
+      "id": "ukulele",
+      "path": "catalog/music/ukulele/index.html",
+      "previewBytes": 16517
+    },
+    {
+      "id": "vibraphone",
+      "path": "catalog/music/vibraphone/index.html",
+      "previewBytes": 22507
+    },
+    {
+      "id": "viola",
+      "path": "catalog/music/viola/index.html",
+      "previewBytes": 18389
+    },
+    {
+      "id": "violin",
+      "path": "catalog/music/violin/index.html",
+      "previewBytes": 18359
+    },
+    {
+      "id": "xylophone",
+      "path": "catalog/music/xylophone/index.html",
+      "previewBytes": 21300
+    }
+  ],
+  "localPageGenerator": "scripts/buildCatalogPages.ts",
+  "liveRouteStatus": "unverified pending merge",
+  "deploymentVerified": false
+}

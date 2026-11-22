@@ -9,6 +9,7 @@ import {
 import { lowerAssemblyConnect, lowerAssemblyJoint, lowerAssemblyPart } from './assemblyParts';
 import { lowerAssemblyExport } from './assemblyExport';
 import { lowerBoolean } from './boolean';
+import { lowerBooleanSplit } from './booleanSplit';
 import { lowerCurve3d, lowerEmbossText, lowerProjectCurve, lowerVariableSweep } from './curves';
 import { lowerChamfer, lowerFillet } from './edgeFeatures';
 import { lowerFilletIntersection } from './filletIntersection';
@@ -26,6 +27,7 @@ import { lowerExtrude, lowerSketch } from './sketchExtrude';
 import { lowerShapeThicken, lowerSurfaceSew, lowerSurfaceThicken, lowerSurfaceToShape } from './surfaces';
 import { lowerSweep } from './sweep';
 import { lowerTube } from './tube';
+import { lowerPipe } from './pipe';
 import { lowerVirtualRecord } from './virtual';
 
 /**
@@ -48,6 +50,7 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   importedBrep: lowerImported,
   importedStl: lowerImported,
   importedMesh: lowerImported,
+  spurGearCut: lowerImported,
   sdfMaterialize: lowerSdfMaterialize,
   lattice: lowerLattice,
   // 2D to 3D
@@ -58,6 +61,7 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   loft: lowerLoft,
   // booleans and edge/face features
   boolean: lowerBoolean,
+  booleanSplit: lowerBooleanSplit,
   fillet: lowerFillet,
   filletIntersection: lowerFilletIntersection,
   chamfer: lowerChamfer,
@@ -92,6 +96,7 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   embossText: lowerEmbossText,
   projectCurve: lowerProjectCurve,
   tube: lowerTube,
+  pipe: lowerPipe,
   // capture-only declarations — no BREP output
   referenceImage: lowerVirtualRecord,
   renderEnvironment: lowerVirtualRecord,
@@ -99,6 +104,7 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   dfmSpec: lowerVirtualRecord,
   feaStudy: lowerVirtualRecord,
   cfdStudy: lowerVirtualRecord,
+  flightStudy: lowerVirtualRecord,
   drawingDatum: lowerVirtualRecord,
   drawingTolerance: lowerVirtualRecord,
   drawingDimension: lowerVirtualRecord,

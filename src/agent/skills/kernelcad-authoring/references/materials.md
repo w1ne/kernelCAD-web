@@ -21,16 +21,33 @@ the same slot, so on one leaf it is last-write-wins between them. To TINT a
 finish, pass `{ color }` to `.finish()` — do not layer `.color()` under it, the
 hue would be shadowed.
 
-Use `inspect({ of: 'multi-material', file })` to find explicit material leaves
-whose attribution is shadowed by an attributed boolean descendant. It returns
-record ids and an assembly-part rewrite template. This is an advisory source
-analysis: it does not preserve per-face attribution through a fused static
-mesh. For a static multi-material render today, retain the differently
-materialled operands as separate `assemblyPart`s and verify their placements.
+**One rigid body, several finishes.** `union()` keeps each member's own
+`.finish()` / `.material()` / `.color()` on the faces that came from that
+member — in Studio, `render_preview` and GLB export. A servo with a dark case,
+an aluminium horn and steel screws is one body (or one assembly part with one
+connector), not one part and one fastened mate per colour:
 
-**Critical rule:** apply `.finish()` / `.material()` to leaf parts BEFORE they
-enter a boolean. A call on a post-union root is a no-op — the kernel cannot
-retroactively assign material to the input leaves of a boolean.
+```typescript
+const caseShell = union(caseBox, tabs, boss).finish('abs', { color: '#1d1f23' }); // fuse same stock, finish once
+const horn = union(hub, arm).finish('aluminium');
+const screw = cylinder(1.2, 1.9).translate(14, 0, 18).finish('steel');
+return union(caseShell, horn, screw);           // three finishes, one solid
+```
+
+Rules: a finish on the union RESULT covers every face (it wins over the
+members); a face no member made — the wall a `subtract` / `intersect` cutter
+leaves behind, a fillet blend — takes the finish of the faces around it when
+they agree (a bore through the horn is aluminium, a rounded horn rim stays
+aluminium) and the body's finish where they differ (a blend across the
+case/horn seam); never the cutter's finish. Pieces of the SAME
+material are fused first and finished once — two same-finish members that
+overlap fail `union.member-overlap`. Split into assembly parts only when the
+pieces move relative to each other or are separate BOM lines. Example:
+`examples/exports/servo-member-finishes.kcad.ts`.
+
+Use `inspect({ of: 'multi-material', file })` to find member finishes hidden by
+a finish on a downstream union result (the result's finish wins); drop that
+outer finish to show the members.
 
 ### `.finish(name, opts?)` — named finishes
 
@@ -179,8 +196,9 @@ Rules:
   no upstream `faceLabels` entry), the build continues and a soft
   `feature.material.face-label-no-match` warning is emitted; the affected faces
   fall back to the shape-level default.
-- Per-face identity dies at boolean operations (same as `.color()` and the
-  whole-shape `.material()`). Apply per-face materials AFTER all booleans.
+- Face labels do not cross booleans: apply `.material({ face })` on the
+  record whose `faceLabels` declare the face, after the booleans that change
+  it. (Whole-member finishes do survive `union()`; see above.)
 
 ## Reference images
 

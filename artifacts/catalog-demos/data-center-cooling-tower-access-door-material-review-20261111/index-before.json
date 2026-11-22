@@ -1,0 +1,77 @@
+{
+  "air-cooled-chiller": {
+    "preview": "/assets/data-center-infrastructure-air-cooled-chiller.png",
+    "sourceSha256": "70a1a798cd95b6d6e9c13188b1f26e2249aa06cad7ac66b5f5dce7ce50232a01",
+    "stats": {
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        3.968,
+        2.434,
+        2.28
+      ],
+      "triangles": 5236
+    },
+    "triangleBudget": 12000
+  },
+  "clean-agent-cylinder-bank": {
+    "preview": "/assets/data-center-infrastructure-clean-agent-cylinder-bank.png",
+    "sourceSha256": "b01db3a8da44c040da9a23086c9d77b8f857970753a0ce7147634719755ed291",
+    "stats": {
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.952,
+        2.08,
+        0.392
+      ],
+      "triangles": 5316
+    },
+    "triangleBudget": 9000
+  },
+  "cooling-tower-cell": {
+    "preview": "/assets/data-center-infrastructure-cooling-tower-cell.png",
+    "sourceSha256": "0491af3c6ba651a202ad0c87bc15c795bbaafb068a36e9eb7e2c19b55741c0c7",
+    "stats": {
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        3.3,
+        3.906,
+        2.53
+      ],
+      "triangles": 2110
+    },
+    "triangleBudget": 9000
+  },
+  "dry-type-transformer": {
+    "preview": "/assets/data-center-infrastructure-dry-type-transformer.png",
+    "sourceSha256": "9ca7672501816a4878458734ede8b856c1af6f7ed24d6b76d85a54c14218cabb",
+    "stats": {
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        1.86,
+        2.06,
+        0.664
+      ],
+      "triangles": 5160
+    },
+    "triangleBudget": 9000
+  },
+  "standby-generator-enclosure": {
+    "preview": "/assets/data-center-infrastructure-standby-generator-enclosure.png",
+    "sourceSha256": "584f05bc3ea6f9773a0dde861eae8238f92239e68466ce095ef547172bd0ad36",
+    "stats": {
+      "materials": 1,
+      "minUpM": 0,
+      "sizeM": [
+        4.025,
+        3.131926,
+        1.51
+      ],
+      "triangles": 2540
+    },
+    "triangleBudget": 8000
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "kit": "vet-clinic",
+  "assetCount": 50,
+  "idsAdded": 0,
+  "materialControlsAdded": 146,
+  "controlsPerAsset": {
+    "minimum": 2,
+    "maximum": 4
+  },
+  "presets": {
+    "names": [
+      "clinicClean",
+      "softTeal"
+    ],
+    "assetsWithPresets": 50,
+    "entries": 100
+  },
+  "geometry": {
+    "units": "millimetres",
+    "axis": "Z up",
+    "triangleBudget": 1800,
+    "anesthesiaMachineTriangles": 492,
+    "anesthesiaMachineEdits": [
+      "oxygen cylinders moved outside the main cabinet",
+      "two cylinder valve caps added",
+      "separate monitor screen added"
+    ]
+  },
+  "previewRenderer": {
+    "command": "npx tsx scripts/renderCatalogPreviews.ts <50 vet-clinic IDs>",
+    "view": "software-rendered 3/4",
+    "label": "asset title and triangle count",
+    "renderedPreviews": 50
+  },
+  "presetRenders": {
+    "command": "npx tsx artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/render_vet_clinic_presets.ts",
+    "asset": "anesthesia-machine",
+    "method": "replay the exact color values declared in each source preset through the catalog GLB renderer",
+    "trianglesPerRender": 492
+  },
+  "video": {
+    "path": "vet-clinic-quality-promotion.mp4",
+    "durationSeconds": 20.46,
+    "resolution": "1280x720",
+    "codec": "H.264",
+    "frameRate": 24,
+    "pixelFormat": "yuv420p",
+    "audio": false,
+    "frames": [
+      "title and scope",
+      "before and after previews",
+      "material parameters",
+      "clinicClean and softTeal renders",
+      "refreshed clinic preview gallery",
+      "local verification and pending deployment status"
+    ]
+  }
+}

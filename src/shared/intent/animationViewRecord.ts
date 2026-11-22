@@ -16,6 +16,9 @@
 //          { param: 'drumAngleDeg',  keys: [{ atMs: 0, value: 0 }, { atMs: 800, value: 60, ease: 'easeInOut' }] },
 //          { param: 'meterSwingDeg', keys: [{ atMs: 800, value: 0 }, { atMs: 1400, value: 35 }] },
 //        ] })
+//      A track may instead animate appearance: `{ target, channel, keys }`
+//      with `channel` 'color' | 'emissive' and `#rrggbb` key values, e.g.
+//        { target: 'part-a', channel: 'emissive', keys: [{ atMs: 0, value: '#000000' }, { atMs: 150, value: '#2bff88' }] }
 //
 // Whatever the author surface, the metadata stored on the FeatureRecord is
 // ALWAYS normalized to the track shape (see AnimationViewMetadata) — the
@@ -45,7 +48,7 @@ export type AnimationEase = (typeof ANIMATION_EASES)[number];
 export interface AnimationKey {
   /** Timeline position in milliseconds (>= 0, finite, unique within a track). */
   atMs: number;
-  /** Param value at this keyframe. Clamped to the param's declared min/max range. */
+  /** Authored param value at this keyframe. */
   value: number;
   /** Easing of the segment that ENDS at this key; default 'linear'. */
   ease?: AnimationEase;
@@ -61,6 +64,39 @@ export interface AnimationTrack {
   param: string;
   /** Keyframes; need not be pre-sorted — normalization sorts by atMs. */
   keys: AnimationKey[];
+}
+
+/** Material channels an appearance track can animate. `emissive` is the
+ *  self-lit colour (`#000000` = off); `color` is the base colour. */
+export const ANIMATION_APPEARANCE_CHANNELS = ['color', 'emissive'] as const;
+
+export type AnimationAppearanceChannel = (typeof ANIMATION_APPEARANCE_CHANNELS)[number];
+
+/** One colour keyframe: the target reaches `value` (`#rgb` / `#rrggbb`) at
+ *  `atMs`. Same `ease` and hold-clamp rules as {@link AnimationKey}. */
+export interface AnimationColorKey {
+  atMs: number;
+  value: string;
+  ease?: AnimationEase;
+}
+
+/**
+ * One animated appearance: the rendered object(s) named by `target` take the
+ * keyed colour on `channel`. `target` uses the same name rules as the render
+ * `--focus/--hide` filter (feature id, assembly part name, display or
+ * metadata name; case-insensitive; `*` / `?` wildcards) and is resolved
+ * against the meshed scene at capture time. Appearance tracks never change
+ * geometry or poses.
+ */
+export interface AnimationAppearanceTrack {
+  target: string;
+  channel: AnimationAppearanceChannel;
+  keys: AnimationColorKey[];
+}
+
+/** Discriminates an appearance track from a param track. */
+export function isAppearanceTrack(track: AnimationTrack | AnimationAppearanceTrack): track is AnimationAppearanceTrack {
+  return typeof track === 'object' && track !== null && 'target' in track;
 }
 
 /**
@@ -93,8 +129,8 @@ export interface AnimationViewSweepSpec {
 export interface AnimationViewTracksSpec {
   /** Optional human-readable label for the animation (e.g. 'dispense cycle'). */
   name?: string;
-  /** One track per animated param. */
-  tracks: AnimationTrack[];
+  /** One track per animated param, or per (target, channel) appearance. */
+  tracks: Array<AnimationTrack | AnimationAppearanceTrack>;
   /** Frames per second; default 30. */
   fps?: number;
 }
@@ -110,7 +146,10 @@ export function isAnimationViewTracksSpec(spec: AnimationViewSpec): spec is Anim
 /** AnimationKey after normalization: `ease` is always present ('linear' default). */
 export interface NormalizedAnimationKey {
   atMs: number;
+  /** Param value used by timeline sampling (clamped to the declared range). */
   value: number;
+  /** Original authored value when `value` was clamped to the param range. */
+  authoredValue?: number;
   ease: AnimationEase;
 }
 
@@ -118,6 +157,29 @@ export interface NormalizedAnimationKey {
 export interface NormalizedAnimationTrack {
   param: string;
   keys: NormalizedAnimationKey[];
+}
+
+/** Colour key after normalization: lowercase `#rrggbb`, ease defaulted. */
+export interface NormalizedAnimationColorKey {
+  atMs: number;
+  value: string;
+  ease: AnimationEase;
+}
+
+/** Appearance track after normalization: keys sorted ascending by atMs. */
+export interface NormalizedAnimationAppearanceTrack {
+  target: string;
+  channel: AnimationAppearanceChannel;
+  keys: NormalizedAnimationColorKey[];
+}
+
+/** `#rgb` / `#rrggbb` → lowercase `#rrggbb`; null for anything else. */
+export function normalizeHexColor(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(value.trim());
+  if (!m) return null;
+  const hex = m[1].toLowerCase();
+  return hex.length === 3 ? `#${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}` : `#${hex}`;
 }
 
 /**
@@ -130,7 +192,10 @@ export interface NormalizedAnimationTrack {
  */
 export interface AnimationViewMetadata {
   name?: string;
+  /** Param tracks only. */
   tracks: NormalizedAnimationTrack[];
+  /** Appearance tracks; present only when the view declares at least one. */
+  appearanceTracks?: NormalizedAnimationAppearanceTrack[];
   fps: number;
   durationMs: number;
   virtual: true;
@@ -154,14 +219,28 @@ export function normalizeAnimationView(spec: AnimationViewSpec, fps?: number): A
   const resolvedFps = fps ?? spec.fps ?? 30;
   let name: string | undefined;
   let tracks: NormalizedAnimationTrack[];
+  const appearanceTracks: NormalizedAnimationAppearanceTrack[] = [];
   if (isAnimationViewTracksSpec(spec)) {
     name = spec.name;
-    tracks = spec.tracks.map((t) => ({
-      param: t.param,
-      keys: [...t.keys]
-        .sort((a, b) => a.atMs - b.atMs)
-        .map((k) => ({ atMs: k.atMs, value: k.value, ease: k.ease ?? 'linear' })),
-    }));
+    tracks = [];
+    for (const t of spec.tracks) {
+      if (isAppearanceTrack(t)) {
+        appearanceTracks.push({
+          target: t.target.trim(),
+          channel: t.channel,
+          keys: [...t.keys]
+            .sort((a, b) => a.atMs - b.atMs)
+            .map((k) => ({ atMs: k.atMs, value: normalizeHexColor(k.value) ?? '#000000', ease: k.ease ?? 'linear' })),
+        });
+        continue;
+      }
+      tracks.push({
+        param: t.param,
+        keys: [...t.keys]
+          .sort((a, b) => a.atMs - b.atMs)
+          .map((k) => ({ atMs: k.atMs, value: k.value, ease: k.ease ?? 'linear' })),
+      });
+    }
   } else {
     tracks = [{
       param: spec.param,
@@ -172,12 +251,13 @@ export function normalizeAnimationView(spec: AnimationViewSpec, fps?: number): A
     }];
   }
   let durationMs = 0;
-  for (const t of tracks) {
+  for (const t of [...tracks, ...appearanceTracks]) {
     for (const k of t.keys) durationMs = Math.max(durationMs, k.atMs);
   }
   return {
     ...(name !== undefined ? { name } : {}),
     tracks,
+    ...(appearanceTracks.length > 0 ? { appearanceTracks } : {}),
     fps: resolvedFps,
     durationMs,
     virtual: true,

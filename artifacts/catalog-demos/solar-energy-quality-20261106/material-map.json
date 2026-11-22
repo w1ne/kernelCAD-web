@@ -1,0 +1,3429 @@
+{
+  "date": "2026-11-06",
+  "kit": "solar-energy",
+  "assetCount": 40,
+  "materialsAdded": 130,
+  "presetEntriesAdded": 80,
+  "assets": [
+    {
+      "id": "ac-disconnect-switch",
+      "source": "catalog/kits/solar-energy/ac-disconnect-switch.kcad.ts",
+      "beforeSha256": "050b3934349680315fc860d6c29033768b4b3256a6061e10a200c8505dee6ed5",
+      "afterSha256": "7baf858ffd9b2b33919fb3bb766ea8489ae7b0a3c377584a2ebfd148c9c05039",
+      "partsBeforeDetail": 10,
+      "partsAfter": 10,
+      "materials": [
+        {
+          "part": "disconnect-plinth",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "disconnect-body",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "disconnect-door-1",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "disconnect-handle-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "disconnect-vent-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "disconnect-vent-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "disconnect-handle-base",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "disconnect-lever",
+          "param": "warningPaint",
+          "label": "Safety paint"
+        },
+        {
+          "part": "conduit-0",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "conduit-1",
+          "param": "rubber",
+          "label": "Rubber"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "balcony-solar-panel",
+      "source": "catalog/kits/solar-energy/balcony-solar-panel.kcad.ts",
+      "beforeSha256": "69b6a42bbfc4f884750f5438a04ce7cbf2607416cad4cbc7fe30749ed5460b66",
+      "afterSha256": "7912f57ff90744f790eba19ffe64ad0ba53b4270b62945a33b4bce68543db0e5",
+      "partsBeforeDetail": 11,
+      "partsAfter": 11,
+      "materials": [
+        {
+          "part": "balcony-floor",
+          "param": "concrete",
+          "label": "Concrete"
+        },
+        {
+          "part": "balcony-post-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "balcony-post-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "balcony-post-2",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "balcony-post-3",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "balcony-post-4",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "balcony-top-rail",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "balcony-module-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "balcony-module-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "balcony-bracket-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "balcony-bracket-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "battery-cabinet",
+      "source": "catalog/kits/solar-energy/battery-cabinet.kcad.ts",
+      "beforeSha256": "26845d5bd1c346490b459a690de35da6c07208d3c2269e78b52eb25580406e26",
+      "afterSha256": "885d9f8a4873d02a7b0051d18e89185733443d84f716cd60543ef33c7faa067d",
+      "partsBeforeDetail": 13,
+      "partsAfter": 13,
+      "materials": [
+        {
+          "part": "battery-cabinet-plinth",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-cabinet-body",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "battery-cabinet-door-1",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "battery-cabinet-handle-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-cabinet-door-2",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "battery-cabinet-handle-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-cabinet-vent-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-cabinet-vent-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-cabinet-vent-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-cabinet-vent-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-cabinet-vent-5",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-cabinet-vent-6",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "service-label-plate",
+          "param": "warningPaint",
+          "label": "Safety paint"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "battery-rack",
+      "source": "catalog/kits/solar-energy/battery-rack.kcad.ts",
+      "beforeSha256": "cc3622fc55e7a868a62b2f13833b21252d0fd0a06e6a93c7c0ed8c2c00aaa012",
+      "afterSha256": "1d5ca7dc25066e62487373f9591730e88fd1a7339c9050680eef2697ffbaadfd",
+      "partsBeforeDetail": 14,
+      "partsAfter": 14,
+      "materials": [
+        {
+          "part": "rack-upright--369-6",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-upright-369-6",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-shelf-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "battery-0-0",
+          "param": "batteryPolymer",
+          "label": "Battery polymer"
+        },
+        {
+          "part": "battery-0-1",
+          "param": "batteryPolymer",
+          "label": "Battery polymer"
+        },
+        {
+          "part": "rack-shelf-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "battery-1-0",
+          "param": "batteryPolymer",
+          "label": "Battery polymer"
+        },
+        {
+          "part": "battery-1-1",
+          "param": "batteryPolymer",
+          "label": "Battery polymer"
+        },
+        {
+          "part": "rack-shelf-2",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "battery-2-0",
+          "param": "batteryPolymer",
+          "label": "Battery polymer"
+        },
+        {
+          "part": "battery-2-1",
+          "param": "batteryPolymer",
+          "label": "Battery polymer"
+        },
+        {
+          "part": "rack-shelf-3",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "battery-3-0",
+          "param": "batteryPolymer",
+          "label": "Battery polymer"
+        },
+        {
+          "part": "battery-3-1",
+          "param": "batteryPolymer",
+          "label": "Battery polymer"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "bifacial-pv-module",
+      "source": "catalog/kits/solar-energy/bifacial-pv-module.kcad.ts",
+      "beforeSha256": "540f3522b216c38e34eb4877ff4ae2aa53d1a81cd45b9d1f6fab3140422927ae",
+      "afterSha256": "7e3e4a4edeefa1f8b6d858744483fd3c157c4b3b06bf8beaeeb226ffd25d3a80",
+      "partsBeforeDetail": 16,
+      "partsAfter": 16,
+      "materials": [
+        {
+          "part": "pv-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "pv-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "pv-cell-bar-x-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "pv-cell-bar-x-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "pv-cell-bar-x-2",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "pv-cell-bar-y-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "pv-cell-bar-y-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "pv-cell-bar-y-2",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "rack-rail-left",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-rail-right",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-leg-0-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-leg-0-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-leg-1-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-leg-1-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rear-crossbar",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rear-center-brace",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "dc-disconnect-switch",
+      "source": "catalog/kits/solar-energy/dc-disconnect-switch.kcad.ts",
+      "beforeSha256": "2a4ec39816036ba15cea2c79a1c597d783cb853aaf13339ac551550bb9bd0a22",
+      "afterSha256": "324648146f098a5d021e99270afadc400a587ac883b00b19812f52992b000b52",
+      "partsBeforeDetail": 10,
+      "partsAfter": 10,
+      "materials": [
+        {
+          "part": "disconnect-plinth",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "disconnect-body",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "disconnect-door-1",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "disconnect-handle-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "disconnect-vent-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "disconnect-vent-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "disconnect-handle-base",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "disconnect-lever",
+          "param": "warningPaint",
+          "label": "Safety paint"
+        },
+        {
+          "part": "conduit-0",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "conduit-1",
+          "param": "rubber",
+          "label": "Rubber"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "flexible-solar-panel",
+      "source": "catalog/kits/solar-energy/flexible-solar-panel.kcad.ts",
+      "beforeSha256": "fb7576619d4cd551c9be0cf1a23b1829a8e19d8fc7781eeff02ab70e8fcc9d32",
+      "afterSha256": "0f20efcba951c6995ce894cc012a941b9dab0ee8d389fae34d56e50277e4091a",
+      "partsBeforeDetail": 9,
+      "partsAfter": 9,
+      "materials": [
+        {
+          "part": "flexible-sheet",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "edge-border",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "grommet-0-0",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "grommet-0-1",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "grommet-1-0",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "grommet-1-1",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "flex-cell-line-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "flex-cell-line-2",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "flex-cell-line-3",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "floating-solar-platform",
+      "source": "catalog/kits/solar-energy/floating-solar-platform.kcad.ts",
+      "beforeSha256": "1b099976212dca3bb60ea22611ee999e328652dd0c0b2554e16718800c642f00",
+      "afterSha256": "b98359482f123f1ebbb3798cb39c62935725e41b2e5cf4a9bc0dd5b555cb5fa7",
+      "partsBeforeDetail": 12,
+      "partsAfter": 12,
+      "materials": [
+        {
+          "part": "float-pontoon-0",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "float-pontoon-1",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "floating-module-0-0-frame",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "floating-module-0-0-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "floating-module-0-1-frame",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "floating-module-0-1-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "floating-module-1-0-frame",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "floating-module-1-0-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "floating-module-1-1-frame",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "floating-module-1-1-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "raft-cross-tie-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "raft-cross-tie-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "ground-mount-pv-rack",
+      "source": "catalog/kits/solar-energy/ground-mount-pv-rack.kcad.ts",
+      "beforeSha256": "562a7cb16cf5d43a5a7197f5d78dedccea956e324c832f72c635281da85291b7",
+      "afterSha256": "b6890ec0281452b15ca1ce001b9f56a365fdc9880e747b9cceba4724e3c25fe9",
+      "partsBeforeDetail": 8,
+      "partsAfter": 8,
+      "materials": [
+        {
+          "part": "rack-pv-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "rack-pv-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "a-frame-foot-0",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "a-frame-upright-0",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "a-frame-foot-1",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "a-frame-upright-1",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "tracker-axis",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "drive-enclosure",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "home-battery-wall",
+      "source": "catalog/kits/solar-energy/home-battery-wall.kcad.ts",
+      "beforeSha256": "b71a964f775a5cc7a4191ef6ae875a307cc87a804efe00f407f4538ad4533e1a",
+      "afterSha256": "b0bd856bd16622abe291b6c403d88e6f72b961fc96453c669ab3564fe934dba8",
+      "partsBeforeDetail": 13,
+      "partsAfter": 13,
+      "materials": [
+        {
+          "part": "battery-plinth",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-body",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "battery-door-1",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "battery-handle-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-vent-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-vent-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-vent-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-vent-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-vent-5",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-seam-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-seam-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-seam-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-seam-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "hybrid-inverter",
+      "source": "catalog/kits/solar-energy/hybrid-inverter.kcad.ts",
+      "beforeSha256": "5a04a3c065ce2bb678b227d89f7a4c88f0f9802fef8309b237dd61a2bc455c06",
+      "afterSha256": "60ec2c5c5a75128c5f5a0a7594012251e19e0d8015345f18471f425cce126c77",
+      "partsBeforeDetail": 20,
+      "partsAfter": 20,
+      "materials": [
+        {
+          "part": "hybrid-plinth",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "hybrid-body",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "hybrid-door-1",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "hybrid-handle-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "hybrid-vent-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "hybrid-vent-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "hybrid-vent-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "hybrid-vent-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "hybrid-vent-5",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "hybrid-cooling-fin-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "hybrid-cooling-fin-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "hybrid-cooling-fin-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "hybrid-cooling-fin-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "hybrid-cooling-fin-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "hybrid-cooling-fin-5",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "hybrid-cooling-fin-6",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "hybrid-display",
+          "param": "displayGlass",
+          "label": "Display glass"
+        },
+        {
+          "part": "hybrid-cable-port-0",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "hybrid-cable-port-1",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "hybrid-cable-port-2",
+          "param": "rubber",
+          "label": "Rubber"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "microinverter-unit",
+      "source": "catalog/kits/solar-energy/microinverter-unit.kcad.ts",
+      "beforeSha256": "89992d0d7cca4290754af1a983f08b503a21467095d0737c3a8fbf972a82941e",
+      "afterSha256": "8c49922a4a443f541d1ddc389310209fda893ec687a09043067f6c09044f928b",
+      "partsBeforeDetail": 10,
+      "partsAfter": 10,
+      "materials": [
+        {
+          "part": "microinverter-body",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "heat-fin-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "heat-fin-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "heat-fin-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "heat-fin-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "heat-fin-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "mount-ear-0",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "mount-ear-1",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "lead-0",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "lead-1",
+          "param": "rubber",
+          "label": "Rubber"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "pad-mount-transformer",
+      "source": "catalog/kits/solar-energy/pad-mount-transformer.kcad.ts",
+      "beforeSha256": "f121a5a6e10c11ed8a82690efdaf9cad44b3a71b629c0d81116b2f57074cea85",
+      "afterSha256": "fba74521d18fbb696c33e6aa57dc72995d5c107529c5ae003b571cb4fd005056",
+      "partsBeforeDetail": 31,
+      "partsAfter": 31,
+      "materials": [
+        {
+          "part": "transformer-pad",
+          "param": "concrete",
+          "label": "Concrete"
+        },
+        {
+          "part": "transformer-tank",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "radiator-fin-front-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-back-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-front-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-back-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-front-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-back-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-front-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-back-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-front-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-back-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-front-5",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-back-5",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-front-6",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-back-6",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-front-7",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-back-7",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-front-8",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "radiator-fin-back-8",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "bushing-base-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "porcelain-bushing-0",
+          "param": "ceramic",
+          "label": "Porcelain ceramic"
+        },
+        {
+          "part": "bushing-cap-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "bushing-base-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "porcelain-bushing-1",
+          "param": "ceramic",
+          "label": "Porcelain ceramic"
+        },
+        {
+          "part": "bushing-cap-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "bushing-base-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "porcelain-bushing-2",
+          "param": "ceramic",
+          "label": "Porcelain ceramic"
+        },
+        {
+          "part": "bushing-cap-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "lifting-lug-left",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "lifting-lug-right",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "plane-of-array-irradiance-sensor",
+      "source": "catalog/kits/solar-energy/plane-of-array-irradiance-sensor.kcad.ts",
+      "beforeSha256": "4e1bbc0c3ff9225e692e16b0f40f791f7ee78609d533e459b34310cc618a84ad",
+      "afterSha256": "4ca874c36000772282367fe425095c2ce04c5c5a408aff7be64e290248e59005",
+      "partsBeforeDetail": 5,
+      "partsAfter": 5,
+      "materials": [
+        {
+          "part": "instrument-base",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "instrument-mast",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "sensor-arm",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "sensor-disc",
+          "param": "displayGlass",
+          "label": "Display glass"
+        },
+        {
+          "part": "sensor-cap",
+          "param": "displayGlass",
+          "label": "Display glass"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "pole-mount-transformer",
+      "source": "catalog/kits/solar-energy/pole-mount-transformer.kcad.ts",
+      "beforeSha256": "1a4edc32029147196b2c627e9b62019a372251f4b40a2d3037bac94c76fc728b",
+      "afterSha256": "7b1db1df3d9ab4717cbd74e871a7a0b00aade979fe5145029cdd8f2619f1b0e4",
+      "partsBeforeDetail": 6,
+      "partsAfter": 6,
+      "materials": [
+        {
+          "part": "utility-pole",
+          "param": "wood",
+          "label": "Treated wood"
+        },
+        {
+          "part": "transformer-tank",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "crossarm",
+          "param": "wood",
+          "label": "Treated wood"
+        },
+        {
+          "part": "insulator-0",
+          "param": "ceramic",
+          "label": "Porcelain ceramic"
+        },
+        {
+          "part": "insulator-1",
+          "param": "ceramic",
+          "label": "Porcelain ceramic"
+        },
+        {
+          "part": "insulator-2",
+          "param": "ceramic",
+          "label": "Porcelain ceramic"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "pv-ballast-block",
+      "source": "catalog/kits/solar-energy/pv-ballast-block.kcad.ts",
+      "beforeSha256": "8ee5bb9a9c826f4d1ca809fb2a355bdf4e4d758e5f53fbc86a79fa77cfcb28a4",
+      "afterSha256": "bc4da8ee55b6b6bd462a54f9e3a71a851b29c023bb13d4ac353630511944c748",
+      "partsBeforeDetail": 6,
+      "partsAfter": 6,
+      "materials": [
+        {
+          "part": "ballast-left",
+          "param": "concrete",
+          "label": "Concrete"
+        },
+        {
+          "part": "ballast-right",
+          "param": "concrete",
+          "label": "Concrete"
+        },
+        {
+          "part": "ballast-pv-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "ballast-pv-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "ballast-rail--166-4",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "ballast-rail-166-4",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "pv-cable-tray",
+      "source": "catalog/kits/solar-energy/pv-cable-tray.kcad.ts",
+      "beforeSha256": "0f71af35552defa9a9ee01e102a4c4076bc6da636ee775851657d7f7499e162b",
+      "afterSha256": "f842b1e3f8dd3a6d8cd55caf4ee5f493ecdda91e0639dff118ed9fc7ecdbe99c",
+      "partsBeforeDetail": 13,
+      "partsAfter": 13,
+      "materials": [
+        {
+          "part": "tray-floor",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tray-left-lip",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tray-right-lip",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tray-rung-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tray-rung-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tray-rung-2",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tray-rung-3",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tray-rung-4",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tray-rung-5",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tray-rung-6",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tray-rung-7",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tray-end-splice--710-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "tray-end-splice-710-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "pv-combiner-box",
+      "source": "catalog/kits/solar-energy/pv-combiner-box.kcad.ts",
+      "beforeSha256": "ab859d49cdccb77135b1fa1dd4e830c796cb15ed735821c5ba90b7a0137f71ab",
+      "afterSha256": "83f2204ee1b14f65656ba63e97864ed48e0f10090bcace33a31de60374e354be",
+      "partsBeforeDetail": 11,
+      "partsAfter": 11,
+      "materials": [
+        {
+          "part": "combiner-plinth",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "combiner-body",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "combiner-door-1",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "combiner-handle-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "combiner-vent-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "combiner-vent-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "combiner-vent-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "cable-entry-0",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "cable-entry-1",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "cable-entry-2",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "cable-entry-3",
+          "param": "rubber",
+          "label": "Rubber"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "pv-junction-box",
+      "source": "catalog/kits/solar-energy/pv-junction-box.kcad.ts",
+      "beforeSha256": "2d8590d87d03e43ed3c7a247d323fffa2a3c815171f5fd2e65ad245384ddd8c8",
+      "afterSha256": "335d505bb35fd900e16a04a3cc00f6d75fc2e722fc64ffd56cfc1652bd9e94f9",
+      "partsBeforeDetail": 8,
+      "partsAfter": 8,
+      "materials": [
+        {
+          "part": "junction-plinth",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "junction-body",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "junction-door-1",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "junction-handle-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "junction-gland-0",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "junction-gland-1",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "junction-gland-2",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "junction-gland-3",
+          "param": "rubber",
+          "label": "Rubber"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "pv-module-microinverter",
+      "source": "catalog/kits/solar-energy/pv-module-microinverter.kcad.ts",
+      "beforeSha256": "e3bcad050338bb7bbd52d6f749853f3cda0a3c0ca2573ed7e08bac480676cd75",
+      "afterSha256": "29d44ae79609920954c5f688d6aaa7b172f2f1344f72a6740a64b67197901571",
+      "partsBeforeDetail": 17,
+      "partsAfter": 17,
+      "materials": [
+        {
+          "part": "pv-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "pv-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "pv-cell-bar-x-0",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "pv-cell-bar-x-1",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "pv-cell-bar-x-2",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "pv-cell-bar-y-0",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "pv-cell-bar-y-1",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "pv-cell-bar-y-2",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "rack-rail-left",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-rail-right",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-leg-0-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-leg-0-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-leg-1-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-leg-1-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "microinverter-case",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "microinverter-port-left",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "microinverter-port-right",
+          "param": "rubber",
+          "label": "Rubber"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "pv-module-transport-cart",
+      "source": "catalog/kits/solar-energy/pv-module-transport-cart.kcad.ts",
+      "beforeSha256": "83958dcb7a0fa8f41c249a90423ec9fc9b29a0c9acc2df59799b6cae30994ebc",
+      "afterSha256": "19a9e38b20fcd7f37c5f10f63399646f0276bcfb924a2246082041c9e784eddc",
+      "partsBeforeDetail": 10,
+      "partsAfter": 10,
+      "materials": [
+        {
+          "part": "cart-base",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "cart-wheel-0",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "cart-frame-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "cart-wheel-1",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "cart-frame-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "cart-module-0-frame",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "cart-module-0-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "cart-module-1-frame",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "cart-module-1-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "cart-crossbar",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "pv-panel-cleaning-robot",
+      "source": "catalog/kits/solar-energy/pv-panel-cleaning-robot.kcad.ts",
+      "beforeSha256": "52164606048d00ee5b47e5bfbd6fa2ec5e481a70cb95dd41fcd6a2ff50fb0a14",
+      "afterSha256": "ec47eaabc77474d3d1d4584c36249bef098b9b195c6a6a746aada2a97e721b56",
+      "partsBeforeDetail": 6,
+      "partsAfter": 14,
+      "materials": [
+        {
+          "part": "cleaning-robot-body",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "robot-track--138-6",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "robot-track-138-6",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "brush-shaft",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "brush-bar",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "handle-rail",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "robot-idler-left-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "robot-idler-left-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "robot-idler-left-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "robot-idler-left-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "robot-idler-right-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "robot-idler-right-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "robot-idler-right-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "robot-idler-right-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "roof-flashing-mount",
+      "source": "catalog/kits/solar-energy/roof-flashing-mount.kcad.ts",
+      "beforeSha256": "5f1f8965020df6ba6dbdadd703ddaada87bdc48e2c9376a75e7f1534fcf805c4",
+      "afterSha256": "4ea1b4013f96efc87db3e634b350ad05b06a6027c6a7b7f2a32c0fc4f0b6cbc8",
+      "partsBeforeDetail": 6,
+      "partsAfter": 6,
+      "materials": [
+        {
+          "part": "flashing-plate",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "standoff",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "mount-rail-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "mount-rail-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rail-clamp-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "rail-clamp-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "rooftop-pv-array",
+      "source": "catalog/kits/solar-energy/rooftop-pv-array.kcad.ts",
+      "beforeSha256": "86edd9e6a388669c78f4eb973937dd592c8c8e97f10ff44ab143938feb232618",
+      "afterSha256": "d4343a5516b08c481d30fae83d08120008cd177932c74e5ae040c2125f4b0c38",
+      "partsBeforeDetail": 19,
+      "partsAfter": 19,
+      "materials": [
+        {
+          "part": "module-0-0-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "module-0-0-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "module-0-1-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "module-0-1-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "module-0-2-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "module-0-2-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "module-1-0-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "module-1-0-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "module-1-1-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "module-1-1-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "module-1-2-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "module-1-2-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "array-rail--410-4",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "array-rail-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "array-rail-410-4",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "array-post--668-8--432",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "array-post--668-8-432",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "array-post-668-8--432",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "array-post-668-8-432",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "rooftop-pv-module",
+      "source": "catalog/kits/solar-energy/rooftop-pv-module.kcad.ts",
+      "beforeSha256": "060a6285c67bedd9cd986e83b5d374e7f635d597c041952998f7b12bfbcbda33",
+      "afterSha256": "e3d11ade9625c48978ada9740813f164bd2e8e2afea35c6656ef69e06d58f308",
+      "partsBeforeDetail": 14,
+      "partsAfter": 14,
+      "materials": [
+        {
+          "part": "pv-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "pv-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "pv-cell-bar-x-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "pv-cell-bar-x-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "pv-cell-bar-x-2",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "pv-cell-bar-y-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "pv-cell-bar-y-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "pv-cell-bar-y-2",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "rack-rail-left",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-rail-right",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-leg-0-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-leg-0-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-leg-1-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "rack-leg-1-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "single-axis-solar-tracker",
+      "source": "catalog/kits/solar-energy/single-axis-solar-tracker.kcad.ts",
+      "beforeSha256": "2ef767b2c4e3894558f3d819367444a20dc672f773bde370d1dc778a61703c2e",
+      "afterSha256": "bbe68991cca49d7b9dd9efec7a377391d7fb9b444fd843d120068b5b22355d95",
+      "partsBeforeDetail": 7,
+      "partsAfter": 54,
+      "materials": [
+        {
+          "part": "tracker-table-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "torque-tube",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tracker-pier-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tracker-pier-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tracker-pier-2",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tracker-drive",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "tracker-module-0-0-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "tracker-module-0-1-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "tracker-module-1-0-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "tracker-module-1-1-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "tracker-module-2-0-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "tracker-module-2-1-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "tracker-module-3-0-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "tracker-module-3-1-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "tracker-module-0-0-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "tracker-module-0-1-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "tracker-module-1-0-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "tracker-module-1-1-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "tracker-module-2-0-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "tracker-module-2-1-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "tracker-module-3-0-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "tracker-module-3-1-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "tracker-module-0-0-busbar-x-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-0-0-busbar-x-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-0-0-busbar-y-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-0-0-busbar-y-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-0-1-busbar-x-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-0-1-busbar-x-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-0-1-busbar-y-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-0-1-busbar-y-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-1-0-busbar-x-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-1-0-busbar-x-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-1-0-busbar-y-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-1-0-busbar-y-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-1-1-busbar-x-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-1-1-busbar-x-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-1-1-busbar-y-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-1-1-busbar-y-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-2-0-busbar-x-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-2-0-busbar-x-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-2-0-busbar-y-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-2-0-busbar-y-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-2-1-busbar-x-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-2-1-busbar-x-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-2-1-busbar-y-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-2-1-busbar-y-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-3-0-busbar-x-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-3-0-busbar-x-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-3-0-busbar-y-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-3-0-busbar-y-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-3-1-busbar-x-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-3-1-busbar-x-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-3-1-busbar-y-0",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        },
+        {
+          "part": "tracker-module-3-1-busbar-y-1",
+          "param": "cellBusbar",
+          "label": "PV cell busbars"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "solar-battery-container",
+      "source": "catalog/kits/solar-energy/solar-battery-container.kcad.ts",
+      "beforeSha256": "32a32088e6433112522d39f89bda8144fd040ec854c1d9165391f6e0a5fd590a",
+      "afterSha256": "01ec75b4444a972b9ef47ff4c44d3d61201fad1a7508e55b05cba2a3c28de6c5",
+      "partsBeforeDetail": 17,
+      "partsAfter": 68,
+      "materials": [
+        {
+          "part": "battery-container-plinth",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "battery-container-body",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "battery-container-door-1",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "battery-container-handle-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-door-2",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "battery-container-handle-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-vent-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-vent-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-vent-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-vent-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-vent-5",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-vent-6",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-vent-7",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "lifting-corner-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "lifting-corner-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "cooling-unit-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "cooling-unit-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-left-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-left-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-left-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-left-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-left-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-left-5",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-left-6",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-left-7",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-right-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-right-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-right-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-right-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-right-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-right-5",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-right-6",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-corrugation-rib-right-7",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-rear-door-1",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "battery-container-rear-door-2",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "battery-container-rear-handle-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-rear-handle-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-rear-vent-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-rear-vent-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-rear-vent-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-rear-vent-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-rear-vent-5",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-rear-vent-6",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "battery-container-rear-vent-7",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-front-left--690-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-front-left--690-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-front-left--690-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-front-left--80-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-front-left--80-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-front-left--80-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-front-right-80-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-front-right-80-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-front-right-80-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-front-right-690-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-front-right-690-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-front-right-690-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-rear-left--690-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-rear-left--690-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-rear-left--690-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-rear-left--80-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-rear-left--80-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-rear-left--80-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-rear-right-80-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-rear-right-80-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-rear-right-80-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-rear-right-690-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-rear-right-690-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "container-door-hinge-rear-right-690-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "solar-carport-canopy",
+      "source": "catalog/kits/solar-energy/solar-carport-canopy.kcad.ts",
+      "beforeSha256": "7e44061f32eba4063a2a60050de8398a1287683efa1a5dfffba433a51ded5e8f",
+      "afterSha256": "817813aeb7e46d10d98bfb3b951a670b03d721e3189296170e4df70f5e6eb64b",
+      "partsBeforeDetail": 18,
+      "partsAfter": 18,
+      "materials": [
+        {
+          "part": "canopy-post-0-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "canopy-post-0-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "canopy-post-1-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "canopy-post-1-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "canopy-front-beam",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "canopy-back-beam",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "canopy-pv-0-0-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "canopy-pv-0-0-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "canopy-pv-0-1-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "canopy-pv-0-1-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "canopy-pv-1-0-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "canopy-pv-1-0-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "canopy-pv-1-1-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "canopy-pv-1-1-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "canopy-pv-2-0-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "canopy-pv-2-0-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "canopy-pv-2-1-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "canopy-pv-2-1-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "solar-charge-controller",
+      "source": "catalog/kits/solar-energy/solar-charge-controller.kcad.ts",
+      "beforeSha256": "aff834808520ef83207d843332b413aab3829e0c72ec72b536b4cfa00da4343d",
+      "afterSha256": "0f589da287c2a31bef11e49e2fe1a1757bae2721c9ca96e01da3261d662182b2",
+      "partsBeforeDetail": 11,
+      "partsAfter": 11,
+      "materials": [
+        {
+          "part": "controller-plinth",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "controller-body",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "controller-door-1",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "controller-handle-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "controller-vent-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "controller-vent-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "controller-vent-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "controller-screen",
+          "param": "displayGlass",
+          "label": "Display glass"
+        },
+        {
+          "part": "controller-button-0",
+          "param": "warningPaint",
+          "label": "Safety paint"
+        },
+        {
+          "part": "controller-button-1",
+          "param": "warningPaint",
+          "label": "Safety paint"
+        },
+        {
+          "part": "controller-button-2",
+          "param": "warningPaint",
+          "label": "Safety paint"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "solar-data-logger",
+      "source": "catalog/kits/solar-energy/solar-data-logger.kcad.ts",
+      "beforeSha256": "9e1de68d21b55f32b2e9c33ff4dcb3a4e62b689e7df77162fb1972cd9a11f011",
+      "afterSha256": "30e440f4d51b8b3be83ff4da14cd808efb444cc3bbba558502cee9caea9a0e16",
+      "partsBeforeDetail": 8,
+      "partsAfter": 8,
+      "materials": [
+        {
+          "part": "logger-plinth",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "logger-body",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "logger-door-1",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "logger-handle-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "logger-vent-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "logger-vent-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "logger-mast",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "logger-antenna-cap",
+          "param": "polymer",
+          "label": "Polymer"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "solar-electric-meter",
+      "source": "catalog/kits/solar-energy/solar-electric-meter.kcad.ts",
+      "beforeSha256": "56ab73f6ca81c1aa0025c1fa0190311965b70ecdfb676be414862758b6d8776c",
+      "afterSha256": "172d9a780c7b1c82bb1613ec2ca4fff2e9e7f128cd92dab9bbcad54aca02d67d",
+      "partsBeforeDetail": 5,
+      "partsAfter": 5,
+      "materials": [
+        {
+          "part": "instrument-base",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "instrument-mast",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "meter-enclosure",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "meter-ring",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "meter-face",
+          "param": "displayGlass",
+          "label": "Display glass"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "solar-main-panel",
+      "source": "catalog/kits/solar-energy/solar-main-panel.kcad.ts",
+      "beforeSha256": "dfebb4934febaa53adc62fa63ab5830dd0911883de1d0597b07141cc21c4990d",
+      "afterSha256": "ab6e150cb6f2d96f6a26f6421340d8dda157ed2715d29bf2c1e58bd358bfc9f9",
+      "partsBeforeDetail": 15,
+      "partsAfter": 15,
+      "materials": [
+        {
+          "part": "main-panel-plinth",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "main-panel-body",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "main-panel-door-1",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "main-panel-handle-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "main-panel-vent-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "main-panel-vent-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "main-panel-vent-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "main-panel-vent-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "main-panel-vent-5",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "breaker-knockout-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "breaker-knockout-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "breaker-knockout-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "breaker-knockout-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "breaker-knockout-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "breaker-knockout-5",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "solar-panel-end-clamp",
+      "source": "catalog/kits/solar-energy/solar-panel-end-clamp.kcad.ts",
+      "beforeSha256": "9512c805c7bcc330a9395da7c068980348a37ec7af50d4837b8130462551b127",
+      "afterSha256": "3d18058e5c94ccd9294066478b7a1497d5a643aa4a6517d7dc5ef400743b5a24",
+      "partsBeforeDetail": 5,
+      "partsAfter": 5,
+      "materials": [
+        {
+          "part": "clamp-base",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "slotted-foot",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "clamp-jaw",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "pressure-cap",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "clamp-bolt",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "solar-panel-wash-cart",
+      "source": "catalog/kits/solar-energy/solar-panel-wash-cart.kcad.ts",
+      "beforeSha256": "1773e7ee2e1a912c8d37eac39d9144ab94a190781eb4b19684ed2df15a8ac6c5",
+      "afterSha256": "d985b068261647bbc59b83931004fff94ff43d4ced29ae7550d44680a334412f",
+      "partsBeforeDetail": 7,
+      "partsAfter": 7,
+      "materials": [
+        {
+          "part": "cart-platform",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "water-tank",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "cart-wheel-0",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "cart-wheel-1",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "push-handle",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "hose-reel",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "cleaning-wand",
+          "param": "polymer",
+          "label": "Polymer"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "solar-pergola-canopy",
+      "source": "catalog/kits/solar-energy/solar-pergola-canopy.kcad.ts",
+      "beforeSha256": "840f9359eba15edcb47b1514683d246153117cc14e8b0d427f0b4b076f426bb8",
+      "afterSha256": "9613c512382192c862a926e8a2eff2b5e2788e0ee65af6cc5f113dbfc9b668f2",
+      "partsBeforeDetail": 14,
+      "partsAfter": 14,
+      "materials": [
+        {
+          "part": "canopy-post-0-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "canopy-post-0-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "canopy-post-1-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "canopy-post-1-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "canopy-front-beam",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "canopy-back-beam",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "canopy-pv-0-0-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "canopy-pv-0-0-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "canopy-pv-0-1-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "canopy-pv-0-1-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "canopy-pv-1-0-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "canopy-pv-1-0-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "canopy-pv-1-1-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "canopy-pv-1-1-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "solar-roof-section",
+      "source": "catalog/kits/solar-energy/solar-roof-section.kcad.ts",
+      "beforeSha256": "9d77a304348dc3090422454a848acf86c020e78ce87fce5e318b83b5d1a3157a",
+      "afterSha256": "c2f380f43e39dd813495b2d5c4df2db7354047fbfdaa09c59ec68f01286a2380",
+      "partsBeforeDetail": 8,
+      "partsAfter": 8,
+      "materials": [
+        {
+          "part": "roof-deck",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "ridge-cap",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "roof-module-0-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "roof-module-0-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "roof-module-1-frame",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "roof-module-1-surface",
+          "param": "solarGlass",
+          "label": "Solar glass"
+        },
+        {
+          "part": "roof-rail-0",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "roof-rail-1",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "solar-weather-station",
+      "source": "catalog/kits/solar-energy/solar-weather-station.kcad.ts",
+      "beforeSha256": "e5476facc4e27b1379c6b4d99c8d041e41c537e515ed5305ce39e477b5752233",
+      "afterSha256": "8a6b174077c46ca2888fe539660ffd1f7ffd4cb231bf871362f423ea99d646b0",
+      "partsBeforeDetail": 7,
+      "partsAfter": 7,
+      "materials": [
+        {
+          "part": "instrument-base",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "instrument-mast",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "weather-crossarm",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "sensor-pod-0",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "sensor-pod-1",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "sensor-pod-2",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "wind-vane-fin",
+          "param": "polymer",
+          "label": "Polymer"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "solar-wind-sensor-mast",
+      "source": "catalog/kits/solar-energy/solar-wind-sensor-mast.kcad.ts",
+      "beforeSha256": "cf05e281a5a64102058627d53304f26f47400581d7f6393a290377fff19fa833",
+      "afterSha256": "3ebec949ec4e0961e02337b7065309e969eb25936191947d4de0f93221d54a53",
+      "partsBeforeDetail": 11,
+      "partsAfter": 11,
+      "materials": [
+        {
+          "part": "instrument-base",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "instrument-mast",
+          "param": "galvanizedSteel",
+          "label": "Galvanized steel"
+        },
+        {
+          "part": "wind-crossarm",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "anemometer-hub",
+          "param": "aluminum",
+          "label": "Frame aluminum"
+        },
+        {
+          "part": "anemometer-cup-arm-0",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "anemometer-cup-0",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "anemometer-cup-arm-1",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "anemometer-cup-1",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "anemometer-cup-arm-2",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "anemometer-cup-2",
+          "param": "polymer",
+          "label": "Polymer"
+        },
+        {
+          "part": "wind-vane",
+          "param": "polymer",
+          "label": "Polymer"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "string-inverter",
+      "source": "catalog/kits/solar-energy/string-inverter.kcad.ts",
+      "beforeSha256": "8ccb933ba5143797e48082dc0739e7c292d1a21ea1687eae50f4cc16b02e87ec",
+      "afterSha256": "714284c24f5503e16951797682536fbf631cc7a5c27bbc6a5a1a4a33004c6c30",
+      "partsBeforeDetail": 20,
+      "partsAfter": 20,
+      "materials": [
+        {
+          "part": "inverter-plinth",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "inverter-body",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "inverter-door-1",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "inverter-handle-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "inverter-vent-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "inverter-vent-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "inverter-vent-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "inverter-vent-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "inverter-vent-5",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "inverter-cooling-fin-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "inverter-cooling-fin-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "inverter-cooling-fin-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "inverter-cooling-fin-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "inverter-cooling-fin-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "inverter-cooling-fin-5",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "inverter-cooling-fin-6",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "inverter-display",
+          "param": "displayGlass",
+          "label": "Display glass"
+        },
+        {
+          "part": "inverter-cable-port-0",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "inverter-cable-port-1",
+          "param": "rubber",
+          "label": "Rubber"
+        },
+        {
+          "part": "inverter-cable-port-2",
+          "param": "rubber",
+          "label": "Rubber"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    },
+    {
+      "id": "utility-inverter-station",
+      "source": "catalog/kits/solar-energy/utility-inverter-station.kcad.ts",
+      "beforeSha256": "79880544c14d60dabc9c9fe5f3a0276bca447cdeaf0c037279c762255032e874",
+      "afterSha256": "823dc583a9a181a9d5f8892068f8e82d31017f25aec0c6c9a65f600329837a80",
+      "partsBeforeDetail": 15,
+      "partsAfter": 15,
+      "materials": [
+        {
+          "part": "station-plinth",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "station-body",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "station-door-1",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "station-handle-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "station-door-2",
+          "param": "powderCoat",
+          "label": "Powder-coated steel"
+        },
+        {
+          "part": "station-handle-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "station-vent-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "station-vent-2",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "station-vent-3",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "station-vent-4",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "station-vent-5",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "station-vent-6",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "station-end-vent-0",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "station-end-vent-1",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        },
+        {
+          "part": "station-cable-plinth",
+          "param": "stainlessSteel",
+          "label": "Stainless steel"
+        }
+      ],
+      "presets": [
+        "fieldService",
+        "highVisibility"
+      ]
+    }
+  ]
+}

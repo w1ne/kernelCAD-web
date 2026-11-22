@@ -1,0 +1,118 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/rockBreakerBoomFidelity.test.ts (1 test) 1974ms
+     ✓ bolts both warning posts onto the top face of the grizzly wall  1124ms
+ ✓ tests/integration/catalog/coolingTowerAccessDoorMaterial.test.ts (1 test) 2695ms
+     ✓ keeps the molded FRP door with the casing finish, separate from the fan stack  1642ms
+ ✓ tests/integration/catalog/linearGuideCarriageFidelity.test.ts (4 tests) 3657ms
+     ✓ standard: open end-to-end rail channel with connected body and retained walls  1085ms
+     ✓ compact: open end-to-end rail channel with connected body and retained walls  730ms
+     ✓ large: open end-to-end rail channel with connected body and retained walls  526ms
+ ✓ tests/integration/catalog/reverseOsmosisSkidMaterials.test.ts (1 test) 3700ms
+     ✓ keeps FRP vessel shells distinct from stainless process piping  2584ms
+ ✓ tests/integration/catalog/glassCrusherMotorMaterial.test.ts (1 test) 3755ms
+     ✓ keeps the motor on the painted-steel finish, separate from the mill enamel  2689ms
+ ✓ tests/integration/catalog/capElevatorSemantic.test.ts (1 test) 4221ms
+     ✓ keeps its belt flights visible in the generated catalog preview  3282ms
+ ✓ tests/integration/catalog/substationCenterBreakDisconnectorFidelity.test.ts (1 test) 4632ms
+     ✓ seats paired aluminum arms on porcelain supports and exposes a real open/closed center gap  3425ms
+ ✓ tests/integration/catalog/longwallShearerPickMaterials.test.ts (1 test) 4708ms
+     ✓ assigns all cutter picks to the existing drum-and-pick steel control  3524ms
+ ✓ tests/integration/catalog/transitMixerWheelMaterial.test.ts (1 test) 4738ms
+     ✓ keeps the six steel wheel rims on the structural-steel control  3619ms
+ ✓ tests/integration/catalog/storageArrayFidelity.test.ts (2 tests) 4755ms
+     ✓ is visibly distinct from the 8-bay compute chassis and includes 24 front carriers  2189ms
+     ✓ keeps the drive and service-module identities at both supported scale limits  1465ms
+ ✓ tests/integration/catalog/doorHingeFidelity.test.ts (3 tests) 6096ms
+     ✓ standard: open pivot and mounting bores, connected leaves, separate pin  2078ms
+     ✓ compact: open pivot and mounting bores, connected leaves, separate pin  1502ms
+     ✓ large: open pivot and mounting bores, connected leaves, separate pin  1311ms
+ ✓ tests/integration/catalog/pipeUnionFidelity.test.ts (2 tests) 1897ms
+     ✓ has four actual separate bodies, open bore and a six-sided coupling nut  481ms
+     ✓ retains distinct interfaces for both size limits  789ms
+ ✓ tests/integration/catalog/splitShaftCollarFidelity.test.ts (2 tests) 1940ms
+     ✓ has an open bore, split radial notch, two clamp lugs and a separate screw body  678ms
+     ✓ retains the bore, split and screw over all size presets  775ms
+ ✓ tests/integration/catalog/standardComponentInterfaces.test.ts (4 tests) 7400ms
+     ✓ caster-wheel: connected supports and open interfaces at default and both size limits  1625ms
+     ✓ pillow-block-housing: connected supports and open interfaces at default and both size limits  518ms
+     ✓ piano-hinge: connected supports and open interfaces at default and both size limits  3731ms
+     ✓ t-slot-angle-bracket: connected supports and open interfaces at default and both size limits  356ms
+ ✓ tests/integration/catalog/sanitaryLobePumpFidelity.test.ts (2 tests) 1726ms
+     ✓ has four actual cap-nut bodies on the visible removable cover  824ms
+     ✓ keeps all four fasteners on the cover when port orientation changes  384ms
+ ✓ tests/integration/catalog/mineSkipCappelMaterials.test.ts (1 test) 2426ms
+     ✓ assigns the steel rope termination to the structural-steel control  1721ms
+ ✓ tests/integration/catalog/eddyCurrentSeparatorShellMaterials.test.ts (1 test) 1991ms
+     ✓ assigns the nonconductive composite finish to the outer head shell  1619ms
+ ✓ tests/integration/catalog/substationCableLadderFidelity.test.ts (2 tests) 1364ms
+     ✓ preserves every rung and its rail envelope at both supported scale limits  355ms
+ ✓ tests/integration/catalog/floorGrinderFidelity.test.ts (2 tests) 2585ms
+     ✓ exports a circular open-bottom shroud, floor-contact disc and two rear wheels  884ms
+     ✓ retains floor contact, cavity, handle and wheel clearance at both scale limits  1059ms
+ ✓ tests/integration/catalog/batteryQuarantineDrumMaterials.test.ts (1 test) 2017ms
+     ✓ keeps the vermiculite sack kraft beige and separate from the alarm paint  1434ms
+ ✓ tests/integration/catalog/pipeTeeFidelity.test.ts (2 tests) 2149ms
+     ✓ has two run ports, one side port and a closed back wall in actual exported geometry  1195ms
+     ✓ preserves all three openings and closed fourth side at both size limits  310ms
+ ✓ tests/integration/catalog/jawCouplingFidelity.test.ts (3 tests) 2270ms
+     ✓ retains 6 metal jaws and 6 spider lobes without any material overlap  730ms
+     ✓ detects all 6 collisions when the former co-rotated spider layout is restored  405ms
+     ✓ keeps the cleared interfaces in both scaled variants  493ms
+ ✓ tests/integration/catalog/positiveDisplacementPumpFidelity.test.ts (1 test) 1184ms
+     ✓ exports a recognizable gear-pump package with both ports, service cover and relief bypass  560ms
+ ✓ tests/integration/catalog/beamCouplingFidelity.test.ts (2 tests) 10038ms
+     ✓ builds one valid 18×18×30 mm solid and preserves all three size choices  5827ms
+     ✓ has a material-removing helix and two real radial hub bores  3255ms
+ ✓ tests/integration/catalog/flangeBearingHousingFidelity.test.ts (1 test) 1960ms
+     ✓ has a through-shaft path, clear fastener bores and separate plain sleeve at all sizes  1130ms
+ ✓ tests/integration/catalog/postalCrossbeltSorterMaterial.test.ts (1 test) 1491ms
+     ✓ keeps rubber belt surfaces separate from the molded-polymer carriers  875ms
+ ✓ tests/integration/catalog/evaporativeCoolingTowerFidelity.test.ts (1 test) 1267ms
+     ✓ exports eight broad, separately named fan blades around the two top-deck hubs  741ms
+ ✓ tests/integration/catalog/handwheelFidelity.test.ts (4 tests) 1225ms
+     ✓ standard: exactly three radial spokes join the hub and rim  312ms
+ ✓ tests/integration/catalog/maintenancePlatformFidelity.test.ts (1 test) 1565ms
+     ✓ keeps the platform guarded and connects its three-riser stair to the deck  996ms
+ ✓ tests/integration/catalog/pressureSandFilterVesselFidelity.test.ts (1 test) 859ms
+     ✓ exports two stainless side nozzles entering the vessel at separate heights  404ms
+ ✓ tests/integration/catalog/overheadPantographContactCopper.test.ts (1 test) 1255ms
+     ✓ colours the current-carrying contact rail as copper, not engineering polymer  542ms
+ ✓ tests/integration/catalog/bucketElevatorSemantic.test.ts (1 test) 1755ms
+     ✓ keeps the bucket loop inside the casing and exposes distinct material controls  1219ms
+ ✓ tests/integration/catalog/pipeElbow45Fidelity.test.ts (1 test) 1179ms
+     ✓ has a continuous hollow centerline, actual annular walls and open terminal ports  552ms
+ ✓ tests/integration/catalog/gritClassifierFidelity.test.ts (1 test) 1910ms
+     ✓ renders the inclined extraction screw between the trough and raised outlet  1218ms
+ ✓ tests/integration/catalog/caseLayerPalletizerPalletTimberMaterials.test.ts (1 test) 870ms
+ ✓ tests/integration/catalog/blastDustCollectorFilterMediaMaterial.test.ts (1 test) 1029ms
+     ✓ keeps exposed filter media separate from the painted steel collector  468ms
+ ✓ tests/integration/catalog/shellAndTubeExchangerMaterials.test.ts (1 test) 858ms
+     ✓ keeps exposed tube sheets, nozzles and supports on a metal palette  333ms
+ ✓ tests/integration/catalog/gussetBracketFidelity.test.ts (2 tests) 1543ms
+     ✓ exports a connected-looking right-angle assembly with 4 real bores at the default size  549ms
+     ✓ preserves bores and touching plate envelope at both declared size extremes  362ms
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 1141ms
+ ✓ tests/integration/catalog/orchardSprayerTankMaterial.test.ts (1 test) 906ms
+     ✓ gives the polyethylene tank its own material control without changing geometry  436ms
+ ✓ tests/integration/catalog/compressedAirReceiverMaterials.test.ts (1 test) 861ms
+     ✓ keeps the vessel heads and nozzle necks on the pressure-shell steel palette  417ms
+ ✓ tests/integration/catalog/caseCheckweigherBeltMaterial.test.ts (1 test) 890ms
+     ✓ keeps the three polymer belts separate from the stainless support beds  476ms
+ ✓ tests/integration/catalog/rearDoorHeatExchangerCopperMaterial.test.ts (1 test) 1000ms
+     ✓ keeps the copper coil runs separate from the painted frame and polymer outlet  474ms
+ ✓ tests/integration/catalog/chlorineDosingSkidTankMaterials.test.ts (1 test) 739ms
+     ✓ assigns the chemical day tank to polyethylene without changing geometry  331ms
+ ✓ tests/integration/catalog/hullPanelTurnoverCradleMaterials.test.ts (1 test) 1318ms
+     ✓ keeps the matching end frames on the same yard-finish control  530ms
+ ✓ tests/integration/catalog/substationCvtInsulationMaterials.test.ts (1 test) 776ms
+ ✓ tests/integration/catalog/baghouseDustCollectorFidelity.test.ts (1 test) 793ms
+ ✓ tests/integration/catalog/substationConservatorNozzleMaterials.test.ts (1 test) 615ms
+ ✓ tests/integration/catalog/cleanroomFanFilterMedia.test.ts (1 test) 713ms
+     ✓ shows a HEPA media face inside the steel flange instead of a solid steel plate  310ms
+ ✓ tests/integration/catalog/windFarmPadMountTransformerMaterials.test.ts (1 test) 696ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 25141ms
+     ✓ a kit-representative sample opens with exactly the knobs its index row lists  22279ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  458ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 363ms

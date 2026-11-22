@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-postal-pages-wave-20261103",
+  "kitPages": 52,
+  "assetsInIndex": 1743,
+  "pageAndPreviewPairs": 52,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

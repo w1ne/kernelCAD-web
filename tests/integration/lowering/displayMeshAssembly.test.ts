@@ -5,12 +5,46 @@ import { join } from 'node:path';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { meshForHeadlessRender } from '../../../src/agent/render/headlessRender';
 import { callMcpTool } from '../../../src/agent/mcp/toolRegistry';
+import { runAndExport } from '../../../src/agent/script-runtime/export';
 
 beforeAll(async () => {
   await initOcct();
 });
 
 describe('display mesh assemblies', () => {
+  it.each(['step', 'dxf', 'pdf-drawing', 'svg-drawing'] as const)(
+    'names display parts that prevent %s export',
+    async (format) => {
+      const dir = mkdtempSync(join(tmpdir(), 'kcad-mixed-export-'));
+      try {
+        writeFileSync(join(dir, 'triangle.stl'), [
+          'solid triangle', 'facet normal 0 0 1', 'outer loop',
+          'vertex 0 0 0', 'vertex 1 0 0', 'vertex 0 1 0',
+          'endloop', 'endfacet', 'endsolid triangle',
+        ].join('\n'));
+        const result = await runAndExport({
+          code: [
+            "const model = assembly('mixed');",
+            "model.part('solid', box(20, 20, 5));",
+            "model.part('preview', await lib.meshFromSTL('./triangle.stl'), { at: [30, 0, 0] });",
+            "return await model.solvedModel({}, { validate: 'none' });",
+          ].join('\n'),
+          fileName: 'mixed.kcad.ts',
+          scriptDir: dir,
+          format,
+        });
+        expect(result.bytes).toHaveLength(0);
+        expect(result.diagnostics).toContainEqual(expect.objectContaining({
+          code: 'export.scene.requires-brep',
+          severity: 'error',
+          message: expect.stringContaining('"preview"'),
+        }));
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+  );
+
   it('meshes translated display mesh parts for headless rendering', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'kcad-mesh-assembly-'));
     try {
@@ -52,7 +86,7 @@ describe('display mesh assemblies', () => {
     }
   });
 
-  it('evaluates a mated display mesh assembly with the mechanism gates on', async () => {
+  it('keeps a mated display mesh assembly unverified when joint continuity cannot be measured', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'kcad-mesh-assembly-'));
     try {
       // A closed 10 mm cube, so connectors at its centre sit in its material.
@@ -73,14 +107,18 @@ describe('display mesh assemblies', () => {
         "arm.mate('spin', 'chassis.axle', 'wheel.axle', 'revolute', { pose: spin });",
         'return arm.solvedModel();',
       ].join('\n'));
-      // Used to throw "Display mesh bodies do not expose BRep topology" from
-      // the connector gate, which only needs each part's bounds.
+      // Connector validation only needs each part's bounds, but display mesh
+      // parts do not provide BREP evidence for the rest-pose joint check.
       const out = (await callMcpTool('evaluate_script', { file: scriptPath, autosave: false } as never)) as {
         ok: boolean; diagnostics: Array<{ code?: string; severity: string }>; mechanismSummary?: { verdict: string };
       };
       expect(out.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
       expect(out.ok).toBe(true);
-      expect(out.mechanismSummary?.verdict).toBe('real');
+      expect(out.mechanismSummary?.verdict).toBe('unverified');
+      expect(out.diagnostics).toContainEqual(expect.objectContaining({
+        code: 'mechanism.joint-mesh-unverified',
+        severity: 'warn',
+      }));
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

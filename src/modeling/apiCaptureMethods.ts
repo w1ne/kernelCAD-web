@@ -3,7 +3,7 @@
 import type { CaptureSession } from './capture/captureSession';
 import { validateFaceLabels } from './capture/faceLabels';
 import { KernelError } from '../shared/intent/kernelError';
-import { validateThickness, validateKFactor } from './sheetMetal';
+import { validateThickness, validateKFactor, validateSheetMetalOptionKeys } from './sheetMetal';
 import { sphere as sdfSphere, box as sdfBox, cylinder as sdfCylinder, torus as sdfTorus } from './sdf/primitives';
 import { smoothBlend as sdfSmoothBlend } from './sdf/smoothBlend';
 import { materialize as sdfMaterialize } from './sdf/materialize';
@@ -30,6 +30,7 @@ function makeCaptureShapeMethods(session: CaptureSession): CaptureShapeMethods {
   return {
     sheetMetal(profile, opts) {
       // Capture-time validation. Evaluate Editable inputs once.
+      validateSheetMetalOptionKeys(opts);
       const thicknessParam = mm(opts.thickness);
       const kFactorParam = ul(opts.kFactor);
       const tNum = thicknessParam.evaluated;

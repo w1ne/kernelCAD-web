@@ -1,0 +1,38 @@
+{
+  "kit": "hydroponics",
+  "assetsPromoted": 52,
+  "newAssetIds": 0,
+  "materialControls": 152,
+  "controlsPerAsset": {
+    "min": 2,
+    "max": 4
+  },
+  "presetEntries": 104,
+  "sourceHashesMatching": 52,
+  "indexedRowsWithPreview": 52,
+  "triangles": {
+    "min": 160,
+    "max": 564
+  },
+  "triangleBudget": {
+    "maxMeasured": 564,
+    "maxDeclared": 1800,
+    "allWithinBudget": true
+  },
+  "qualityGate": "52/52 pass",
+  "baselineQuality": "1296/2390 (54.23% pass)",
+  "afterQuality": "1348/2390 (56.40% pass)",
+  "thinAssetsAfter": 1042,
+  "eslint": "PASS",
+  "catalogIntegration": "PASS",
+  "localPages": true,
+  "geometryUpgrades": [
+    "Turned shoulders on the existing cylinder forms",
+    "Curved polyethylene roof added to greenhouse-tunnel-bay",
+    "Swept rotor blades and open frame rails added to greenhouse-exhaust-fan",
+    "Swept rotor blades and upright guard added to greenhouse-circulation-fan",
+    "Cylindrical motor and axial pump volute replace cuboid solids on circulation-pump-skid"
+  ],
+  "errors": [],
+  "passed": true
+}

@@ -1,0 +1,10 @@
+{
+  "source": "capture_demo.py",
+  "resolution": "1280x720",
+  "fps": 30,
+  "frames": 6,
+  "durationSeconds": 18,
+  "codec": "libx264, yuv420p, CRF 25",
+  "audio": false,
+  "renderInputs": "before/ and variants/ PNGs produced from catalog .kcad.ts sources"
+}

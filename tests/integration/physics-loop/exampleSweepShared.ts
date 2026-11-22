@@ -9,8 +9,6 @@
 // structural completeness remains; the multi-minute physics
 // validate-per-example gate does not.
 //
-// Spec:  docs/specs/2026-06-01-physics-grounded-loop-design.md (slice P3)
-// Plan:  docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md (Task 5)
 
 import { readdirSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -31,8 +29,7 @@ export const SHARD_COUNT = 4;
 // they're kinematic-API smokes that intentionally exit non-zero to
 // exercise diagnostic paths. The loop reports `mechanism: 'unverified'`
 // on these — acceptable. Pre-existing legacy-API breakage (pocket-watch
-// uses the deleted `arm.fixed(...)` API; scissor-lift has an illegal
-// part-name with spaces) is captured here too because the P0/P1/P2/P3
+// uses the deleted `arm.fixed(...)` API) is captured here too because the P0/P1/P2/P3
 // physics-loop workstream didn't introduce those failures and they
 // have nothing to do with mechanism truth.
 export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
@@ -63,10 +60,10 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   'examples/cookbook-parity/engineering-material-presets-mass.kcad.ts',
   'examples/cookbook-parity/gt2-timing-belt-drive.kcad.ts',
   'examples/cookbook-parity/gridfinity-bin.kcad.ts',
-  'examples/cookbook-parity/involute-spur-gear-pair.kcad.ts',
   'examples/cookbook-parity/iso-metric-bolt-and-nut.kcad.ts',
   'examples/cookbook-parity/tslot-extrusion-and-bracket.kcad.ts',
   'examples/cookbook-parity/wood-joinery-dado-rabbet-mortise.kcad.ts',
+
   // Stacked exploded/BOM demo: fastened mates exist, but connector origins
   // sit at assembled stack heights in empty space, so the joint-mesh-gap
   // gate fires by design. Render/export of this file uses --no-mechanism-check.
@@ -116,9 +113,6 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   'examples/portfolio/pocket-watch/build.kcad.ts',
   'examples/portfolio/pocket-watch-v2/build.kcad.ts',
   'examples/portfolio/watch-from-screenshot-agent-loop-v2.kcad.ts',
-  // Invalid part-name (spaces) — pre-existing topology-ref-grammar bug.
-  // Not P3's scope.
-  'examples/gallery/scissor-lift.kcad.ts',
 ]);
 
 // Issue-tracked broken examples. Each must have a corresponding test
@@ -133,24 +127,8 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
 // citation).
 export const ISSUE_TRACKED: ReadonlyMap<string, { issue: number; testFile: string }> = new Map([
   [
-    'examples/assemblies/two-link-connector-arm.kcad.ts',
-    { issue: 349, testFile: 'tests/integration/examples/assemblyExamples.test.ts' },
-  ],
-  [
-    'examples/gallery/meta-glasses.kcad.ts',
-    { issue: 350, testFile: 'tests/integration/examples/metaGlasses.test.ts' },
-  ],
-  [
-    'examples/gallery/ratchet-stool.kcad.ts',
-    { issue: 351, testFile: 'tests/integration/examples/ratchetStool.test.ts' },
-  ],
-  [
     'examples/robot-arm/compact-supported-arm.kcad.ts',
     { issue: 346, testFile: 'tests/integration/examples/compactSupportedArm.test.ts' },
-  ],
-  [
-    'examples/robot-arm/desktop-3axis-mates.kcad.ts',
-    { issue: 347, testFile: 'tests/integration/examples/desktop3axisMates.test.ts' },
   ],
   [
     'examples/robot-arm/skill-built-supported-arm.kcad.ts',
@@ -159,10 +137,6 @@ export const ISSUE_TRACKED: ReadonlyMap<string, { issue: number; testFile: strin
   [
     'examples/robot-arm/skill-built-supported-arm-01-colliding.kcad.ts',
     { issue: 353, testFile: 'tests/integration/examples/skillBuiltSupportedArmColliding.test.ts' },
-  ],
-  [
-    'examples/robot-hand/two-finger-coupled-gripper.kcad.ts',
-    { issue: 354, testFile: 'tests/integration/examples/twoFingerCoupledGripper.test.ts' },
   ],
   // P9 (2026-06-02) closed the P8 joint-mesh-continuity gap on the
   // Luxo lamp (extended column + pulled-back head-neck + arm spring
@@ -183,6 +157,34 @@ export type DedicatedExampleCoverage = {
 };
 
 export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, DedicatedExampleCoverage> = new Map([
+  [
+    'examples/gallery/meta-glasses.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/metaGlasses.test.ts',
+      coverage: 'run-validate-cli',
+    },
+  ],
+  [
+    'examples/gallery/ratchet-stool.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/ratchetStool.test.ts',
+      coverage: 'run-validate-cli',
+    },
+  ],
+  [
+    'examples/robot-arm/desktop-3axis-mates.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/desktop3axisMates.test.ts',
+      coverage: 'run-validate-cli',
+    },
+  ],
+  [
+    'examples/assemblies/two-link-connector-arm.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/assemblyExamples.test.ts',
+      coverage: 'run-validate-cli',
+    },
+  ],
   [
     'examples/kinematic/luxo-lamp.kcad.ts',
     {
@@ -209,6 +211,20 @@ export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, DedicatedExampleCover
     {
       testFile: 'tests/integration/examples/thermalIoLinkMachineHealth.test.ts',
       coverage: 'catalog-fixture',
+    },
+  ],
+  [
+    'examples/robot-hand/two-finger-coupled-gripper.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/twoFingerCoupledGripper.test.ts',
+      coverage: 'run-validate-cli',
+    },
+  ],
+  [
+    'examples/cookbook-parity/involute-spur-gear-pair.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/involuteSpurGearPair.test.ts',
+      coverage: 'run-validate-cli',
     },
   ],
 ]);

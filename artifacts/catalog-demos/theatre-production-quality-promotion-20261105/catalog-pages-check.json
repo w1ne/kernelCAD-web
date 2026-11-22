@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-theatre-production-quality-20261105-pages",
+  "assetsInIndex": 2390,
+  "kitPages": 52,
+  "pageAndPreviewPairs": 52,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

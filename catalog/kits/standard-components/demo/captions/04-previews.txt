@@ -1,0 +1,4 @@
+04 / PREVIEW — t-slot-end-cap.kcad.ts
+Engineering-polymer cap and locating ribs
+Grooved aluminum profile sample
+Size choice scales the assembly

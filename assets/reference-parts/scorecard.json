@@ -73,8 +73,7 @@
       "expected": { "volumeMm3": 14148.672587712817, "surfaceAreaMm2": 4205.663706143591, "bbox": { "min": [0, 0, 0], "max": [40, 30, 12] } },
       "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
       "provenance": { "kind": "analytic", "details": "40×30×12 plate with a nominal r=4, depth=5 blind bore: V=14400−80π; A=4080+40π; bbox unchanged." },
-      "status": "known-failure",
-      "knownFailureReason": "The OCCT hole cutter extends a blind bore 0.01 mm past its requested depth, adding π·4²·0.01 mm³. The analytic nominal value and tight tolerances remain the target."
+      "status": "pass"
     },
     {
       "id": "plate-counterbore",
@@ -83,8 +82,7 @@
       "expected": { "volumeMm3": 11516.194731347172, "surfaceAreaMm2": 3982.212373908208, "bbox": { "min": [0, 0, 0], "max": [40, 30, 10] } },
       "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
       "provenance": { "kind": "analytic", "details": "40×30×10 plate; r=3 through-bore and r=5 counterbore, depth 4: V=12000−154π; A=3800+58π; bbox unchanged." },
-      "status": "known-failure",
-      "knownFailureReason": "The OCCT counterbore cutter extends 0.01 mm past the requested shoulder depth, removing an extra π·(5²−3²)·0.01 mm³. The analytic nominal value and tight tolerances remain the target."
+      "status": "pass"
     },
     {
       "id": "plate-through-slot",

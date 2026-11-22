@@ -19,6 +19,22 @@
 //   CIRCLE      -> two exact 180° bulge arcs
 //   LWPOLYLINE  vertices with optional per-vertex BULGE (group code 42)
 //   POLYLINE    the pre-R13 form: a header entity plus VERTEX children
+//   HATCH       closed planar polyline boundary paths; nested paths become holes
+//               and islands per the hatch style (dxfHatch.ts); pattern styling
+//               is ignored
+//   SPLINE      planar, continuous control-point B-splines, kept as exact
+//               rational/non-rational NURBS sketch commands; unclamped and
+//               periodic knot vectors are clamped exactly (dxfSplineClamp.ts);
+//               fit-point-only cubics, open or closed, are interpolated through
+//               their fit points and end tangents (dxfSplineFit.ts)
+//   ELLIPSE     planar ellipse arcs, kept as exact rational NURBS arcs
+//   INSERT      block references, including nested blocks and MINSERT grids,
+//               placed by an exact affine map (dxfInsert.ts); arcs under a
+//               non-uniform scale become exact rational elliptical arcs
+//
+// ARC, CIRCLE, LWPOLYLINE and POLYLINE coordinates are in the Object
+// Coordinate System of their extrusion direction: -Z is mirrored into world
+// X, and a direction off the Z axis is refused (dxfOcs.ts).
 //
 // The bulge on a polyline vertex is `tan(includedAngle / 4)` — the same
 // number, same sign convention, that `SketchCommand.bulgeArc` carries. It is
@@ -27,46 +43,39 @@
 //
 // WHAT WE REFUSE, AND WHY IT IS A REFUSAL
 // ---------------------------------------
-// SPLINE is rejected. It is not laziness: the sketch IR has `spline` and
-// `nurbsSegment` kinds, but `drawingFromCommands` — the one lowering path a
-// Sketch takes — has no replicad 2D pen constructor for either and throws on
-// them. Accepting SPLINE would mean flattening a NURBS into chords and
-// calling the result the user's curve. That is precisely the silent
-// substitution this codebase has been burned by, so the importer says so and
-// names the entity instead.
+// Non-XY ELLIPSE, external-reference blocks, 3DFACE, SOLID and anything
+// unrecognised are refused: each carries profile geometry, so skipping it
+// would hand back a profile missing a piece with no indication. HATCH is
+// accepted with planar closed polyline paths and edge paths of line,
+// circular-arc, elliptic-arc and spline edges (dxfHatch.ts); elliptic-arc
+// edges that end off the ellipse axes, fit-point-only spline edges and
+// crossing paths are refused.
+// SPLINE is accepted only when its planar control points and knots define a
+// continuous curve, or when it is a cubic with fit points only.
+// Non-cubic fit-point-only, nonplanar and discontinuous SPLINE entities, and
+// closed SPLINEs whose control net does not wrap, still fail closed rather
+// than being approximated.
 //
-// ELLIPSE, INSERT (block reference), 3DFACE, SOLID and anything unrecognised
-// are likewise refused: each of them CARRIES PROFILE GEOMETRY, so skipping
-// one would hand back a profile missing a piece with no indication. Only
-// entities that are provably annotation — TEXT, DIMENSION, POINT and friends
-// — are skipped, and the count comes back in the result so a caller can see
-// it happened.
+// Only entities that are provably annotation — TEXT, DIMENSION, POINT and
+// friends — are skipped, with the count returned to the caller.
 
 import {
   assembleRegions,
   ContourError,
+  type ImportFace,
   type ImportSegment,
   type ImportedRegion,
 } from './contourAssembly';
+import { ellipseArcSegments } from './dxfEllipse';
+import { clampSpline, validateKnotDomain, validateKnotOrder, validateSplineContinuity, type PlanarSpline } from './dxfSplineClamp';
+import { fitPointSpline, validateSplinePlanarity } from './dxfSplineFit';
+import { mirrorSegments, ocsSign } from './dxfOcs';
+import { blockDefinitions, placeInsert, resolveInsertBlock, skipAttributes, type BlockDefinition } from './dxfInsert';
+import { hatchSegments } from './dxfHatch';
+import { DxfParseError, get, num, polylineSegments, require, values, type EntityBlock, type Pair, type PolyVertex } from './dxfPairs';
+
+export { DxfParseError, type DxfParseFailure } from './dxfPairs';
 import { MM_PER_UNIT, isLengthUnit, LENGTH_UNIT_NAMES, type LengthUnit } from './lengthUnits';
-
-export type DxfParseFailure =
-  | 'empty'
-  | 'not-dxf'
-  | 'no-entities'
-  | 'unsupported-entity'
-  | 'malformed-entity'
-  | 'bad-units'
-  | 'contour';
-
-export class DxfParseError extends Error {
-  readonly reason: DxfParseFailure;
-  constructor(reason: DxfParseFailure, message: string) {
-    super(message);
-    this.reason = reason;
-    this.name = 'DxfParseError';
-  }
-}
 
 export interface ImportDxfOptions {
   /**
@@ -126,13 +135,6 @@ const ANNOTATION_ENTITIES = new Set([
   'POINT', 'ATTDEF', 'ATTRIB', 'VIEWPORT', 'IMAGE', 'WIPEOUT', 'RAY', 'XLINE',
 ]);
 
-interface Pair {
-  code: number;
-  value: string;
-  /** 1-based physical line number of the CODE line, for diagnostics. */
-  line: number;
-}
-
 function tokenize(text: string): Pair[] {
   const lines = text.split(/\r\n|\r|\n/);
   const pairs: Pair[] = [];
@@ -149,17 +151,6 @@ function tokenize(text: string): Pair[] {
     pairs.push({ code, value: lines[i + 1] ?? '', line: i + 1 });
   }
   return pairs;
-}
-
-function num(p: Pair, entity: string, code: number): number {
-  const v = Number(p.value.trim());
-  if (!Number.isFinite(v)) {
-    throw new DxfParseError(
-      'malformed-entity',
-      `${entity} at line ${p.line}: group code ${code} must be a finite number, got '${p.value.trim()}'.`,
-    );
-  }
-  return v;
 }
 
 /** Resolve the millimetres-per-coordinate scale from `opts` or `$INSUNITS`. */
@@ -201,29 +192,17 @@ function resolveScale(
   return { scale: 1, source: 'assumed mm ($INSUNITS absent or 0/Unitless)' };
 }
 
-interface EntityBlock {
-  type: string;
-  /** Pairs AFTER the `0/<TYPE>` pair, up to the next `0`. */
-  body: Pair[];
-  line: number;
-}
-
-/** Slice the ENTITIES section into `0`-delimited entity blocks. */
-function entityBlocks(pairs: readonly Pair[]): EntityBlock[] {
+/** Slice a named section into `0`-delimited entity blocks; null when absent. */
+function sectionBlocks(pairs: readonly Pair[], section: string): EntityBlock[] | null {
   let start = -1;
   for (let i = 0; i + 1 < pairs.length; i++) {
     if (pairs[i].code === 0 && pairs[i].value.trim() === 'SECTION' &&
-        pairs[i + 1].code === 2 && pairs[i + 1].value.trim() === 'ENTITIES') {
+        pairs[i + 1].code === 2 && pairs[i + 1].value.trim() === section) {
       start = i + 2;
       break;
     }
   }
-  if (start === -1) {
-    throw new DxfParseError(
-      'no-entities',
-      'no ENTITIES section: the file has no `0/SECTION` + `2/ENTITIES` pair, so it carries no drawable geometry.',
-    );
-  }
+  if (start === -1) return null;
 
   const blocks: EntityBlock[] = [];
   let current: EntityBlock | null = null;
@@ -241,19 +220,155 @@ function entityBlocks(pairs: readonly Pair[]): EntityBlock[] {
   return blocks;
 }
 
-function get(body: readonly Pair[], code: number): Pair | undefined {
-  return body.find(p => p.code === code);
-}
-
-function require(body: readonly Pair[], code: number, entity: string, line: number): Pair {
-  const p = get(body, code);
-  if (!p) {
+/** Slice the ENTITIES section into `0`-delimited entity blocks. */
+function entityBlocks(pairs: readonly Pair[]): EntityBlock[] {
+  const blocks = sectionBlocks(pairs, 'ENTITIES');
+  if (!blocks) {
     throw new DxfParseError(
-      'malformed-entity',
-      `${entity} at line ${line}: required group code ${code} is missing.`,
+      'no-entities',
+      'no ENTITIES section: the file has no `0/SECTION` + `2/ENTITIES` pair, so it carries no drawable geometry.',
     );
   }
-  return p;
+  return blocks;
+}
+
+interface SplineDefinition {
+  flags: number;
+  degree: number;
+  declaredKnotCount: number;
+  declaredControlCount: number;
+}
+
+function splineDefinition(b: EntityBlock): SplineDefinition {
+  const flags = Number(require(b.body, 70, 'SPLINE', b.line).value.trim());
+  if (!Number.isInteger(flags)) {
+    throw new DxfParseError('malformed-entity', `SPLINE at line ${b.line}: group code 70 must be an integer flag value.`);
+  }
+  const degree = num(require(b.body, 71, 'SPLINE', b.line), 'SPLINE', 71);
+  const declaredKnotCount = num(require(b.body, 72, 'SPLINE', b.line), 'SPLINE', 72);
+  const declaredControlCount = num(require(b.body, 73, 'SPLINE', b.line), 'SPLINE', 73);
+  if (!Number.isInteger(degree) || degree < 1 ||
+      !Number.isInteger(declaredKnotCount) || declaredKnotCount < 0 ||
+      !Number.isInteger(declaredControlCount) || declaredControlCount < 0) {
+    throw new DxfParseError(
+      'malformed-entity',
+      `SPLINE at line ${b.line}: degree and knot/control-point counts must be non-negative integers (degree ≥ 1).`,
+    );
+  }
+  return { flags, degree, declaredKnotCount, declaredControlCount };
+}
+
+function splineControlPoints(
+  b: EntityBlock,
+  scale: number,
+  degree: number,
+  declaredControlCount: number,
+): Array<readonly [number, number]> {
+  const xs = values(b.body, 10, 'SPLINE');
+  const ys = values(b.body, 20, 'SPLINE');
+  const zs = values(b.body, 30, 'SPLINE');
+  if (xs.length !== declaredControlCount || ys.length !== declaredControlCount ||
+      (zs.length !== 0 && zs.length !== declaredControlCount)) {
+    throw new DxfParseError(
+      'malformed-entity',
+      `SPLINE at line ${b.line}: declared ${declaredControlCount} control points but found ` +
+        `${xs.length} X, ${ys.length} Y and ${zs.length} Z coordinates.`,
+    );
+  }
+  if (degree + 1 > xs.length) {
+    throw new DxfParseError(
+      'malformed-entity',
+      `SPLINE at line ${b.line}: degree ${degree} requires at least ${degree + 1} control points, found ${xs.length}.`,
+    );
+  }
+  validateSplinePlanarity(b, zs);
+  return xs.map((x, i) => [x * scale, ys[i] * scale] as const);
+}
+
+function splineKnots(b: EntityBlock, degree: number, controlCount: number, declaredKnotCount: number): number[] {
+  const knots = values(b.body, 40, 'SPLINE');
+  if (knots.length !== declaredKnotCount || knots.length !== controlCount + degree + 1) {
+    throw new DxfParseError(
+      'malformed-entity',
+      `SPLINE at line ${b.line}: expected ${declaredKnotCount} declared knots and ` +
+        `${controlCount + degree + 1} for ${controlCount} control points of degree ${degree}, found ${knots.length}.`,
+    );
+  }
+  validateKnotOrder(knots, `SPLINE at line ${b.line}`);
+  validateKnotDomain(knots, degree, controlCount, `SPLINE at line ${b.line}`);
+  return knots;
+}
+
+function splineWeights(b: EntityBlock, controlCount: number): number[] {
+  const weights = values(b.body, 41, 'SPLINE');
+  if (weights.length !== 0 && weights.length !== controlCount) {
+    throw new DxfParseError(
+      'malformed-entity',
+      `SPLINE at line ${b.line}: expected either no weights or one weight per control point, found ${weights.length}.`,
+    );
+  }
+  if (weights.some(weight => weight <= 0)) {
+    throw new DxfParseError('malformed-entity', `SPLINE at line ${b.line}: control-point weights must be positive.`);
+  }
+  return weights;
+}
+
+function validateSplineClosure(
+  flags: number,
+  points: Array<readonly [number, number]>,
+  tolerance: number,
+  line: number,
+): boolean {
+  const first = points[0];
+  const last = points[points.length - 1];
+  const isClosed = Math.hypot(last[0] - first[0], last[1] - first[1]) <= tolerance;
+  if ((flags & 1) !== 0 && !isClosed) {
+    throw new DxfParseError(
+      'unsupported-entity',
+      `SPLINE at line ${line}: the closed flag is set but the curve endpoints do not meet; ` +
+        'a periodic spline must repeat its first degree control points at the end of the control net.',
+    );
+  }
+  return isClosed;
+}
+
+/** Clamped control net, knots and weights of a DXF SPLINE that stores its control points. */
+function controlNetSpline(b: EntityBlock, scale: number, definition: SplineDefinition): PlanarSpline {
+  const net = splineControlPoints(b, scale, definition.degree, definition.declaredControlCount);
+  const spline = clampSpline({
+    degree: definition.degree,
+    controlPoints: net,
+    knots: splineKnots(b, definition.degree, net.length, definition.declaredKnotCount),
+    weights: splineWeights(b, net.length),
+  });
+  validateSplineContinuity(spline.knots, definition.degree, spline.controlPoints.length, `SPLINE at line ${b.line}`);
+  return spline;
+}
+
+/** Parse the 2D subset of a DXF SPLINE: an exact control net, or a cubic through fit points. */
+function splineSegments(b: EntityBlock, scale: number, tolerance: number): {
+  closed: ImportSegment[][];
+  open: ImportSegment[];
+} {
+  const definition = splineDefinition(b);
+  const fitOnly = definition.declaredControlCount === 0 && values(b.body, 10, 'SPLINE').length === 0;
+  const { controlPoints, knots, weights } = fitOnly
+    ? fitPointSpline(b, scale, definition)
+    : controlNetSpline(b, scale, definition);
+  const isClosed = validateSplineClosure(definition.flags, controlPoints, tolerance, b.line);
+  const first = controlPoints[0];
+  const last = controlPoints[controlPoints.length - 1];
+  const segment: ImportSegment = {
+    x0: first[0], y0: first[1], x1: last[0], y1: last[1],
+    source: `SPLINE (line ${b.line})`,
+    nurbs: {
+      degree: definition.degree,
+      controlPoints,
+      knots,
+      ...(weights.length === 0 ? {} : { weights }),
+    },
+  };
+  return isClosed ? { closed: [[segment]], open: [] } : { closed: [], open: [segment] };
 }
 
 /** DXF ARC -> one exact bulge arc. Angles are degrees, CCW, from +X. */
@@ -305,30 +420,97 @@ function circleSegments(body: readonly Pair[], line: number, s: number): ImportS
   ];
 }
 
-interface PolyVertex { x: number; y: number; bulge: number }
+interface DxfEllipseParameters {
+  centerX: number;
+  centerY: number;
+  majorX: number;
+  majorY: number;
+  centerZ: number;
+  majorZ: number;
+  ratio: number;
+  start: number;
+  end: number;
+  normalX: number;
+  normalY: number;
+  normalZ: number;
+}
 
-function polylineSegments(
-  vertices: readonly PolyVertex[],
-  closed: boolean,
-  src: string,
-  line: number,
-): ImportSegment[] {
-  if (vertices.length < 2) {
+function optionalEllipseNumber(body: readonly Pair[], code: number, fallback: number): number {
+  const pair = get(body, code);
+  return pair ? num(pair, 'ELLIPSE', code) : fallback;
+}
+
+function ellipseParameters(b: EntityBlock): DxfEllipseParameters {
+  return {
+    centerX: num(require(b.body, 10, 'ELLIPSE', b.line), 'ELLIPSE', 10),
+    centerY: num(require(b.body, 20, 'ELLIPSE', b.line), 'ELLIPSE', 20),
+    majorX: num(require(b.body, 11, 'ELLIPSE', b.line), 'ELLIPSE', 11),
+    majorY: num(require(b.body, 21, 'ELLIPSE', b.line), 'ELLIPSE', 21),
+    centerZ: optionalEllipseNumber(b.body, 30, 0),
+    majorZ: optionalEllipseNumber(b.body, 31, 0),
+    ratio: num(require(b.body, 40, 'ELLIPSE', b.line), 'ELLIPSE', 40),
+    start: num(require(b.body, 41, 'ELLIPSE', b.line), 'ELLIPSE', 41),
+    end: num(require(b.body, 42, 'ELLIPSE', b.line), 'ELLIPSE', 42),
+    normalX: optionalEllipseNumber(b.body, 210, 0),
+    normalY: optionalEllipseNumber(b.body, 220, 0),
+    normalZ: optionalEllipseNumber(b.body, 230, 1),
+  };
+}
+
+function validateEllipseAxes(b: EntityBlock, p: DxfEllipseParameters): void {
+  if (Math.hypot(p.majorX, p.majorY) <= 1e-12 || p.ratio <= 0 || p.ratio > 1) {
     throw new DxfParseError(
       'malformed-entity',
-      `${src}: needs at least 2 vertices, found ${vertices.length}.`,
+      `ELLIPSE at line ${b.line}: major-axis length must be > 0 and group code 40 (minor/major ratio) must be in (0, 1].`,
     );
   }
-  const out: ImportSegment[] = [];
-  const n = vertices.length;
-  const last = closed ? n : n - 1;
-  for (let i = 0; i < last; i++) {
-    const a = vertices[i];
-    const b = vertices[(i + 1) % n];
-    // The bulge lives on the vertex that STARTS the segment.
-    out.push({ x0: a.x, y0: a.y, x1: b.x, y1: b.y, bulge: a.bulge, source: `${src} (line ${line})` });
+}
+
+function validateEllipsePlane(b: EntityBlock, p: DxfEllipseParameters): void {
+  const inXYPlane = Math.abs(p.centerZ) <= 1e-9 && Math.abs(p.majorZ) <= 1e-9 &&
+    Math.abs(p.normalX) <= 1e-9 && Math.abs(p.normalY) <= 1e-9 && Math.abs(Math.abs(p.normalZ) - 1) <= 1e-9;
+  if (!inXYPlane) {
+    throw new DxfParseError(
+      'unsupported-entity',
+      `ELLIPSE at line ${b.line}: only ellipses in the XY plane are supported; flatten this entity in the source tool.`,
+    );
   }
-  return out;
+}
+
+function ellipseParameterSpan(b: EntityBlock, p: DxfEllipseParameters): { sweep: number; full: boolean } {
+  const rawSweep = p.end - p.start;
+  const full = Math.abs(Math.abs(rawSweep) - 2 * Math.PI) <= 1e-9;
+  if (full) return { sweep: rawSweep, full: true };
+
+  if (Math.abs(rawSweep) <= 1e-12 || Math.abs(rawSweep) > 2 * Math.PI + 1e-9) {
+    throw new DxfParseError(
+      'malformed-entity',
+      `ELLIPSE at line ${b.line}: start/end parameters must define a non-zero span no greater than 2π.`,
+    );
+  }
+
+  // DXF ellipse arcs travel counter-clockwise from start to end. A smaller
+  // end parameter wraps through 2π, unlike a negative-direction sweep.
+  const sweep = rawSweep < 0 ? rawSweep + 2 * Math.PI : rawSweep;
+  return { sweep, full: false };
+}
+
+function ellipseSegments(b: EntityBlock, scale: number): { closed: ImportSegment[][]; open: ImportSegment[] } {
+  const p = ellipseParameters(b);
+  validateEllipseAxes(b, p);
+  validateEllipsePlane(b, p);
+  const span = ellipseParameterSpan(b, p);
+  const segments = ellipseArcSegments({
+    center: [p.centerX, p.centerY],
+    majorAxis: [p.majorX, p.majorY],
+    axisRatio: p.ratio,
+    startParameter: p.start,
+    endParameter: p.start + span.sweep,
+    normalZ: p.normalZ < 0 ? -1 : 1,
+    scale,
+    source: `ELLIPSE (line ${b.line})`,
+  });
+  return span.full ? { closed: [segments], open: [] } : { closed: [], open: segments };
 }
 
 function lwpolylineVertices(body: readonly Pair[], line: number, s: number): PolyVertex[] {
@@ -357,6 +539,7 @@ function lwpolylineVertices(body: readonly Pair[], line: number, s: number): Pol
   return verts;
 }
 
+
 /**
  * Parse DXF text into closed regions.
  *
@@ -365,8 +548,14 @@ function lwpolylineVertices(body: readonly Pair[], line: number, s: number): Pol
  *   or a drawing whose segments do not resolve into unambiguous closed loops.
  *   Never returns an empty or placeholder region list.
  */
-function segmentsForSimpleEntity(b: EntityBlock, scale: number): { closed: ImportSegment[][]; open: ImportSegment[] } | null {
+function segmentsForSimpleEntity(
+  b: EntityBlock,
+  scale: number,
+  tolerance: number,
+): { closed: ImportSegment[][]; open: ImportSegment[]; faces?: ImportFace[] } | null {
   switch (b.type) {
+    case 'SPLINE':
+      return splineSegments(b, scale, tolerance);
     case 'LINE': {
       const x0 = num(require(b.body, 10, 'LINE', b.line), 'LINE', 10) * scale;
       const y0 = num(require(b.body, 20, 'LINE', b.line), 'LINE', 20) * scale;
@@ -375,14 +564,18 @@ function segmentsForSimpleEntity(b: EntityBlock, scale: number): { closed: Impor
       return { closed: [], open: [{ x0, y0, x1, y1, source: `LINE (line ${b.line})` }] };
     }
     case 'ARC':
-      return { closed: [], open: arcSegments(b.body, b.line, scale) };
+      return { closed: [], open: mirrorSegments(arcSegments(b.body, b.line, scale), ocsSign(b.body, b.type, b.line)) };
     case 'CIRCLE':
-      return { closed: [circleSegments(b.body, b.line, scale)], open: [] };
+      return { closed: [mirrorSegments(circleSegments(b.body, b.line, scale), ocsSign(b.body, b.type, b.line))], open: [] };
+    case 'ELLIPSE':
+      return ellipseSegments(b, scale);
+    case 'HATCH':
+      return hatchSegments(b, scale);
     case 'LWPOLYLINE': {
       const verts = lwpolylineVertices(b.body, b.line, scale);
       const flags = get(b.body, 70);
       const isClosed = flags !== undefined && (Number(flags.value.trim()) & 1) === 1;
-      const segs = polylineSegments(verts, isClosed, 'LWPOLYLINE', b.line);
+      const segs = mirrorSegments(polylineSegments(verts, isClosed, 'LWPOLYLINE', b.line), ocsSign(b.body, b.type, b.line));
       return isClosed ? { closed: [segs], open: [] } : { closed: [], open: segs };
     }
     default:
@@ -415,7 +608,7 @@ function consumePolyline(blocks: readonly EntityBlock[], i: number, scale: numbe
   }
   if (j < blocks.length && blocks[j].type === 'SEQEND') j++;
   const isClosed = (flagVal & 1) === 1;
-  const segs = polylineSegments(verts, isClosed, 'POLYLINE', b.line);
+  const segs = mirrorSegments(polylineSegments(verts, isClosed, 'POLYLINE', b.line), ocsSign(b.body, b.type, b.line));
   return { closed: isClosed ? [segs] : [], open: isClosed ? [] : segs, nextIndex: j - 1 };
 }
 
@@ -424,31 +617,81 @@ function throwUnsupportedEntity(b: EntityBlock): never {
     case 'SPLINE':
       throw new DxfParseError(
         'unsupported-entity',
-        `SPLINE at line ${b.line}: kernelCAD's sketch lowering has no 2D NURBS segment, so this ` +
-          'curve cannot be represented exactly and will not be silently approximated. ' +
-          'Convert splines to polylines (arc/line segments) in the source tool and re-export.',
-      );
-    case 'ELLIPSE':
-      throw new DxfParseError(
-        'unsupported-entity',
-        `ELLIPSE at line ${b.line}: an elliptical arc has no exact form in the sketch command ` +
-          'set (which carries lines and circular arcs). Convert it to a polyline in the source tool.',
-      );
-    case 'INSERT':
-      throw new DxfParseError(
-        'unsupported-entity',
-        `INSERT (block reference) at line ${b.line}: block definitions are not expanded, and the ` +
-          'geometry it references would be missing from the imported profile without warning. ' +
-          'Explode blocks in the source tool before exporting.',
+      `SPLINE at line ${b.line}: its representation is outside the supported clamped, continuous, planar control-point subset. ` +
+          'Re-export a continuous clamped XY spline with control points and knots.',
       );
     default:
       throw new DxfParseError(
         'unsupported-entity',
-        `${b.type} at line ${b.line}: unsupported DXF entity. kernelCAD reads LINE, ARC, CIRCLE, ` +
-          'LWPOLYLINE and POLYLINE for 2D profiles; anything else is refused rather than dropped, ' +
+    `${b.type} at line ${b.line}: unsupported DXF entity. kernelCAD reads LINE, ARC, CIRCLE, planar ELLIPSE, ` +
+          'LWPOLYLINE, POLYLINE, INSERT, closed polyline HATCH boundaries, and clamped continuous planar SPLINE for 2D profiles; anything else is refused rather than dropped, ' +
           'because a dropped entity leaves a hole in the profile with no indication.',
       );
   }
+}
+
+interface ReadContext {
+  scale: number;
+  tolerance: number;
+  definitions: ReadonlyMap<string, BlockDefinition>;
+  /** Names of the blocks being expanded, outermost first, for cycle detection. */
+  stack: readonly string[];
+}
+
+interface Collected {
+  closed: ImportSegment[][];
+  open: ImportSegment[];
+  faces: ImportFace[];
+  ignoredEntities: string[];
+}
+
+/** Read a list of entities into segments. `note` labels skipped annotation inside a block. */
+function collectEntities(blocks: readonly EntityBlock[], ctx: ReadContext, note: string): Collected {
+  const out: Collected = { closed: [], open: [], faces: [], ignoredEntities: [] };
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    const simple = segmentsForSimpleEntity(b, ctx.scale, ctx.tolerance);
+    if (simple) {
+      out.closed.push(...simple.closed);
+      out.open.push(...simple.open);
+      out.faces.push(...(simple.faces ?? []));
+      continue;
+    }
+    if (b.type === 'POLYLINE') {
+      const consumed = consumePolyline(blocks, i, ctx.scale);
+      out.closed.push(...consumed.closed);
+      out.open.push(...consumed.open);
+      i = consumed.nextIndex;
+      continue;
+    }
+    if (b.type === 'INSERT') {
+      i = consumeInsert(blocks, i, ctx, out, note);
+      continue;
+    }
+    if (b.type === 'VERTEX' || b.type === 'SEQEND') {
+      // Only reachable if a VERTEX appears without its POLYLINE header.
+      throw new DxfParseError(
+        'malformed-entity',
+        `${b.type} at line ${b.line}: appears outside a POLYLINE, so the drawing structure is broken.`,
+      );
+    }
+    if (!ANNOTATION_ENTITIES.has(b.type)) throwUnsupportedEntity(b);
+    out.ignoredEntities.push(`${b.type} (line ${b.line})${note}`);
+  }
+  return out;
+}
+
+/** Expand one INSERT: read its block, place every copy, skip trailing attributes. */
+function consumeInsert(blocks: readonly EntityBlock[], i: number, ctx: ReadContext, out: Collected, note: string): number {
+  const b = blocks[i];
+  const def = resolveInsertBlock(b, ctx.definitions, ctx.stack);
+  const inner = collectEntities(def.entities, { ...ctx, stack: [...ctx.stack, def.name] }, ` in block "${def.name}"`);
+  const placed = placeInsert(b, def, inner, ctx.scale);
+  out.closed.push(...placed.closed);
+  out.open.push(...placed.open);
+  out.faces.push(...placed.faces);
+  out.ignoredEntities.push(...inner.ignoredEntities);
+  return skipAttributes(blocks, i, out.ignoredEntities, note);
 }
 
 export function importDxfText(text: string, opts: ImportDxfOptions = {}): DxfImportResult {
@@ -462,45 +705,18 @@ export function importDxfText(text: string, opts: ImportDxfOptions = {}): DxfImp
   }
 
   const { scale, source: unitSource } = resolveScale(pairs, opts);
-  const blocks = entityBlocks(pairs);
-
-  const closed: ImportSegment[][] = [];
-  const open: ImportSegment[] = [];
-  const ignoredEntities: string[] = [];
-
-  for (let i = 0; i < blocks.length; i++) {
-    const b = blocks[i];
-    const simple = segmentsForSimpleEntity(b, scale);
-    if (simple) {
-      closed.push(...simple.closed);
-      open.push(...simple.open);
-      continue;
-    }
-    if (b.type === 'POLYLINE') {
-      const consumed = consumePolyline(blocks, i, scale);
-      closed.push(...consumed.closed);
-      open.push(...consumed.open);
-      i = consumed.nextIndex;
-      continue;
-    }
-    if (b.type === 'VERTEX' || b.type === 'SEQEND') {
-      // Only reachable if a VERTEX appears without its POLYLINE header.
-      throw new DxfParseError(
-        'malformed-entity',
-        `${b.type} at line ${b.line}: appears outside a POLYLINE, so the drawing structure is broken.`,
-      );
-    }
-    if (ANNOTATION_ENTITIES.has(b.type)) {
-      ignoredEntities.push(`${b.type} (line ${b.line})`);
-      continue;
-    }
-    throwUnsupportedEntity(b);
-  }
+  const ctx: ReadContext = {
+    scale,
+    tolerance: opts.tolerance ?? DEFAULT_DXF_TOLERANCE,
+    definitions: blockDefinitions(sectionBlocks(pairs, 'BLOCKS')),
+    stack: [],
+  };
+  const { closed, open, faces, ignoredEntities } = collectEntities(entityBlocks(pairs), ctx, '');
 
   let assembled;
   try {
     assembled = assembleRegions(
-      { closed, open },
+      { closed, open, faces },
       { tolerance: opts.tolerance ?? DEFAULT_DXF_TOLERANCE },
     );
   } catch (e) {

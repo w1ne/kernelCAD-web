@@ -183,7 +183,9 @@ function writeBulgePolyline(
 ): void {
   out.push(
     '0', 'LWPOLYLINE',
+    '100', 'AcDbEntity',
     '8', layer,
+    '100', 'AcDbPolyline',
     '90', String(loop.length),
     '70', '1',
   );
@@ -199,7 +201,9 @@ function writeBulgePolyline(
 function writeOpenPolyline(out: string[], pts: Vec2[], layer: string): void {
   out.push(
     '0', 'LWPOLYLINE',
+    '100', 'AcDbEntity',
     '8', layer,
+    '100', 'AcDbPolyline',
     '90', String(pts.length),
     '70', '0',
   );

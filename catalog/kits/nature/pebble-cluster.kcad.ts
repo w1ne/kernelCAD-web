@@ -5,7 +5,7 @@ meta({
   name: 'pebble-cluster',
   license: 'CC0-1.0',
   title: 'Pebble cluster',
-  description: 'Scatter of flattened river pebbles in mixed sizes and two tones, for riverbanks, beaches and garden paths. Knobs: pebble count, spread, stone and accent colours.',
+  description: 'Scatter of flattened river pebbles in mixed sizes and two tones, for riverbanks, beaches and garden paths. Knobs: pebble count, spread, stone and accent-stone colours.',
   tags: ['pebbles', 'stones', 'gravel', 'rocks', 'river', 'beach', 'path', 'scatter', 'nature'],
   kit: 'nature',
   category: 'nature',
@@ -16,13 +16,13 @@ meta({
 
 const count = param('count', '8', { choices: ['5', '8', '12'], label: 'Pebbles' });
 const spread = param('spread', '0.6', { choices: ['0.4', '0.6', '1'], label: 'Spread (m)' });
-const stone = param('stone', '#9a9a94', { label: 'Stone' });
-const accent = param('accent', '#c8bca8', { label: 'Accent stones' });
+const stoneColor = param('stoneColor', '#9a9a94', { label: 'Stone' });
+const accentColor = param('accentColor', '#c8bca8', { label: 'Accent stones' });
 
 presets({
-  beach: { stone: '#d8c8a8', accent: '#f0e8d8' },
-  dark: { stone: '#5a5e62', accent: '#8a8e92' },
-  red: { stone: '#a86a4a', accent: '#c89a7a' },
+  beach: { stoneColor: '#d8c8a8', accentColor: '#f0e8d8' },
+  dark: { stoneColor: '#5a5e62', accentColor: '#8a8e92' },
+  red: { stoneColor: '#a86a4a', accentColor: '#c89a7a' },
 });
 
 const n = Number(count.value);
@@ -64,7 +64,7 @@ for (let i = 0; i < n; i++) {
   const d = i === 0 ? 0 : (W / 2) * 0.85 * Math.sqrt(i / n);
   const r = W * (i === 0 ? 0.16 : 0.07 + 0.05 * ((i * 0.618) % 1));
   const p = pebble(r, i * 3 + 1).rotateZ(i * 53).translate(d * Math.cos(a), d * Math.sin(a), 0);
-  cluster.part(`pebble-${i + 1}`, p.color(i % 3 === 1 ? accent : stone));
+  cluster.part(`pebble-${i + 1}`, p.color(i % 3 === 1 ? accentColor : stoneColor));
 }
 
 return cluster.model();

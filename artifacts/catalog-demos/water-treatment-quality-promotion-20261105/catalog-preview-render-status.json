@@ -1,0 +1,7 @@
+{
+  "command": "npx tsx scripts/renderCatalogPreviews.ts <50 IDs from preview-asset-ids.txt>",
+  "runDate": "2026-11-05",
+  "status": "PASS",
+  "exitCode": 0,
+  "previewsRendered": 50
+}

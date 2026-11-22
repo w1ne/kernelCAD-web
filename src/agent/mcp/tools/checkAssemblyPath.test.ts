@@ -11,12 +11,12 @@ describe('assembly path MCP check', () => {
         }>;
         expect(p.check.enum).toContain('assembly-path');
         expect(p).toHaveProperty('directions');
-        expect(p).toHaveProperty('disassemblyOrder');
+        expect(p).toHaveProperty('disassembly_order');
         expect(p).toHaveProperty('sequence');
-        expect(p).toHaveProperty('threadedFasteners');
+        expect(p).toHaveProperty('threaded_fasteners');
         expect(p).toHaveProperty('stability');
         expect(p).toHaveProperty('fixtures');
-        expect(p).toHaveProperty('contactToleranceMm');
+        expect(p).toHaveProperty('contact_tolerance_mm');
         expect(p).toHaveProperty('gravity');
     });
     it('evaluates real assembly code through verify', async () => {
@@ -37,14 +37,16 @@ describe('assembly path MCP check', () => {
             throw new Error(result.error);
         expect(result.parts[0].validDirections).toEqual([[0, 0, 1]]);
     });
-    it('plans the gearbox with two subassemblies, helical bolts, tool reach and a press fit', async () => {
+    it('plans the gearbox with four subassemblies, helical bolts, tool reach and a press fit', async () => {
         const result = await checkAssemblyPathTool({ file: 'examples/assemblies/assembly-sequence-gearbox.kcad.ts', sequence: true });
         if ('error' in result)
             throw new Error(result.error);
         const steps = result.sequence!.steps;
-        expect(steps).toHaveLength(19);
+        expect(steps).toHaveLength(21);
         const unitSteps = steps.filter(step => step.adds[0].startsWith('subassembly-'));
-        expect(unitSteps.map(step => step.adds[0])).toEqual(['subassembly-2-gear-c', 'subassembly-1-gear-a']);
+        expect(unitSteps.map(step => step.adds[0])).toEqual([
+            'subassembly-2-cover', 'subassembly-4-gear-c', 'subassembly-3-gear-a', 'subassembly-1-base',
+        ]);
         for (const unit of unitSteps) {
             const inside = steps.filter(step => step.subassembly === unit.adds[0]);
             expect(inside.length).toBeGreaterThan(1);

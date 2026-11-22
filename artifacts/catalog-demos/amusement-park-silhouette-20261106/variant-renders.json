@@ -1,0 +1,348 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/amusement-park-silhouette-20261106/render_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/amusement-park/family-carousel.kcad.ts",
+      "sourceSha256": "e3ba87df27b03f71eb804c191e5c7ae5bb5b55071e2f6f4533ccb7e1b4e33fe3",
+      "triangleBudget": 3400,
+      "presets": {
+        "festival": {
+          "powderCoat": "#d47452",
+          "stainlessSteel": "#e2cf8f",
+          "fiberglass": "#fbf6ea",
+          "canopyCanvas": "#d7a83f",
+          "timberDeck": "#a5764a"
+        },
+        "twilight": {
+          "powderCoat": "#35576f",
+          "stainlessSteel": "#b6a77a",
+          "fiberglass": "#e4dcd2",
+          "canopyCanvas": "#96566d",
+          "timberDeck": "#6e5038"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/amusement-park/tea-cup-spinner-car.kcad.ts",
+      "sourceSha256": "a0f414bc6c36ede0db6e49a346ffe43cd60097be39f176ad77289591a2b42ded",
+      "triangleBudget": 1800,
+      "presets": {
+        "festival": {
+          "fiberglass": "#d7a83f",
+          "accentEnamel": "#d4554a",
+          "stainlessSteel": "#d1d1c6",
+          "rubber": "#3c4245",
+          "seatVinyl": "#2f6fb0"
+        },
+        "twilight": {
+          "fiberglass": "#96566d",
+          "accentEnamel": "#e2c27a",
+          "stainlessSteel": "#788b91",
+          "rubber": "#20262a",
+          "seatVinyl": "#35576f"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/amusement-park/junior-coaster-train-car.kcad.ts",
+      "sourceSha256": "3de96fda512cd931201244b007bdfd25dfa00feec7ae40a671909e8e6c30bfc1",
+      "triangleBudget": 2000,
+      "presets": {
+        "festival": {
+          "fiberglass": "#d7a83f",
+          "steel": "#9da3a0",
+          "rubber": "#3c4245",
+          "seatVinyl": "#7a2a2a",
+          "trackPaint": "#d4554a"
+        },
+        "twilight": {
+          "fiberglass": "#96566d",
+          "steel": "#4f626c",
+          "rubber": "#20262a",
+          "seatVinyl": "#1d2430",
+          "trackPaint": "#35576f"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/amusement-park/drop-tower-seat-ring.kcad.ts",
+      "sourceSha256": "0ae862aa03a5c1a1436c957e39eb46fce404df0037d35fecc771374e729e8e34",
+      "triangleBudget": 2400,
+      "presets": {
+        "festival": {
+          "fiberglass": "#d7a83f",
+          "steel": "#9da3a0",
+          "rubber": "#3c4245",
+          "towerPaint": "#d4554a",
+          "concrete": "#b3ada2"
+        },
+        "twilight": {
+          "fiberglass": "#96566d",
+          "steel": "#4f626c",
+          "rubber": "#20262a",
+          "towerPaint": "#35576f",
+          "concrete": "#7f7c76"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/amusement-park/park-maintenance-golf-cart.kcad.ts",
+      "sourceSha256": "f40a1840f5a0b02f7746fcf7535f63ab2b971f979a94d7c698b67f0801a68aa7",
+      "triangleBudget": 1800,
+      "presets": {
+        "festival": {
+          "enamel": "#edb34d",
+          "steel": "#9da3a0",
+          "rubber": "#3c4245",
+          "seatVinyl": "#2f4f7a",
+          "roofPlastic": "#d4554a",
+          "screenGlass": "#b4d6dd"
+        },
+        "twilight": {
+          "enamel": "#385b81",
+          "steel": "#4f626c",
+          "rubber": "#20262a",
+          "seatVinyl": "#1f2a36",
+          "roofPlastic": "#c9c6bc",
+          "screenGlass": "#6e98a6"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "family-carousel",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 3358,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/family-carousel-default.png"
+    },
+    {
+      "assetId": "family-carousel",
+      "variant": "single",
+      "view": "3/4",
+      "values": {
+        "rows": "single"
+      },
+      "triangles": 2446,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/family-carousel-single.png"
+    },
+    {
+      "assetId": "family-carousel",
+      "variant": "festival",
+      "view": "3/4",
+      "values": {
+        "powderCoat": "#d47452",
+        "stainlessSteel": "#e2cf8f",
+        "fiberglass": "#fbf6ea",
+        "canopyCanvas": "#d7a83f",
+        "timberDeck": "#a5764a"
+      },
+      "triangles": 3358,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/family-carousel-festival.png"
+    },
+    {
+      "assetId": "family-carousel",
+      "variant": "twilight",
+      "view": "3/4",
+      "values": {
+        "powderCoat": "#35576f",
+        "stainlessSteel": "#b6a77a",
+        "fiberglass": "#e4dcd2",
+        "canopyCanvas": "#96566d",
+        "timberDeck": "#6e5038"
+      },
+      "triangles": 3358,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/family-carousel-twilight.png"
+    },
+    {
+      "assetId": "tea-cup-spinner-car",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1132,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/tea-cup-spinner-car-default.png"
+    },
+    {
+      "assetId": "tea-cup-spinner-car",
+      "variant": "scalloped",
+      "view": "3/4",
+      "values": {
+        "rim": "scalloped"
+      },
+      "triangles": 1324,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/tea-cup-spinner-car-scalloped.png"
+    },
+    {
+      "assetId": "tea-cup-spinner-car",
+      "variant": "festival",
+      "view": "3/4",
+      "values": {
+        "fiberglass": "#d7a83f",
+        "accentEnamel": "#d4554a",
+        "stainlessSteel": "#d1d1c6",
+        "rubber": "#3c4245",
+        "seatVinyl": "#2f6fb0"
+      },
+      "triangles": 1132,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/tea-cup-spinner-car-festival.png"
+    },
+    {
+      "assetId": "tea-cup-spinner-car",
+      "variant": "twilight",
+      "view": "3/4",
+      "values": {
+        "fiberglass": "#96566d",
+        "accentEnamel": "#e2c27a",
+        "stainlessSteel": "#788b91",
+        "rubber": "#20262a",
+        "seatVinyl": "#35576f"
+      },
+      "triangles": 1132,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/tea-cup-spinner-car-twilight.png"
+    },
+    {
+      "assetId": "junior-coaster-train-car",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1244,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/junior-coaster-train-car-default.png"
+    },
+    {
+      "assetId": "junior-coaster-train-car",
+      "variant": "trailing",
+      "view": "3/4",
+      "values": {
+        "car": "trailing"
+      },
+      "triangles": 1196,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/junior-coaster-train-car-trailing.png"
+    },
+    {
+      "assetId": "junior-coaster-train-car",
+      "variant": "festival",
+      "view": "3/4",
+      "values": {
+        "fiberglass": "#d7a83f",
+        "steel": "#9da3a0",
+        "rubber": "#3c4245",
+        "seatVinyl": "#7a2a2a",
+        "trackPaint": "#d4554a"
+      },
+      "triangles": 1244,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/junior-coaster-train-car-festival.png"
+    },
+    {
+      "assetId": "junior-coaster-train-car",
+      "variant": "twilight",
+      "view": "3/4",
+      "values": {
+        "fiberglass": "#96566d",
+        "steel": "#4f626c",
+        "rubber": "#20262a",
+        "seatVinyl": "#1d2430",
+        "trackPaint": "#35576f"
+      },
+      "triangles": 1244,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/junior-coaster-train-car-twilight.png"
+    },
+    {
+      "assetId": "drop-tower-seat-ring",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 2340,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/drop-tower-seat-ring-default.png"
+    },
+    {
+      "assetId": "drop-tower-seat-ring",
+      "variant": "lap-bar",
+      "view": "3/4",
+      "values": {
+        "restraint": "lap-bar"
+      },
+      "triangles": 2340,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/drop-tower-seat-ring-lap-bar.png"
+    },
+    {
+      "assetId": "drop-tower-seat-ring",
+      "variant": "festival",
+      "view": "3/4",
+      "values": {
+        "fiberglass": "#d7a83f",
+        "steel": "#9da3a0",
+        "rubber": "#3c4245",
+        "towerPaint": "#d4554a",
+        "concrete": "#b3ada2"
+      },
+      "triangles": 2340,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/drop-tower-seat-ring-festival.png"
+    },
+    {
+      "assetId": "drop-tower-seat-ring",
+      "variant": "twilight",
+      "view": "3/4",
+      "values": {
+        "fiberglass": "#96566d",
+        "steel": "#4f626c",
+        "rubber": "#20262a",
+        "towerPaint": "#35576f",
+        "concrete": "#7f7c76"
+      },
+      "triangles": 2340,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/drop-tower-seat-ring-twilight.png"
+    },
+    {
+      "assetId": "park-maintenance-golf-cart",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1352,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/park-maintenance-golf-cart-default.png"
+    },
+    {
+      "assetId": "park-maintenance-golf-cart",
+      "variant": "flatbed",
+      "view": "3/4",
+      "values": {
+        "bed": "flatbed"
+      },
+      "triangles": 1584,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/park-maintenance-golf-cart-flatbed.png"
+    },
+    {
+      "assetId": "park-maintenance-golf-cart",
+      "variant": "festival",
+      "view": "3/4",
+      "values": {
+        "enamel": "#edb34d",
+        "steel": "#9da3a0",
+        "rubber": "#3c4245",
+        "seatVinyl": "#2f4f7a",
+        "roofPlastic": "#d4554a",
+        "screenGlass": "#b4d6dd"
+      },
+      "triangles": 1352,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/park-maintenance-golf-cart-festival.png"
+    },
+    {
+      "assetId": "park-maintenance-golf-cart",
+      "variant": "twilight",
+      "view": "3/4",
+      "values": {
+        "enamel": "#385b81",
+        "steel": "#4f626c",
+        "rubber": "#20262a",
+        "seatVinyl": "#1f2a36",
+        "roofPlastic": "#c9c6bc",
+        "screenGlass": "#6e98a6"
+      },
+      "triangles": 1352,
+      "png": "artifacts/catalog-demos/amusement-park-silhouette-20261106/variants/park-maintenance-golf-cart-twilight.png"
+    }
+  ]
+}

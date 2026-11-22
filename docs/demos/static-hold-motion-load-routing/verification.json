@@ -1,0 +1,16 @@
+{
+  "fixture": "300 x 20 x 10 mm steel beam on mate shoulder; mechanicalJoint drive torqueNm 1e-6",
+  "staticHold": {
+    "ok": false,
+    "joints": 0,
+    "posesSampled": 0,
+    "code": "assembly.joint.static-hold.no-actuator",
+    "message": "No arm.revolute/arm.prismatic joint with a declared actuator capacity was evaluated, so this check has no holding-capacity coverage. Requested joint 'shoulder' did not resolve to an evaluable arm.revolute/arm.prismatic joint. Moving mate(s) skipped: 'shoulder'. Mate-only mechanicalJoint chains are not yet covered by checkStaticHold. Rated mechanicalJoint(s) 'drive' are checked by verify({ check:'motion-load', quasi_static:true }). Declare actuator: { torqueNm } on arm.revolute(...) or actuator: { forceN } on arm.prismatic(...)."
+  },
+  "motionLoad": {
+    "ok": false,
+    "peakTorqueNm": 0.6930765,
+    "code": "mechanism.load.torque-exceeded",
+    "message": "drive: peak torque 693 N·mm exceeds the 0.00 N·mm rating (margin 0.00x)."
+  }
+}

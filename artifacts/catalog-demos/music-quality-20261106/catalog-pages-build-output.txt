@@ -1,0 +1,3 @@
+wrote 2390 asset page(s) + hub, sitemap.xml and robots.txt to /tmp/kernelcad-music-quality-pages
+(node:1216482) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)

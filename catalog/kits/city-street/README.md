@@ -1,5 +1,10 @@
 # City street kit
 
+The [quality handoff](../../../artifacts/catalog-demos/city-street-quality-20261106/README.md)
+shows the material-specific controls, named appearance presets, and local
+rendered results for the road, crosswalk, sidewalk, and playground-slide
+assets. It also records the refreshed previews, generated index and checks.
+
 Low-poly street furniture, traffic pieces and road tiles for town and city scenes. Every asset is a parametric kernelCAD `.kcad.ts` program modelled in millimetres at real-world size (bench seat 450 mm, hydrant 760 mm, lamp posts 4 to 6 m, 4 m road tiles). Each one exports as a flat-shaded GLB with a single vertex-coloured palette material. Colours are knobs. Counts, sizes and styles are choice knobs. Road, crosswalk and sidewalk tiles fit a 4 m grid: road tiles are 20 mm thick and the sidewalk tile is 170 mm, so its kerb stands 150 mm above the road surface. Painted markings, windows and lenses are flush pieces set into the surface, not decals laid over it.
 
 | id | what it is | knobs | triangles (default) |
@@ -18,9 +23,9 @@ Low-poly street furniture, traffic pieces and road tiles for town and city scene
 | planter-box | Square or round planter with soil and a faceted bush | shape, size, planter, rim, foliage, soil | 150 |
 | picket-fence-section | Tileable picket fence with capped posts | pickets, height, picket colour, posts | 224 |
 | road-barrier | Striped barrier board on A-frame legs | length, stripes, stripe A, stripe B, legs | 176 |
-| road-tile | 4 m two-lane asphalt tile: dashed, stop-line end or plain | style, asphalt, edge lines, centre line | 132 |
-| crosswalk-tile | 4 m road tile with zebra bars | bars, asphalt, bars colour, edge lines | 228 |
-| sidewalk-tile | 4 m raised pavement with kerb stones and two-tone paving | paving grid, kerb, paving, accent | 240 |
+| road-tile | 4 m two-lane asphalt tile: dashed, stop-line end or plain | style, asphalt, edge-paint, centre-paint; worn and yellow-centre presets | 132 |
+| crosswalk-tile | 4 m road tile with transverse zebra bars and edge stripes | bar count, asphalt, stripe-paint, edge-paint; worn and fresh presets | 228 |
+| sidewalk-tile | 4 m raised sidewalk with a road-side concrete kerb and two-tone paving grid | grid size, kerb-concrete, paving-stone, accent-brick; brick and granite presets | 240 |
 | parking-meter | Post with a single or twin meter head | heads, post, head, display | 124 |
 | bike-rack | Row of inverted-U stands on two rails | loops, loop shape, stands, rails | 180 |
 | shop-front | One-storey shop with window, door, sign band, striped awning | width, wall, awning, stripe, door/sign, glass | 276 |
@@ -65,7 +70,7 @@ Low-poly street furniture, traffic pieces and road tiles for town and city scene
 | chain-link-fence | 2.5 m chain-link panel with posts, top rail, diamond mesh, optional barbed top | height, mesh, barbed yes/no, post, wire | 416 |
 | brick-wall-section | 2 m brick wall with end piers, stone coping, caps and accent bricks | height, brick, brick2, coping | 216 |
 | garden-gate | Picket garden gate between capped posts, closed, ajar or open | state, pickets, wood, posts, iron | 232 |
-| playground-slide | Roofed slide tower with ladder, railings and trough chute with run-out | roof yes/no, frame, deck, slide, roof | 256 |
+| playground-slide | Roofed slide tower with ladder, guarded deck, U-trough chute and supported run-out | roof yes/no, galvanized-steel, HDPE, stainless-steel, roof-polyethylene; park and coastal presets | 256 |
 | swing-set | A-frame swing set with top beam and one to three chain swings | swings, frame, seat, chain | 156 |
 | seesaw | Seesaw on a pivot stand with handles, seat pads and bumpers, level or tilted | pose, plank, stand, seat | 132 |
 | traffic-island | Kerbed traffic island with grass, shrubs and a keep-left bollard with disc and arrow | length, shrubs, kerb, grass, bollard, sign | 220 |

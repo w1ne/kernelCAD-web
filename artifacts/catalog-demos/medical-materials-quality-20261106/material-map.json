@@ -1,0 +1,1250 @@
+{
+  "kit": "medical",
+  "assetCount": 40,
+  "assets": [
+    {
+      "asset": "adhesive-bandage-box",
+      "source": "catalog/kits/medical/adhesive-bandage-box.kcad.ts",
+      "materials": [
+        {
+          "name": "paperboard",
+          "label": "Paperboard carton",
+          "default": "#f4f0e6",
+          "clinic": "#f5f2ea",
+          "emergency": "#e8e0d1"
+        },
+        {
+          "name": "cottonGauze",
+          "label": "Cotton gauze",
+          "default": "#e8ddc5",
+          "clinic": "#f4eee0",
+          "emergency": "#ded2bc"
+        },
+        {
+          "name": "medicalInk",
+          "label": "Printed medical ink",
+          "default": "#c8403a",
+          "clinic": "#2d8b84",
+          "emergency": "#c9413b"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A paperboard first-aid carton reads through its red medical cross and the cotton dressings visible above it."
+    },
+    {
+      "asset": "bandage-roll",
+      "source": "catalog/kits/medical/bandage-roll.kcad.ts",
+      "materials": [
+        {
+          "name": "cottonGauze",
+          "label": "Cotton gauze",
+          "default": "#e8e1cf",
+          "clinic": "#f4f1e6",
+          "emergency": "#e8e1cf"
+        },
+        {
+          "name": "compressionWrap",
+          "label": "Compression gauze",
+          "default": "#cbb994",
+          "clinic": "#d9cfb7",
+          "emergency": "#cbb994"
+        },
+        {
+          "name": "cardboard",
+          "label": "Cardboard core",
+          "default": "#936b43",
+          "clinic": "#a47e54",
+          "emergency": "#855d3c"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A rolled gauze cylinder exposes its hollow cardboard core and a loose wrapped tail."
+    },
+    {
+      "asset": "bedside-cabinet",
+      "source": "catalog/kits/medical/bedside-cabinet.kcad.ts",
+      "materials": [
+        {
+          "name": "paintedSteel",
+          "label": "Painted steel",
+          "default": "#e8ecee",
+          "clinic": "#f1f3f4",
+          "emergency": "#ebe8df"
+        },
+        {
+          "name": "laminate",
+          "label": "Laminate top",
+          "default": "#d3c9b7",
+          "clinic": "#d9d1c3",
+          "emergency": "#c6b9a5"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless-steel pulls",
+          "default": "#aab4b7",
+          "clinic": "#b7c0c2",
+          "emergency": "#aaaeb0"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A two-drawer bedside cabinet has a wipe-clean painted body, a laminate top and metal pulls."
+    },
+    {
+      "asset": "blood-collection-tube",
+      "source": "catalog/kits/medical/blood-collection-tube.kcad.ts",
+      "materials": [
+        {
+          "name": "clearPolymer",
+          "label": "Clear polymer",
+          "default": "#d7e4e4",
+          "clinic": "#cde5e2",
+          "emergency": "#d7e0e2"
+        },
+        {
+          "name": "rubberStopper",
+          "label": "Rubber stopper",
+          "default": "#855b9a",
+          "clinic": "#4b8c88",
+          "emergency": "#c8403a"
+        },
+        {
+          "name": "labelPaper",
+          "label": "Label paper",
+          "default": "#f2eee3",
+          "clinic": "#f4f1e7",
+          "emergency": "#eee7dc"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A specimen tube pairs a clear polymer barrel with a color-coded stopper and a paper label band."
+    },
+    {
+      "asset": "blood-pressure-monitor",
+      "source": "catalog/kits/medical/blood-pressure-monitor.kcad.ts",
+      "materials": [
+        {
+          "name": "medicalPolymer",
+          "label": "Medical-grade polymer",
+          "default": "#e9eef0",
+          "clinic": "#f1f3f4",
+          "emergency": "#ebe8df"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#29484b",
+          "clinic": "#2b6564",
+          "emergency": "#33474b"
+        },
+        {
+          "name": "cuffFabric",
+          "label": "Cuff fabric",
+          "default": "#397c86",
+          "clinic": "#2d9893",
+          "emergency": "#c9413b"
+        },
+        {
+          "name": "siliconeRubber",
+          "label": "Silicone and rubber",
+          "default": "#66777b",
+          "clinic": "#708486",
+          "emergency": "#665f5e"
+        }
+      ],
+      "materialCount": 4,
+      "intent": "A portable pressure monitor separates its molded case, dark display, fabric cuff and flexible tube."
+    },
+    {
+      "asset": "centrifuge",
+      "source": "catalog/kits/medical/centrifuge.kcad.ts",
+      "materials": [
+        {
+          "name": "paintedSteel",
+          "label": "Painted steel",
+          "default": "#dfe5e6",
+          "clinic": "#e9edee",
+          "emergency": "#e6e1d9"
+        },
+        {
+          "name": "clearPolycarbonate",
+          "label": "Clear polycarbonate",
+          "default": "#75aeb0",
+          "clinic": "#83c3bd",
+          "emergency": "#8db3b1"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#24494d",
+          "clinic": "#2f7774",
+          "emergency": "#415558"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber feet",
+          "default": "#384347",
+          "clinic": "#485356",
+          "emergency": "#494748"
+        }
+      ],
+      "materialCount": 4,
+      "intent": "A benchtop centrifuge has a domed polycarbonate lid, a front display and rubber feet."
+    },
+    {
+      "asset": "defibrillator",
+      "source": "catalog/kits/medical/defibrillator.kcad.ts",
+      "materials": [
+        {
+          "name": "medicalPolymer",
+          "label": "Medical-grade polymer",
+          "default": "#e9ecec",
+          "clinic": "#f1f3f4",
+          "emergency": "#ebe8df"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#214b50",
+          "clinic": "#2d7772",
+          "emergency": "#384c50"
+        },
+        {
+          "name": "siliconeRubber",
+          "label": "Silicone electrode pads",
+          "default": "#c94d43",
+          "clinic": "#2d9893",
+          "emergency": "#c9413b"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A portable defibrillator combines a molded case with a legible screen and paired rubber electrode pads."
+    },
+    {
+      "asset": "diagnostic-monitor",
+      "source": "catalog/kits/medical/diagnostic-monitor.kcad.ts",
+      "materials": [
+        {
+          "name": "medicalPolymer",
+          "label": "Medical-grade polymer",
+          "default": "#4d5a62",
+          "clinic": "#edf1f2",
+          "emergency": "#e9e6de"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#21888d",
+          "clinic": "#2d9893",
+          "emergency": "#c9413b"
+        },
+        {
+          "name": "anodizedAluminum",
+          "label": "Anodized aluminum",
+          "default": "#87969a",
+          "clinic": "#a9b5b8",
+          "emergency": "#9d9d97"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber controls",
+          "default": "#30383c",
+          "clinic": "#526368",
+          "emergency": "#54504c"
+        }
+      ],
+      "materialCount": 4,
+      "intent": "A patient monitor is identifiable by its wide glass display, upright metal stand and tactile controls."
+    },
+    {
+      "asset": "digital-thermometer",
+      "source": "catalog/kits/medical/digital-thermometer.kcad.ts",
+      "materials": [
+        {
+          "name": "medicalPolymer",
+          "label": "Medical-grade polymer",
+          "default": "#e4e9eb",
+          "clinic": "#f1f3f4",
+          "emergency": "#ebe8df"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#315d62",
+          "clinic": "#318884",
+          "emergency": "#9c4f48"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless-steel probe",
+          "default": "#b7c0c2",
+          "clinic": "#c1c9cb",
+          "emergency": "#b7b9b7"
+        },
+        {
+          "name": "silicone",
+          "label": "Silicone end cap",
+          "default": "#4d9ca0",
+          "clinic": "#64aaa5",
+          "emergency": "#c9413b"
+        }
+      ],
+      "materialCount": 4,
+      "intent": "A handheld thermometer has a slim polymer body, inset readout and stainless probe tip."
+    },
+    {
+      "asset": "erlenmeyer-flask",
+      "source": "catalog/kits/medical/erlenmeyer-flask.kcad.ts",
+      "materials": [
+        {
+          "name": "borosilicateGlass",
+          "label": "Borosilicate glass",
+          "default": "#b8d6d1",
+          "clinic": "#c3dfda",
+          "emergency": "#c7d8d5"
+        },
+        {
+          "name": "solution",
+          "label": "Liquid solution",
+          "default": "#4b8790",
+          "clinic": "#56a49b",
+          "emergency": "#cf7663"
+        },
+        {
+          "name": "graduationInk",
+          "label": "Graduation ink",
+          "default": "#315357",
+          "clinic": "#43716d",
+          "emergency": "#704f4b"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A laboratory flask has a broad conical body, narrow neck and visible liquid and graduation marks."
+    },
+    {
+      "asset": "exam-table",
+      "source": "catalog/kits/medical/exam-table.kcad.ts",
+      "materials": [
+        {
+          "name": "vinylUpholstery",
+          "label": "Vinyl upholstery",
+          "default": "#edf0f2",
+          "clinic": "#f4f4f0",
+          "emergency": "#eee9e1"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "label": "Powder-coated steel",
+          "default": "#63727a",
+          "clinic": "#78878c",
+          "emergency": "#77736d"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless-steel paper bar",
+          "default": "#aeb8ba",
+          "clinic": "#bac3c5",
+          "emergency": "#aeb2b2"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "An examination table reads through its padded vinyl top, steel legs and separate paper roll."
+    },
+    {
+      "asset": "examination-light",
+      "source": "catalog/kits/medical/examination-light.kcad.ts",
+      "materials": [
+        {
+          "name": "powderCoatedSteel",
+          "label": "Powder-coated steel",
+          "default": "#e5e9ea",
+          "clinic": "#eef1f2",
+          "emergency": "#e8e4dc"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber casters",
+          "default": "#3a4244",
+          "clinic": "#4d5859",
+          "emergency": "#514e4b"
+        },
+        {
+          "name": "anodizedAluminum",
+          "label": "Anodized-aluminum lamp head",
+          "default": "#6b8f98",
+          "clinic": "#7fa0a5",
+          "emergency": "#8a8c86"
+        },
+        {
+          "name": "opalGlass",
+          "label": "Opal glass diffuser",
+          "default": "#f0efe7",
+          "clinic": "#fff9e8",
+          "emergency": "#f1e5d5"
+        }
+      ],
+      "materialCount": 4,
+      "intent": "A mobile examination lamp has a wheeled steel base, articulated arm and glass light face."
+    },
+    {
+      "asset": "first-aid-kit",
+      "source": "catalog/kits/medical/first-aid-kit.kcad.ts",
+      "materials": [
+        {
+          "name": "medicalPolymer",
+          "label": "Medical-grade polymer",
+          "default": "#e8ecee",
+          "clinic": "#f1f3f4",
+          "emergency": "#ebe8df"
+        },
+        {
+          "name": "medicalInk",
+          "label": "Printed medical ink",
+          "default": "#c8403a",
+          "clinic": "#2d8b84",
+          "emergency": "#c9413b"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless-steel latches",
+          "default": "#aab4b7",
+          "clinic": "#b7c0c2",
+          "emergency": "#a8aaa8"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A handled first-aid case uses a molded shell, red medical cross and metal latches."
+    },
+    {
+      "asset": "forceps",
+      "source": "catalog/kits/medical/forceps.kcad.ts",
+      "materials": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#a5afb2",
+          "clinic": "#b8c1c3",
+          "emergency": "#b4aaa1"
+        },
+        {
+          "name": "medicalPolymer",
+          "label": "Medical-grade grip polymer",
+          "default": "#56646a",
+          "clinic": "#2d858d",
+          "emergency": "#c9413b"
+        }
+      ],
+      "materialCount": 2,
+      "intent": "Spring forceps have two tapered stainless arms and contrasting polymer grip pads."
+    },
+    {
+      "asset": "forearm-crutches",
+      "source": "catalog/kits/medical/forearm-crutches.kcad.ts",
+      "materials": [
+        {
+          "name": "anodizedAluminum",
+          "label": "Anodized aluminum",
+          "default": "#b8c3c8",
+          "clinic": "#c5ced1",
+          "emergency": "#b9b7b1"
+        },
+        {
+          "name": "medicalPolymer",
+          "label": "Molded cuff polymer",
+          "default": "#76a0a4",
+          "clinic": "#70a7a5",
+          "emergency": "#c9413b"
+        },
+        {
+          "name": "siliconeRubber",
+          "label": "Silicone and rubber",
+          "default": "#2d858d",
+          "clinic": "#4b9295",
+          "emergency": "#a74942"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A forearm crutch pairs a long aluminum shaft with a molded cuff, hand grip and rubber tip."
+    },
+    {
+      "asset": "gauze-pads",
+      "source": "catalog/kits/medical/gauze-pads.kcad.ts",
+      "materials": [
+        {
+          "name": "cottonGauze",
+          "label": "Cotton gauze",
+          "default": "#f1eee7",
+          "clinic": "#f8f5ec",
+          "emergency": "#eee9df"
+        },
+        {
+          "name": "sterileMesh",
+          "label": "Sterile mesh",
+          "default": "#c8d0d1",
+          "clinic": "#c8dcda",
+          "emergency": "#d1d2cc"
+        },
+        {
+          "name": "medicalTape",
+          "label": "Medical tape",
+          "default": "#d5c9af",
+          "clinic": "#e0d3b8",
+          "emergency": "#d8c5a9"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A layered gauze stack shows woven cotton faces, a finer center weave and folded tape edge."
+    },
+    {
+      "asset": "hospital-bed",
+      "source": "catalog/kits/medical/hospital-bed.kcad.ts",
+      "materials": [
+        {
+          "name": "vinylUpholstery",
+          "label": "Vinyl upholstery",
+          "default": "#eef1f2",
+          "clinic": "#f5f4ef",
+          "emergency": "#efe9df"
+        },
+        {
+          "name": "paintedSteel",
+          "label": "Painted steel",
+          "default": "#687880",
+          "clinic": "#7d8b90",
+          "emergency": "#78746e"
+        },
+        {
+          "name": "medicalPolymer",
+          "label": "Molded rail polymer",
+          "default": "#4c9c9b",
+          "clinic": "#2d9893",
+          "emergency": "#c9413b"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber casters",
+          "default": "#394245",
+          "clinic": "#4d5a5c",
+          "emergency": "#514d4a"
+        }
+      ],
+      "materialCount": 4,
+      "intent": "A hospital bed has a padded mattress, raised polymer rails, steel support frame and casters."
+    },
+    {
+      "asset": "instrument-trolley",
+      "source": "catalog/kits/medical/instrument-trolley.kcad.ts",
+      "materials": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#dce2e4",
+          "clinic": "#e8ecec",
+          "emergency": "#e7e2d9"
+        },
+        {
+          "name": "medicalPolymer",
+          "label": "Molded tray bumper",
+          "default": "#71838b",
+          "clinic": "#5a9795",
+          "emergency": "#c9413b"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber casters",
+          "default": "#343c40",
+          "clinic": "#485356",
+          "emergency": "#4e4a47"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A two-level instrument trolley separates brushed trays, a tubular steel frame and rubber wheels."
+    },
+    {
+      "asset": "iv-stand",
+      "source": "catalog/kits/medical/iv-stand.kcad.ts",
+      "materials": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b6c0c4",
+          "clinic": "#c6ced0",
+          "emergency": "#bdbbb5"
+        },
+        {
+          "name": "medicalPolymer",
+          "label": "Fluid-bag polymer",
+          "default": "#dce9e8",
+          "clinic": "#d6e9e6",
+          "emergency": "#e9e0d6"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber casters",
+          "default": "#3d474a",
+          "clinic": "#515e60",
+          "emergency": "#554f4d"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "An IV stand has a stainless telescoping pole and hooks, fluid bag and rubber-wheeled base."
+    },
+    {
+      "asset": "lab-incubator",
+      "source": "catalog/kits/medical/lab-incubator.kcad.ts",
+      "materials": [
+        {
+          "name": "paintedSteel",
+          "label": "Painted steel",
+          "default": "#e6eaeb",
+          "clinic": "#eef1f2",
+          "emergency": "#e9e5dc"
+        },
+        {
+          "name": "borosilicateGlass",
+          "label": "Borosilicate viewing glass",
+          "default": "#92bfbd",
+          "clinic": "#a9cfca",
+          "emergency": "#a8c2c1"
+        },
+        {
+          "name": "medicalPolymer",
+          "label": "Control polymer",
+          "default": "#4c8f93",
+          "clinic": "#2d9893",
+          "emergency": "#c9413b"
+        },
+        {
+          "name": "silicone",
+          "label": "Silicone seal and grip",
+          "default": "#56666b",
+          "clinic": "#6f7e80",
+          "emergency": "#665d58"
+        }
+      ],
+      "materialCount": 4,
+      "intent": "A laboratory incubator combines a metal cabinet, glass viewing window and sealed control door."
+    },
+    {
+      "asset": "medical-cart",
+      "source": "catalog/kits/medical/medical-cart.kcad.ts",
+      "materials": [
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#dce3e4",
+          "clinic": "#e8eeee",
+          "emergency": "#e6e1d9"
+        },
+        {
+          "name": "medicalPolymer",
+          "label": "Polymer shelf lips",
+          "default": "#3c7f87",
+          "clinic": "#2d9893",
+          "emergency": "#c9413b"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber casters",
+          "default": "#343c40",
+          "clinic": "#485356",
+          "emergency": "#514d4a"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A medical cart has tiered steel shelves, raised polymer lips and four swivel casters."
+    },
+    {
+      "asset": "microscope",
+      "source": "catalog/kits/medical/microscope.kcad.ts",
+      "materials": [
+        {
+          "name": "paintedMetal",
+          "label": "Painted metal",
+          "default": "#56636a",
+          "clinic": "#68777d",
+          "emergency": "#736e68"
+        },
+        {
+          "name": "anodizedAluminum",
+          "label": "Anodized stage hardware",
+          "default": "#8bb5b4",
+          "clinic": "#93c2be",
+          "emergency": "#aeb7b5"
+        },
+        {
+          "name": "opticalGlass",
+          "label": "Optical glass",
+          "default": "#253f48",
+          "clinic": "#326c70",
+          "emergency": "#54585a"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber eyecup",
+          "default": "#303b40",
+          "clinic": "#536669",
+          "emergency": "#4f4b48"
+        }
+      ],
+      "materialCount": 4,
+      "intent": "A compound microscope is defined by its angled optical tube, revolving objectives and clipped stage."
+    },
+    {
+      "asset": "nebulizer",
+      "source": "catalog/kits/medical/nebulizer.kcad.ts",
+      "materials": [
+        {
+          "name": "medicalPolymer",
+          "label": "Medical-grade polymer",
+          "default": "#e6eaeb",
+          "clinic": "#f1f3f4",
+          "emergency": "#ebe8df"
+        },
+        {
+          "name": "clearPolycarbonate",
+          "label": "Clear medicine-cup polymer",
+          "default": "#99c5c2",
+          "clinic": "#a9d2cc",
+          "emergency": "#bfd2cd"
+        },
+        {
+          "name": "siliconeTubing",
+          "label": "Silicone connector",
+          "default": "#4e8790",
+          "clinic": "#438d89",
+          "emergency": "#bd6258"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber controls",
+          "default": "#374448",
+          "clinic": "#536166",
+          "emergency": "#5a514d"
+        }
+      ],
+      "materialCount": 4,
+      "intent": "A tabletop nebulizer pairs a compressor housing with a medicine cup and flexible air connector."
+    },
+    {
+      "asset": "otoscope",
+      "source": "catalog/kits/medical/otoscope.kcad.ts",
+      "materials": [
+        {
+          "name": "medicalPolymer",
+          "label": "Medical-grade polymer",
+          "default": "#50636b",
+          "clinic": "#60757b",
+          "emergency": "#6b6862"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber grip band",
+          "default": "#c49a32",
+          "clinic": "#d2b34d",
+          "emergency": "#c9413b"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless-steel head",
+          "default": "#a8b2b4",
+          "clinic": "#bbc4c5",
+          "emergency": "#b2aaa0"
+        },
+        {
+          "name": "opticalGlass",
+          "label": "Optical glass",
+          "default": "#253f48",
+          "clinic": "#4a7777",
+          "emergency": "#6b6661"
+        }
+      ],
+      "materialCount": 4,
+      "intent": "A handheld otoscope has a textured polymer handle, steel head and separate viewing lens."
+    },
+    {
+      "asset": "oxygen-cylinder",
+      "source": "catalog/kits/medical/oxygen-cylinder.kcad.ts",
+      "materials": [
+        {
+          "name": "paintedSteel",
+          "label": "Painted cylinder steel",
+          "default": "#7c9299",
+          "clinic": "#668e94",
+          "emergency": "#e5e8e7"
+        },
+        {
+          "name": "brass",
+          "label": "Brass valve",
+          "default": "#c29442",
+          "clinic": "#c7a35e",
+          "emergency": "#d0a347"
+        },
+        {
+          "name": "gaugeGlass",
+          "label": "Gauge glass",
+          "default": "#e2e9e6",
+          "clinic": "#b8d9d4",
+          "emergency": "#dfd5c7"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber base ring",
+          "default": "#3b4548",
+          "clinic": "#4c595b",
+          "emergency": "#504a47"
+        }
+      ],
+      "materialCount": 4,
+      "intent": "A medical oxygen cylinder has a painted steel tank, brass valve, gauge glass and protective foot ring."
+    },
+    {
+      "asset": "petri-dish",
+      "source": "catalog/kits/medical/petri-dish.kcad.ts",
+      "materials": [
+        {
+          "name": "clearPolymer",
+          "label": "Clear dish polymer",
+          "default": "#e1e8e7",
+          "clinic": "#d9e9e6",
+          "emergency": "#e4e4dd"
+        },
+        {
+          "name": "agar",
+          "label": "Agar medium",
+          "default": "#80b8a0",
+          "clinic": "#73b89a",
+          "emergency": "#d08a68"
+        },
+        {
+          "name": "labelPaper",
+          "label": "Sample label paper",
+          "default": "#f2eee3",
+          "clinic": "#f4f1e7",
+          "emergency": "#eee3d6"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A culture dish uses a shallow clear polymer base, fitted lid and a visible agar sample."
+    },
+    {
+      "asset": "pill-blister-pack",
+      "source": "catalog/kits/medical/pill-blister-pack.kcad.ts",
+      "materials": [
+        {
+          "name": "aluminumFoil",
+          "label": "Aluminum foil",
+          "default": "#bfc9cd",
+          "clinic": "#cbd3d5",
+          "emergency": "#b8b6b2"
+        },
+        {
+          "name": "tabletCoating",
+          "label": "Tablet coating",
+          "default": "#d6b95f",
+          "clinic": "#d9c77c",
+          "emergency": "#c9413b"
+        },
+        {
+          "name": "blisterPolymer",
+          "label": "Blister polymer",
+          "default": "#92b4b7",
+          "clinic": "#a5c9c8",
+          "emergency": "#b8c6c4"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A blister pack separates its aluminum backing, molded polymer bubbles and colored tablets."
+    },
+    {
+      "asset": "pill-bottle",
+      "source": "catalog/kits/medical/pill-bottle.kcad.ts",
+      "materials": [
+        {
+          "name": "amberPolymer",
+          "label": "Amber polymer",
+          "default": "#c28d39",
+          "clinic": "#cc9b49",
+          "emergency": "#bd8640"
+        },
+        {
+          "name": "labelPaper",
+          "label": "Label paper",
+          "default": "#eee9dd",
+          "clinic": "#f4f1e8",
+          "emergency": "#eee3d5"
+        },
+        {
+          "name": "medicalPolymer",
+          "label": "Cap polymer",
+          "default": "#d8bd65",
+          "clinic": "#73a29d",
+          "emergency": "#c9413b"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A prescription bottle has an amber polymer body, paper label and separate child-safe cap."
+    },
+    {
+      "asset": "pulse-oximeter",
+      "source": "catalog/kits/medical/pulse-oximeter.kcad.ts",
+      "materials": [
+        {
+          "name": "medicalPolymer",
+          "label": "Medical-grade polymer",
+          "default": "#eef2f2",
+          "clinic": "#f3f5f3",
+          "emergency": "#ebe8df"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless-steel hinge",
+          "default": "#9aa6a8",
+          "clinic": "#aab7b8",
+          "emergency": "#b4aca4"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#284c50",
+          "clinic": "#2c827c",
+          "emergency": "#c0473f"
+        },
+        {
+          "name": "silicone",
+          "label": "Silicone finger pad",
+          "default": "#399da1",
+          "clinic": "#54aaa2",
+          "emergency": "#c9413b"
+        }
+      ],
+      "materialCount": 4,
+      "intent": "A fingertip oximeter has a hinged polymer clamp, inset display and soft finger pads."
+    },
+    {
+      "asset": "reflex-hammer",
+      "source": "catalog/kits/medical/reflex-hammer.kcad.ts",
+      "materials": [
+        {
+          "name": "anodizedAluminum",
+          "label": "Anodized-aluminum handle",
+          "default": "#a7b0b3",
+          "clinic": "#b9c2c4",
+          "emergency": "#b7b0a8"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless-steel head",
+          "default": "#596a70",
+          "clinic": "#718186",
+          "emergency": "#73716d"
+        },
+        {
+          "name": "siliconeRubber",
+          "label": "Silicone percussion tips",
+          "default": "#37494f",
+          "clinic": "#546b6d",
+          "emergency": "#c9413b"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A reflex hammer combines a metal crosshead, slender handle and two rubber percussion tips."
+    },
+    {
+      "asset": "sharps-container",
+      "source": "catalog/kits/medical/sharps-container.kcad.ts",
+      "materials": [
+        {
+          "name": "polypropylene",
+          "label": "Puncture-resistant polypropylene",
+          "default": "#f1b944",
+          "clinic": "#f5cf62",
+          "emergency": "#e2b037"
+        },
+        {
+          "name": "medicalInk",
+          "label": "Warning marking color",
+          "default": "#c9433d",
+          "clinic": "#2d8b84",
+          "emergency": "#c9413b"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless-steel carry tab",
+          "default": "#aeb8ba",
+          "clinic": "#bdc6c7",
+          "emergency": "#b4aba2"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A sharps container has a rigid puncture-resistant body, red slot lid and metal carry tab."
+    },
+    {
+      "asset": "specimen-cup",
+      "source": "catalog/kits/medical/specimen-cup.kcad.ts",
+      "materials": [
+        {
+          "name": "polypropylene",
+          "label": "Polypropylene cup",
+          "default": "#e8eceb",
+          "clinic": "#f0f2ed",
+          "emergency": "#ebe7df"
+        },
+        {
+          "name": "medicalPolymer",
+          "label": "Lid polymer",
+          "default": "#e6ba54",
+          "clinic": "#6fa9a1",
+          "emergency": "#c9413b"
+        },
+        {
+          "name": "labelPaper",
+          "label": "Identification label paper",
+          "default": "#f6f0df",
+          "clinic": "#f4f1e7",
+          "emergency": "#eee4d7"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A specimen cup has a straight disposable body, threaded polymer lid and a paper identification label."
+    },
+    {
+      "asset": "specimen-tube-rack",
+      "source": "catalog/kits/medical/specimen-tube-rack.kcad.ts",
+      "materials": [
+        {
+          "name": "medicalPolymer",
+          "label": "Rack polymer",
+          "default": "#d7dedf",
+          "clinic": "#e4e9e8",
+          "emergency": "#e8e3db"
+        },
+        {
+          "name": "clearPolymer",
+          "label": "Clear tube polymer",
+          "default": "#b5d1d0",
+          "clinic": "#b9ddd8",
+          "emergency": "#c2d2cf"
+        },
+        {
+          "name": "capPolymer",
+          "label": "Color-coded cap polymer",
+          "default": "#508c98",
+          "clinic": "#2d9893",
+          "emergency": "#c9413b"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A specimen rack keeps color-coded capped tubes upright in a two-level support frame."
+    },
+    {
+      "asset": "stethoscope",
+      "source": "catalog/kits/medical/stethoscope.kcad.ts",
+      "materials": [
+        {
+          "name": "siliconeTubing",
+          "label": "Silicone tubing",
+          "default": "#384b56",
+          "clinic": "#425b63",
+          "emergency": "#4e5050"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber earpieces",
+          "default": "#303b40",
+          "clinic": "#526568",
+          "emergency": "#594f4a"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless-steel chestpiece",
+          "default": "#bfc8cb",
+          "clinic": "#c6d0d1",
+          "emergency": "#c2bbb2"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A stethoscope is recognizable by its split flexible tube, paired earpieces and circular chestpiece."
+    },
+    {
+      "asset": "surgical-scissors",
+      "source": "catalog/kits/medical/surgical-scissors.kcad.ts",
+      "materials": [
+        {
+          "name": "medicalPolymer",
+          "label": "Grip polymer",
+          "default": "#99a4a8",
+          "clinic": "#839397",
+          "emergency": "#c9413b"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless-steel blades and pivot",
+          "default": "#58656a",
+          "clinic": "#758286",
+          "emergency": "#b8b0a6"
+        }
+      ],
+      "materialCount": 2,
+      "intent": "Surgical scissors use intersecting stainless blades with distinct finger loops and a pivot screw."
+    },
+    {
+      "asset": "syringe",
+      "source": "catalog/kits/medical/syringe.kcad.ts",
+      "materials": [
+        {
+          "name": "clearPolymer",
+          "label": "Clear barrel polymer",
+          "default": "#e9edef",
+          "clinic": "#dcebea",
+          "emergency": "#e7e4dd"
+        },
+        {
+          "name": "siliconeRubber",
+          "label": "Silicone plunger seal",
+          "default": "#303a3d",
+          "clinic": "#445355",
+          "emergency": "#544d49"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless-steel needle",
+          "default": "#b7c1c3",
+          "clinic": "#c2cbcd",
+          "emergency": "#bcb7b0"
+        },
+        {
+          "name": "graduationInk",
+          "label": "Graduation ink",
+          "default": "#7eacb0",
+          "clinic": "#358b87",
+          "emergency": "#c9413b"
+        }
+      ],
+      "materialCount": 4,
+      "intent": "A syringe separates its graduated clear barrel, black plunger seal and fine stainless needle."
+    },
+    {
+      "asset": "tongue-depressor-pack",
+      "source": "catalog/kits/medical/tongue-depressor-pack.kcad.ts",
+      "materials": [
+        {
+          "name": "birchWood",
+          "label": "Birch wood",
+          "default": "#d9c29a",
+          "clinic": "#ddcba8",
+          "emergency": "#d3b98c"
+        },
+        {
+          "name": "paperSleeve",
+          "label": "Paper sleeve",
+          "default": "#f1eee4",
+          "clinic": "#f5f2e9",
+          "emergency": "#eee5d9"
+        },
+        {
+          "name": "medicalInk",
+          "label": "Printed seal ink",
+          "default": "#a86842",
+          "clinic": "#4d8c83",
+          "emergency": "#c9413b"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A wrapped tongue-depressor pack shows stacked birch sticks, a paper sleeve and printed seal."
+    },
+    {
+      "asset": "walker-frame",
+      "source": "catalog/kits/medical/walker-frame.kcad.ts",
+      "materials": [
+        {
+          "name": "anodizedAluminum",
+          "label": "Anodized aluminum",
+          "default": "#dce2e4",
+          "clinic": "#c6d0d2",
+          "emergency": "#c4c1bb"
+        },
+        {
+          "name": "silicone",
+          "label": "Silicone hand grips",
+          "default": "#4a8991",
+          "clinic": "#2d9893",
+          "emergency": "#c9413b"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber floor glides",
+          "default": "#30383c",
+          "clinic": "#4c595b",
+          "emergency": "#504a47"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A folding walker has paired aluminum side frames, padded hand grips and rubber floor glides."
+    },
+    {
+      "asset": "walking-cane",
+      "source": "catalog/kits/medical/walking-cane.kcad.ts",
+      "materials": [
+        {
+          "name": "hardwood",
+          "label": "Hardwood shaft",
+          "default": "#8a6748",
+          "clinic": "#957653",
+          "emergency": "#785a42"
+        },
+        {
+          "name": "medicalPolymer",
+          "label": "Molded hand grip",
+          "default": "#2a555d",
+          "clinic": "#4b8c85",
+          "emergency": "#c9413b"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber ferrule",
+          "default": "#303b3e",
+          "clinic": "#4b5658",
+          "emergency": "#514c49"
+        }
+      ],
+      "materialCount": 3,
+      "intent": "A walking cane pairs a hardwood shaft with a shaped hand grip and broad rubber ferrule."
+    },
+    {
+      "asset": "wheelchair",
+      "source": "catalog/kits/medical/wheelchair.kcad.ts",
+      "materials": [
+        {
+          "name": "anodizedAluminum",
+          "label": "Anodized aluminum frame",
+          "default": "#aeb9bd",
+          "clinic": "#c2cbcd",
+          "emergency": "#bcb7b0"
+        },
+        {
+          "name": "vinylUpholstery",
+          "label": "Vinyl upholstery",
+        "default": "#3d83a6",
+        "clinic": "#3189b5",
+          "emergency": "#ebe5dc"
+        },
+        {
+          "name": "rubber",
+          "label": "Rubber tires and casters",
+          "default": "#30363a",
+          "clinic": "#414c4f",
+          "emergency": "#4e4946"
+        },
+        {
+          "name": "medicalPolymer",
+          "label": "Molded armrest polymer",
+          "default": "#367e8c",
+          "clinic": "#2d9893",
+          "emergency": "#c9413b"
+        }
+      ],
+      "materialCount": 4,
+      "intent": "A manual wheelchair separates its fabric seat and back, aluminum frame, rubber wheels and polymer armrests."
+    }
+  ]
+}

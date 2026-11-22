@@ -1,0 +1,6 @@
+05 / LOCAL HANDOFF
+50 / 50 pass the quality gate
+Previews and index rebuilt
+Follow-up review pending
+Deployment not verified
+No physical acceptance performed

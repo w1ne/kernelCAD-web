@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-03",
+  "kit": "postal-logistics",
+  "assetCount": 52,
+  "demo": {
+    "source": "capture_postal_demo.py",
+    "output": "postal-logistics-kit.mp4",
+    "codec": "H.264 / libx264",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 24,
+    "frameHoldSeconds": 3,
+    "frameCount": 10,
+    "pixelFormat": "yuv420p",
+    "quality": "CRF 25",
+    "previewFrames": 7,
+    "assetsPerPreviewFrame": 8
+  },
+  "commands": [
+    "python3 artifacts/catalog-demos/postal-logistics-wave-20261103/generate_postal_assets.py",
+    "npx eslint catalog/ --fix",
+    "npx eslint catalog/",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx tsx scripts/renderCatalogPreviews.ts",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx tsx scripts/renderCatalogPreviews.ts carrier-route-sequence-rack",
+    "npx tsx scripts/renderCatalogPreviews.ts carrier-satchel",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx vitest run tests/integration/catalog/",
+    "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-postal-pages-wave-20261103",
+    "npm run build",
+    "node artifacts/catalog-demos/postal-logistics-wave-20261103/audit_npm_pack.mjs",
+    "python3 artifacts/catalog-demos/postal-logistics-wave-20261103/capture_postal_demo.py",
+    "python3 artifacts/catalog-demos/postal-logistics-wave-20261103/inspect_postal_video.py"
+  ],
+  "verificationScope": {
+    "covered": [
+      "local source and generated catalog index",
+      "local GLB mesh exports with triangle, material, origin and knob audit",
+      "catalog integration suite",
+      "catalog ESLint",
+      "rendered PNG previews for every indexed asset",
+      "local generated static catalog pages",
+      "built npm package contents and public source boundary",
+      "MP4 decode and visual review"
+    ],
+    "notCovered": [
+      "deployed website behavior for this feature branch",
+      "postal facility throughput or operational performance",
+      "machinery safety or production suitability",
+      "regulatory compliance",
+      "physical acceptance"
+    ]
+  }
+}

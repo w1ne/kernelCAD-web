@@ -8,10 +8,18 @@
 // caller's `bad` function: a structural study that quietly drops or invents a
 // load would report a safety factor that means nothing.
 
-import type { FeaLoadMetadata, FeaStudySpec } from '../../shared/intent/feaStudyRecord';
+import type {
+  FeaFaceSelector, FeaFaceSelectorInput, FeaLoadMetadata, FeaStudySpec,
+} from '../../shared/intent/feaStudyRecord';
 import type { MotionPartLoadSample } from '../../shared/intent/motionLoadRecord';
 
 export type FieldError = (field: string, why: string) => never;
+
+/** The selector as recorded. `param()` refs inside it stay symbolic on the
+ *  record; `resolveStudyParams` replaces them before the faces are bound. */
+export function recordedFeaSelector(selector: FeaFaceSelectorInput): FeaFaceSelector {
+  return selector as FeaFaceSelector;
+}
 
 export function validFeaSelector(v: unknown): boolean {
   return (typeof v === 'string' && v.length > 0) || (typeof v === 'object' && v !== null && !Array.isArray(v));
@@ -84,7 +92,7 @@ function motionLoadAsFeaLoad(
     bad('loadsFrom', `resolved to a non-finite joint origin on part '${from.part}'`);
   }
   return {
-    faces: from.faces ?? { containsPoint: [point[0], point[1], point[2]] },
+    faces: from.faces !== undefined ? recordedFeaSelector(from.faces) : { containsPoint: [point[0], point[1], point[2]] },
     force: [force[0], force[1], force[2]],
     name: `motion:${worst.joint}`,
     pointMm: [point[0], point[1], point[2]],
@@ -116,7 +124,7 @@ function validateFeaStudyLoad(
     bad(`loads[${i}].name`, `must be a non-empty string; got ${JSON.stringify(load.name)}`);
   }
   return {
-    faces: load.faces,
+    faces: recordedFeaSelector(load.faces),
     force: [f[0], f[1], f[2]],
     name: load.name ?? `load${i}`,
     ...remote,

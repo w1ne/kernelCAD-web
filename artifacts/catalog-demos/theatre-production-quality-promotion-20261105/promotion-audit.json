@@ -1,0 +1,853 @@
+{
+  "kit": "theatre-production",
+  "assetsPromoted": 52,
+  "newIds": 0,
+  "materialControls": {
+    "total": 161,
+    "minimumPerAsset": 2,
+    "maximumPerAsset": 4,
+    "rolesUsed": [
+      "aluminum",
+      "fabric",
+      "galvanizedSteel",
+      "glass",
+      "hardware",
+      "paintedSteel",
+      "polymer",
+      "powderCoat",
+      "rubber",
+      "steel",
+      "timber"
+    ]
+  },
+  "presetsAdded": {
+    "presetsBlocks": 52,
+    "namedAppearanceVariants": 104,
+    "names": [
+      "houseShow",
+      "touring"
+    ]
+  },
+  "geometryEnhancements": {
+    "touring-road-case": "Raised shell; four exposed low-profile caster wheels and mounting plates.",
+    "motorized-chain-hoist": "Extruded J-shaped hook reaches the floor below the chain.",
+    "rolling-stage-platform": "Four floor-level caster wheels with steel forks below the deck.",
+    "scenic-wagon": "Four exposed caster wheels with brackets connected to the deck."
+  },
+  "baselineCatalog": {
+    "passing": 1348,
+    "total": 2390,
+    "thin": 1042,
+    "passRatePercent": 56.4
+  },
+  "catalogAfter": {
+    "passing": 1400,
+    "total": 2390,
+    "thin": 990,
+    "passRatePercent": 58.58
+  },
+  "kitQualityGate": "52/52 passed",
+  "lint": "pass",
+  "integration": "pass",
+  "index": "pass",
+  "sourceHashesMatch": true,
+  "previewsRenderedAndIndexed": 52,
+  "assetsWithTwoPresets": 52,
+  "triangleRange": [
+    120,
+    344
+  ],
+  "triangleBudget": 1800,
+  "localPages": {
+    "status": "pass",
+    "pageAndPreviewPairs": 52,
+    "assetsInIndex": 2390
+  },
+  "assets": [
+    {
+      "id": "adjustable-stage-leg",
+      "theme": "rigging",
+      "materials": [
+        "paintedSteel",
+        "hardware",
+        "rubber"
+      ],
+      "namedParts": 8,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "audio-mixing-console",
+      "theme": "control",
+      "materials": [
+        "hardware",
+        "powderCoat",
+        "glass",
+        "polymer"
+      ],
+      "namedParts": 11,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "audio-monitor-wedge",
+      "theme": "control",
+      "materials": [
+        "powderCoat",
+        "polymer"
+      ],
+      "namedParts": 9,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "backstage-call-board",
+      "theme": "control",
+      "materials": [
+        "powderCoat",
+        "hardware"
+      ],
+      "namedParts": 12,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "cable-ramp-crossing",
+      "theme": "casework",
+      "materials": [
+        "polymer",
+        "hardware"
+      ],
+      "namedParts": 10,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "counterweight-arbor",
+      "theme": "rigging",
+      "materials": [
+        "paintedSteel",
+        "galvanizedSteel"
+      ],
+      "namedParts": 12,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "curtain-track-carrier",
+      "theme": "rigging",
+      "materials": [
+        "paintedSteel",
+        "hardware",
+        "rubber"
+      ],
+      "namedParts": 9,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "cyclorama-drop",
+      "theme": "textile",
+      "materials": [
+        "fabric",
+        "steel",
+        "hardware"
+      ],
+      "namedParts": 10,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "dance-floor-panel",
+      "theme": "deck",
+      "materials": [
+        "timber",
+        "steel",
+        "rubber"
+      ],
+      "namedParts": 13,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "dimmer-rack",
+      "theme": "lighting",
+      "materials": [
+        "powderCoat",
+        "glass"
+      ],
+      "namedParts": 12,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "ellipsoidal-reflector-spotlight",
+      "theme": "lighting",
+      "materials": [
+        "powderCoat",
+        "aluminum",
+        "hardware",
+        "glass"
+      ],
+      "namedParts": 12,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "floor-cable-trough",
+      "theme": "casework",
+      "materials": [
+        "polymer",
+        "aluminum",
+        "hardware"
+      ],
+      "namedParts": 10,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "folding-flat-brace",
+      "theme": "rigging",
+      "materials": [
+        "paintedSteel",
+        "galvanizedSteel",
+        "hardware"
+      ],
+      "namedParts": 9,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "folding-stage-ramp",
+      "theme": "deck",
+      "materials": [
+        "timber",
+        "steel",
+        "hardware"
+      ],
+      "namedParts": 10,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "fresnel-wash-fixture",
+      "theme": "lighting",
+      "materials": [
+        "powderCoat",
+        "hardware",
+        "aluminum",
+        "glass"
+      ],
+      "namedParts": 10,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "grand-drape-valance",
+      "theme": "textile",
+      "materials": [
+        "fabric",
+        "steel",
+        "hardware"
+      ],
+      "namedParts": 11,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "hoist-controller",
+      "theme": "control",
+      "materials": [
+        "powderCoat",
+        "polymer"
+      ],
+      "namedParts": 10,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "led-cyc-wash-light",
+      "theme": "lighting",
+      "materials": [
+        "powderCoat",
+        "glass",
+        "hardware"
+      ],
+      "namedParts": 11,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "lighting-control-console",
+      "theme": "control",
+      "materials": [
+        "hardware",
+        "powderCoat",
+        "glass",
+        "polymer"
+      ],
+      "namedParts": 12,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "lighting-yoke-bracket",
+      "theme": "rigging",
+      "materials": [
+        "paintedSteel",
+        "galvanizedSteel",
+        "hardware"
+      ],
+      "namedParts": 9,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "marley-floor-roll",
+      "theme": "textile",
+      "materials": [
+        "steel",
+        "fabric",
+        "hardware"
+      ],
+      "namedParts": 10,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "masking-leg",
+      "theme": "textile",
+      "materials": [
+        "fabric",
+        "steel",
+        "hardware"
+      ],
+      "namedParts": 9,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "modular-stage-deck",
+      "theme": "deck",
+      "materials": [
+        "timber",
+        "steel",
+        "rubber"
+      ],
+      "namedParts": 13,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "motorized-chain-hoist",
+      "theme": "rigging",
+      "materials": [
+        "paintedSteel",
+        "galvanizedSteel",
+        "rubber",
+        "hardware"
+      ],
+      "namedParts": 9,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": "Extruded J-shaped hook reaches the floor below the chain."
+    },
+    {
+      "id": "orchestra-pit-filler",
+      "theme": "deck",
+      "materials": [
+        "timber",
+        "steel",
+        "hardware"
+      ],
+      "namedParts": 11,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "orchestra-shell-panel",
+      "theme": "deck",
+      "materials": [
+        "timber",
+        "steel",
+        "hardware"
+      ],
+      "namedParts": 10,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "par-can-fixture",
+      "theme": "lighting",
+      "materials": [
+        "hardware",
+        "powderCoat",
+        "aluminum",
+        "glass"
+      ],
+      "namedParts": 11,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "prop-storage-rack",
+      "theme": "casework",
+      "materials": [
+        "aluminum",
+        "polymer",
+        "rubber"
+      ],
+      "namedParts": 14,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "prop-table",
+      "theme": "deck",
+      "materials": [
+        "timber",
+        "steel",
+        "hardware",
+        "rubber"
+      ],
+      "namedParts": 11,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "pulley-block",
+      "theme": "rigging",
+      "materials": [
+        "paintedSteel",
+        "galvanizedSteel",
+        "hardware"
+      ],
+      "namedParts": 9,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "rigging-handline-cleat",
+      "theme": "rigging",
+      "materials": [
+        "paintedSteel",
+        "hardware",
+        "galvanizedSteel"
+      ],
+      "namedParts": 9,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "riser-cart",
+      "theme": "casework",
+      "materials": [
+        "polymer",
+        "hardware",
+        "aluminum",
+        "rubber"
+      ],
+      "namedParts": 14,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "rolling-stage-platform",
+      "theme": "deck",
+      "materials": [
+        "timber",
+        "steel",
+        "hardware",
+        "rubber"
+      ],
+      "namedParts": 15,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": "Four floor-level caster wheels with steel forks below the deck."
+    },
+    {
+      "id": "rope-lock",
+      "theme": "rigging",
+      "materials": [
+        "paintedSteel",
+        "rubber",
+        "hardware"
+      ],
+      "namedParts": 9,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "sandbag-counterweight",
+      "theme": "textile",
+      "materials": [
+        "fabric",
+        "steel",
+        "hardware"
+      ],
+      "namedParts": 8,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "scenic-flat-panel",
+      "theme": "deck",
+      "materials": [
+        "timber",
+        "steel",
+        "rubber",
+        "hardware"
+      ],
+      "namedParts": 11,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "scenic-wagon",
+      "theme": "deck",
+      "materials": [
+        "timber",
+        "steel",
+        "hardware",
+        "rubber"
+      ],
+      "namedParts": 18,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": "Four exposed caster wheels with brackets connected to the deck."
+    },
+    {
+      "id": "scrim-frame",
+      "theme": "textile",
+      "materials": [
+        "fabric",
+        "steel",
+        "hardware"
+      ],
+      "namedParts": 10,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "spotlight-followspot-stand",
+      "theme": "lighting",
+      "materials": [
+        "powderCoat",
+        "hardware"
+      ],
+      "namedParts": 9,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "stage-batten-section",
+      "theme": "lighting",
+      "materials": [
+        "powderCoat",
+        "hardware"
+      ],
+      "namedParts": 8,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "stage-edge-trim",
+      "theme": "deck",
+      "materials": [
+        "timber",
+        "steel",
+        "hardware"
+      ],
+      "namedParts": 11,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "stage-extension-wing",
+      "theme": "deck",
+      "materials": [
+        "timber",
+        "steel",
+        "hardware"
+      ],
+      "namedParts": 12,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "stage-manager-console",
+      "theme": "control",
+      "materials": [
+        "hardware",
+        "powderCoat",
+        "glass",
+        "polymer"
+      ],
+      "namedParts": 11,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "stage-pocket-hatch",
+      "theme": "deck",
+      "materials": [
+        "steel",
+        "timber",
+        "hardware"
+      ],
+      "namedParts": 10,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "stage-power-distro",
+      "theme": "control",
+      "materials": [
+        "powderCoat",
+        "hardware",
+        "polymer"
+      ],
+      "namedParts": 12,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "stage-riser-platform",
+      "theme": "deck",
+      "materials": [
+        "timber",
+        "steel",
+        "rubber"
+      ],
+      "namedParts": 12,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "stage-stair-unit",
+      "theme": "deck",
+      "materials": [
+        "timber",
+        "steel",
+        "rubber"
+      ],
+      "namedParts": 9,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "strip-light-battens",
+      "theme": "lighting",
+      "materials": [
+        "powderCoat",
+        "glass",
+        "hardware"
+      ],
+      "namedParts": 12,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "teaser-border",
+      "theme": "textile",
+      "materials": [
+        "fabric",
+        "steel",
+        "hardware"
+      ],
+      "namedParts": 10,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "touring-road-case",
+      "theme": "casework",
+      "materials": [
+        "polymer",
+        "aluminum",
+        "hardware",
+        "rubber"
+      ],
+      "namedParts": 18,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": "Raised shell; four exposed low-profile caster wheels and mounting plates."
+    },
+    {
+      "id": "traveler-curtain-track",
+      "theme": "textile",
+      "materials": [
+        "steel",
+        "fabric",
+        "hardware"
+      ],
+      "namedParts": 11,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    },
+    {
+      "id": "wireless-intercom-beltpack",
+      "theme": "control",
+      "materials": [
+        "powderCoat",
+        "hardware",
+        "polymer"
+      ],
+      "namedParts": 9,
+      "presetNames": [
+        "houseShow",
+        "touring"
+      ],
+      "geometryEnhancement": null
+    }
+  ]
+}

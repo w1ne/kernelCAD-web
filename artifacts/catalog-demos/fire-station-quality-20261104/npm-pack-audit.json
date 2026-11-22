@@ -1,0 +1,12 @@
+{
+  "packageFiles": 5199,
+  "fireStationSources": 70,
+  "fireStationPreviews": 70,
+  "catalogIndexPackaged": true,
+  "demoBundlePackaged": false,
+  "commercialPathMatches": [],
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "status": "passed"
+}

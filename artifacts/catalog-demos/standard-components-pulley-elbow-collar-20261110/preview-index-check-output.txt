@@ -1,0 +1,1 @@
+{"kit": "standard-components", "assetCount": 50, "sourceHashes": true, "previewPaths": true}

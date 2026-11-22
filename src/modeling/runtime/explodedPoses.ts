@@ -130,7 +130,11 @@ interface TreeEdge {
   axisLocal: Vec3;
 }
 
-function mateTree(arm: Assembly, rootName: string): TreeEdge[] {
+/** BFS mate tree from `rootName`, then from the first part (in `order`, then
+ *  declaration order) of each mated component it does not reach, matching the
+ *  mate solver's forest walk: an unmated first part must not hide the other
+ *  parts' mates. */
+function mateTree(arm: Assembly, rootName: string, order: readonly string[]): TreeEdge[] {
   const parts = arm.__parts();
   const mates = arm.__mates();
   const adjacency = new Map<string, { neighbor: string; connectorName: string }[]>();
@@ -143,17 +147,21 @@ function mateTree(arm: Assembly, rootName: string): TreeEdge[] {
   }
   const partByName = new Map(parts.map((p) => [p.name, p]));
   const edges: TreeEdge[] = [];
-  const visited = new Set<string>([rootName]);
-  const queue = [rootName];
-  while (queue.length > 0) {
-    const parent = queue.shift()!;
-    for (const e of adjacency.get(parent) ?? []) {
-      if (visited.has(e.neighbor)) continue;
-      visited.add(e.neighbor);
-      const parentPart = partByName.get(parent);
-      const axisLocal = parentPart ? connectorAxis(parentPart, e.connectorName) : ([0, 0, 1] as Vec3);
-      edges.push({ parent, child: e.neighbor, axisLocal });
-      queue.push(e.neighbor);
+  const visited = new Set<string>();
+  for (const componentRoot of [rootName, ...order, ...parts.map((p) => p.name)]) {
+    if (visited.has(componentRoot)) continue;
+    visited.add(componentRoot);
+    const queue = [componentRoot];
+    while (queue.length > 0) {
+      const parent = queue.shift()!;
+      for (const e of adjacency.get(parent) ?? []) {
+        if (visited.has(e.neighbor)) continue;
+        visited.add(e.neighbor);
+        const parentPart = partByName.get(parent);
+        const axisLocal = parentPart ? connectorAxis(parentPart, e.connectorName) : ([0, 0, 1] as Vec3);
+        edges.push({ parent, child: e.neighbor, axisLocal });
+        queue.push(e.neighbor);
+      }
     }
   }
   return edges;
@@ -233,7 +241,7 @@ function mateAxisOffsets(
   spacingScale: number,
 ): Map<string, Vec3> {
   const root = names[0] ?? scene.parts[0]?.name;
-  let edges = root ? mateTree(arm, root) : [];
+  let edges = root ? mateTree(arm, root, names) : [];
   if (edges.length === 0) edges = jointTree(arm);
   if (edges.length === 0) edges = connectTree(arm);
   if (edges.length === 0) edges = declarationChain(names, geomByName);

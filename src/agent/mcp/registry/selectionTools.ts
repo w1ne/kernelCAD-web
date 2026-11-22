@@ -23,17 +23,17 @@ export const selectionToolEntries: ToolRegistryEntry[] = [
       inputSchema: {
         type: 'object', properties: { ...properties, model_generation: { type: 'integer', minimum: 0, description: 'modelGeneration from get_selection; rejects picks from a prior mesh.' }, selection: {
           anyOf: [{ type: 'null' }, { type: 'object', properties: {
-            shapeIndex: { type: 'integer', minimum: 0 }, kind: { type: 'string', enum: ['face', 'edge'] },
-            id: { type: 'integer', minimum: 0 }, featureId: { type: ['string', 'null'], minLength: 1 },
-            stableId: { type: 'string', pattern: '^s[0-9a-f]{16}$', description: 'Persistent geometry-derived BREP edge ID; required for edge picks.' },
+            shape_index: { type: 'integer', minimum: 0 }, kind: { type: 'string', enum: ['face', 'edge'] },
+            id: { type: 'integer', minimum: 0 }, feature_id: { type: ['string', 'null'], minLength: 1 },
+            stable_id: { type: 'string', pattern: '^s[0-9a-f]{16}$', description: 'Persistent geometry-derived BREP edge ID; required for edge picks.' },
             ref: { type: 'string', description: 'Operation-ready edge ref, e.g. @kc[box_1/edge/s<hash>].' },
-          }, required: ['shapeIndex', 'kind', 'id', 'featureId'], additionalProperties: false }],
-        }, selections: { type: 'array', description: 'Full topology selection set. Every edge item must include stableId; selection remains the primary pick for backward compatibility.', items: {
+          }, required: ['shape_index', 'kind', 'id', 'feature_id'], additionalProperties: false }],
+        }, selections: { type: 'array', description: 'Full topology selection set. Every edge item must include stable_id; selection remains the primary pick for backward compatibility.', items: {
           type: 'object', properties: {
-            shapeIndex: { type: 'integer', minimum: 0 }, kind: { type: 'string', enum: ['face', 'edge'] },
-            id: { type: 'integer', minimum: 0 }, featureId: { type: ['string', 'null'], minLength: 1 },
-            stableId: { type: 'string', pattern: '^s[0-9a-f]{16}$' }, ref: { type: 'string' },
-          }, required: ['shapeIndex', 'kind', 'id', 'featureId'], additionalProperties: false,
+            shape_index: { type: 'integer', minimum: 0 }, kind: { type: 'string', enum: ['face', 'edge'] },
+            id: { type: 'integer', minimum: 0 }, feature_id: { type: ['string', 'null'], minLength: 1 },
+            stable_id: { type: 'string', pattern: '^s[0-9a-f]{16}$' }, ref: { type: 'string' },
+          }, required: ['shape_index', 'kind', 'id', 'feature_id'], additionalProperties: false,
         } } }, required: ['studio_url', 'session', 'model_generation', 'selection'],
       },
     },

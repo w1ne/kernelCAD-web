@@ -26,6 +26,8 @@ import type { Vec3 } from '../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { overlapThicknessMm } from './jointContactCap';
 import { Transform } from '../../shared/runtime/se3';
+import { relativePoseKey } from './sweepCollisionProxy';
+import { hullsProveSeparated } from './convexHullBroadphase';
 
 /** A single (part_a, part_b) pair whose intersection has non-trivial volume. */
 export interface InterferencePair {
@@ -70,6 +72,16 @@ export interface CheckInterferenceResult {
   readonly probedPairCount?: number;
   /** Candidate pairs answered from `incremental.previousResults`. */
   readonly reusedPairCount?: number;
+  /** Candidates whose exact boolean failed. Absent when every probe finished.
+   *  A failed probe is not clearance. */
+  readonly unconfirmedPairs?: readonly ExplicitProbeFailure[];
+}
+
+/** One explicit candidate the exact boolean could not confirm. */
+export interface ExplicitProbeFailure {
+  readonly a: string;
+  readonly b: string;
+  readonly message: string;
 }
 
 /** The subset of a transformed part the candidate pass reads: its name (for
@@ -111,15 +123,6 @@ export function collectInterferenceCandidates(
   return candidates;
 }
 
-/** Pure detection over an already-resolved SceneBackend. Exposed for tests
- *  and for callers that have a Scene in hand without re-running a script. */
-/** Stable key for a world transform: where it sends the origin and the unit
- *  axes, rounded well below any modelling tolerance. */
-function transformKey(t: SceneBackend['parts'][number]['worldTransform']): string {
-  const probe: Array<[number, number, number]> = [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]];
-  return probe.map((p) => t.point(p).map((c) => Math.round(c * 1e9)).join(',')).join(';');
-}
-
 /**
  * Intersection volumes already measured, keyed by the two source part BREPs
  * (object identity) and their world transforms. The exact boolean-volume
@@ -135,6 +138,11 @@ interface OverlapMetrics {
 }
 
 const intersectionVolumeMemo = new WeakMap<object, WeakMap<object, Map<string, OverlapMetrics>>>();
+
+/** Conservative overlap-volume upper bounds from `boundsProveBelowThreshold`,
+ *  keyed like the exact-volume memo. A stored upper bound is safe to reuse
+ *  at the same relative pose whenever it is still ≤ the caller's epsilon. */
+const boundsUpperMemo = new WeakMap<object, WeakMap<object, Map<string, number>>>();
 
 function measureOverlap(a: OcctBackend, b: OcctBackend): OverlapMetrics {
   if (typeof a.intersectionMetrics !== 'function') return { volumeMm3: a.intersectionVolume(b) };
@@ -179,6 +187,41 @@ function memoSet(a: object, b: object, key: string, vol: OverlapMetrics): void {
   byPose.set(key, vol);
 }
 
+function boundsUpperGet(a: object, b: object, key: string): number | undefined {
+  return boundsUpperMemo.get(a)?.get(b)?.get(key);
+}
+
+function boundsUpperSet(a: object, b: object, key: string, upper: number): void {
+  let inner = boundsUpperMemo.get(a);
+  if (inner === undefined) {
+    inner = new WeakMap();
+    boundsUpperMemo.set(a, inner);
+  }
+  let byPose = inner.get(b);
+  if (byPose === undefined) {
+    byPose = new Map();
+    inner.set(b, byPose);
+  }
+  byPose.set(key, upper);
+}
+
+/** Already-measured overlap at this relative pose, compared to `epsilonMm3`.
+ *  `undefined` means the exact boolean has not run for this pair and pose. */
+function overlapFromMemo(
+  a: PosedPart,
+  b: PosedPart,
+  epsilonMm3: number,
+): InterferencePair | null | undefined {
+  const vol = memoGet(a.source, b.source, relativePoseKey(a.worldTransform, b.worldTransform));
+  if (vol === undefined || !Number.isFinite(vol.volumeMm3)) return undefined;
+  if (!(vol.volumeMm3 > epsilonMm3)) return null;
+  return {
+    a: a.name, b: b.name, volumeMm3: vol.volumeMm3,
+    ...(vol.thicknessMm !== undefined && Number.isFinite(vol.thicknessMm) ? { thicknessMm: vol.thicknessMm } : {}),
+    ...(vol.bounds !== undefined ? { overlapBounds: vol.bounds } : {}),
+  };
+}
+
 /** Pairs involving a non-BRep (display mesh) part: exact intersection needs
  *  BRep, so these are reported as unchecked instead of silently skipped. */
 function listDisplayMeshPairs(
@@ -197,12 +240,20 @@ function listDisplayMeshPairs(
   return pairs;
 }
 
+/** Pure detection over an already-resolved SceneBackend. Exposed for tests
+ *  and for callers that have a Scene in hand without re-running a script.
+ *
+ *  `explicitPairs` indexes the BRep parts in scene order. When it is passed,
+ *  those pairs are the exact probes: source AABBs and the volume upper bound
+ *  do not get another vote. The default call still uses the AABB pre-filter.
+ *  An out-of-range index is an unconfirmed probe, not a clear pair. */
 export function detectInterferences(
   scene: SceneBackend,
   epsilonMm3: number,
   ignored: ReadonlySet<string>,
   diagnostics: CompilerDiagnostic[] = [],
   incremental?: IncrementalInterferenceOptions,
+  explicitPairs?: readonly (readonly [number, number])[],
 ): CheckInterferenceResult {
   // Place each part at its worldTransform once, up front, through a
   // location (`OcctBackend.located`): the posed shape shares the part's
@@ -230,7 +281,9 @@ export function detectInterferences(
   // to the GC (they reference the parts' shapes and, after a boolean, any
   // data OCCT attached to them).
   try {
-    return probeCandidates(transformed, epsilonMm3, ignored, diagnostics, uncheckedPairs, incremental);
+    return probeCandidates(
+      transformed, epsilonMm3, ignored, diagnostics, uncheckedPairs, incremental, explicitPairs,
+    );
   } finally {
     for (const part of transformed) part.shape.dispose();
   }
@@ -259,10 +312,16 @@ function canReuseIncrementalPair(
 /** Conservative rigid-frame bounds prove some candidates cannot exceed the
  *  threshold. Returns false on any bound failure (the exact probe runs). */
 function boundsProveBelowThreshold(a: PosedPart, b: PosedPart, epsilonMm3: number): boolean {
+  const poseKey = relativePoseKey(a.worldTransform, b.worldTransform);
+  const cached = boundsUpperGet(a.source, b.source, poseKey);
+  if (cached !== undefined && cached <= epsilonMm3) return true;
   for (let frame = 0; frame < BOUND_FRAMES.length; frame++) {
     try {
       const upper = overlapVolumeUpperBound(boundsInFrame(a, frame), boundsInFrame(b, frame));
-      if (Number.isFinite(upper) && upper <= epsilonMm3) return true;
+      if (Number.isFinite(upper) && upper <= epsilonMm3) {
+        boundsUpperSet(a.source, b.source, poseKey, upper);
+        return true;
+      }
     } catch {
       return false;
     }
@@ -289,6 +348,70 @@ function boundsInFrame(part: PosedPart, frame: number): Bounds {
   return bounds;
 }
 
+function acceptedExplicitPairs(
+  transformed: readonly PosedPart[],
+  ignored: ReadonlySet<string>,
+  explicitPairs: readonly (readonly [number, number])[],
+  unconfirmed: ExplicitProbeFailure[],
+): Array<readonly [number, number]> {
+  const accepted: Array<readonly [number, number]> = [];
+  for (const [i, j] of explicitPairs) {
+    if (!Number.isInteger(i) || !Number.isInteger(j) || i < 0 || j <= i || j >= transformed.length) {
+      unconfirmed.push({
+        a: `#${i}`,
+        b: `#${j}`,
+        message: `interference candidate (${i}, ${j}) is not a BRep part pair`,
+      });
+      continue;
+    }
+    const a = transformed[i]!;
+    const b = transformed[j]!;
+    if (ignored.has(pairKey(a.name, b.name))) continue;
+    accepted.push([i, j]);
+  }
+  return accepted;
+}
+
+function partsMarkedChanged(
+  incremental: IncrementalInterferenceOptions | undefined,
+  aName: string,
+  bName: string,
+): boolean {
+  const changed = incremental?.changedParts;
+  return changed !== undefined && (changed.has(aName) || changed.has(bName));
+}
+
+type CandidateMeasure =
+  | { kind: 'reused'; pair: InterferencePair | null }
+  | { kind: 'below-bounds' }
+  | { kind: 'unconfirmed' }
+  | { kind: 'hit'; pair: InterferencePair | null };
+
+/** Pose-memo / bounds / exact boolean for one pair. `changedParts` skips the
+ *  process-wide memo so incremental re-checks actually probe again. */
+function measureCandidatePair(
+  a: PosedPart,
+  b: PosedPart,
+  epsilonMm3: number,
+  diagnostics: CompilerDiagnostic[],
+  skipPoseMemo: boolean,
+  allowBoundsFilter: boolean,
+): CandidateMeasure {
+  if (!skipPoseMemo) {
+    const memoized = overlapFromMemo(a, b, epsilonMm3);
+    if (memoized !== undefined) return { kind: 'reused', pair: memoized };
+  }
+  if (allowBoundsFilter && !skipPoseMemo && boundsProveBelowThreshold(a, b, epsilonMm3)) {
+    return { kind: 'below-bounds' };
+  }
+  if (allowBoundsFilter && !skipPoseMemo && hullsProveSeparated(a.source, a.worldTransform, b.source, b.worldTransform)) {
+    return { kind: 'below-bounds' };
+  }
+  const confirmed = confirmOverlap(a, b, epsilonMm3, diagnostics);
+  if (confirmed === 'unconfirmed') return { kind: 'unconfirmed' };
+  return { kind: 'hit', pair: confirmed };
+}
+
 function probeCandidates(
   transformed: PosedPart[],
   epsilonMm3: number,
@@ -296,14 +419,18 @@ function probeCandidates(
   diagnostics: CompilerDiagnostic[],
   uncheckedPairs: CheckInterferenceResult['uncheckedPairs'],
   incremental?: IncrementalInterferenceOptions,
+  explicitPairs?: readonly (readonly [number, number])[],
 ): CheckInterferenceResult {
   const pairs: InterferencePair[] = [];
-  const candidates = collectInterferenceCandidates(transformed, ignored);
+  const unconfirmed: ExplicitProbeFailure[] = [];
+  const candidates = explicitPairs === undefined
+    ? collectInterferenceCandidates(transformed, ignored)
+    : acceptedExplicitPairs(transformed, ignored, explicitPairs, unconfirmed);
   let probedPairCount = 0;
   let reusedPairCount = 0;
   for (const [i, j] of candidates) {
-    const a = transformed[i];
-    const b = transformed[j];
+    const a = transformed[i]!;
+    const b = transformed[j]!;
     const key = pairKey(a.name, b.name);
     if (canReuseIncrementalPair(incremental, key, a.name, b.name)) {
       const previous = incremental!.previousResults.get(key);
@@ -311,37 +438,30 @@ function probeCandidates(
       reusedPairCount += 1;
       continue;
     }
+    const measured = measureCandidatePair(
+      a,
+      b,
+      epsilonMm3,
+      diagnostics,
+      partsMarkedChanged(incremental, a.name, b.name),
+      explicitPairs === undefined,
+    );
+    if (measured.kind === 'reused') {
+      if (measured.pair !== null) pairs.push(measured.pair);
+      reusedPairCount += 1;
+      continue;
+    }
     probedPairCount += 1;
-    if (boundsProveBelowThreshold(a, b, epsilonMm3)) continue;
-
-    // Key on the RELATIVE pose of b in a's frame: the overlap of two rigid
-    // bodies depends only on where one sits relative to the other. Parts
-    // fastened into one rigid cluster keep their relative pose at every
-    // sampled pose, so the sweep measures each such pair once instead of
-    // once per pose; a pair whose relative pose changed still misses the
-    // memo and is measured again.
-    const memoKey = transformKey(a.worldTransform.inverse().compose(b.worldTransform));
-    let vol: OverlapMetrics | undefined = memoGet(a.source, b.source, memoKey);
-    try {
-      if (vol === undefined) {
-        vol = measureOverlapOfPosed(a, b);
-        memoSet(a.source, b.source, memoKey, vol);
-      }
-    } catch (e) {
-      diagnostics.push({
-        target: 'export-occt', code: 'feature.kernel-failed', severity: 'warn',
-        message: `interference probe failed on pair (${a.name}, ${b.name}): ${e instanceof Error ? e.message : String(e)}; overlap not measured.`,
-        hint: 'Check both parts for degenerate geometry with evaluate_script, or add the pair to the ignore list if its clearance is established another way.',
+    if (measured.kind === 'below-bounds') continue;
+    if (measured.kind === 'unconfirmed') {
+      unconfirmed.push({
+        a: a.name,
+        b: b.name,
+        message: `interference probe failed on pair (${a.name}, ${b.name})`,
       });
       continue;
     }
-    if (vol.volumeMm3 > epsilonMm3) {
-      pairs.push({
-        a: a.name, b: b.name, volumeMm3: vol.volumeMm3,
-        ...(vol.thicknessMm !== undefined && Number.isFinite(vol.thicknessMm) ? { thicknessMm: vol.thicknessMm } : {}),
-        ...(vol.bounds !== undefined ? { overlapBounds: vol.bounds } : {}),
-      });
-    }
+    if (measured.pair !== null) pairs.push(measured.pair);
   }
   return {
     pairs,
@@ -352,7 +472,59 @@ function probeCandidates(
     partial: uncheckedPairs.length > 0,
     probedPairCount,
     reusedPairCount,
+    ...(unconfirmed.length > 0 ? { unconfirmedPairs: unconfirmed } : {}),
   };
+}
+
+/** Exact overlap, or null when the volume is at or below `epsilonMm3`.
+ *  `'unconfirmed'` means the boolean failed and clearance was not shown. */
+function confirmOverlap(
+  a: PosedPart,
+  b: PosedPart,
+  epsilonMm3: number,
+  diagnostics: CompilerDiagnostic[],
+): InterferencePair | null | 'unconfirmed' {
+  // Key on the RELATIVE pose of b in a's frame: the overlap of two rigid
+  // bodies depends only on where one sits relative to the other. Parts
+  // fastened into one rigid cluster keep their relative pose at every
+  // sampled pose, so the sweep measures each such pair once instead of
+  // once per pose; a pair whose relative pose changed still misses the
+  // memo and is measured again.
+  const memoKey = relativePoseKey(a.worldTransform, b.worldTransform);
+  let vol: OverlapMetrics | undefined = memoGet(a.source, b.source, memoKey);
+  try {
+    if (vol === undefined) {
+      vol = measureOverlapOfPosed(a, b);
+      memoSet(a.source, b.source, memoKey, vol);
+    }
+  } catch (e) {
+    recordProbeFailure(a, b, diagnostics, e);
+    return 'unconfirmed';
+  }
+  if (vol === undefined || !Number.isFinite(vol.volumeMm3)) {
+    recordProbeFailure(a, b, diagnostics, new Error('overlap volume was not finite'));
+    return 'unconfirmed';
+  }
+  if (!(vol.volumeMm3 > epsilonMm3)) return null;
+  return {
+    a: a.name, b: b.name, volumeMm3: vol.volumeMm3,
+    ...(vol.thicknessMm !== undefined && Number.isFinite(vol.thicknessMm) ? { thicknessMm: vol.thicknessMm } : {}),
+    ...(vol.bounds !== undefined ? { overlapBounds: vol.bounds } : {}),
+  };
+}
+
+function recordProbeFailure(
+  a: PosedPart,
+  b: PosedPart,
+  diagnostics: CompilerDiagnostic[],
+  error: unknown,
+): void {
+  const detail = error instanceof Error ? error.message : String(error);
+  diagnostics.push({
+    target: 'export-occt', code: 'feature.kernel-failed', severity: 'warn',
+    message: `interference probe failed on pair (${a.name}, ${b.name}): ${detail}; overlap not measured.`,
+    hint: 'Check both parts for degenerate geometry with evaluate_script, or add the pair to the ignore list if its clearance is established another way.',
+  });
 }
 
 /** `${a}\t${b}` with the names sorted, so the ignore-set lookup is symmetric. */

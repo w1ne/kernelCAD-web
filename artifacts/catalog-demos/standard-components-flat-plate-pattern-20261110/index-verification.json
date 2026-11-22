@@ -1,0 +1,52 @@
+{
+  "asset": "flat-joining-plate",
+  "kit": "standard-components",
+  "catalogAssetCount": 2402,
+  "preview": "/assets/standard-components-flat-joining-plate.png",
+  "previewBytes": 17918,
+  "sourceSha256": "7bec1718c72ee375df5a6c84b872bf52f563edce63143ce49fb48f4879259280",
+  "sourceSha256MatchesIndex": true,
+  "params": [
+    {
+      "name": "size",
+      "type": "choice",
+      "default": "standard",
+      "label": "Model size",
+      "choices": [
+        "compact",
+        "standard",
+        "large"
+      ]
+    },
+    {
+      "name": "holeCount",
+      "type": "choice",
+      "default": "four",
+      "label": "Mounting-hole count",
+      "choices": [
+        "three",
+        "four",
+        "five"
+      ]
+    },
+    {
+      "name": "steel",
+      "type": "color",
+      "default": "#3d7290",
+      "label": "Painted steel"
+    },
+    {
+      "name": "zinc",
+      "type": "color",
+      "default": "#d9dfe2",
+      "label": "Zinc-plated fasteners"
+    }
+  ],
+  "presets": [
+    "brass",
+    "dark",
+    "weathered"
+  ],
+  "triangles": 572,
+  "triangleBudget": 800
+}

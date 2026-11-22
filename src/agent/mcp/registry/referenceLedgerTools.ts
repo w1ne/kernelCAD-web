@@ -9,11 +9,11 @@ export const referenceLedgerToolEntries: ToolRegistryEntry[] = [
       name: 'resolve_assumptions',
       description:
         "Use this when you need to confirm or override the open facts in an assumption ledger from trace_from_image (missing scale, inferred/assumed values) before committing geometry built from a reference photo. " +
-        "Reads the persisted `<model>.ledger.json` at `ledgerPath`, applies each resolution — `{ id, confirm: true }` to accept a fact as-is, or `{ id, value }` to override it — rewrites the ledger file, and returns the updated ledger plus `paramOverrides` (factId -> value) to feed straight into `set_param`. Pair with the `kernelcad-from-reference` skill.",
+        "Reads the persisted `<model>.ledger.json` at `ledger_path`, applies each resolution — `{ id, confirm: true }` to accept a fact as-is, or `{ id, value }` to override it — rewrites the ledger file, and returns the updated ledger plus `paramOverrides` (factId -> value) to feed straight into `set_param`. Pair with the `kernelcad-from-reference` skill.",
       inputSchema: {
         type: 'object',
         properties: {
-          ledgerPath: {
+          ledger_path: {
             type: 'string',
             description: 'Path to the `<model>.ledger.json` file persisted alongside the traced source.',
           },
@@ -31,7 +31,7 @@ export const referenceLedgerToolEntries: ToolRegistryEntry[] = [
             },
           },
         },
-        required: ['ledgerPath', 'resolutions'],
+        required: ['ledger_path', 'resolutions'],
       },
     },
     handler: input => resolveAssumptionsTool(input as unknown as Parameters<typeof resolveAssumptionsTool>[0]),

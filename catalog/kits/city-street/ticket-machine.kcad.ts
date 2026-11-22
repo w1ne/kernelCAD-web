@@ -15,6 +15,7 @@ meta({
   triangleBudget: 220,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const body = param('body', '#2a5ea8', { label: 'Body' });
 const panel = param('panel', '#1d2024', { label: 'Screen and slots' });
 const accent = param('accent', '#f2c418', { label: 'Accent band' });
@@ -31,14 +32,14 @@ const sideProfile = (pts: [number, number][], x0: number, t: number) =>
   extrudePolygon(pts, t).rotateX(90).rotateZ(90).translate(x0, 0, 0);
 
 const tm = assembly('ticket-machine');
-tm.part('plinth', blk(-300, -225, 0, 300, 225, 80).color(panel));
-tm.part('cabinet', blk(-260, -190, 80, 260, 190, 1500).color(body));
-tm.part('hood', sideProfile([[-330, 1440], [200, 1500], [200, 1580], [-330, 1520]], -280, 560).color(body));
-tm.part('band', blk(-280, -340, 1425, 280, -325, 1530).color(accent));
-tm.part('screen', blk(-200, -198, 1130, 200, -189, 1340).color(panel));
-tm.part('keypad', box(360, 150, 40, true).rotateX(-30).translate(0, -230, 1020).color(panel));
-tm.part('card-slot', blk(80, -200, 880, 200, -189, 910).color(accent));
-tm.part('tray', blk(-180, -205, 520, 180, -189, 680).color(panel));
-tm.part('coin-slot', blk(-170, -200, 880, -60, -189, 910).color(panel));
+tm.part('plinth', blk(-300, -225, 0, 300, 225, 80).color(panel).scale(overallScale));
+tm.part('cabinet', blk(-260, -190, 80, 260, 190, 1500).color(body).scale(overallScale));
+tm.part('hood', sideProfile([[-330, 1440], [200, 1500], [200, 1580], [-330, 1520]], -280, 560).color(body).scale(overallScale));
+tm.part('band', blk(-280, -340, 1425, 280, -325, 1530).color(accent).scale(overallScale));
+tm.part('screen', blk(-200, -198, 1130, 200, -189, 1340).color(panel).scale(overallScale));
+tm.part('keypad', box(360, 150, 40, true).rotateX(-30).translate(0, -230, 1020).color(panel).scale(overallScale));
+tm.part('card-slot', blk(80, -200, 880, 200, -189, 910).color(accent).scale(overallScale));
+tm.part('tray', blk(-180, -205, 520, 180, -189, 680).color(panel).scale(overallScale));
+tm.part('coin-slot', blk(-170, -200, 880, -60, -189, 910).color(panel).scale(overallScale));
 
 return tm.model();

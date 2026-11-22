@@ -36,6 +36,9 @@ import {
 } from './topoRef';
 import type { EdgeLineage, FaceLineage, FaceHash } from './evolutionRecord';
 import { descendsFromFeature } from './operationLineage';
+import { scopeFiltersToKind } from './queryKindScope';
+import { edgeGeometryOf } from '../backends/occt/edgeGeometry';
+import { faceGeometryOf } from '../backends/occt/faceGeometry';
 import {
   throwQueryEmpty,
   throwQueryOverDetermined,
@@ -180,12 +183,14 @@ function evalFilterAst(
       return filterContainsPoint(
         filterCandidates(ast.query, scene, lenient, originatingQuery),
         ast.point,
+        scene,
       );
     case 'closestTo':
       return filterClosestTo(
         filterCandidates(ast.query, scene, lenient, originatingQuery),
         ast.point,
         ast.k,
+        scene,
       );
     case 'geometryType':
       return filterGeometryType(
@@ -308,6 +313,7 @@ function filterEntityKind(
   if (kind !== 'face' && kind !== 'edge') {
     throwQueryUnsupportedEntityType(originatingQuery, scene, kind);
   }
+  if (kind === 'edge') subAst = scopeFiltersToKind(subAst, kind);
   if (subAst.op === 'createdBy' || subAst.op === 'newSince' || subAst.op === 'derivedFrom') {
     return collectHistory(subAst.op, subAst.id, kind, scene, originatingQuery);
   }
@@ -378,8 +384,11 @@ function labelFilterCandidates(
   lenient: boolean,
   originatingQuery: Query<unknown>,
 ): ResolvedEntity[] {
-  return subAst.op === 'nothing' || subAst.op === 'closestTo' ||
-    subAst.op === 'containsPoint' || subAst.op === 'geometryType'
+  if (subAst.op === 'closestTo' || subAst.op === 'containsPoint' || subAst.op === 'geometryType') {
+    const kind = subAst.query.op === 'everything' ? subAst.query.kind : 'face';
+    return collectAllOfKind(kind, scene, originatingQuery);
+  }
+  return subAst.op === 'nothing'
     ? collectAllOfKind('face', scene, originatingQuery)
     : evalAst(subAst, scene, lenient, originatingQuery);
 }
@@ -387,7 +396,7 @@ function labelFilterCandidates(
 /** The owner names a face answers to: its agent-chosen feature name, the id
  *  of the feature that created/labelled it, and the owner its printed
  *  `@kc[<owner>/face/<label>]` ref carries. */
-function ownersOf(lineage: FaceLineage): string[] {
+function ownersOf(lineage: FaceLineage | EdgeLineage): string[] {
   const out = [lineage.featureName ?? lineage.rootFeatureId];
   if (lineage.featureName !== undefined) out.push(lineage.featureName);
   if (lineage.featureId !== undefined) out.push(lineage.featureId);
@@ -399,27 +408,44 @@ function collectKnownOwners(scene: QueryScene): Set<string> {
   for (const [, lineage] of scene.backend.historyMap ?? []) {
     for (const o of ownersOf(lineage)) out.add(o);
   }
+  for (const [, lineage] of scene.backend.edgeHistoryMap ?? []) {
+    for (const o of ownersOf(lineage)) out.add(o);
+  }
   return out;
 }
 
 function collectKnownLabels(scene: QueryScene): Set<string> {
   const out = new Set<string>();
   const map = scene.backend.historyMap;
-  if (!map) return out;
-  for (const [, lineage] of map) {
-    if (lineage.labelName) out.add(lineage.labelName);
-    if (lineage.canonicalName) out.add(lineage.canonicalName);
+  if (map) {
+    for (const [, lineage] of map) {
+      if (lineage.labelName) out.add(lineage.labelName);
+      if (lineage.canonicalName) out.add(lineage.canonicalName);
+    }
+  }
+  const edges = scene.backend.edgeHistoryMap;
+  if (edges) {
+    for (const [, lineage] of edges) {
+      if (lineage.labelName) out.add(lineage.labelName);
+    }
   }
   return out;
 }
 
 function entityHasLabel(e: ResolvedEntity, label: string, scene: QueryScene): boolean {
+  if (e.kind === 'edge') {
+    return scene.backend.edgeHistoryMap?.get(e.handle)?.labelName === label;
+  }
   if (e.kind !== 'face') return false;
   const lineage = scene.backend.historyMap?.get(e.handle as FaceHash);
   return lineage?.labelName === label || lineage?.canonicalName === label;
 }
 
 function entityHasFeatureName(e: ResolvedEntity, name: string, scene: QueryScene): boolean {
+  if (e.kind === 'edge') {
+    const edge = scene.backend.edgeHistoryMap?.get(e.handle);
+    return edge !== undefined && ownersOf(edge).includes(name);
+  }
   if (e.kind !== 'face') return false;
   const lineage = scene.backend.historyMap?.get(e.handle as FaceHash);
   return lineage !== undefined && ownersOf(lineage).includes(name);
@@ -429,12 +455,23 @@ function entityHasFeatureName(e: ResolvedEntity, name: string, scene: QueryScene
 // Spatial / geometric filters.
 // ---------------------------------------------------------------------------
 
+/** Face centroid from the lineage snapshot, else read from the body (plain
+ *  primitives carry no snapshot); edge centroid (curve midpoint) read from
+ *  the body, since edge lineage carries no snapshot. */
+function centroidOf(e: ResolvedEntity, scene: QueryScene): [number, number, number] | undefined {
+  if (e.kind === 'edge') return edgeGeometryOf(scene.backend.getReplicadShape(), e.handle)?.centroid;
+  if (e.snapshot) return e.snapshot.centroid;
+  if (e.kind === 'face') return faceGeometryOf(scene.backend.getReplicadShape(), e.handle)?.centroid;
+  return undefined;
+}
+
 function filterContainsPoint(
   input: ResolvedEntity[],
   point: [number, number, number],
+  scene: QueryScene,
 ): ResolvedEntity[] {
   return input.filter((e) => {
-    const c = e.snapshot?.centroid;
+    const c = centroidOf(e, scene);
     if (!c) return false;
     const dx = c[0] - point[0];
     const dy = c[1] - point[1];
@@ -446,10 +483,11 @@ function filterContainsPoint(
 function filterClosestTo(
   input: ResolvedEntity[],
   point: [number, number, number],
-  k?: number,
+  k: number | undefined,
+  scene: QueryScene,
 ): ResolvedEntity[] {
   const withDist = input.map((e) => {
-    const c = e.snapshot?.centroid ?? ([Infinity, Infinity, Infinity] as [number, number, number]);
+    const c = centroidOf(e, scene) ?? ([Infinity, Infinity, Infinity] as [number, number, number]);
     const dx = c[0] - point[0];
     const dy = c[1] - point[1];
     const dz = c[2] - point[2];
@@ -465,23 +503,19 @@ function filterGeometryType(
   scene: QueryScene,
 ): ResolvedEntity[] {
   return input.filter((e) => {
+    if (e.kind === 'edge') {
+      return sameGeometryType(edgeGeometryOf(scene.backend.getReplicadShape(), e.handle)?.curveType, geomType);
+    }
     if (e.kind !== 'face') return false;
     const lineage = scene.backend.historyMap?.get(e.handle as FaceHash);
     // FaceLineage.surfaceType uses OCCT names ('PLANE' / 'CYLINDRE' / ...).
     // GeometryType uses the public-API names ('PLANE' / 'CYLINDER' / ...).
-    // Map between them so the filter passes through cleanly.
-    return matchesGeometryType(lineage?.surfaceType, geomType);
+    // Map between them so the filter passes through cleanly. Lineage without
+    // a surface type (plain primitives) reads it from the body.
+    const surfaceType = lineage?.surfaceType ??
+      faceGeometryOf(scene.backend.getReplicadShape(), e.handle)?.surfaceType;
+    return sameGeometryType(surfaceType, geomType);
   });
-}
-
-function matchesGeometryType(
-  surfaceType: FaceLineage['surfaceType'] | undefined,
-  requested: GeometryType,
-): boolean {
-  if (!surfaceType) return false;
-  // Alias-aware: OCCT 'CYLINDRE' ≡ public 'CYLINDER', 'BSPLINE' ≡
-  // 'BSPLINE_SURFACE', and so on (see shared/intent/queryNormalize.ts).
-  return sameGeometryType(surfaceType, requested);
 }
 
 function filterNth(input: ResolvedEntity[], index: number): ResolvedEntity[] {
@@ -594,9 +628,9 @@ function applyFilterAst(
 ): ResolvedEntity[] {
   switch (ast.op) {
     case 'closestTo':
-      return filterClosestTo(candidates, ast.point, ast.k);
+      return filterClosestTo(candidates, ast.point, ast.k, scene);
     case 'containsPoint':
-      return filterContainsPoint(candidates, ast.point);
+      return filterContainsPoint(candidates, ast.point, scene);
     case 'geometryType':
       return filterGeometryType(candidates, ast.geomType, scene);
     case 'withLabel':

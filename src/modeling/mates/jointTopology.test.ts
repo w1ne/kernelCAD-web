@@ -20,6 +20,7 @@ function armLike(overrides: {
   parts?: unknown[];
   mates?: unknown[];
   physicalUseCases?: unknown[];
+  virtualJoints?: unknown[];
   mechanicalJointIntents?: unknown[];
   jointSupportIntents?: unknown[];
 }): Assembly {
@@ -27,6 +28,7 @@ function armLike(overrides: {
     __parts: () => overrides.parts ?? [],
     __mates: () => overrides.mates ?? [],
     __physicalUseCases: () => overrides.physicalUseCases ?? [],
+    __virtualJoints: () => overrides.virtualJoints ?? [],
     __mechanicalJointIntents: () => overrides.mechanicalJointIntents ?? [],
     __jointSupportIntents: () => overrides.jointSupportIntents ?? [],
     __tendons: () => [],
@@ -466,6 +468,36 @@ describe('reviewJointTopology', () => {
     arm.mechanicalJoint('follow-drive', { mate: 'follow', actuator: 'motor', shaft: 'base', supports: ['base'], output: 'gear2' });
     const limitFindings = reviewJointTopology(arm).diagnostics.filter((d) => d.code === 'assembly.joint-topology.missing-limit');
     expect(limitFindings).toEqual([]);
+  });
+
+  describe('coupled driven mate with its own pose', () => {
+    function coupledArm(drivenPose?: number) {
+      const { arm, kcad } = makeApi();
+      const drive = kcad.param('drive', 30);
+      arm.part('base', kcad.box(20, 20, 4))
+        .connector('a', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 4] }, axis: [0, 0, 1] })
+        .connector('b', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 4] }, axis: [0, 0, 1] });
+      arm.part('gear1', kcad.box(4, 4, 4)).connector('a', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.part('gear2', kcad.box(4, 4, 4)).connector('b', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('input', 'base.a', 'gear1.a', 'revolute', { pose: drive, limitsDeg: [-90, 90] });
+      arm.mate('output', 'base.b', 'gear2.b', 'revolute', drivenPose === undefined ? {} : { pose: drivenPose });
+      arm.coupleMates('output', { source: 'input', ratio: -2, offset: 5 });
+      return reviewJointTopology(arm).diagnostics.filter((d) => d.code === 'assembly.joint-topology.coupled-pose-conflict');
+    }
+
+    it('warns when the authored pose differs from ratio × source + offset', () => {
+      const findings = coupledArm(17);
+      expect(findings).toHaveLength(1);
+      expect(findings[0]).toMatchObject({ severity: 'warning', mateName: 'output' });
+      expect(findings[0].message).toContain('declares pose 17');
+      expect(findings[0].message).toContain("derives -55 from 'input'");
+      expect(findings[0].hint).toContain('set it to -55');
+    });
+
+    it('stays quiet when the authored pose equals the coupled pose or is absent', () => {
+      expect(coupledArm(-55)).toEqual([]);
+      expect(coupledArm()).toEqual([]);
+    });
   });
 
   it('recognises base-frame as a stable root fallback for open-chain mechanisms', () => {

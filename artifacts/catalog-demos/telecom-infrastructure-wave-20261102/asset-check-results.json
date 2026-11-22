@@ -1,0 +1,752 @@
+{
+  "kit": "telecom-infrastructure",
+  "added": 56,
+  "catalogTotal": 1239,
+  "passed": 56,
+  "total": 56,
+  "triangleRange": [
+    48,
+    476
+  ],
+  "allOneMaterial": true,
+  "allWithinBudget": true,
+  "allBaseOrigin": true,
+  "allKnobsExact": true,
+  "allSourceHashesMatch": true,
+  "integration": {
+    "passed": true,
+    "filesPassed": 4,
+    "testsPassed": 15,
+    "durationSeconds": 131.93
+  },
+  "assets": [
+    {
+      "id": "antenna-sector-frame",
+      "triangles": 84,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "battery-backup-cabinet",
+      "triangles": 72,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "cable-entry-gland-plate",
+      "triangles": 364,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "cable-ladder-section",
+      "triangles": 96,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "cable-splice-pit-frame",
+      "triangles": 60,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "cable-support-hanger",
+      "triangles": 72,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "cable-tray-elbow",
+      "triangles": 72,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "cell-site-cabinet",
+      "triangles": 84,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "conduit-riser-frame",
+      "triangles": 180,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "dual-sector-panel-array",
+      "triangles": 84,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "equipment-fan-panel",
+      "triangles": 148,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "fiber-coil-reel",
+      "triangles": 180,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "fiber-distribution-cabinet",
+      "triangles": 92,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "fiber-dome-closure",
+      "triangles": 308,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "fiber-drop-terminal",
+      "triangles": 300,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "fiber-handhole-cover",
+      "triangles": 60,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "fiber-route-marker",
+      "triangles": 48,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "fiber-service-loop-rack",
+      "triangles": 148,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "fiber-splice-closure",
+      "triangles": 200,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "fiber-terminal-box",
+      "triangles": 168,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "gnss-timing-antenna",
+      "triangles": 176,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "grounding-bar",
+      "triangles": 300,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "grounding-rod-kit",
+      "triangles": 276,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "guy-wire-mast-anchor",
+      "triangles": 160,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "lattice-mast-section",
+      "triangles": 96,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "lightning-air-terminal",
+      "triangles": 144,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "mast-extension-section",
+      "triangles": 156,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "mast-outrigger-frame",
+      "triangles": 116,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "microwave-backhaul-shelter",
+      "triangles": 72,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "microwave-dish-antenna",
+      "triangles": 136,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "monopole-mast",
+      "triangles": 188,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "omnidirectional-whip-antenna",
+      "triangles": 176,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "optical-patch-panel",
+      "triangles": 476,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "outdoor-network-cabinet",
+      "triangles": 84,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "parapet-mast-clamp",
+      "triangles": 116,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "pedestal-fiber-terminal",
+      "triangles": 136,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "pole-mount-radio-cabinet",
+      "triangles": 104,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "radome-cylinder",
+      "triangles": 176,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "remote-power-shelf",
+      "triangles": 72,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "remote-radio-unit",
+      "triangles": 148,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rf-hazard-marker",
+      "triangles": 48,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "roof-penetration-seal",
+      "triangles": 188,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rooftop-microwave-dish",
+      "triangles": 168,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rooftop-network-cabinet",
+      "triangles": 72,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rooftop-tripod-mast",
+      "triangles": 168,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "sector-panel-antenna",
+      "triangles": 60,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "site-id-placard",
+      "triangles": 136,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "split-cable-duct",
+      "triangles": 60,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "surge-protector-enclosure",
+      "triangles": 124,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "telecom-cable-marker-post",
+      "triangles": 60,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "telecom-equipment-shelter",
+      "triangles": 84,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "telecom-warning-sign",
+      "triangles": 60,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "wall-mast-bracket",
+      "triangles": 148,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "waveguide-bridge",
+      "triangles": 108,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "weatherproof-junction-box",
+      "triangles": 332,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "yagi-radio-antenna",
+      "triangles": 104,
+      "budget": 2200,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "sourceSha256Matches": true,
+      "passed": true
+    }
+  ]
+}

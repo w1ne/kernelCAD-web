@@ -1,0 +1,4 @@
+     × makes every containment roof panel from the polymer, not one panel of five 295ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ 'roof-panel-0' ] to deeply equal ArrayContaining{…}
+      Tests  1 failed (1)

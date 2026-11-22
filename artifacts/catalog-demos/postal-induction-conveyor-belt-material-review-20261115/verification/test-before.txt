@@ -1,0 +1,25 @@
+ ❯ tests/integration/catalog/inductionConveyorBeltMaterial.test.ts (1 test | 1 failed) 874ms
+     × draws the induction belt as dark belt rubber, not painted steel 437ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  tests/integration/catalog/inductionConveyorBeltMaterial.test.ts > postal-logistics/package-induction-conveyor materials > draws the induction belt as dark belt rubber, not painted steel
+AssertionError: expected [ 'paintedSteel', …(2) ] to deeply equal [ 'beltRubber', …(2) ]
+- Expected
++ Received
+  [
+-   "beltRubber",
++   "paintedSteel",
+    "structuralSteel",
+    "stainlessSteel",
+  ]
+ ❯ tests/integration/catalog/inductionConveyorBeltMaterial.test.ts:22:95
+     20| 
+     21|     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+     22|     expect(asset.params.filter((param) => param.type === 'color').map(…
+       |                                                                                               ^
+     23|       'beltRubber', 'structuralSteel', 'stainlessSteel',
+     24|     ]);
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  18:29:14
+   Duration  9.20s (transform 6.64s, setup 150ms, import 8.02s, tests 874ms, environment 0ms)

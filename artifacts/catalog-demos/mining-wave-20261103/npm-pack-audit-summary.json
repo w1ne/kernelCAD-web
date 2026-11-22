@@ -1,0 +1,26 @@
+{
+  "sourceBoundaryReviewed": true,
+  "builtPackageBuild": {
+    "command": "npm pack --dry-run --json",
+    "status": "passed",
+    "prepackRan": true
+  },
+  "builtTarballAudit": {
+    "command": "npm pack --ignore-scripts --json --pack-destination /tmp/kernelcad-mining-npm-pack",
+    "status": "passed",
+    "tarballBytes": 49159823,
+    "tarballSha256": "7f4f9e9c1eccbf0f9153eca387047603bae1c79502b15ae2e50af2fe55c69ed9",
+    "packedFileCount": 3271
+  },
+  "packageName": "kernelcad@0.17.4",
+  "packageExports": {
+    "./package.json": "./package.json"
+  },
+  "catalogIndexIncluded": true,
+  "miningSourcesIncluded": 50,
+  "miningPreviewPngsIncluded": 50,
+  "cliEntryIncluded": true,
+  "headlessPlayerIncluded": true,
+  "privateProductPathsIncluded": [],
+  "passed": true
+}

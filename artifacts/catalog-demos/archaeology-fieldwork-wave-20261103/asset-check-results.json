@@ -1,0 +1,20 @@
+{
+  "kit": "archaeology-fieldwork",
+  "total": 50,
+  "passed": 50,
+  "catalogTotal": 1641,
+  "triangleRange": [
+    48,
+    932
+  ],
+  "materialCounts": [
+    1
+  ],
+  "params": [
+    "scale",
+    "color"
+  ],
+  "sourceHashesFresh": true,
+  "missing": [],
+  "passedAudit": true
+}

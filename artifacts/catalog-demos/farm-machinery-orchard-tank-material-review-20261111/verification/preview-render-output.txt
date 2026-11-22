@@ -1,0 +1,3 @@
+(node:1137698) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+farm-machinery/orchard-air-blast-sprayer: 400 tris

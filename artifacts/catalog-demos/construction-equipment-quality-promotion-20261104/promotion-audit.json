@@ -1,0 +1,31 @@
+{
+  "kit": "construction-equipment",
+  "assetsPromoted": 60,
+  "newAssets": 0,
+  "indexedRowsWithPreview": 60,
+  "sourceHashesCurrent": 60,
+  "materialControls": 162,
+  "materialControlsMin": 2,
+  "materialControlsMax": 4,
+  "presetEntries": 120,
+  "previewsRendered": 60,
+  "triangles": {
+    "min": 60,
+    "max": 2344,
+    "mean": 547.3,
+    "maxBudget": 2800,
+    "withinDeclaredBudgets": true
+  },
+  "indexedMaterialColorZones": {
+    "min": 2,
+    "max": 4,
+    "total": 162
+  },
+  "glbMaterialTableEntries": {
+    "min": 1,
+    "max": 1,
+    "note": "The catalog preview preserves color zones in vertex colors; this count is the GLB material table size."
+  },
+  "failures": [],
+  "passed": true
+}

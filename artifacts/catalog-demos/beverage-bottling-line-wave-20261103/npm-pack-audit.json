@@ -1,0 +1,16 @@
+{
+  "command": "npm pack --dry-run --ignore-scripts --json",
+  "dryRun": true,
+  "lifecycleScriptsIgnored": true,
+  "packageName": "kernelcad",
+  "packageVersion": "0.17.4",
+  "packageFileCount": 4509,
+  "catalogIndexIncluded": true,
+  "kitSourceFilesIncluded": 50,
+  "kitPreviewFilesIncluded": 50,
+  "kitFilesIncluded": 102,
+  "commercialCodePathsFound": [],
+  "packageExports": {
+    "./package.json": "./package.json"
+  }
+}

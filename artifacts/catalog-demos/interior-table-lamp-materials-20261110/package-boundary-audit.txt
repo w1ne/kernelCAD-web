@@ -1,0 +1,7 @@
+Invocation: npm pack --dry-run --ignore-scripts --json
+Package: kernelcad@0.17.4
+Included files: 5229
+Generated catalog index, table-lamp source, and table-lamp preview included.
+No package paths matched billing/checkout/entitlement/supplier/commission/commercial policy patterns.
+Package exports unchanged: ./package.json only.
+No tarball was created and lifecycle scripts were skipped.

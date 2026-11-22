@@ -1,0 +1,600 @@
+{
+  "checkedAt": "2026-11-10T03:54:52+00:00",
+  "scope": "Three existing standard-components assets refined in place; no new IDs or kits.",
+  "assets": [
+    {
+      "id": "bulkhead-adapter",
+      "source": "catalog/kits/standard-components/bulkhead-adapter.kcad.ts",
+      "sourceSha256": "d9d04322a7035a74b6c55fcc8c9b92c37569cc49fdaf255fe93b4d0a8efba0b5",
+      "preview": "catalog/kits/standard-components/previews/bulkhead-adapter.png",
+      "previewSha256": "a58d0202fe6e3a220f0198392ebd9b7327f5436f783439df455a63ff35e62ea7",
+      "indexPreview": "/assets/standard-components-bulkhead-adapter.png",
+      "triangleBudget": 620,
+      "triangles": 456,
+      "materialControls": [
+        "brass",
+        "sealRubber",
+        "stainless"
+      ],
+      "presetNames": [
+        "brass",
+        "dark",
+        "weathered"
+      ],
+      "params": [
+        "size",
+        "stainless",
+        "brass",
+        "sealRubber"
+      ]
+    },
+    {
+      "id": "linear-guide-rail",
+      "source": "catalog/kits/standard-components/linear-guide-rail.kcad.ts",
+      "sourceSha256": "f9d89d65094e39fbb41867f7fbf6a80c884b094893f3b2dce1ab484df28268b5",
+      "preview": "catalog/kits/standard-components/previews/linear-guide-rail.png",
+      "previewSha256": "2db48ab4c33392d2b8b1b27cfff166ca446eb314effeeb714b46aef10f4f8c0a",
+      "indexPreview": "/assets/standard-components-linear-guide-rail.png",
+      "triangleBudget": 760,
+      "triangles": 540,
+      "materialControls": [
+        "aluminum",
+        "polymer",
+        "steel"
+      ],
+      "presetNames": [
+        "dark",
+        "highVisibility",
+        "weathered"
+      ],
+      "params": [
+        "size",
+        "carriagePosition",
+        "steel",
+        "aluminum",
+        "polymer"
+      ]
+    },
+    {
+      "id": "shaft-coupling",
+      "source": "catalog/kits/standard-components/shaft-coupling.kcad.ts",
+      "sourceSha256": "6f3986ddbed7a69a91827b852f76554c393af44cc20b1b5c956c3889de390845",
+      "preview": "catalog/kits/standard-components/previews/shaft-coupling.png",
+      "previewSha256": "dd2cb91e7e85946a2bd702e55d7ac0270fb148c45fb637b16b31e09c0cf28857",
+      "indexPreview": "/assets/standard-components-shaft-coupling.png",
+      "triangleBudget": 620,
+      "triangles": 536,
+      "materialControls": [
+        "bronze",
+        "setScrewSteel",
+        "steel"
+      ],
+      "presetNames": [
+        "brass",
+        "dark",
+        "weathered"
+      ],
+      "params": [
+        "size",
+        "retention",
+        "steel",
+        "bronze",
+        "setScrewSteel"
+      ]
+    }
+  ],
+  "previews": {
+    "invocation": "npx tsx scripts/renderCatalogPreviews.ts angle-bracket base-mounting-plate beam-coupling blind-flange bulkhead-adapter cable-clamp cable-gland caster-wheel clevis-pin din-rail din-rail-end-stop din-rail-terminal-block door-hinge drawer-slide-channel flange-bearing-housing flat-joining-plate gusset-bracket handle-pull handwheel hose-barb-adapter jaw-coupling knurled-knob leveling-foot linear-guide-carriage linear-guide-rail panel-clamp piano-hinge pillow-block-housing pipe-coupling pipe-elbow-45 pipe-elbow-90 pipe-flange pipe-reducer pipe-saddle-clamp pipe-tee pipe-union retaining-ring rubber-bumper shaft-collar shaft-coupling shim-pack split-shaft-collar square-mounting-flange t-slot-angle-bracket t-slot-end-cap timing-belt-pulley tube-clamp tubular-spacer u-bracket v-belt-pulley",
+    "kitPreviewFiles": 50,
+    "indexRowsWithPreview": 50,
+    "status": "all 50 standard-components previews were regenerated from source before index rebuild",
+    "assets": [
+      {
+        "id": "angle-bracket",
+        "sourceSha256": "bfa233e87b62be5c5e279f4790bbdf011b6ebafaf391019f9eab731af7a45b28",
+        "preview": "catalog/kits/standard-components/previews/angle-bracket.png",
+        "previewSha256": "b1924bb5c8547fc10d0276a55bb6cdba7f9a70e86ed62606074dde84df4cc8d3",
+        "triangleCount": 232
+      },
+      {
+        "id": "base-mounting-plate",
+        "sourceSha256": "9b0ffee21e8a9c61e3e378d8229c326ee5a7cc09ae96e0c540de79537021303c",
+        "preview": "catalog/kits/standard-components/previews/base-mounting-plate.png",
+        "previewSha256": "7807d68a20392e90dcdfb497e2aac22bc52fe1b22f751730b78d82ba7e4fb25f",
+        "triangleCount": 264
+      },
+      {
+        "id": "beam-coupling",
+        "sourceSha256": "9e328fbe69b74e08f88c26e0676c6aa23c61b8d84df6bd79672e22397d775b68",
+        "preview": "catalog/kits/standard-components/previews/beam-coupling.png",
+        "previewSha256": "2637c7c734214e971be10ee29507335e433542bd707b1c86ff124496ca69c3b6",
+        "triangleCount": 428
+      },
+      {
+        "id": "blind-flange",
+        "sourceSha256": "f3d6d70823b6d4c33352185acfe7b485b93574d31948145c8c4adc2b9ebbf05f",
+        "preview": "catalog/kits/standard-components/previews/blind-flange.png",
+        "previewSha256": "408b772cc734358f5c207f77224d8117136162b5faf9a455b99823146b5edffd",
+        "triangleCount": 296
+      },
+      {
+        "id": "bulkhead-adapter",
+        "sourceSha256": "d9d04322a7035a74b6c55fcc8c9b92c37569cc49fdaf255fe93b4d0a8efba0b5",
+        "preview": "catalog/kits/standard-components/previews/bulkhead-adapter.png",
+        "previewSha256": "a58d0202fe6e3a220f0198392ebd9b7327f5436f783439df455a63ff35e62ea7",
+        "triangleCount": 456
+      },
+      {
+        "id": "cable-clamp",
+        "sourceSha256": "8dce46398c4966221c4282719ff75979aa95f7b4d655935ebe4070b113e074a4",
+        "preview": "catalog/kits/standard-components/previews/cable-clamp.png",
+        "previewSha256": "1bf58a83c0b2d486b6d6e094f277be6e36876fffaaddc7e1f7209cda1d020f36",
+        "triangleCount": 132
+      },
+      {
+        "id": "cable-gland",
+        "sourceSha256": "169ab289279c7e9a85f7b0643eee2a5f096e5cbb8b87436acc00b7de3afdfae6",
+        "preview": "catalog/kits/standard-components/previews/cable-gland.png",
+        "previewSha256": "509c795a27038185877e6c92e1683043e14e502121e44da9cc8515e4ae6ae207",
+        "triangleCount": 384
+      },
+      {
+        "id": "caster-wheel",
+        "sourceSha256": "397b85d05eb1b036eafdd54a2696da5c222404e223b75920110cc7745d6bd73c",
+        "preview": "catalog/kits/standard-components/previews/caster-wheel.png",
+        "previewSha256": "14486637cdbe9daa27b837f57364a02b04d5f0c981fac6306268b8d7a60f7a17",
+        "triangleCount": 200
+      },
+      {
+        "id": "clevis-pin",
+        "sourceSha256": "70b2e15e74a916cf23ae0aea672fe7232ffee5539d07e54baac02599960647d9",
+        "preview": "catalog/kits/standard-components/previews/clevis-pin.png",
+        "previewSha256": "14f73410cfa8f962a8fd7ed4137938295f073f2f00dcaa3136008d694e68c3cd",
+        "triangleCount": 156
+      },
+      {
+        "id": "din-rail-end-stop",
+        "sourceSha256": "db50b7840d511e370a08ca14943c75607a846839f201bc1a13bd0248a80a6d2d",
+        "preview": "catalog/kits/standard-components/previews/din-rail-end-stop.png",
+        "previewSha256": "3b6308dca4463ee0d890e2579152aadf7c03fc9d6d59df33aeea135b1498febd",
+        "triangleCount": 80
+      },
+      {
+        "id": "din-rail-terminal-block",
+        "sourceSha256": "3e57448c2ed3c278aa0a402d8f2fc3445b2c215e428fbde8782017ff681f9dc1",
+        "preview": "catalog/kits/standard-components/previews/din-rail-terminal-block.png",
+        "previewSha256": "27b08af2176b40631a5044a119b03849a40ab8e1f406e515809e277311009774",
+        "triangleCount": 444
+      },
+      {
+        "id": "din-rail",
+        "sourceSha256": "ba0de3b93354ce866a8edd169afe498483f420fd930878b8f62254d8fc7bd174",
+        "preview": "catalog/kits/standard-components/previews/din-rail.png",
+        "previewSha256": "796cd4ee3b0a12a76b68cfd23adbae5ba05357f814326e8740ae534abec14e4f",
+        "triangleCount": 48
+      },
+      {
+        "id": "door-hinge",
+        "sourceSha256": "7ae4ede97e2ca6cb77152bfa8551387cb35befeaca03a857253e30c122996385",
+        "preview": "catalog/kits/standard-components/previews/door-hinge.png",
+        "previewSha256": "ddb5fc13f47af7bf2b42ba9c042d66fc6353bc0d835e337dad64c0da4e4468b5",
+        "triangleCount": 1440
+      },
+      {
+        "id": "drawer-slide-channel",
+        "sourceSha256": "15596208b5f12660793a5113698ec5723efe278b7fa4c5cac8062b7f0da30f99",
+        "preview": "catalog/kits/standard-components/previews/drawer-slide-channel.png",
+        "previewSha256": "019b3df5c572f02a27b121c2cc91319be10a66518de60ced4195ea115605734a",
+        "triangleCount": 60
+      },
+      {
+        "id": "flange-bearing-housing",
+        "sourceSha256": "982e8eb48de446ac0f96830ff9cd6a62686153d8690f7bcff31a024805344255",
+        "preview": "catalog/kits/standard-components/previews/flange-bearing-housing.png",
+        "previewSha256": "b35df1b392c6c2d4fe0f055b5ea152b29a29ac6f911fc926941944c7d7b0f278",
+        "triangleCount": 456
+      },
+      {
+        "id": "flat-joining-plate",
+        "sourceSha256": "3593b99d346b231e01536ebe2bfe67ee9704cc5c706bc93ed8cdfce80360f28e",
+        "preview": "catalog/kits/standard-components/previews/flat-joining-plate.png",
+        "previewSha256": "a1642401c22a8a8a6d4b3753af619c78b7d41206003c44712ec745c58a44f5d1",
+        "triangleCount": 572
+      },
+      {
+        "id": "gusset-bracket",
+        "sourceSha256": "20acff40cb86d0fbd983781f17d5c49f4b464926c40b4fcb1eba78b332612675",
+        "preview": "catalog/kits/standard-components/previews/gusset-bracket.png",
+        "previewSha256": "53bdaa573cbbac43365f91fd2dc1282de18894643a61086cf9114fe7009684c6",
+        "triangleCount": 32
+      },
+      {
+        "id": "handle-pull",
+        "sourceSha256": "fb55eaeb7b8b8a89e583e6f7c23b472b3ee798a9639ad6a1b8b35a018648c96b",
+        "preview": "catalog/kits/standard-components/previews/handle-pull.png",
+        "previewSha256": "edfaab85368c79ac0e99af31acf154369dcd16a6929766da7d5efbce52d65c4b",
+        "triangleCount": 220
+      },
+      {
+        "id": "handwheel",
+        "sourceSha256": "f6aee5c69b7e8e530cebcb9db43971b5bc83b31932c08963a5f3cac04116298d",
+        "preview": "catalog/kits/standard-components/previews/handwheel.png",
+        "previewSha256": "8193d025ac349ee8b93a0eb8b1b6c62f511850a9a1fe0e8b3691f8ece8280391",
+        "triangleCount": 176
+      },
+      {
+        "id": "hose-barb-adapter",
+        "sourceSha256": "ee842872ed1e12b7beb0b97803f3fa0a7633958e57a61575b04dfe9ff2703f14",
+        "preview": "catalog/kits/standard-components/previews/hose-barb-adapter.png",
+        "previewSha256": "f2f8c3a015362a1b4c6bf75cb1c95ddb753e346d90ccb5200b8261fc97dfa198",
+        "triangleCount": 448
+      },
+      {
+        "id": "jaw-coupling",
+        "sourceSha256": "fa0a2ac83ff66cc5b2c86f46e3b6688bde45440dadea3ca2563514acb7dd59c5",
+        "preview": "catalog/kits/standard-components/previews/jaw-coupling.png",
+        "previewSha256": "ca5025b840aef5573fc510db596935bf250948f94febac0ad621586216008b7e",
+        "triangleCount": 574
+      },
+      {
+        "id": "knurled-knob",
+        "sourceSha256": "765c46070da9d853a7aa961551c6011cac086c44b9647e343160300d00a117ee",
+        "preview": "catalog/kits/standard-components/previews/knurled-knob.png",
+        "previewSha256": "47f495902503e7a4b4f3c1a20fade1526bb305704061d48666756603abf69aae",
+        "triangleCount": 228
+      },
+      {
+        "id": "leveling-foot",
+        "sourceSha256": "34d05ad6742e62fb515c865b2763cf7a503d171b4c0c8305d8d301f6c0d761de",
+        "preview": "catalog/kits/standard-components/previews/leveling-foot.png",
+        "previewSha256": "489209d5f3a644b34d2162897da02ce4bbcd1846b631283d7c7378d06612a504",
+        "triangleCount": 132
+      },
+      {
+        "id": "linear-guide-carriage",
+        "sourceSha256": "8b3f533436454ad9516cfe681bb3a5f26642eedbf7c2328e4373845cfc2a1726",
+        "preview": "catalog/kits/standard-components/previews/linear-guide-carriage.png",
+        "previewSha256": "d7432936a7c84165a7966a92a0ed8579a785da5bc2b796c7f25b0b36fa8ef805",
+        "triangleCount": 408
+      },
+      {
+        "id": "linear-guide-rail",
+        "sourceSha256": "f9d89d65094e39fbb41867f7fbf6a80c884b094893f3b2dce1ab484df28268b5",
+        "preview": "catalog/kits/standard-components/previews/linear-guide-rail.png",
+        "previewSha256": "2db48ab4c33392d2b8b1b27cfff166ca446eb314effeeb714b46aef10f4f8c0a",
+        "triangleCount": 540
+      },
+      {
+        "id": "panel-clamp",
+        "sourceSha256": "871b45d97cafd067a9783869c007484729ec700bb3eedb391ab20cf8f1b239e1",
+        "preview": "catalog/kits/standard-components/previews/panel-clamp.png",
+        "previewSha256": "9cf9577adb030c5cb99ae944dbbd5ecd59164b4dfdd196d1a236f08bff0732fc",
+        "triangleCount": 80
+      },
+      {
+        "id": "piano-hinge",
+        "sourceSha256": "0e7016ba2fca89baf51a1c6cb782d1bcfe7e5592012dcd13d3bbf7675d14efb6",
+        "preview": "catalog/kits/standard-components/previews/piano-hinge.png",
+        "previewSha256": "4433e5cd3072547146ee3b31dbce619a156e3512d2027f5ab762722303202842",
+        "triangleCount": 332
+      },
+      {
+        "id": "pillow-block-housing",
+        "sourceSha256": "c3120ac5119ea007b16b811b5f6dab3924aa48a077b2500c76a8382dca05d6b8",
+        "preview": "catalog/kits/standard-components/previews/pillow-block-housing.png",
+        "previewSha256": "bc39c0c88e6656c61ecc9443b37ffc054c1d767ab6bdb02648197e94c99241da",
+        "triangleCount": 132
+      },
+      {
+        "id": "pipe-coupling",
+        "sourceSha256": "b3aed7920c6ea10f85da857cf6be173b34a5254d04d9e623d4f0399e0d1fbf39",
+        "preview": "catalog/kits/standard-components/previews/pipe-coupling.png",
+        "previewSha256": "07748ac44aa980c814af1a4537b39461283a9386799202e32ade9bf1b6a2f347",
+        "triangleCount": 480
+      },
+      {
+        "id": "pipe-elbow-45",
+        "sourceSha256": "bff9f78ef828fa5f6eb7df65dbe38867f2f5be030aef88c7f9398e51a610136c",
+        "preview": "catalog/kits/standard-components/previews/pipe-elbow-45.png",
+        "previewSha256": "783b4a4627b6945c15fc3cdca0b4c8bc9a7d4d955e8c6e0117df98a715a562af",
+        "triangleCount": 236
+      },
+      {
+        "id": "pipe-elbow-90",
+        "sourceSha256": "5fd8998f66717461b16eb3ff4940d8936044c9b2b0c9610e0038cb9974b96d8d",
+        "preview": "catalog/kits/standard-components/previews/pipe-elbow-90.png",
+        "previewSha256": "05336e15364293500171825d3e59b225b1dc7093ca216a2e030b499bfe36f10b",
+        "triangleCount": 236
+      },
+      {
+        "id": "pipe-flange",
+        "sourceSha256": "e8b1d432e4a8d8d3c61b860c784b0143cd9e46ea8adc77de4f6899dd0f44e026",
+        "preview": "catalog/kits/standard-components/previews/pipe-flange.png",
+        "previewSha256": "8f5d633610fd05970a1055830d7c4ace231c7309d45363c32c77b2505e622b0e",
+        "triangleCount": 400
+      },
+      {
+        "id": "pipe-reducer",
+        "sourceSha256": "a4bf0ec6210f32c023530754c0d2cee4e37107bf315af2129a475de1dce84d82",
+        "preview": "catalog/kits/standard-components/previews/pipe-reducer.png",
+        "previewSha256": "8c3e88c192eceac59a087d293f049c81428bac8f28a2ee58b528726e4eca0320",
+        "triangleCount": 288
+      },
+      {
+        "id": "pipe-saddle-clamp",
+        "sourceSha256": "cb2e238838959455351d4f0272e50b026030a5df58a7e6165ddb135ce2b0380d",
+        "preview": "catalog/kits/standard-components/previews/pipe-saddle-clamp.png",
+        "previewSha256": "7d5f677e5d19698bde3369db6f919ca7c1206f3468bdfd553c03a814c1384516",
+        "triangleCount": 132
+      },
+      {
+        "id": "pipe-tee",
+        "sourceSha256": "35d13e50e8ed799ae1ccafecb6a666ed2b59d9f0e7fd0d13f4d86b424d5370a7",
+        "preview": "catalog/kits/standard-components/previews/pipe-tee.png",
+        "previewSha256": "9e74c33c05721247ce9063dd02f77475074ae0d6b78cbbb5b80874aaf79d14f0",
+        "triangleCount": 192
+      },
+      {
+        "id": "pipe-union",
+        "sourceSha256": "d43c015f42b50e3a0a94de587c399f4e07cdec707e465d0932a80d1ccf921544",
+        "preview": "catalog/kits/standard-components/previews/pipe-union.png",
+        "previewSha256": "7b88c08af9b4a592f77aaf66ea898024fd2eb7b0ce67082db9c506677460cca5",
+        "triangleCount": 360
+      },
+      {
+        "id": "retaining-ring",
+        "sourceSha256": "4989077f5c9ce32574072dea809f5a9809b550b72e81b471fb2556ff38dfa0dd",
+        "preview": "catalog/kits/standard-components/previews/retaining-ring.png",
+        "previewSha256": "e478a4e7a9022b164cd1fcfd69a67fa278de9c31fae9473cb240751eb7109608",
+        "triangleCount": 124
+      },
+      {
+        "id": "rubber-bumper",
+        "sourceSha256": "ca5fe840fc64788e8586450c2b34b6eba192e2fc884b7da6dc242bd799d89d20",
+        "preview": "catalog/kits/standard-components/previews/rubber-bumper.png",
+        "previewSha256": "f096e45ffe4d61db82e43870d760099fb6135c6679e4524161cdbd1c4aadcb4e",
+        "triangleCount": 332
+      },
+      {
+        "id": "shaft-collar",
+        "sourceSha256": "b046549659f6a6372449bfa84f77c54c608f28acb2d8e9448e97134c87366018",
+        "preview": "catalog/kits/standard-components/previews/shaft-collar.png",
+        "previewSha256": "9dfcb1e78cdcb027812a70516e6e39da7aca3c0b8ff7e1c3e8c288c046f4dbb7",
+        "triangleCount": 140
+      },
+      {
+        "id": "shaft-coupling",
+        "sourceSha256": "6f3986ddbed7a69a91827b852f76554c393af44cc20b1b5c956c3889de390845",
+        "preview": "catalog/kits/standard-components/previews/shaft-coupling.png",
+        "previewSha256": "dd2cb91e7e85946a2bd702e55d7ac0270fb148c45fb637b16b31e09c0cf28857",
+        "triangleCount": 536
+      },
+      {
+        "id": "shim-pack",
+        "sourceSha256": "fcba8cf93a1f7b655e475458ee14348de501e2443dcac6c0861dcc35464bcbdf",
+        "preview": "catalog/kits/standard-components/previews/shim-pack.png",
+        "previewSha256": "2793342780c8c1630894219510827724ca12525c8258013fdfcd24cf64bd903f",
+        "triangleCount": 60
+      },
+      {
+        "id": "split-shaft-collar",
+        "sourceSha256": "d38927450976ad75461423266bebd767760ab1683d44340f67d7e8f3d262e698",
+        "preview": "catalog/kits/standard-components/previews/split-shaft-collar.png",
+        "previewSha256": "261a1b1d29a46393d9d1441c6ee97daf263e8b438fcce08d2bbf965e099e2774",
+        "triangleCount": 112
+      },
+      {
+        "id": "square-mounting-flange",
+        "sourceSha256": "1e8988a11a7a8e2ab7e76131cbc5aa167eb1fbb55bb3695e9ea1d13405900a19",
+        "preview": "catalog/kits/standard-components/previews/square-mounting-flange.png",
+        "previewSha256": "18105ca6c38dcc2ebcdc91882493af00094423ea1d76a1d2ba340cc689ec53ce",
+        "triangleCount": 316
+      },
+      {
+        "id": "t-slot-angle-bracket",
+        "sourceSha256": "6ee080db9d9f64127456609f385510057c6083ab19c28e7b5dded18021f76462",
+        "preview": "catalog/kits/standard-components/previews/t-slot-angle-bracket.png",
+        "previewSha256": "24d62d8379ef958d5417a0e0bf81e58b9f5fdb4d464b7373284499f760ff6f87",
+        "triangleCount": 40
+      },
+      {
+        "id": "t-slot-end-cap",
+        "sourceSha256": "cafa5c749eb25ebbbe8c5bc33a50106b2d933ea95fa23268522765cdc407d179",
+        "preview": "catalog/kits/standard-components/previews/t-slot-end-cap.png",
+        "previewSha256": "7913e31bd2c792eb9de6bd6e1b95792ea5695d54ba77384407976f03e05b46cf",
+        "triangleCount": 156
+      },
+      {
+        "id": "timing-belt-pulley",
+        "sourceSha256": "fe95e0c69268bb962747fab7870f653f044dddc6d7da9510befdc9da6a984815",
+        "preview": "catalog/kits/standard-components/previews/timing-belt-pulley.png",
+        "previewSha256": "ee540c5c61375975824ba6673d8295cf18a6fd08470b553f77ed30f0954b0a09",
+        "triangleCount": 1236
+      },
+      {
+        "id": "tube-clamp",
+        "sourceSha256": "0c3bcf45c5f72b1b375e577271d2d321a4c10ac1a0b94f256316bf4430bbe23d",
+        "preview": "catalog/kits/standard-components/previews/tube-clamp.png",
+        "previewSha256": "7aaa6dae43551bc5ff135b6171bccf4dba8bc09342da3efb64ecca0a098e2970",
+        "triangleCount": 164
+      },
+      {
+        "id": "tubular-spacer",
+        "sourceSha256": "5e2a149dbbc6a8a5f5614033c9049b8b1b95afec97783ba939d1f091d6125f49",
+        "preview": "catalog/kits/standard-components/previews/tubular-spacer.png",
+        "previewSha256": "ad07413585de91738a212822a234c4229376061f98f86d45331aa3435cd9fbe5",
+        "triangleCount": 192
+      },
+      {
+        "id": "u-bracket",
+        "sourceSha256": "f6facc17f2fcffed341214f578f950ca7bddf338251647668df7f566869f3a4b",
+        "preview": "catalog/kits/standard-components/previews/u-bracket.png",
+        "previewSha256": "77be51418712a5bdb033d2abe40101f0d9211f5cb3dbcfb5f630dffadc72cb20",
+        "triangleCount": 80
+      },
+      {
+        "id": "v-belt-pulley",
+        "sourceSha256": "6fd99f7c19869bb3dc3f603052c801f65e2fa5029d82e437740183110ace0b9f",
+        "preview": "catalog/kits/standard-components/previews/v-belt-pulley.png",
+        "previewSha256": "2e1b5e0acefe6b3e06c35d1d565f269367690e663d1a85055c147e6d5e7ff9ce",
+        "triangleCount": 384
+      }
+    ]
+  },
+  "quality": {
+    "kit": "50/50 assets pass (1 rich kits, 0 thin kits)",
+    "global": "2402/2402 assets pass (50 rich kits, 0 thin kits)"
+  },
+  "eslint": {
+    "command": "npx eslint catalog/kits/standard-components/",
+    "exitCode": 0,
+    "output": "npm notice run kernelcad@0.17.4 npx\nnpm notice run 'eslint' catalog/kits/standard-components/"
+  },
+  "catalogIntegration": {
+    "command": "npx vitest run tests/integration/catalog/",
+    "exitCode": 0,
+    "summary": [
+      "Test Files  4 passed (4)",
+      "Tests  15 passed (15)"
+    ],
+    "output": "RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000\n\n \u2713 tests/integration/catalog/assetModule.test.ts (4 tests) 528ms\n \u2713 tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 345ms\n \u2713 tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 11459ms\n     \u2713 a kit-representative sample opens with exactly the knobs its index row lists  10389ms\n     \u2713 refuses refs that do not name a catalog row, and sources that no longer match the index  393ms\n \u2713 tests/integration/catalog/catalogIndex.test.ts (2 tests) 483886ms\n     \u2713 every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  483558ms\n\n Test Files  4 passed (4)\n      Tests  15 passed (15)\n   Start at  03:54:54\n   Duration  487.72s (transform 11.89s, setup 287ms, import 16.18s, tests 496.22s, environment 0ms)\n\nnpm notice run kernelcad@0.17.4 npx\nnpm notice run 'vitest' run tests/integration/catalog/"
+  },
+  "localCatalogPages": {
+    "checkedAt": "2026-11-10T03:47:03+00:00",
+    "scope": "Generated local static catalog pages; public deployment not checked.",
+    "hub": "site-build/catalog/index.html",
+    "hubContainsAffectedAssets": true,
+    "pages": [
+      {
+        "asset": "bulkhead-adapter",
+        "page": "site-build/catalog/standard-components/bulkhead-adapter/index.html",
+        "preview": "site-build/catalog/standard-components/bulkhead-adapter/preview.png",
+        "previewBytes": 31516,
+        "triangleCount": 456,
+        "params": [
+          "stainless",
+          "brass",
+          "sealRubber"
+        ],
+        "presets": [
+          "brass",
+          "dark",
+          "weathered"
+        ],
+        "hasStudioLink": true
+      },
+      {
+        "asset": "linear-guide-rail",
+        "page": "site-build/catalog/standard-components/linear-guide-rail/index.html",
+        "preview": "site-build/catalog/standard-components/linear-guide-rail/preview.png",
+        "previewBytes": 19265,
+        "triangleCount": 540,
+        "params": [
+          "steel",
+          "aluminum",
+          "polymer",
+          "carriagePosition"
+        ],
+        "presets": [
+          "dark",
+          "highVisibility",
+          "weathered"
+        ],
+        "hasStudioLink": true
+      },
+      {
+        "asset": "shaft-coupling",
+        "page": "site-build/catalog/standard-components/shaft-coupling/index.html",
+        "preview": "site-build/catalog/standard-components/shaft-coupling/preview.png",
+        "previewBytes": 27766,
+        "triangleCount": 536,
+        "params": [
+          "steel",
+          "bronze",
+          "setScrewSteel",
+          "retention"
+        ],
+        "presets": [
+          "brass",
+          "dark",
+          "weathered"
+        ],
+        "hasStudioLink": true
+      }
+    ]
+  },
+  "kernelCADRenderInspectAttempt": {
+    "date": "2026-11-10",
+    "commandsPlanned": [
+      "PW_CDP_URL=http://127.0.0.1:9223 node dist/cli/index.js render inspect catalog/kits/standard-components/bulkhead-adapter.kcad.ts artifacts/catalog-demos/standard-components-guide-retention-details-20261110/inspection/bulkhead-adapter --channels rgb"
+    ],
+    "invocationAttempted": "PW_CDP_URL=http://127.0.0.1:9223 node dist/cli/index.js render inspect catalog/kits/standard-components/bulkhead-adapter.kcad.ts artifacts/catalog-demos/standard-components-guide-retention-details-20261110/inspection/bulkhead-adapter --channels rgb",
+    "result": "failed before producing an inspection bundle",
+    "exitCode": 1,
+    "error": "browserType.connectOverCDP timed out after 30000ms while connecting to the existing Chrome at 127.0.0.1:9223",
+    "replacementBrowserLaunched": false,
+    "reason": "PW_CDP_URL requires attachment; the renderer does not fall back to launching another browser",
+    "fallbackVisualEvidence": {
+      "renderer": "scripts/renderCatalogPreviews.ts with scripts/lib/glbSoftwareRender.ts",
+      "previewSources": [
+        "catalog/kits/standard-components/previews/bulkhead-adapter.png",
+        "catalog/kits/standard-components/previews/linear-guide-rail.png",
+        "catalog/kits/standard-components/previews/shaft-coupling.png"
+      ],
+      "variantRenderer": "artifacts/catalog-demos/standard-components-guide-retention-details-20261110/render_variants.ts",
+      "manualVisualInspection": "The adapter shows its hex locknut and dark sealing washer; the guide shows the four-hole carriage and orange wipers; the coupling variants show raised set screws or a visible split and crossing clamp bolts."
+    }
+  },
+  "index": {
+    "source": "catalog/index.json",
+    "buildCommand": "npx tsx scripts/buildAssetCatalog.ts",
+    "freshnessCheckCommand": "npx tsx scripts/buildAssetCatalog.ts --check",
+    "freshnessCheck": "passed: catalog/index.json is up to date",
+    "generatedFromSource": true,
+    "changedAssetSourceSha256Matches": true,
+    "indexPreviewPathsMatch": true
+  },
+  "demoVideo": {
+    "path": "artifacts/catalog-demos/standard-components-guide-retention-details-20261110/standard-components-guide-retention-details.mp4",
+    "sha256": "ee4e4705612b7e68db11c6219e82c87362a0bcfe3de13e5029a7118d54739f13",
+    "inspection": {
+      "inspectionInvocation": "python3 artifacts/catalog-demos/standard-components-guide-retention-details-20261110/inspect_demo_video.py",
+      "video": "standard-components-guide-retention-details.mp4",
+      "ffprobe": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1280,
+            "height": 720,
+            "pix_fmt": "yuv420p",
+            "r_frame_rate": "24/1"
+          }
+        ],
+        "format": {
+          "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+          "duration": "15.041667",
+          "size": "234828"
+        }
+      },
+      "sampleSeconds": [
+        1.5,
+        4.5,
+        7.5,
+        10.5,
+        13.5
+      ],
+      "samples": [
+        "video-review/sample-01.png",
+        "video-review/sample-02.png",
+        "video-review/sample-03.png",
+        "video-review/sample-04.png",
+        "video-review/sample-05.png"
+      ],
+      "contactSheet": "video-review/decoded-samples.png",
+      "reviewStatus": "visually inspected: all five decoded frames are legible and match their captions; material palettes and geometry variants read clearly; local-only and no-deployment/no-physical-acceptance captions are present"
+    }
+  },
+  "deployment": "not deployed; feature branch only",
+  "limits": "Low-poly visualization assets only; local source and software-render checks do not establish supplier dimensions, manufacturing suitability or physical acceptance."
+}

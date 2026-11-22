@@ -23,11 +23,11 @@ export const MECHANISM_CODES = {
   },
   'mechanism.interpenetration': {
     hintTemplate:
-      "Two non-mated parts overlap at a sampled pose. Add clearance, reduce mate travel, or move the mounting geometry so the swept pose stays collision-free. If the contact is intentional, declare a mate between the parts so the loop knows about it.",
+      "Two parts overlap at a sampled pose. The sweep moves each uncoupled mate on its own; if the two parts ride on mates that are geared or linked to move together, declare arm.coupleMates(driven, { source, ratio, offset? }) so every sample moves them together. Otherwise remove this pair from the solvedModel ignore list, then add clearance, reduce mate travel, or correct the geometry so every sampled pose stays collision-free. An ignore declaration does not waive the mechanism collision check.",
     nextAction: { kind: 'fix-arg', field: 'partGeometry' },
     defaultSeverity: 'error',
     group: 'mechanism',
-    description: 'At a sampled pose, two parts that are NOT joined by a mate overlap by more than the epsilon volume floor (intentional contact at clevis joints is excluded).',
+    description: 'At a sampled pose, two parts overlap above the actionable interference thresholds. A mate or solvedModel ignore declaration does not exempt the pair from mechanism collision checking during joint travel.',
   },
   'mechanism.dof-mismatch': {
     hintTemplate:
@@ -50,8 +50,9 @@ export const MECHANISM_CODES = {
     description: 'A part declared on a mechanism (an assembly with at least one mate or joint) is not reachable from any other part via mate, joint-primitive, or connect edges — the assembly graph has disconnected components. Diagnostics list every disconnected body id and suggest connector types. A multi-part assembly with no mates and no joints is independent bodies, not a mechanism: the check does not run and nothing is emitted.',
   },
   // Physics-grounded loop — T3 slice (post-condition trust gate). Emitted by
-  // `mechanismTruth.ts` when the BREP pose-sweep work estimate exceeds the
-  // (auto-scaled) budget and criteria 2/3/8 are SKIPPED. Criterion 7
+  // `mechanismTruth.ts` when the BREP pose sweep is skipped because its work
+  // estimate exceeds the budget or a caller forces a skip. Criteria 2/3/8
+  // are SKIPPED. Criterion 7
   // (rest-pose joint-mesh continuity) still runs; a gap there is 'broken'.
   // Otherwise the verdict degrades to 'unverified'. Replaces the old silent
   // console.warn: the 'unverified' verdict now carries machine-readable
@@ -63,7 +64,7 @@ export const MECHANISM_CODES = {
   // consistent, they are just the wrong kind for the motion the model claims.
   'mechanism.motion-on-fixed-joint': {
     hintTemplate:
-      "The model animates or drives a joint that is fastened, so the motion is not real. Make that joint revolute (or prismatic) and pass the animated param as its pose: arm.mate(name, 'a.conn', 'b.conn', 'revolute', { pose: angleParam, limitsDeg: [min, max] }). Do not move a fastened part by rotating or translating its geometry with the param.",
+      "The model animates or drives a joint that is fastened, so the motion is not real. Make that joint revolute (or prismatic) and pass the animated param as its pose: arm.mate(name, 'a.conn', 'b.conn', 'revolute', { pose: angleParam, limitsDeg: [min, max] }). Do not animate a transform of a fastened part's geometry with that param.",
     nextAction: { kind: 'fix-arg', field: 'mateType' },
     defaultSeverity: 'error',
     group: 'mechanism',
@@ -82,11 +83,38 @@ export const MECHANISM_CODES = {
   },
   'mechanism.unverified-budget-exceeded': {
     hintTemplate:
-      "The articulated collision/pose sweep was skipped because its estimated work exceeded the budget, so the mechanism is 'unverified' (NOT certified collision-free). Verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget to force a full sweep. The cheap criteria (orphan-part, fastened-rigidity) still ran.",
+      "The articulated collision/pose sweep was skipped, so the mechanism is 'unverified' (NOT certified collision-free). Read the diagnostic message for the skip reason. If the estimated work exceeds the configured budget, verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget. The cheap criteria (orphan-part, fastened-rigidity) still ran.",
     nextAction: { kind: 'inspect-message' },
     defaultSeverity: 'warn',
     group: 'mechanism',
-    description: 'The deterministic BREP pose-sweep work estimate exceeded the (auto-scaled) budget; the articulated overlap criteria were skipped and the mechanism verdict degraded to unverified rather than running an intractable sweep.',
+    description: 'The deterministic BREP pose sweep was skipped because its work estimate exceeded the configured budget or the caller forced a skip with a non-positive budget. Work counts exact confirms selected by the proxy pass, as the summed analysis-body face count of those pairs. The articulated overlap criteria were skipped and the mechanism verdict degraded to unverified.',
+  },
+  'mechanism.unverified-exact-probe': {
+    hintTemplate:
+      "An exact overlap boolean failed on a proxy candidate, so the pose sweep is unverified. A failed boolean is not clearance. Repair the named parts and run the mechanism check again.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'A conservative pose-sweep proxy marked a part pair as a candidate, and the exact overlap boolean could not confirm it. The sweep is unverified. A failed boolean is not treated as no collision.',
+  },
+  'mechanism.physics-budget-exceeded': {
+    hintTemplate:
+      "Physics preparation was skipped because the lowered rest-scene mesh work exceeded the physics budget or could not be measured. The mechanism is unverified unless another criterion found a defect. Simplify the physics geometry or verify a smaller assembly.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'The deterministic rest-scene physics mesh preflight could not certify that MJCF preparation fits its work budget, so physics was skipped and coverage records that it did not run.',
+  },
+  // Closed-loop mate graphs are rejected by the MJCF emitter before any
+  // dynamics run. That is unsupported topology, not a failed simulation,
+  // so the verdict stays 'unverified' (severity 'warn').
+  'mechanism.physics-unsupported': {
+    hintTemplate:
+      "The physics gate could not represent the mate graph or an authored coupling, so native dynamics did not run and the mechanism stays unverified. Read the diagnostic for the unsupported mapping; use a supported scalar revolute/prismatic coupling or a tree-shaped mate graph before claiming physics verification.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'The physics gate rejected a closed-loop mate graph or a scalar coupling mapping it cannot represent before simulation. Physics did not run, and the mechanism is unverified rather than broken.',
   },
   'mechanism.joint-mesh-gap': {
     hintTemplate:
@@ -94,7 +122,15 @@ export const MECHANISM_CODES = {
     nextAction: { kind: 'fix-arg', field: 'partGeometry' },
     defaultSeverity: 'error',
     group: 'mechanism',
-    description: 'A joint pivot lies outside its mated body BREP surface at rest pose and the mated rigid groups have no bearing contact within tolerance anywhere — the link is floating on the joint it pivots on.',
+    description: 'At rest, a joint pivot is more than 1 mm (plus any declared clearance bore) from the material of one side, and the two sides have no bearing contact within 1 mm near the axis — the link is floating on the joint it pivots on. Each side is a rigid group: the mated part plus the parts fastened to it that touch it, so a servo on one link and its horn on the other carry a servo joint.',
+  },
+  'mechanism.joint-mesh-unverified': {
+    hintTemplate:
+      'The evaluator could not measure the rest-pose connection between this joint and one of its bodies, so the mechanism is unverified. Inspect or rebuild the affected solid and rerun the mechanism check; a completed collision sweep does not prove joint continuity.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'The evaluator could not measure rest-pose joint continuity for at least one mated body. It reports explicit unknown evidence and keeps the mechanism unverified rather than treating the missing measurement as a pass.',
   },
   // Physics-grounded loop — P6 slice. The two physics criteria
   // (static-equilibrium + drop-on-release) emit these codes from
@@ -120,6 +156,14 @@ export const MECHANISM_CODES = {
     group: 'mechanism',
     description: 'Starting from REST, the mechanism does not hold its declared pose under gravity: at least one joint drifts > 5° or one body translates > 50 mm in a 0.5 s passive simulation. Means the mechanism would visibly collapse on a desk without an actuator or closed-loop spring.',
   },
+  'mechanism.coupling-residual': {
+    hintTemplate:
+      'Native release dynamics did not preserve an authored scalar mate coupling within its published coordinate tolerance. Check the signed coupleMates ratio and offset, the source and driven joint limits, and whether both mates are represented by supported scalar physics joints.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'correct the scalar coupling ratio or limits, then rerun native physics verification and inspect the reported residual across release integration observations' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: 'During the native gravity release integration, a coupled scalar mate coordinate exceeded the supported angular or linear residual tolerance.',
+  },
   // Physics-loop P11 Slice 2 — static tendon-routing backstop. Emitted by
   // `mechanismTruth.ts` criterion 8 when a balance tendon's routed path
   // cuts through a body it is neither anchored to nor routing around. The
@@ -138,9 +182,16 @@ export const MECHANISM_CODES = {
   // Runs on every mechanism even when the pose sweep is over budget, so
   // an assembly whose solids pass through each other as drawn, or whose
   // mated parts never touch, is 'broken' rather than 'unverified'.
+  'mechanism.ignored-rest-overlap': {
+    hintTemplate: 'An ignored pair shares solid volume at rest. Inspect the geometry or remove the overlap before claiming physical validity; an exclusion does not establish that the parts can occupy the same space.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'A rest-pose overlap was explicitly ignored; the mechanism remains unverified rather than being certified physically valid.',
+  },
   'mechanism.rest-interpenetration': {
     hintTemplate:
-      "Two parts share solid volume at the rest pose, more than 0.01 mm³ in a region thicker than the 0.3 mm mesh noise floor (thinner is face contact; a small volume is never excused). Mated parts are not exempt: a seated joint is coincident faces or a pin in a clearance bore, both ~0 shared volume. Pocket the housing around the part it holds, shorten or move the overlapping feature, or re-place the part on its mate. solvedModel({}, { ignore }) does not silence this check (and ignore belongs in the SECOND argument; the first is the pose map).",
+      "Two parts share solid volume at the rest pose, more than 0.01 mm³ in a region thicker than the 0.3 mm mesh noise floor (thinner is face contact; a small volume is never excused). Mated parts are not exempt by default: a seated joint is coincident faces or a pin in a clearance bore, both ~0 shared volume. Pocket the housing around the part it holds, shorten or move the overlapping feature, or re-place the part on its mate. For an intentional rest-pose overlap, pass `ignore: [['partA', 'partB']]` as the SECOND argument to solvedModel; mate-gap, joint-continuity and sampled motion checks still run.",
     nextAction: { kind: 'fix-arg', field: 'partGeometry' },
     defaultSeverity: 'error',
     group: 'mechanism',
@@ -152,7 +203,7 @@ export const MECHANISM_CODES = {
     nextAction: { kind: 'fix-arg', field: 'partGeometry' },
     defaultSeverity: 'error',
     group: 'mechanism',
-    description: 'At the rest pose the two parts joined by a mate are separated by more than the contact tolerance — the joint is declared but nothing physically seats one part on the other.',
+    description: 'At the rest pose the two parts joined by a mate are separated by more than the 1 mm contact tolerance — the joint is declared but nothing physically seats one part on the other. A moving mate is measured between rigid groups (each mated part plus the parts fastened to it that touch it); a fastened mate between its own two parts.',
   },
   // Motion-load study (`src/kinematic/motionLoad.ts`, verify({ check: 'motion-load' })).
   'mechanism.load.torque-exceeded': {

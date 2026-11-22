@@ -1,0 +1,321 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/apiary-silhouette-20261106/render_apiary_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/apiary/beekeeper-veil-hood.kcad.ts",
+      "sourceSha256": "f2dd01d318f1bc02fa082d4f9bee50295c57342e7d0d44df295ff674bcee4158",
+      "triangleBudget": 2600,
+      "presets": {
+        "fieldReady": {
+          "fabric": "#f6f3ea",
+          "mesh": "#1f2522",
+          "trim": "#c49a3a",
+          "stand": "#5a6064"
+        },
+        "sunWorn": {
+          "fabric": "#c9bc9a",
+          "mesh": "#3d433f",
+          "trim": "#5f4a32",
+          "stand": "#3a3d40"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/apiary/beekeeper-jacket.kcad.ts",
+      "sourceSha256": "4e812cbbdd5d5f41ac8a72976fc8fa57232173ebd17ca29f895ebdf5d8612e82",
+      "triangleBudget": 2000,
+      "presets": {
+        "fieldReady": {
+          "fabric": "#f6f3ea",
+          "mesh": "#1f2522",
+          "trim": "#c49a3a",
+          "stand": "#5a6064"
+        },
+        "sunWorn": {
+          "fabric": "#c9bc9a",
+          "mesh": "#3d433f",
+          "trim": "#5f4a32",
+          "stand": "#3a3d40"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/apiary/beekeeper-gloves.kcad.ts",
+      "sourceSha256": "8849b416ca25aea14352b7299f45fb8bcca006cf2360a41f6b1088741818dc53",
+      "triangleBudget": 1800,
+      "presets": {
+        "fieldReady": {
+          "leather": "#ead39c",
+          "fabric": "#f6f3ea",
+          "mesh": "#5f7068",
+          "elastic": "#c49a3a"
+        },
+        "sunWorn": {
+          "leather": "#9c7a4c",
+          "fabric": "#c9bc9a",
+          "mesh": "#353f3a",
+          "elastic": "#5f4a32"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/apiary/bee-smoker.kcad.ts",
+      "sourceSha256": "f157c80dbebedc986cba03866310244edbf5ca3ee8a1a4c9e9151d950b6b3aff",
+      "triangleBudget": 2000,
+      "presets": {
+        "fieldReady": {
+          "stainless": "#dfe5e2",
+          "leather": "#9a6a42",
+          "timber": "#d4a462",
+          "guard": "#575d60"
+        },
+        "sunWorn": {
+          "stainless": "#6e6a62",
+          "leather": "#4a3426",
+          "timber": "#68543d",
+          "guard": "#2a2c2d"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/apiary/hive-tool.kcad.ts",
+      "sourceSha256": "774c2f52f610bcc6817a347ef21f277dd3b3603841d9b692c59983901d55b2c6",
+      "triangleBudget": 800,
+      "presets": {
+        "freshApiary": {
+          "stainless": "#dfe5e2",
+          "paint": "#e2b52b",
+          "rubber": "#485152"
+        },
+        "weatheredYard": {
+          "stainless": "#7a746a",
+          "paint": "#8a3a2c",
+          "rubber": "#252b2c"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "beekeeper-veil-hood",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 2368,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/beekeeper-veil-hood-default.png"
+    },
+    {
+      "assetId": "beekeeper-veil-hood",
+      "variant": "fencing",
+      "view": "3/4",
+      "values": {
+        "style": "fencing"
+      },
+      "triangles": 1172,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/beekeeper-veil-hood-fencing.png"
+    },
+    {
+      "assetId": "beekeeper-veil-hood",
+      "variant": "fieldReady",
+      "view": "3/4",
+      "values": {
+        "fabric": "#f6f3ea",
+        "mesh": "#1f2522",
+        "trim": "#c49a3a",
+        "stand": "#5a6064"
+      },
+      "triangles": 2368,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/beekeeper-veil-hood-fieldReady.png"
+    },
+    {
+      "assetId": "beekeeper-veil-hood",
+      "variant": "sunWorn",
+      "view": "3/4",
+      "values": {
+        "fabric": "#c9bc9a",
+        "mesh": "#3d433f",
+        "trim": "#5f4a32",
+        "stand": "#3a3d40"
+      },
+      "triangles": 2368,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/beekeeper-veil-hood-sunWorn.png"
+    },
+    {
+      "assetId": "beekeeper-jacket",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1528,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/beekeeper-jacket-default.png"
+    },
+    {
+      "assetId": "beekeeper-jacket",
+      "variant": "round-veil",
+      "view": "3/4",
+      "values": {
+        "veil": "round"
+      },
+      "triangles": 1636,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/beekeeper-jacket-round-veil.png"
+    },
+    {
+      "assetId": "beekeeper-jacket",
+      "variant": "fieldReady",
+      "view": "3/4",
+      "values": {
+        "fabric": "#f6f3ea",
+        "mesh": "#1f2522",
+        "trim": "#c49a3a",
+        "stand": "#5a6064"
+      },
+      "triangles": 1528,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/beekeeper-jacket-fieldReady.png"
+    },
+    {
+      "assetId": "beekeeper-jacket",
+      "variant": "sunWorn",
+      "view": "3/4",
+      "values": {
+        "fabric": "#c9bc9a",
+        "mesh": "#3d433f",
+        "trim": "#5f4a32",
+        "stand": "#3a3d40"
+      },
+      "triangles": 1528,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/beekeeper-jacket-sunWorn.png"
+    },
+    {
+      "assetId": "beekeeper-gloves",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1232,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/beekeeper-gloves-default.png"
+    },
+    {
+      "assetId": "beekeeper-gloves",
+      "variant": "plain",
+      "view": "3/4",
+      "values": {
+        "vent": "plain"
+      },
+      "triangles": 1160,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/beekeeper-gloves-plain.png"
+    },
+    {
+      "assetId": "beekeeper-gloves",
+      "variant": "fieldReady",
+      "view": "3/4",
+      "values": {
+        "leather": "#ead39c",
+        "fabric": "#f6f3ea",
+        "mesh": "#5f7068",
+        "elastic": "#c49a3a"
+      },
+      "triangles": 1232,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/beekeeper-gloves-fieldReady.png"
+    },
+    {
+      "assetId": "beekeeper-gloves",
+      "variant": "sunWorn",
+      "view": "3/4",
+      "values": {
+        "leather": "#9c7a4c",
+        "fabric": "#c9bc9a",
+        "mesh": "#353f3a",
+        "elastic": "#5f4a32"
+      },
+      "triangles": 1232,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/beekeeper-gloves-sunWorn.png"
+    },
+    {
+      "assetId": "bee-smoker",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1644,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/bee-smoker-default.png"
+    },
+    {
+      "assetId": "bee-smoker",
+      "variant": "no-shield",
+      "view": "3/4",
+      "values": {
+        "heatShield": "none"
+      },
+      "triangles": 576,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/bee-smoker-no-shield.png"
+    },
+    {
+      "assetId": "bee-smoker",
+      "variant": "fieldReady",
+      "view": "3/4",
+      "values": {
+        "stainless": "#dfe5e2",
+        "leather": "#9a6a42",
+        "timber": "#d4a462",
+        "guard": "#575d60"
+      },
+      "triangles": 1644,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/bee-smoker-fieldReady.png"
+    },
+    {
+      "assetId": "bee-smoker",
+      "variant": "sunWorn",
+      "view": "3/4",
+      "values": {
+        "stainless": "#6e6a62",
+        "leather": "#4a3426",
+        "timber": "#68543d",
+        "guard": "#2a2c2d"
+      },
+      "triangles": 1644,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/bee-smoker-sunWorn.png"
+    },
+    {
+      "assetId": "hive-tool",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 172,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/hive-tool-default.png"
+    },
+    {
+      "assetId": "hive-tool",
+      "variant": "standard-rubber",
+      "view": "3/4",
+      "values": {
+        "style": "standard",
+        "grip": "rubber"
+      },
+      "triangles": 192,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/hive-tool-standard-rubber.png"
+    },
+    {
+      "assetId": "hive-tool",
+      "variant": "freshApiary",
+      "view": "3/4",
+      "values": {
+        "stainless": "#dfe5e2",
+        "paint": "#e2b52b",
+        "rubber": "#485152"
+      },
+      "triangles": 172,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/hive-tool-freshApiary.png"
+    },
+    {
+      "assetId": "hive-tool",
+      "variant": "weatheredYard",
+      "view": "3/4",
+      "values": {
+        "stainless": "#7a746a",
+        "paint": "#8a3a2c",
+        "rubber": "#252b2c"
+      },
+      "triangles": 172,
+      "png": "artifacts/catalog-demos/apiary-silhouette-20261106/variants/hive-tool-weatheredYard.png"
+    }
+  ]
+}

@@ -5,7 +5,7 @@ meta({
   name: 'dead-tree',
   license: 'CC0-1.0',
   title: 'Dead tree',
-  description: 'Bare leafless dead tree with a forked trunk, angular branches and twigs. Knobs: height, branch count, twigs on or off, bark colour.',
+  description: 'Bare dead tree with a forked trunk, angular branches, fine twigs and exposed pale wood at broken ends. Knobs: height, branch count, twigs on or off, bark and heartwood colours.',
   tags: ['tree', 'dead', 'bare', 'leafless', 'spooky', 'swamp', 'winter', 'nature'],
   kit: 'nature',
   category: 'nature',
@@ -18,10 +18,11 @@ const heightM = param('heightM', '5', { choices: ['3', '5', '7'], label: 'Height
 const branches = param('branches', '4', { choices: ['3', '4', '5', '6'], label: 'Branches' });
 const twigs = param('twigs', 'yes', { choices: ['yes', 'no'], label: 'Twigs' });
 const bark = param('bark', '#6e6259', { label: 'Bark' });
+const heartwood = param('heartwood', '#b18b63', { label: 'Exposed heartwood' });
 
 presets({
-  charred: { bark: '#2f2a27' },
-  bleached: { bark: '#b9b1a3' },
+  charred: { bark: '#2f2a27', heartwood: '#634a37' },
+  bleached: { bark: '#b9b1a3', heartwood: '#d9c7a7' },
 });
 
 const h = Number(heightM.value) * 1000;
@@ -38,13 +39,22 @@ const dir = (tilt: number, az: number) =>
 
 const tree = assembly('dead-tree');
 let id = 0;
-const limb = (o: number[], r0: number, r1: number, len: number, tilt: number, az: number) => {
+const limb = (o: number[], r0: number, r1: number, len: number, tilt: number, az: number, cutEnd = false) => {
   id += 1;
+  const partId = id;
+  const d = dir(tilt, az);
   tree.part(
-    `limb-${id}`,
+    `limb-${partId}`,
     ngon(r0, 5).loft(ngon(r1, 5), { spacing: len, ruled: true }).rotateY(tilt).rotateZ(az).translate(o[0], o[1], o[2]).color(bark),
   );
-  const d = dir(tilt, az);
+  if (cutEnd) {
+    const capDepth = Math.max(4, r1 * 0.7);
+    const capOrigin = [o[0] + d[0] * (len - capDepth), o[1] + d[1] * (len - capDepth), o[2] + d[2] * (len - capDepth)];
+    tree.part(
+      `heartwood-${partId}`,
+      ngon(r1 * 0.78, 5).extrude(capDepth).rotateY(tilt).rotateZ(az).translate(capOrigin[0], capOrigin[1], capOrigin[2]).color(heartwood),
+    );
+  }
   return (f: number) => [o[0] + d[0] * len * f, o[1] + d[1] * len * f, o[2] + d[2] * len * f];
 };
 
@@ -54,7 +64,7 @@ const at1 = limb([0, 0, 0], h * 0.045, h * 0.032, h * 0.38, 0, 0);
 id += 1;
 tree.part('roots', ngon(h * 0.075, 5).loft(ngon(h * 0.04, 5), { spacing: h * 0.07, ruled: true }).rotateZ(36).color(bark));
 const top = at1(0.97);
-const at2 = limb(top, h * 0.033, h * 0.016, h * 0.42, 10, 160);
+const at2 = limb(top, h * 0.033, h * 0.016, h * 0.42, 10, 160, true);
 limb(at2(0.92), h * 0.017, h * 0.006, h * 0.22, 28, 120);
 
 for (let i = 0; i < nb; i++) {
@@ -63,7 +73,7 @@ for (let i = 0; i < nb; i++) {
   const from = t < 0.5 ? at1(0.55 + t * 0.8) : at2(0.15 + (t - 0.5) * 1.3);
   const len = h * (0.42 - 0.16 * t);
   const tilt = 58 + (i % 2) * 14;
-  const along = limb(from, h * 0.018 * (1 - 0.4 * t), h * 0.005, len, tilt, az);
+  const along = limb(from, h * 0.018 * (1 - 0.4 * t), h * 0.005, len, tilt, az, true);
   if (twigs.value === 'yes') {
     limb(along(0.5), h * 0.007, h * 0.002, len * 0.45, tilt - 32, az + 40);
     limb(along(0.75), h * 0.006, h * 0.002, len * 0.35, tilt - 10, az - 45);

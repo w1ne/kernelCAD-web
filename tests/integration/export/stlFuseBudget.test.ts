@@ -71,6 +71,16 @@ describe('STL fuse cost gate for multi-part scenes', () => {
     expect(freeformFuseOverBudget(await worldParts(BOX_PAIR))).toBeUndefined();
   }, 120_000);
 
+  it('prices the same pairs whether or not the parts were meshed first', async () => {
+    // A render meshes the parts before an export. The face boxes must come
+    // from the geometry, or the price moves with the triangulation (283
+    // pairs before meshing, 291 after, before the fix).
+    const parts = await worldParts(TWISTED_PAIR);
+    const before = freeformFuseOverBudget(parts)!.pairs;
+    for (const p of parts) p.shape.getReplicadShape().mesh({ tolerance: 0.5, angularTolerance: 30 });
+    expect(freeformFuseOverBudget(parts)!.pairs).toBe(before);
+  }, 120_000);
+
   it('writes per-part closed shells with a warning instead of fusing', async () => {
     const r = await runAndExport({ code: TWISTED_PAIR, fileName: 'pair.kcad.ts', format: 'stl' });
     const skipped = r.diagnostics.find((d) => d.code === 'export.stl.fuse-skipped');

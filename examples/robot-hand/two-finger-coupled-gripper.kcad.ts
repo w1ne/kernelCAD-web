@@ -4,6 +4,11 @@
 // `arm.coupleMates(...)`. The review loop can sample the `grip` limits,
 // expand the driven poses, and report aperture between the two fingertip
 // connectors.
+//
+// Each finger rests on the palm's top face (its hinge connector sits on
+// the finger's bottom face) and points along +Y from its hinge, so the
+// fingers swing apart in the palm plane without crossing each other or
+// the driver hub.
 
 const baseW = 36;
 const baseD = 18;
@@ -53,8 +58,8 @@ driver.connector('axis', {
 
 const left = hand.part(
   'left-finger',
-  box(fingerLen, fingerW, fingerT, true)
-    .translate(fingerLen / 2, 0, 0)
+  box(fingerW, fingerLen, fingerT, true)
+    .translate(0, fingerLen / 2, fingerT / 2)
     .fillet(0.75)
     .color('tool'),
 );
@@ -66,13 +71,13 @@ left
   })
   .connector('tip', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [fingerLen, 0, 0] },
+    origin: { kind: 'vec3', value: [0, fingerLen, fingerT / 2] },
   });
 
 const right = hand.part(
   'right-finger',
-  box(fingerLen, fingerW, fingerT, true)
-    .translate(-fingerLen / 2, 0, 0)
+  box(fingerW, fingerLen, fingerT, true)
+    .translate(0, fingerLen / 2, fingerT / 2)
     .fillet(0.75)
     .color('tool'),
 );
@@ -84,7 +89,7 @@ right
   })
   .connector('tip', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [-fingerLen, 0, 0] },
+    origin: { kind: 'vec3', value: [0, fingerLen, fingerT / 2] },
   });
 
 hand.mate('grip', 'palm.driver', 'grip-driver.axis', 'revolute', {

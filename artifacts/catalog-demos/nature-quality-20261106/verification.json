@@ -1,0 +1,736 @@
+{
+  "date": "2026-11-06",
+  "kit": "nature",
+  "assetsPromoted": 3,
+  "assetIdsAdded": 0,
+  "assetIdsRenamed": 0,
+  "kitAssetCount": 66,
+  "materialKnobsAdded": 1,
+  "materialParamNamesAligned": 4,
+  "presetEntriesAdded": 0,
+  "presetEntriesUpdated": 2,
+  "presetVariantsRendered": 6,
+  "previewCount": 66,
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts <all 66 nature asset ids>",
+  "indexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "kitQuality": {
+    "before": {
+      "passing": 63,
+      "total": 66
+    },
+    "passing": 66,
+    "total": 66
+  },
+  "quality": {
+    "before": {
+      "passing": 2386,
+      "total": 2390,
+      "passRate": "99.83%",
+      "thin": 4
+    },
+    "after": {
+      "passing": 2389,
+      "total": 2390,
+      "passRate": "99.96%",
+      "thin": 1
+    }
+  },
+  "remainingFailure": "props/sandbags",
+  "sourceIndexPreviewRecords": [
+    {
+      "id": "acacia-tree",
+      "sourceSha256": "73201c17f9e6bf1efe99a5c6e6d2b73d3d497f64c17bc750ed6ab39a46039e9f",
+      "indexSourceSha256": "73201c17f9e6bf1efe99a5c6e6d2b73d3d497f64c17bc750ed6ab39a46039e9f",
+      "preview": "/assets/nature-acacia-tree.png",
+      "previewFile": "catalog/kits/nature/previews/acacia-tree.png",
+      "triangleCount": 286,
+      "triangleBudget": 400
+    },
+    {
+      "id": "agave",
+      "sourceSha256": "bd62053eec533d17e6036226bb5cf8a6fa1fa64b45ef43d2cfe7413b7c97e55f",
+      "indexSourceSha256": "bd62053eec533d17e6036226bb5cf8a6fa1fa64b45ef43d2cfe7413b7c97e55f",
+      "preview": "/assets/nature-agave.png",
+      "previewFile": "catalog/kits/nature/previews/agave.png",
+      "triangleCount": 216,
+      "triangleBudget": 460
+    },
+    {
+      "id": "apple-tree",
+      "sourceSha256": "feedcea7190cc517a6827dde7ab6a073a1dce9e935a956ceeebc3367b06e1ce3",
+      "indexSourceSha256": "feedcea7190cc517a6827dde7ab6a073a1dce9e935a956ceeebc3367b06e1ce3",
+      "preview": "/assets/nature-apple-tree.png",
+      "previewFile": "catalog/kits/nature/previews/apple-tree.png",
+      "triangleCount": 428,
+      "triangleBudget": 550
+    },
+    {
+      "id": "bamboo-clump",
+      "sourceSha256": "44fd2a8aa68139ca6d8c7d5c6de632cfc6fb583a30aff9efb589334cbf41619b",
+      "indexSourceSha256": "44fd2a8aa68139ca6d8c7d5c6de632cfc6fb583a30aff9efb589334cbf41619b",
+      "preview": "/assets/nature-bamboo-clump.png",
+      "previewFile": "catalog/kits/nature/previews/bamboo-clump.png",
+      "triangleCount": 504,
+      "triangleBudget": 600
+    },
+    {
+      "id": "baobab-tree",
+      "sourceSha256": "7cdd6fadaf1126aef25363de0033d9b65776921c136062c2370c1064774b500e",
+      "indexSourceSha256": "7cdd6fadaf1126aef25363de0033d9b65776921c136062c2370c1064774b500e",
+      "preview": "/assets/nature-baobab-tree.png",
+      "previewFile": "catalog/kits/nature/previews/baobab-tree.png",
+      "triangleCount": 412,
+      "triangleBudget": 500
+    },
+    {
+      "id": "birch-tree",
+      "sourceSha256": "6e28fa19478959504b42198b5558320e87427fe9e4358053b4611610e1867d89",
+      "indexSourceSha256": "6e28fa19478959504b42198b5558320e87427fe9e4358053b4611610e1867d89",
+      "preview": "/assets/nature-birch-tree.png",
+      "previewFile": "catalog/kits/nature/previews/birch-tree.png",
+      "triangleCount": 212,
+      "triangleBudget": 300
+    },
+    {
+      "id": "bird-nest",
+      "sourceSha256": "f12934dc2efef48233113c2ac1ac9fff50afae24484c0c67a1b8a7e00a6369ce",
+      "indexSourceSha256": "f12934dc2efef48233113c2ac1ac9fff50afae24484c0c67a1b8a7e00a6369ce",
+      "preview": "/assets/nature-bird-nest.png",
+      "previewFile": "catalog/kits/nature/previews/bird-nest.png",
+      "triangleCount": 284,
+      "triangleBudget": 340
+    },
+    {
+      "id": "bonsai-tree",
+      "sourceSha256": "07dc4592969ecaefe8e490dd33db750aa41599d600df72ee941fd4f2a19844b6",
+      "indexSourceSha256": "07dc4592969ecaefe8e490dd33db750aa41599d600df72ee941fd4f2a19844b6",
+      "preview": "/assets/nature-bonsai-tree.png",
+      "previewFile": "catalog/kits/nature/previews/bonsai-tree.png",
+      "triangleCount": 324,
+      "triangleBudget": 400
+    },
+    {
+      "id": "boulder-cluster",
+      "sourceSha256": "8c47619f5b403b7de529285fac6488772cd50e3e3e671df1b1d5a7791c6b1bf6",
+      "indexSourceSha256": "8c47619f5b403b7de529285fac6488772cd50e3e3e671df1b1d5a7791c6b1bf6",
+      "preview": "/assets/nature-boulder-cluster.png",
+      "previewFile": "catalog/kits/nature/previews/boulder-cluster.png",
+      "triangleCount": 184,
+      "triangleBudget": 300
+    },
+    {
+      "id": "bramble",
+      "sourceSha256": "42ab5542a7ceef337b18f10aaccd1b9d385d36daea39a1d2e1d6f7607cd64f78",
+      "indexSourceSha256": "42ab5542a7ceef337b18f10aaccd1b9d385d36daea39a1d2e1d6f7607cd64f78",
+      "preview": "/assets/nature-bramble.png",
+      "previewFile": "catalog/kits/nature/previews/bramble.png",
+      "triangleCount": 498,
+      "triangleBudget": 600
+    },
+    {
+      "id": "bush",
+      "sourceSha256": "bd9a04404d5d5514db5481613e22e1ff3d6018fe95b206f9c4077dfd65b4a575",
+      "indexSourceSha256": "bd9a04404d5d5514db5481613e22e1ff3d6018fe95b206f9c4077dfd65b4a575",
+      "preview": "/assets/nature-bush.png",
+      "previewFile": "catalog/kits/nature/previews/bush.png",
+      "triangleCount": 184,
+      "triangleBudget": 300
+    },
+    {
+      "id": "cactus",
+      "sourceSha256": "8fec7fb5842339cbac7380ecbc49ee8ed4600c9ec4f3da8b3778ba995dfc3a51",
+      "indexSourceSha256": "8fec7fb5842339cbac7380ecbc49ee8ed4600c9ec4f3da8b3778ba995dfc3a51",
+      "preview": "/assets/nature-cactus.png",
+      "previewFile": "catalog/kits/nature/previews/cactus.png",
+      "triangleCount": 204,
+      "triangleBudget": 300
+    },
+    {
+      "id": "cairn",
+      "sourceSha256": "718d5eafa0808b16c48314abf9efa23b7c6df33f637e0d47b211b60bd3bccbf8",
+      "indexSourceSha256": "718d5eafa0808b16c48314abf9efa23b7c6df33f637e0d47b211b60bd3bccbf8",
+      "preview": "/assets/nature-cairn.png",
+      "previewFile": "catalog/kits/nature/previews/cairn.png",
+      "triangleCount": 228,
+      "triangleBudget": 340
+    },
+    {
+      "id": "cherry-blossom-tree",
+      "sourceSha256": "68156c5a25cbe796e36a3ee0684193f9d30ee9f6b2d709c5f06e6ea34c1cafbb",
+      "indexSourceSha256": "68156c5a25cbe796e36a3ee0684193f9d30ee9f6b2d709c5f06e6ea34c1cafbb",
+      "preview": "/assets/nature-cherry-blossom-tree.png",
+      "previewFile": "catalog/kits/nature/previews/cherry-blossom-tree.png",
+      "triangleCount": 396,
+      "triangleBudget": 500
+    },
+    {
+      "id": "cliff-tile",
+      "sourceSha256": "abbeefd9d1d79995e99bfe71a63436e3db1de97e7d08abb6103f11520318e133",
+      "indexSourceSha256": "abbeefd9d1d79995e99bfe71a63436e3db1de97e7d08abb6103f11520318e133",
+      "preview": "/assets/nature-cliff-tile.png",
+      "previewFile": "catalog/kits/nature/previews/cliff-tile.png",
+      "triangleCount": 120,
+      "triangleBudget": 200
+    },
+    {
+      "id": "clover-patch",
+      "sourceSha256": "92c6470c3ab01191311cb29911f07d3e8c6c66e1ba5d485a2cd3180cdab4d022",
+      "indexSourceSha256": "92c6470c3ab01191311cb29911f07d3e8c6c66e1ba5d485a2cd3180cdab4d022",
+      "preview": "/assets/nature-clover-patch.png",
+      "previewFile": "catalog/kits/nature/previews/clover-patch.png",
+      "triangleCount": 436,
+      "triangleBudget": 560
+    },
+    {
+      "id": "crystal-cluster",
+      "sourceSha256": "5589f18d17a027f493bb21c24a80375a0d83bf79605425e49d4e486e5e7494fa",
+      "indexSourceSha256": "5589f18d17a027f493bb21c24a80375a0d83bf79605425e49d4e486e5e7494fa",
+      "preview": "/assets/nature-crystal-cluster.png",
+      "previewFile": "catalog/kits/nature/previews/crystal-cluster.png",
+      "triangleCount": 262,
+      "triangleBudget": 350
+    },
+    {
+      "id": "cypress-tree",
+      "sourceSha256": "c6c42b507734edab51c777365f54b770c4121f93af58a3f7c0ebcc526d5a4b99",
+      "indexSourceSha256": "c6c42b507734edab51c777365f54b770c4121f93af58a3f7c0ebcc526d5a4b99",
+      "preview": "/assets/nature-cypress-tree.png",
+      "previewFile": "catalog/kits/nature/previews/cypress-tree.png",
+      "triangleCount": 104,
+      "triangleBudget": 200
+    },
+    {
+      "id": "dandelion-patch",
+      "sourceSha256": "8c9510be1d05c3223aef5bca8ed754f86a6de558a353e4b525ff03547def0c09",
+      "indexSourceSha256": "8c9510be1d05c3223aef5bca8ed754f86a6de558a353e4b525ff03547def0c09",
+      "preview": "/assets/nature-dandelion-patch.png",
+      "previewFile": "catalog/kits/nature/previews/dandelion-patch.png",
+      "triangleCount": 344,
+      "triangleBudget": 480
+    },
+    {
+      "id": "dead-bush",
+      "sourceSha256": "1efbe58431e7809be884f0fa68b20f7452f754de491f14ae3f0541fcb0b4a6a3",
+      "indexSourceSha256": "1efbe58431e7809be884f0fa68b20f7452f754de491f14ae3f0541fcb0b4a6a3",
+      "preview": "/assets/nature-dead-bush.png",
+      "previewFile": "catalog/kits/nature/previews/dead-bush.png",
+      "triangleCount": 224,
+      "triangleBudget": 400
+    },
+    {
+      "id": "dead-tree",
+      "sourceSha256": "7c249c6b05fe78234f28f7e1f1dcc8a7d248925431d89f9d089600dcbdcef9f7",
+      "indexSourceSha256": "7c249c6b05fe78234f28f7e1f1dcc8a7d248925431d89f9d089600dcbdcef9f7",
+      "preview": "/assets/nature-dead-tree.png",
+      "previewFile": "catalog/kits/nature/previews/dead-tree.png",
+      "triangleCount": 336,
+      "triangleBudget": 400
+    },
+    {
+      "id": "driftwood",
+      "sourceSha256": "59cc300ba83cf06a8df1a5b537f6136c8dbcefa3bfafd816bf9d26d2bdc671af",
+      "indexSourceSha256": "59cc300ba83cf06a8df1a5b537f6136c8dbcefa3bfafd816bf9d26d2bdc671af",
+      "preview": "/assets/nature-driftwood.png",
+      "previewFile": "catalog/kits/nature/previews/driftwood.png",
+      "triangleCount": 144,
+      "triangleBudget": 300
+    },
+    {
+      "id": "fallen-branch",
+      "sourceSha256": "a0c5aec420300152d1bbcadeab91798e3d8c6cfd7ba0fd1d6c15f3c6543f569c",
+      "indexSourceSha256": "a0c5aec420300152d1bbcadeab91798e3d8c6cfd7ba0fd1d6c15f3c6543f569c",
+      "preview": "/assets/nature-fallen-branch.png",
+      "previewFile": "catalog/kits/nature/previews/fallen-branch.png",
+      "triangleCount": 168,
+      "triangleBudget": 300
+    },
+    {
+      "id": "fan-palm",
+      "sourceSha256": "6c9c1db95a607c94b0db05710e7c0a50a98ac8103bbb68836df6025aa1fda4fb",
+      "indexSourceSha256": "6c9c1db95a607c94b0db05710e7c0a50a98ac8103bbb68836df6025aa1fda4fb",
+      "preview": "/assets/nature-fan-palm.png",
+      "previewFile": "catalog/kits/nature/previews/fan-palm.png",
+      "triangleCount": 492,
+      "triangleBudget": 550
+    },
+    {
+      "id": "fern",
+      "sourceSha256": "45004cc8fc437703f9c093739ca490e1497a9df6039157820082eb6ff8dd747d",
+      "indexSourceSha256": "45004cc8fc437703f9c093739ca490e1497a9df6039157820082eb6ff8dd747d",
+      "preview": "/assets/nature-fern.png",
+      "previewFile": "catalog/kits/nature/previews/fern.png",
+      "triangleCount": 240,
+      "triangleBudget": 300
+    },
+    {
+      "id": "flower-patch",
+      "sourceSha256": "784e9c0e3a41b2e5116236e10c04afd33296cbc21f6a8f9217dd963666dabc5a",
+      "indexSourceSha256": "784e9c0e3a41b2e5116236e10c04afd33296cbc21f6a8f9217dd963666dabc5a",
+      "preview": "/assets/nature-flower-patch.png",
+      "previewFile": "catalog/kits/nature/previews/flower-patch.png",
+      "triangleCount": 276,
+      "triangleBudget": 300
+    },
+    {
+      "id": "giant-mushroom",
+      "sourceSha256": "1a99d377b2398fc6864dd65bb83172ce2b7ba706a471853e9b4b8b8c72543681",
+      "indexSourceSha256": "1a99d377b2398fc6864dd65bb83172ce2b7ba706a471853e9b4b8b8c72543681",
+      "preview": "/assets/nature-giant-mushroom.png",
+      "previewFile": "catalog/kits/nature/previews/giant-mushroom.png",
+      "triangleCount": 294,
+      "triangleBudget": 450
+    },
+    {
+      "id": "grass-tuft",
+      "sourceSha256": "45563cd9f0052dc1e09e7d935a19fdec71771aea2ce9e0535e74337bcc46d2f6",
+      "indexSourceSha256": "45563cd9f0052dc1e09e7d935a19fdec71771aea2ce9e0535e74337bcc46d2f6",
+      "preview": "/assets/nature-grass-tuft.png",
+      "previewFile": "catalog/kits/nature/previews/grass-tuft.png",
+      "triangleCount": 196,
+      "triangleBudget": 260
+    },
+    {
+      "id": "ground-tile",
+      "sourceSha256": "c9ea9f87d80d346820c30c9518cc4f0638853ac4a26fdb0da5a8c2d7475a804f",
+      "indexSourceSha256": "c9ea9f87d80d346820c30c9518cc4f0638853ac4a26fdb0da5a8c2d7475a804f",
+      "preview": "/assets/nature-ground-tile.png",
+      "previewFile": "catalog/kits/nature/previews/ground-tile.png",
+      "triangleCount": 56,
+      "triangleBudget": 80
+    },
+    {
+      "id": "hedge",
+      "sourceSha256": "168e68b67f59937a5e4dd4e8dd046f74fda145cc815da72ce9d9aad3449db43f",
+      "indexSourceSha256": "168e68b67f59937a5e4dd4e8dd046f74fda145cc815da72ce9d9aad3449db43f",
+      "preview": "/assets/nature-hedge.png",
+      "previewFile": "catalog/kits/nature/previews/hedge.png",
+      "triangleCount": 220,
+      "triangleBudget": 450
+    },
+    {
+      "id": "hill-tile",
+      "sourceSha256": "7fdc2f269d71002c1f83e754160d02e2128c5b891e3b44ea02819a9886233fda",
+      "indexSourceSha256": "7fdc2f269d71002c1f83e754160d02e2128c5b891e3b44ea02819a9886233fda",
+      "preview": "/assets/nature-hill-tile.png",
+      "previewFile": "catalog/kits/nature/previews/hill-tile.png",
+      "triangleCount": 132,
+      "triangleBudget": 160
+    },
+    {
+      "id": "hollow-log",
+      "sourceSha256": "0bfd02253e9aa54c62d3ce34de2bfa72b752161eec01ebf29b65a4f39c5834a3",
+      "indexSourceSha256": "0bfd02253e9aa54c62d3ce34de2bfa72b752161eec01ebf29b65a4f39c5834a3",
+      "preview": "/assets/nature-hollow-log.png",
+      "previewFile": "catalog/kits/nature/previews/hollow-log.png",
+      "triangleCount": 284,
+      "triangleBudget": 300
+    },
+    {
+      "id": "joshua-tree",
+      "sourceSha256": "94714bd344087a3da57127a39891a8c1e9f75a2f74ddad518b8eaf0e35566276",
+      "indexSourceSha256": "94714bd344087a3da57127a39891a8c1e9f75a2f74ddad518b8eaf0e35566276",
+      "preview": "/assets/nature-joshua-tree.png",
+      "previewFile": "catalog/kits/nature/previews/joshua-tree.png",
+      "triangleCount": 460,
+      "triangleBudget": 560
+    },
+    {
+      "id": "lavender-clump",
+      "sourceSha256": "e2d89b098d9b205db9ddb122b7dbea7de9654c69c273f517a9d23940fe86cafa",
+      "indexSourceSha256": "e2d89b098d9b205db9ddb122b7dbea7de9654c69c273f517a9d23940fe86cafa",
+      "preview": "/assets/nature-lavender-clump.png",
+      "previewFile": "catalog/kits/nature/previews/lavender-clump.png",
+      "triangleCount": 416,
+      "triangleBudget": 500
+    },
+    {
+      "id": "lily-pads",
+      "sourceSha256": "bc8d1020277bd5a62ae2c9581437b2f38289e4a31f198a2f591df8b7da46494d",
+      "indexSourceSha256": "bc8d1020277bd5a62ae2c9581437b2f38289e4a31f198a2f591df8b7da46494d",
+      "preview": "/assets/nature-lily-pads.png",
+      "previewFile": "catalog/kits/nature/previews/lily-pads.png",
+      "triangleCount": 340,
+      "triangleBudget": 450
+    },
+    {
+      "id": "log",
+      "sourceSha256": "5f8a7fb76e8a5c94f4f72ae2c94daf82ad66f5fed1576fce52788cfd0e6ae95c",
+      "indexSourceSha256": "5f8a7fb76e8a5c94f4f72ae2c94daf82ad66f5fed1576fce52788cfd0e6ae95c",
+      "preview": "/assets/nature-log.png",
+      "previewFile": "catalog/kits/nature/previews/log.png",
+      "triangleCount": 120,
+      "triangleBudget": 160
+    },
+    {
+      "id": "maple-tree",
+      "sourceSha256": "78e24499a0844202cb0aab20ebbe9f7892c8001828bf73844c891d1679b1e735",
+      "indexSourceSha256": "78e24499a0844202cb0aab20ebbe9f7892c8001828bf73844c891d1679b1e735",
+      "preview": "/assets/nature-maple-tree.png",
+      "previewFile": "catalog/kits/nature/previews/maple-tree.png",
+      "triangleCount": 244,
+      "triangleBudget": 400
+    },
+    {
+      "id": "mushroom",
+      "sourceSha256": "d0b0cfde237cd8630f91d61a1f5b454416a66ec3a28dc28c3f9734eadbf718d1",
+      "indexSourceSha256": "d0b0cfde237cd8630f91d61a1f5b454416a66ec3a28dc28c3f9734eadbf718d1",
+      "preview": "/assets/nature-mushroom.png",
+      "previewFile": "catalog/kits/nature/previews/mushroom.png",
+      "triangleCount": 272,
+      "triangleBudget": 300
+    },
+    {
+      "id": "oak-tree",
+      "sourceSha256": "11d1b534d7ab43da2da81a8112ae2b9eaab1470fb9d292ff077390854f6a5b4d",
+      "indexSourceSha256": "11d1b534d7ab43da2da81a8112ae2b9eaab1470fb9d292ff077390854f6a5b4d",
+      "preview": "/assets/nature-oak-tree.png",
+      "previewFile": "catalog/kits/nature/previews/oak-tree.png",
+      "triangleCount": 288,
+      "triangleBudget": 400
+    },
+    {
+      "id": "palm-tree",
+      "sourceSha256": "ceb43b8059e785d6f04eea9421c695ec7a57b9a88984547d05903e1f00bd2c9c",
+      "indexSourceSha256": "ceb43b8059e785d6f04eea9421c695ec7a57b9a88984547d05903e1f00bd2c9c",
+      "preview": "/assets/nature-palm-tree.png",
+      "previewFile": "catalog/kits/nature/previews/palm-tree.png",
+      "triangleCount": 338,
+      "triangleBudget": 420
+    },
+    {
+      "id": "path-tile",
+      "sourceSha256": "30b3997169b66583d44ae34fadefd3ae82f01b2fc3ccea68370ecfccdc61dce4",
+      "indexSourceSha256": "30b3997169b66583d44ae34fadefd3ae82f01b2fc3ccea68370ecfccdc61dce4",
+      "preview": "/assets/nature-path-tile.png",
+      "previewFile": "catalog/kits/nature/previews/path-tile.png",
+      "triangleCount": 68,
+      "triangleBudget": 160
+    },
+    {
+      "id": "pebble-cluster",
+      "sourceSha256": "592e862b9c896073994d4da9b3a95893e1b041c9caf5878ff99f0335315f047d",
+      "indexSourceSha256": "592e862b9c896073994d4da9b3a95893e1b041c9caf5878ff99f0335315f047d",
+      "preview": "/assets/nature-pebble-cluster.png",
+      "previewFile": "catalog/kits/nature/previews/pebble-cluster.png",
+      "triangleCount": 256,
+      "triangleBudget": 400
+    },
+    {
+      "id": "pine-tree",
+      "sourceSha256": "a321f4af2a43c8f612d0b8af642a0cbeb329ba2bc3ac5e27e075480188aad697",
+      "indexSourceSha256": "a321f4af2a43c8f612d0b8af642a0cbeb329ba2bc3ac5e27e075480188aad697",
+      "preview": "/assets/nature-pine-tree.png",
+      "previewFile": "catalog/kits/nature/previews/pine-tree.png",
+      "triangleCount": 96,
+      "triangleBudget": 400
+    },
+    {
+      "id": "poplar-tree",
+      "sourceSha256": "e9b8d76f4eac062157643a16220b2d7c3b63f1653e319441c8a5db22cf10cd4a",
+      "indexSourceSha256": "e9b8d76f4eac062157643a16220b2d7c3b63f1653e319441c8a5db22cf10cd4a",
+      "preview": "/assets/nature-poplar-tree.png",
+      "previewFile": "catalog/kits/nature/previews/poplar-tree.png",
+      "triangleCount": 280,
+      "triangleBudget": 400
+    },
+    {
+      "id": "prickly-pear-cactus",
+      "sourceSha256": "42b4e7b6e1c7f9c84521a6d5f9aa7771d76190aa1cb616e6b6f2205dab978768",
+      "indexSourceSha256": "42b4e7b6e1c7f9c84521a6d5f9aa7771d76190aa1cb616e6b6f2205dab978768",
+      "preview": "/assets/nature-prickly-pear-cactus.png",
+      "previewFile": "catalog/kits/nature/previews/prickly-pear-cactus.png",
+      "triangleCount": 272,
+      "triangleBudget": 400
+    },
+    {
+      "id": "pumpkin-patch",
+      "sourceSha256": "c8b6459275d33d88c2b3991955ef31aebae8a779b3580f4a41f374d902ec7834",
+      "indexSourceSha256": "c8b6459275d33d88c2b3991955ef31aebae8a779b3580f4a41f374d902ec7834",
+      "preview": "/assets/nature-pumpkin-patch.png",
+      "previewFile": "catalog/kits/nature/previews/pumpkin-patch.png",
+      "triangleCount": 404,
+      "triangleBudget": 500
+    },
+    {
+      "id": "reeds",
+      "sourceSha256": "efc23f825c2ed2148c35ba64a84ef99de7067bd1d82e70397ef0194fbe326191",
+      "indexSourceSha256": "efc23f825c2ed2148c35ba64a84ef99de7067bd1d82e70397ef0194fbe326191",
+      "preview": "/assets/nature-reeds.png",
+      "previewFile": "catalog/kits/nature/previews/reeds.png",
+      "triangleCount": 140,
+      "triangleBudget": 200
+    },
+    {
+      "id": "rock-arch",
+      "sourceSha256": "1467cf3a7b30759c37bfda2bf41d05cb2e45d271ab45d0a091cf156e3f8a3716",
+      "indexSourceSha256": "1467cf3a7b30759c37bfda2bf41d05cb2e45d271ab45d0a091cf156e3f8a3716",
+      "preview": "/assets/nature-rock-arch.png",
+      "previewFile": "catalog/kits/nature/previews/rock-arch.png",
+      "triangleCount": 142,
+      "triangleBudget": 300
+    },
+    {
+      "id": "rock-pillar",
+      "sourceSha256": "f7a821885a1c0439a81a493ea05d1f4bc4a6bbb2d984eb64fd682f039be6c9fb",
+      "indexSourceSha256": "f7a821885a1c0439a81a493ea05d1f4bc4a6bbb2d984eb64fd682f039be6c9fb",
+      "preview": "/assets/nature-rock-pillar.png",
+      "previewFile": "catalog/kits/nature/previews/rock-pillar.png",
+      "triangleCount": 190,
+      "triangleBudget": 300
+    },
+    {
+      "id": "rock",
+      "sourceSha256": "1e225c5c8f6663fb58b65bf9e5116443b88043dc471e01c1a9a18b34356b62a7",
+      "indexSourceSha256": "1e225c5c8f6663fb58b65bf9e5116443b88043dc471e01c1a9a18b34356b62a7",
+      "preview": "/assets/nature-rock.png",
+      "previewFile": "catalog/kits/nature/previews/rock.png",
+      "triangleCount": 62,
+      "triangleBudget": 120
+    },
+    {
+      "id": "rose-bush",
+      "sourceSha256": "8de79dd9fc6ef0fbf6ae948ed10a6e382da5566f7cc1da00318d2ee9911ca5a3",
+      "indexSourceSha256": "8de79dd9fc6ef0fbf6ae948ed10a6e382da5566f7cc1da00318d2ee9911ca5a3",
+      "preview": "/assets/nature-rose-bush.png",
+      "previewFile": "catalog/kits/nature/previews/rose-bush.png",
+      "triangleCount": 444,
+      "triangleBudget": 600
+    },
+    {
+      "id": "sapling",
+      "sourceSha256": "7a83f098717a87e222bca6411d5da0aab5214ed23d6c196c17909060dc81f3b6",
+      "indexSourceSha256": "7a83f098717a87e222bca6411d5da0aab5214ed23d6c196c17909060dc81f3b6",
+      "preview": "/assets/nature-sapling.png",
+      "previewFile": "catalog/kits/nature/previews/sapling.png",
+      "triangleCount": 148,
+      "triangleBudget": 250
+    },
+    {
+      "id": "seashells",
+      "sourceSha256": "6a43db0b99dd1e31ce6132de637f5db4a24f4f5b6d5571ad4f18e23cc514d5cf",
+      "indexSourceSha256": "6a43db0b99dd1e31ce6132de637f5db4a24f4f5b6d5571ad4f18e23cc514d5cf",
+      "preview": "/assets/nature-seashells.png",
+      "previewFile": "catalog/kits/nature/previews/seashells.png",
+      "triangleCount": 228,
+      "triangleBudget": 400
+    },
+    {
+      "id": "snowy-fir-tree",
+      "sourceSha256": "721f8bcf243d563a2f2a7e8b3eb7046fa1c9b94c8ba1e9a0e93f63beac1ca87e",
+      "indexSourceSha256": "721f8bcf243d563a2f2a7e8b3eb7046fa1c9b94c8ba1e9a0e93f63beac1ca87e",
+      "preview": "/assets/nature-snowy-fir-tree.png",
+      "previewFile": "catalog/kits/nature/previews/snowy-fir-tree.png",
+      "triangleCount": 360,
+      "triangleBudget": 450
+    },
+    {
+      "id": "spruce-tree",
+      "sourceSha256": "f4211726a536261406264bd703a1fabafbc5cb15dff51b3584b4954afdc55a3c",
+      "indexSourceSha256": "f4211726a536261406264bd703a1fabafbc5cb15dff51b3584b4954afdc55a3c",
+      "preview": "/assets/nature-spruce-tree.png",
+      "previewFile": "catalog/kits/nature/previews/spruce-tree.png",
+      "triangleCount": 280,
+      "triangleBudget": 450
+    },
+    {
+      "id": "stone-slab",
+      "sourceSha256": "df7cbec315a24da2e0e35d35ae9ccbf8a3e62d466e6f9e0febc016eebf700a6e",
+      "indexSourceSha256": "df7cbec315a24da2e0e35d35ae9ccbf8a3e62d466e6f9e0febc016eebf700a6e",
+      "preview": "/assets/nature-stone-slab.png",
+      "previewFile": "catalog/kits/nature/previews/stone-slab.png",
+      "triangleCount": 112,
+      "triangleBudget": 150
+    },
+    {
+      "id": "sunflower",
+      "sourceSha256": "bb291bfc24a5b74525905f3cd9abb6b487ee0df87296c24298c9077e43f28ae6",
+      "indexSourceSha256": "bb291bfc24a5b74525905f3cd9abb6b487ee0df87296c24298c9077e43f28ae6",
+      "preview": "/assets/nature-sunflower.png",
+      "previewFile": "catalog/kits/nature/previews/sunflower.png",
+      "triangleCount": 220,
+      "triangleBudget": 500
+    },
+    {
+      "id": "tall-grass",
+      "sourceSha256": "1e80b27d630a7842159cf561e5d87c6bf111cd19f6f6e2b56db43380b8aa6c43",
+      "indexSourceSha256": "1e80b27d630a7842159cf561e5d87c6bf111cd19f6f6e2b56db43380b8aa6c43",
+      "preview": "/assets/nature-tall-grass.png",
+      "previewFile": "catalog/kits/nature/previews/tall-grass.png",
+      "triangleCount": 362,
+      "triangleBudget": 500
+    },
+    {
+      "id": "termite-mound",
+      "sourceSha256": "a198270d11a4862eece6a6186b9c3f80d1394a152e54f00de9ba2ec3e7127090",
+      "indexSourceSha256": "a198270d11a4862eece6a6186b9c3f80d1394a152e54f00de9ba2ec3e7127090",
+      "preview": "/assets/nature-termite-mound.png",
+      "previewFile": "catalog/kits/nature/previews/termite-mound.png",
+      "triangleCount": 302,
+      "triangleBudget": 400
+    },
+    {
+      "id": "tree-stump",
+      "sourceSha256": "62ee524936d564171e77de7f47f4d6652fb06ece0e7a33209eff2c3c005f7e3c",
+      "indexSourceSha256": "62ee524936d564171e77de7f47f4d6652fb06ece0e7a33209eff2c3c005f7e3c",
+      "preview": "/assets/nature-tree-stump.png",
+      "previewFile": "catalog/kits/nature/previews/tree-stump.png",
+      "triangleCount": 188,
+      "triangleBudget": 220
+    },
+    {
+      "id": "tulip-bed",
+      "sourceSha256": "32faf154bb988432b680d2515ad48ba0c1eb5b90cbe6d6e7d83808a725100704",
+      "indexSourceSha256": "32faf154bb988432b680d2515ad48ba0c1eb5b90cbe6d6e7d83808a725100704",
+      "preview": "/assets/nature-tulip-bed.png",
+      "previewFile": "catalog/kits/nature/previews/tulip-bed.png",
+      "triangleCount": 380,
+      "triangleBudget": 600
+    },
+    {
+      "id": "tumbleweed",
+      "sourceSha256": "7b765b7c3ce4d4a02256c0120c65533f3c8c028a13488ebf1e6edac5d177c225",
+      "indexSourceSha256": "7b765b7c3ce4d4a02256c0120c65533f3c8c028a13488ebf1e6edac5d177c225",
+      "preview": "/assets/nature-tumbleweed.png",
+      "previewFile": "catalog/kits/nature/previews/tumbleweed.png",
+      "triangleCount": 304,
+      "triangleBudget": 400
+    },
+    {
+      "id": "vine-arch",
+      "sourceSha256": "66fdebe515cfe62e7bff81dbe858957ce221326feb772e8f3aba0c7034898485",
+      "indexSourceSha256": "66fdebe515cfe62e7bff81dbe858957ce221326feb772e8f3aba0c7034898485",
+      "preview": "/assets/nature-vine-arch.png",
+      "previewFile": "catalog/kits/nature/previews/vine-arch.png",
+      "triangleCount": 458,
+      "triangleBudget": 600
+    },
+    {
+      "id": "water-tile",
+      "sourceSha256": "772b608f5f1daf81e0d0a9eab1080c2c8203cc7ab5714a5ba0a8fb7eec5a77f7",
+      "indexSourceSha256": "772b608f5f1daf81e0d0a9eab1080c2c8203cc7ab5714a5ba0a8fb7eec5a77f7",
+      "preview": "/assets/nature-water-tile.png",
+      "previewFile": "catalog/kits/nature/previews/water-tile.png",
+      "triangleCount": 204,
+      "triangleBudget": 220
+    },
+    {
+      "id": "wheat-sheaf",
+      "sourceSha256": "26b75b7b848f405acd919314b4b5f215581b01267129e298b5a864f899027711",
+      "indexSourceSha256": "26b75b7b848f405acd919314b4b5f215581b01267129e298b5a864f899027711",
+      "preview": "/assets/nature-wheat-sheaf.png",
+      "previewFile": "catalog/kits/nature/previews/wheat-sheaf.png",
+      "triangleCount": 338,
+      "triangleBudget": 450
+    },
+    {
+      "id": "willow-tree",
+      "sourceSha256": "084fc319f0d9facabb336ca626540630750cce9f2a68238bf31993d2f365c8b4",
+      "indexSourceSha256": "084fc319f0d9facabb336ca626540630750cce9f2a68238bf31993d2f365c8b4",
+      "preview": "/assets/nature-willow-tree.png",
+      "previewFile": "catalog/kits/nature/previews/willow-tree.png",
+      "triangleCount": 388,
+      "triangleBudget": 500
+    }
+  ],
+  "localCatalogPages": {
+    "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-nature-pages-20261106",
+    "outputRoot": "/tmp/kernelcad-nature-pages-20261106/catalog",
+    "workspacePages": 2390,
+    "assetsChecked": 3,
+    "hubBuilt": true,
+    "deployed": false,
+    "pages": [
+      {
+        "id": "cairn",
+        "path": "/tmp/kernelcad-nature-pages-20261106/catalog/nature/cairn/index.html",
+        "materialLabels": [
+          "Stone",
+          "Accent stones"
+        ],
+        "presets": [
+          "dark",
+          "sandstone"
+        ],
+        "previewCopied": true
+      },
+      {
+        "id": "pebble-cluster",
+        "path": "/tmp/kernelcad-nature-pages-20261106/catalog/nature/pebble-cluster/index.html",
+        "materialLabels": [
+          "Stone",
+          "Accent stones"
+        ],
+        "presets": [
+          "beach",
+          "dark",
+          "red"
+        ],
+        "previewCopied": true
+      },
+      {
+        "id": "dead-tree",
+        "path": "/tmp/kernelcad-nature-pages-20261106/catalog/nature/dead-tree/index.html",
+        "materialLabels": [
+          "Bark",
+          "Exposed heartwood"
+        ],
+        "presets": [
+          "bleached",
+          "charred"
+        ],
+        "previewCopied": true
+      }
+    ]
+  },
+  "checks": {
+    "previewRender": {
+      "command": "npx tsx scripts/renderCatalogPreviews.ts <all 66 nature asset ids>",
+      "exitCode": 0,
+      "output": "preview-render-output.txt",
+      "assets": 66
+    },
+    "catalogBuild": {
+      "command": "npx tsx scripts/buildAssetCatalog.ts",
+      "exitCode": 0,
+      "output": "catalog-build-output.txt"
+    },
+    "kitQuality": {
+      "command": "python scripts/checkCatalogQuality.py --kit nature --top 8",
+      "exitCode": 0,
+      "output": "nature-quality-output.txt"
+    },
+    "wholeCatalogQuality": {
+      "command": "python scripts/checkCatalogQuality.py",
+      "exitCode": 1,
+      "output": "catalog-quality-output.txt",
+      "note": "Audit ran and reports one remaining failing asset outside this round: props/sandbags."
+    },
+    "eslint": {
+      "command": "npx eslint catalog/kits/nature/",
+      "exitCode": 0,
+      "output": "eslint-output.txt"
+    },
+    "catalogIntegration": {
+      "command": "npx vitest run tests/integration/catalog/",
+      "exitCode": 0,
+      "files": 4,
+      "tests": 15,
+      "output": "integration-output.txt"
+    },
+    "localPages": {
+      "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-nature-pages-20261106",
+      "exitCode": 0,
+      "pages": 2390,
+      "output": "local-pages-output.txt"
+    },
+    "presetVariants": {
+      "command": "npx tsx artifacts/catalog-demos/nature-quality-20261106/render_nature_presets.ts",
+      "exitCode": 0,
+      "variants": 6,
+      "output": "preset-render-output.txt"
+    }
+  },
+  "deployed": false,
+  "errors": [],
+  "previewFilesChanged": 1
+}

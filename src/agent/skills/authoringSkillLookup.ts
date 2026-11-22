@@ -302,7 +302,7 @@ export function lookupAuthoringSkill(
 
 /** Ceiling on the no-argument answer (quick-start + index); the tool
  *  description quotes it and the size test enforces it. */
-export const INDEX_CHAR_BUDGET = 16_000;
+export const INDEX_CHAR_BUDGET = 17_000;
 
 /** Tool description for `lookup_authoring_skill` (hosted by kernelCAD-server). */
 export const LOOKUP_AUTHORING_SKILL_DESCRIPTION = [

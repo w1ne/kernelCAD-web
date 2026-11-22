@@ -42,6 +42,9 @@ import { resolveStableEdgeId } from './edgeIdentity';
 import {
   parseFaceSelector,
   findLineageMatches,
+  findRefMatches,
+  availableRefNames,
+  notResolvableHint,
   findFallbackSnapshot,
   resolveBySnapshot,
 } from '../../naming/selectorParser';
@@ -245,6 +248,12 @@ function pickEdgesFromLabelHistoryMap(
       return collectFaceEdges(faces);
     }
   }
+  // Rim refs (`pilot.entry-rim`) live on edge lineage, not on a face.
+  const rimEdges = edgesWithRef(base, parsed);
+  if (rimEdges.length > 0) {
+    reportBinding(record, base, 'edges', rimEdges);
+    return rimEdges;
+  }
   // Slice-2 snapshot fallback for named/ordinal selectors.
   if (parsed.kind === 'named' || parsed.kind === 'ordinal') {
     const fallbackSnap = findFallbackSnapshot(base.historyMap, parsed);
@@ -277,11 +286,32 @@ function pickEdgesFromLabelHistoryMap(
         featureId: record.id,
         severity: 'error',
         message: `'${labelName}' did not resolve.`,
-        hint: `'${labelName}' did not resolve. The face may have been consumed by an upstream op, or the snapshot drifted by transform/scale.`,
+        hint: notResolvableHint(labelName, [
+          ...new Set([
+            ...availableRefNames(base.historyMap, parsed),
+            ...availableRefNames(base.edgeHistoryMap ?? new Map(), parsed),
+          ]),
+        ].sort()),
       },
     };
   }
   return null;
+}
+
+/** Edges on the current shape whose lineage carries the selector's ref. */
+function edgesWithRef(base: OcctBackend, parsed: ReturnType<typeof parseFaceSelector>): EdgeList {
+  if (!base.edgeHistoryMap) return [];
+  const wanted = new Set(findRefMatches(base.edgeHistoryMap, parsed));
+  if (wanted.size === 0) return [];
+  const out: Edge[] = [];
+  const seen = new Set<string>();
+  for (const edge of (base.getReplicadShape() as unknown as { edges: Edge[] }).edges) {
+    const hash = edgeHashHex(edge);
+    if (hash === undefined || !wanted.has(hash) || seen.has(hash)) continue;
+    seen.add(hash);
+    out.push(edge);
+  }
+  return out;
 }
 
 function pickEdgesFromLabelMetadata(
@@ -478,6 +508,7 @@ function resolveCreatedEdgesRef(
     surface: 'edge-feature',
   });
   if (!result.ok) return { error: result.diagnostic };
+  if ('edgeHashes' in result) return edgesMatchingHashes(record, base, result.edgeHashes);
   if (result.warnings) {
     (record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings = [
       ...((record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings ?? []),
@@ -485,6 +516,44 @@ function resolveCreatedEdgesRef(
     ];
   }
   return edgesOfFaceByHash(base, result.faceHashForBoundaryEdges);
+}
+
+const EDGE_HASH_UPPER = 2147483647;
+
+function edgeHashHex(edge: Edge): string | undefined {
+  const wrapped = (edge as unknown as { wrapped?: { HashCode?(upper: number): number } }).wrapped;
+  const code = wrapped?.HashCode?.(EDGE_HASH_UPPER);
+  return code === undefined ? undefined : code.toString(16);
+}
+
+/**
+ * Bridge stored edge hashes onto the current shape's wrappers. A hash that is
+ * not on this shape is a miss — never the next edge in the list.
+ */
+function edgesMatchingHashes(
+  record: FeatureRecord,
+  base: OcctBackend,
+  hashes: readonly string[],
+): EdgeList | { error: CompilerDiagnostic } {
+  const all = (base.getReplicadShape() as unknown as { edges: Edge[] }).edges;
+  const out: Edge[] = [];
+  for (const hash of hashes) {
+    const match = all.find((edge) => edgeHashHex(edge) === hash);
+    if (!match) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.selection.no-match',
+          featureId: record.id,
+          severity: 'error',
+          message: `Stored edge '${hash}' is not on the current shape.`,
+          hint: 'The edge was deleted or its lineage hash was not carried onto this shape. The selector did not substitute a neighbour.',
+        },
+      };
+    }
+    out.push(match);
+  }
+  return out;
 }
 
 function resolveQueryEdgesRef(
@@ -679,6 +748,17 @@ export function pickFace(
   return result;
 }
 
+/** Resolve the face named by another input slot (cutout `upToFace`) with the
+ *  same rules as `face`. It does not report a selection binding. */
+export function pickFaceFromInput(
+  record: FeatureRecord,
+  slot: string,
+  base: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
+): Face | { error: CompilerDiagnostic } {
+  return resolveFace({ ...record, inputs: { ...record.inputs, face: record.inputs[slot] } }, base, records);
+}
+
 /**
  * Every face a FaceRef names. A FaceQuery is a set selector — `{ byNormal: 'X' }`
  * is every +X-facing face — so a face edit can move all of them instead of
@@ -848,11 +928,7 @@ function resolveQueryDslEdges(
     const out: Edge[] = [];
     for (const e of entities) {
       if (e.kind === 'edge') {
-        const matchByHash = allEdges.find((edge) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const h = ((edge as any).wrapped ?? edge as any).HashCode(2147483647).toString(16);
-          return h === e.handle;
-        });
+        const matchByHash = allEdges.find((edge) => edgeHashHex(edge) === e.handle);
         if (matchByHash) out.push(matchByHash);
       }
     }
