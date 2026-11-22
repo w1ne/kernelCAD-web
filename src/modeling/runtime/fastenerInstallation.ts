@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { getOC, makeVertex, type Face } from 'replicad';
+import { getOC, makeCylinder, makeVertex, type Face } from 'replicad';
 import type { BuiltModel } from '../buildModel';
 import type { Assembly } from '../capture/assembly';
 import { isSceneBackend, type SceneBackend } from '../../kernel/backends/sceneBackend';
@@ -129,6 +129,43 @@ function fullOpenBore(shape: OcctBackend, hole: CylindricalHole): boolean {
   }
   return true;
 }
+/** Join only full coaxial walls whose intervals form one continuous path.
+ * These are kernel geometry tolerances, independent of installation allowances. */
+function continuousBore(clusters: BoreExtent[]): CylindricalHole | undefined {
+  const first = clusters[0];
+  if (!first) return undefined;
+  const axis = first.dir0, origin = first.loc0;
+  const intervals: { min: number; max: number }[] = [];
+  for (const c of clusters) {
+    if (Math.abs(c.coverageRad-2*Math.PI)>1e-6) return undefined;
+    const parallel = dot(axis,c.dir0);
+    const offset = sub(c.loc0,origin);
+    if (norm(sub(c.dir0,scale(axis,parallel)))>1e-9
+      || norm(sub(offset,scale(axis,dot(offset,axis))))>1e-6) return undefined;
+    const a = dot(sub(add(c.loc0,scale(c.dir0,c.tMin)),origin),axis);
+    const b = dot(sub(add(c.loc0,scale(c.dir0,c.tMax)),origin),axis);
+    intervals.push({ min: Math.min(a,b), max: Math.max(a,b) });
+  }
+  intervals.sort((a,b)=>a.min-b.min);
+  // A gap may hide a solid web. Overlapping intervals with different radii
+  // describe multiple walls, not a proven single open bore.
+  if (intervals.some((v,i)=>i>0 && Math.abs(v.min-intervals[i-1].max)>1e-6)) return undefined;
+  return {
+    axisOrigin: [...add(origin,scale(axis,intervals[0].min))], axisDirection: axis,
+    diameterMm: 2*Math.min(...clusters.map(c=>c.radiusMm)),
+    depthMm: intervals[intervals.length-1].max-intervals[0].min,
+    faceCount: clusters.reduce((sum,c)=>sum+c.faceCount,0), kind: 'through',
+  };
+}
+/** The common minimum-radius core must be empty, including at every step.
+ * Inset only avoids coincident side faces; positive material volume rejects. */
+function clearBoreCore(shape: OcctBackend, hole: CylindricalHole): boolean {
+  const radius = hole.diameterMm/2-1e-5;
+  if (!(radius>0)) return false;
+  const core = new OcctBackend(makeCylinder(radius,hole.depthMm,[...hole.axisOrigin],[...hole.axisDirection]));
+  try { return shape.intersectionVolume(core)===0; }
+  finally { core.dispose(); }
+}
 function boreFor(shape: OcctBackend, screw: ScrewFrame, tolerance: number): CylindricalHole | undefined {
   // Inspect every local cylindrical cluster, including partial ones. A remote
   // notch must not invalidate this bore or replace a breached target.
@@ -146,21 +183,15 @@ function boreFor(shape: OcctBackend, screw: ScrewFrame, tolerance: number): Cyli
   // Keep full bores beyond the tip so zero/short overlap is a measured failure.
   const sorted = collectConcaveCylinderClusters(shape,'trimmed').filter(relevantTarget).sort((a,b) => distance(a)-distance(b));
   const candidate = sorted[0];
-  if (!candidate || Math.abs(candidate.coverageRad-2*Math.PI)>1e-6
-    || (sorted[1] && Math.abs(distance(sorted[1])-distance(candidate)) <= tolerance)) return undefined;
-  const bore: CylindricalHole = {
-    axisOrigin: [...add(candidate.loc0,scale(candidate.dir0,candidate.tMin))],
-    axisDirection: candidate.dir0,
-    diameterMm: 2*candidate.radiusMm,
-    depthMm: candidate.tMax-candidate.tMin,
-    faceCount: candidate.faceCount,
-    kind: 'through',
-  };
+  if (!candidate) return undefined;
+  const nearest = sorted.filter(c=>Math.abs(distance(c)-distance(candidate))<=Math.max(tolerance,1e-6));
+  const bore = continuousBore(nearest);
+  if (!bore) return undefined;
   // Overlapping radial envelopes still associate genuinely misaligned bores.
   if (distance(candidate) > (bore.diameterMm + screw.diameter) / 2 + tolerance) return undefined;
-  // Only strict open-end probes establish the outlet. Blind/countersunk/threaded
-  // topology is intentionally unknown in this flat-bearing audit.
-  return fullOpenBore(shape,bore) ? bore : undefined;
+  // A stepped path additionally needs an empty common core. Blind, breached
+  // and separated cavities remain unknown even when their axes coincide.
+  return fullOpenBore(shape,bore) && (nearest.length===1 || clearBoreCore(shape,bore)) ? bore : undefined;
 }
 /** Maximum shank radial envelope over the actual bore interval. The screw
  * can accumulate tilt before it reaches a distant receiver; bore depth alone
@@ -199,8 +230,8 @@ function boreMetrics(part: string, shape: OcctBackend, screw: ScrewFrame, tol: n
   return { interval: { min,max,hole }, metrics: [
     measured(names[0],part,offset,tol,offset<=tol,'Distance of screw bearing center to measured bore axis.','Align the screw and target bore axes.'),
     measured(names[1],part,tilt,angleTol,tilt<=angleTol,'Angle between measured bore axis and catalog bearing-to-tip axis.','Rotate the screw onto the bore axis.'),
-    measured(names[2],part,hole.diameterMm,screw.diameter,hole.diameterMm+tol>=screw.diameter && maxOffset<=clearance+tol,'BREP bore diameter and conservative shank envelope at shaft-clipped bore endpoint planes, including tilt accumulated from the bearing.','Increase modeled clearance or correct offset/tilt.'),
-    measured(names[3],part,overlap,0,overlap>tol,'Axial interval overlap of measured cylindrical bore with catalog shank.','Extend or move the screw so its shank spans this target.'),
+    measured(names[2],part,hole.diameterMm,screw.diameter,hole.diameterMm+tol>=screw.diameter && maxOffset<=clearance+tol,'Minimum BREP path diameter and conservative shank envelope at shaft-clipped path endpoint planes, including tilt accumulated from the bearing.','Increase modeled clearance or correct offset/tilt.'),
+    measured(names[3],part,overlap,0,overlap>tol,'Axial interval overlap of the measured continuous bore path with catalog shank.','Extend or move the screw so its shank spans this target.'),
   ] };
 }
 function distanceToFace(point: Vec3, face: Face): number {
@@ -337,5 +368,5 @@ export function checkFastenerInstallation(model: BuiltModel, options: FastenerIn
   const counts = { requested: stations.length, measured: stations.filter(s=>s.metrics.some(m=>m.value!==null)).length, passed: stations.filter(s=>s.status==='pass').length, failed: stations.filter(s=>s.status==='fail').length, unknown: stations.filter(s=>s.metrics.some(m=>m.status==='unknown')).length };
   const status = !stations.length ? 'no-coverage' : counts.failed ? 'fail' : counts.unknown ? 'partial' : 'pass';
   return { ok: status==='pass', source: 'local', assembly: scene?.assemblyName ?? options.assembly ?? null, status, counts, stations,
-    limitations: ['Explicit stations only; unlisted fasteners are not audited.','Flat annular-bearing screws and full open cylindrical bores only; unsupported/ambiguous geometry is unknown.','Engagement is modeled axial overlap. Simplified threads cannot certify thread contact, strength, torque, preload or physical installation.','Bearing support is checked at four radial locations on facing coplanar trimmed material; this is not a pressure/contact-area analysis.'] };
+    limitations: ['Explicit stations only; unlisted fasteners are not audited.','Flat annular-bearing screws and full open cylindrical or continuous coaxial stepped bores only; unsupported/ambiguous geometry is unknown.','Engagement is modeled axial overlap. Simplified threads cannot certify thread contact, strength, torque, preload or physical installation.','Bearing support is checked at four radial locations on facing coplanar trimmed material; this is not a pressure/contact-area analysis.'] };
 }
