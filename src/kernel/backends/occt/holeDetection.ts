@@ -277,8 +277,7 @@ export interface ConcaveCylFace {
   /** Unit axis direction (sign as OCCT reports it for this face). */
   dir: Vec3;
   radiusMm: number;
-  /** Mean angular coverage over the axial bounds (rad). BREP collection uses
-   * trimmed surface area / (radius × depth), not the enclosing UV rectangle. */
+  /** Angular extent (rad); trimmed collection uses mean actual wall coverage. */
   du: number;
   /** Axial UV bounds (mm along `dir` from `loc`). */
   v1: number;
@@ -372,9 +371,11 @@ export function collectFullCylinders(backend: OcctBackend, kind: 'hole' | 'pin')
  * including partial ones (fillets, rounded pocket corners). Coverage below
  * `MIN_ANGULAR_COVERAGE_RAD` marks a partial cylinder. Cheap — no boolean
  * probes. Used by the CNC internal-corner-radius check (dfm_review).
+ * Nominal coverage retains bores with curved mouths. A conservative full-wall
+ * audit can request trimmed area; curved mouths and side pockets both reduce it.
  */
-export function collectConcaveCylinderClusters(backend: OcctBackend): BoreExtent[] {
-  return resolveBoreCandidates(collectConcaveCylindricalFaces(backend, 'concave'));
+export function collectConcaveCylinderClusters(backend: OcctBackend, coverage: 'nominal' | 'trimmed' = 'nominal'): BoreExtent[] {
+  return resolveBoreCandidates(collectConcaveCylindricalFaces(backend, 'concave', coverage));
 }
 
 /**
@@ -502,14 +503,15 @@ function isEndClosed(
 function collectConcaveCylindricalFaces(
   backend: OcctBackend,
   want: 'concave' | 'convex' = 'concave',
+  coverage: 'nominal' | 'trimmed' = 'nominal',
 ): ConcaveCylFace[] {
   // Every handle below is deleted here, so none is registered with the GC
   // safety net: a mesh-derived body runs this loop over tens of thousands
   // of facets.
-  return untracked(() => scanCylindricalFaces(backend, want));
+  return untracked(() => scanCylindricalFaces(backend, want, coverage));
 }
 
-function scanCylindricalFaces(backend: OcctBackend, want: 'concave' | 'convex'): ConcaveCylFace[] {
+function scanCylindricalFaces(backend: OcctBackend, want: 'concave' | 'convex', coverage: 'nominal' | 'trimmed'): ConcaveCylFace[] {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -573,7 +575,7 @@ function scanCylindricalFaces(backend: OcctBackend, want: 'concave' | 'convex'):
           if (concave === (want === 'concave')) {
             // A side pocket can trim only part of the bore depth while its UV
             // bounds still span a full circle. Measure the actual wall area.
-            const du = integrateArea(face) / (radiusMm * Math.abs(v2-v1));
+            const du = coverage === 'trimmed' ? integrateArea(face) / (radiusMm * Math.abs(v2-v1)) : u2-u1;
             if (!Number.isFinite(du) || du < 0) throw new Error('Cylindrical wall coverage could not be measured');
             out.push({ loc, dir, radiusMm, du, v1, v2 });
           }

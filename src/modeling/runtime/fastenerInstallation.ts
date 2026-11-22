@@ -144,7 +144,7 @@ function boreFor(shape: OcctBackend, screw: ScrewFrame, tolerance: number): Cyli
   };
   // A partial head-clearance relief above the bearing is not a shank bore.
   // Keep full bores beyond the tip so zero/short overlap is a measured failure.
-  const sorted = collectConcaveCylinderClusters(shape).filter(relevantTarget).sort((a,b) => distance(a)-distance(b));
+  const sorted = collectConcaveCylinderClusters(shape,'trimmed').filter(relevantTarget).sort((a,b) => distance(a)-distance(b));
   const candidate = sorted[0];
   if (!candidate || Math.abs(candidate.coverageRad-2*Math.PI)>1e-6
     || (sorted[1] && Math.abs(distance(sorted[1])-distance(candidate)) <= tolerance)) return undefined;

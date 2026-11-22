@@ -1,11 +1,11 @@
 {
-  "checkedAt": "2026-11-22T17:55:39.960Z",
+  "checkedAt": "2026-11-22T18:12:28.429Z",
   "invocation": "npx tsx docs/demos/fastener-local-features-20261122/capture-demo.mts",
   "exampleSha256": "053fb26b1dbcd732fbd2b7473ba6668c1a8bfe60d0b70ef38a44b4b6df78c43a",
   "generatorSha256": "f7a7fdce2b6bcce51c5a393139e0c3221246c9600e350bbdf12f55ac340e7210",
   "implementationHashes": {
-    "src/modeling/runtime/fastenerInstallation.ts": "83e089079a40096e8e9ce3bc5989fd555920d17666ad8dfaa7563c18718036c1",
-    "src/kernel/backends/occt/holeDetection.ts": "9e6dc9699dfb0cbe0de5da765bfc63490bbf341fec28c33f1c2c13e32694ef92"
+    "src/modeling/runtime/fastenerInstallation.ts": "2173c9b514b3f4a8e3c5664b63c0e6c0081a9e56593324b8d7255124e3f07900",
+    "src/kernel/backends/occt/holeDetection.ts": "9d23267173d0b7b64d0de0f6b9ce456ebf10d521e61cbfb7005b646f77424f27"
   },
   "evidence": [
     {
@@ -136,7 +136,7 @@
         "manifest": {
           "bundleVersion": 1,
           "scriptPath": "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/remote-notch.kcad.ts",
-          "generatedAt": "2026-11-22T17:54:31.100Z",
+          "generatedAt": "2026-11-22T18:11:47.259Z",
           "requestedChannels": [
             "rgb"
           ],
@@ -319,7 +319,7 @@
         "manifest": {
           "bundleVersion": 1,
           "scriptPath": "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/split-bearing.kcad.ts",
-          "generatedAt": "2026-11-22T17:54:56.663Z",
+          "generatedAt": "2026-11-22T18:11:56.930Z",
           "requestedChannels": [
             "rgb"
           ],
@@ -502,7 +502,7 @@
         "manifest": {
           "bundleVersion": 1,
           "scriptPath": "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/lifted-head.kcad.ts",
-          "generatedAt": "2026-11-22T17:55:17.832Z",
+          "generatedAt": "2026-11-22T18:12:10.497Z",
           "requestedChannels": [
             "rgb"
           ],
@@ -685,7 +685,7 @@
         "manifest": {
           "bundleVersion": 1,
           "scriptPath": "/data/kernelcad-fastener-public-20261122/docs/demos/fastener-local-features-20261122/narrow-breach.kcad.ts",
-          "generatedAt": "2026-11-22T17:55:36.302Z",
+          "generatedAt": "2026-11-22T18:12:25.232Z",
           "requestedChannels": [
             "rgb"
           ],
