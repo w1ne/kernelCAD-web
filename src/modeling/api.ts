@@ -130,12 +130,14 @@ export interface PartsLib {
    * `const [outline, ...holes] = await lib.fromDXF('plate.dxf')`.
    *
    * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE, closed
-   * planar HATCH boundaries (polyline paths, or edge paths of lines and
-   * circular arcs), and clamped continuous planar SPLINE entities with
-   * control points and knots. HATCH bulges and arc edges map to exact arcs;
+   * planar HATCH boundaries (polyline paths, or edge paths of line,
+   * circular-arc, elliptic-arc and spline edges), and clamped continuous
+   * planar SPLINE entities with control points and knots. HATCH bulges and
+   * arc edges map to exact arcs, elliptic-arc and spline edges to exact NURBS;
    * a multi-path HATCH keeps its declared holes, so each filled area is ONE
-   * sketch with its inner paths as holes. Elliptic-arc and spline HATCH
-   * edges, crossing and out-of-plane hatches are refused.
+   * sketch with its inner paths as holes. Elliptic-arc HATCH edges that end
+   * off the ellipse axes, fit-point-only spline edges, crossing and
+   * out-of-plane hatches are refused.
    * Full and partial planar ellipses and supported splines are exact rational
    * NURBS geometry; periodic and unclamped knot vectors are clamped exactly.
    * A cubic SPLINE with fit points only is interpolated through its fit
@@ -712,7 +714,9 @@ export interface KernelCadApi {
    *   - Keyframe tracks: `{ name?, tracks, fps? }` — several params on one
    *     shared timeline, each track a list of `{ atMs, value, ease? }` keys.
    *     `ease` applies to the segment ENDING at that key (default 'linear');
-   *     outside the keyed span the value holds.
+   *     outside the keyed span the value holds. A track may instead be an
+   *     appearance track `{ target, channel: 'color' | 'emissive', keys }`
+   *     with `#rrggbb` key values (stored in `appearanceTracks`).
    *
    * Either way the stored metadata is normalized to the track shape
    * (`AnimationViewMetadata`): keys sorted by atMs, ease defaulted, and
