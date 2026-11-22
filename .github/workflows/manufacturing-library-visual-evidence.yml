@@ -12,6 +12,10 @@ jobs:
   capture:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      # CI workers currently run Ubuntu 26.04. Match the already-tested
+      # Playwright host override used by the repository's catalog preview CI.
+      PLAYWRIGHT_HOST_PLATFORM_OVERRIDE: ubuntu24.04-x64
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,7 +24,7 @@ jobs:
       - name: Install isolated Chromium runner
         run: |
           npm --prefix "$RUNNER_TEMP/asset-library-capture" install --no-save --no-audit --no-fund playwright@1.58.0
-          "$RUNNER_TEMP/asset-library-capture/node_modules/.bin/playwright" install --with-deps chromium --only-shell
+          "$RUNNER_TEMP/asset-library-capture/node_modules/.bin/playwright" install chromium --only-shell
       - name: Capture production manufacturing cards at mobile and desktop widths
         env:
           NODE_PATH: ${{ runner.temp }}/asset-library-capture/node_modules
