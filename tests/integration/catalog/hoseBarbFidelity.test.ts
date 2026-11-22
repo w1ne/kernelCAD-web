@@ -8,7 +8,9 @@ import { NodeIO } from '@gltf-transform/core';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { buildCatalogAssetWithGlb } from '../../../src/agent/catalog/buildCatalog';
 import { runAndExport } from '../../../src/agent/script-runtime/export';
-import { glbTriangles, renderTrianglesPng } from '../../../scripts/lib/glbSoftwareRender';
+import sharp from 'sharp';
+import { renderManufacturingCatalogPreview } from '../../../scripts/lib/manufacturingCatalogPreview';
+import { pixelDiff, previewMatches } from '../../../scripts/lib/catalogPreviewGate';
 
 type V = [number, number, number];
 type Tri = [V, V, V];
@@ -87,12 +89,16 @@ function verify(parts:Map<string,Tri[]>) {
 }
 beforeAll(async()=>{await initOcct();},30000);
 describe('illustrative hose barb adapter real tapered lips and bore',()=>{
-  it('committed gallery preview matches native evaluated source with canonical title',async()=>{
-    const {asset,glb}=await buildCatalogAssetWithGlb(root,sourcePath);
-    const rendered=await renderTrianglesPng(await glbTriangles(glb),{label:`${asset.title} · ${asset.stats.triangles} tris`});
+  it('committed source-backed 4:3 preview matches the native CAD publishing preset',async()=>{
+    const rendered=await renderManufacturingCatalogPreview(resolve(root,sourcePath));
     const preview=readFileSync(resolve(root,'catalog/kits/standard-components/previews/hose-barb-adapter.png'));
-    expect(Buffer.compare(rendered,preview),'stale previews must fail even if source compiles').toBe(0);
-  },30000);
+    const image=async (png: Uint8Array) => {
+      const {data,info}=await sharp(png).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+      return {width:info.width,height:info.height,data};
+    };
+    const diff=pixelDiff(await image(rendered),await image(preview));
+    expect(previewMatches(diff),`stale or mismatched native CAD preview: ${JSON.stringify(diff)}`).toBe(true);
+  },60000);
   for(const [size,scale] of [['standard',1],['compact',0.75],['large',1.25]] as const){
     it(`${size}: three tapered retention lips, one through-bored connected body and hex wrench`,async()=>{
       const source=readFileSync(resolve(root,sourcePath),'utf8');

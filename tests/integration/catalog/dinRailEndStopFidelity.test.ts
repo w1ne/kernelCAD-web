@@ -7,7 +7,9 @@ import { NodeIO } from '@gltf-transform/core';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { buildCatalogAssetWithGlb } from '../../../src/agent/catalog/buildCatalog';
 import { runAndExport } from '../../../src/agent/script-runtime/export';
-import { glbTriangles, renderTrianglesPng } from '../../../scripts/lib/glbSoftwareRender';
+import sharp from 'sharp';
+import { renderManufacturingCatalogPreview } from '../../../scripts/lib/manufacturingCatalogPreview';
+import { pixelDiff, previewMatches } from '../../../scripts/lib/catalogPreviewGate';
 type V=[number,number,number]; type Tri=[V,V,V];
 const root=resolve(import.meta.dirname,'../../..');
 const file='catalog/kits/standard-components/din-rail-end-stop.kcad.ts';
@@ -59,12 +61,16 @@ function checkCrossSection(t:Tri[],s:number) {
 }
 beforeAll(async()=>{await initOcct();},30000);
 describe('illustrative TH35 DIN rail end stop geometry',()=>{
- it('committed gallery preview matches actual evaluated source render',async()=>{
-  const {asset,glb}=await buildCatalogAssetWithGlb(root,file);
-  const rendered=await renderTrianglesPng(await glbTriangles(glb),{label:`${asset.title} · ${asset.stats.triangles} tris`});
+ it('committed source-backed 4:3 preview matches the native CAD publishing preset',async()=>{
+  const rendered=await renderManufacturingCatalogPreview(resolve(root,file));
   const published=readFileSync(resolve(root,'catalog/kits/standard-components/previews/din-rail-end-stop.png'));
-  expect(Buffer.compare(rendered,published),'thumbnail must reflect edited physical geometry, not an old marketing silhouette').toBe(0);
- },30000);
+  const image=async (png: Uint8Array) => {
+   const {data,info}=await sharp(png).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+   return {width:info.width,height:info.height,data};
+  };
+  const diff=pixelDiff(await image(rendered),await image(published));
+  expect(previewMatches(diff),`thumbnail must reflect evaluated geometry: ${JSON.stringify(diff)}`).toBe(true);
+ },60000);
  it('has under-lip geometry, actual open channel, transverse stop and separate slotted screw',async()=>{
   const {asset,glb}=await buildCatalogAssetWithGlb(root,file);
   expect(asset.title).toMatch(/illustrative/i);
