@@ -105,7 +105,7 @@ function solveCaptureMateMotions(
   const expandedPoses = expandCoupledPoses(state.mates, state.mateCouplings, numericPoses, {
     resolveSourcePose: (mate) => captureMatePose(mate, state),
   });
-  const sceneMotions = mateFk(resolvedParts, state.mates, expandedPoses, { loopModes: state.loopModes });
+  const sceneMotions = mateFk(resolvedParts, state.mates, expandedPoses, { loopModes: state.loopModes, virtualJoints: state.virtualJoints });
   const sceneMotionByPartId = new Map<string, Transform>();
   for (const part of state.parts) {
     if (!connectorNamesByPart.has(part.name)) continue;

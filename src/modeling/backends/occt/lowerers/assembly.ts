@@ -11,6 +11,7 @@ import { KernelError } from '../../../../shared/intent/kernelError';
 import type { FeatureId, Param, Vec3, Vec3Param } from '../../../../shared/intent/types';
 import { Transform } from '../../../../shared/runtime/se3';
 import type { AssemblyJointStored, AssemblyPartStored } from '../../../capture/assembly';
+import type { VirtualJointRecord } from '../../../capture/assemblyTypes';
 import { forwardKinematics, jointGraphHasLoops, type NumericPoses } from '../../../capture/forwardKinematics';
 import { expandCoupledPoses, type MateCouplingRecord } from '../../../mates/coupledPoses';
 import type { Connector } from '../../../mates/connector';
@@ -493,11 +494,15 @@ function applyModelMateFk(
   }));
   const expandedMatePoses = expandCoupledPoses(mates, mateCouplings, matePoses);
   args.onResolved?.(resolvedParts, mates, expandedMatePoses);
-  const mateWorldT = mateFk(resolvedParts, mates, expandedMatePoses, { loopModes: readLoopModes(r) });
+  const mateWorldT = mateFk(resolvedParts, mates, expandedMatePoses, { loopModes: readLoopModes(r), virtualJoints: readVirtualJoints(r) });
   for (const [partId, mT] of mateWorldT) {
     if (partId in connectorsByPartId) worldT.set(partId, mT);
   }
   return true;
+}
+
+function readVirtualJoints(r: FeatureRecord): readonly VirtualJointRecord[] {
+  return (r.metadata as { virtualJoints?: readonly VirtualJointRecord[] } | undefined)?.virtualJoints ?? [];
 }
 
 /** `loopMode(...)` pins carried on an assembly record's metadata. */
@@ -871,6 +876,7 @@ function applySolvedMateFk(
       driven: drivenMateNames(mates, mateCouplings, numericPoses),
       asBuilt: expandCoupledPoses(mates, mateCouplings, capturePoses),
       loopModes: readLoopModes(r),
+      virtualJoints: readVirtualJoints(r),
     });
   // Merge: mate-derived transforms WIN over joint-derived transforms.
   // Disconnected-from-mates parts retain their joint-FK transform (or

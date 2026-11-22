@@ -352,6 +352,7 @@ export function buildMateMetadata(state: AssemblyState): import('./captureSessio
     mates: encodedMates,
     couplings: [...state.mateCouplings],
     ...(state.loopModes.length > 0 ? { loopModes: [...state.loopModes] } : {}),
+    ...(state.virtualJoints.length > 0 ? { virtualJoints: [...state.virtualJoints] } : {}),
   };
 }
 

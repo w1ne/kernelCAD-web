@@ -256,7 +256,21 @@ const fused = scene.toUnion();               // antipattern; only when one solid
 
 Connector origins are in their owning **part's local frame** (URDF/physics convention). Multi-mate chains compose correctly; the FK tree-walk handles N joints.
 
-**`at` with a mate:** mates are solved outward from the first declared part. That part keeps its `at`, and every part a mate places goes where the mate puts it; its own `at` is then ignored. A part that no chain of mates links to the first declared part is not solved: the built model leaves it at its own `at` and does not apply its mates. Declare the base part first.
+**`at` with a mate:** declare a fixed base with the existing world joint:
+
+```ts
+arm.virtualJoint('world-base', { type: 'fixed', parentFrame: 'world', childLink: 'base' });
+```
+
+The named base keeps its authored `at` in `model()`, `solvedModel()` and mate review,
+even when another part was declared first. Mates place the moving parts from that
+base; a moving part's own `at` is then ignored. Multiple world-fixed bases remain
+fixed, and incompatible mates between them fail solving. A `floating` or `planar`
+virtual joint, or a fixed joint to an internal parent frame, does not ground a part.
+Without a declared fixed world root, the solver retains its first-part fallback
+and review reports `assembly.connectivity.assumed-root`. Disconnected mate
+components still solve from their own first declared part; that fallback does not
+prove that the component is attached to a declared fixed base.
 
 **Companion rule — author each part's shape in its own part-local frame, NOT in world coordinates.** A part's local frame has its origin at the joint where this part attaches to its parent (or at the world origin, for the root part). All `.translate(x, y, z)` calls on the child's shape are interpreted in this *part-local* frame.
 

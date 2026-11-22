@@ -45,7 +45,8 @@ import { atPlacement, matedPartNames, partAtFor, resolvedPartAt, sceneMotion } f
 import type { MatePose, MateRecord } from './mate';
 import { parseConnectorRef } from './mate';
 import type { MateType } from './mateTypes';
-import { solverGroundedPart } from './solverRoot';
+import { solverGroundedParts } from './solverRoot';
+import type { VirtualJointRecord } from '../capture/assemblyTypes';
 import {
   drivenMateNames,
   hasArticulatedLoop,
@@ -194,7 +195,7 @@ export interface SolveMatesOptions {
   acceptConsistentArticulatedLoops?: boolean;
   /** Solve each disconnected mate component from its first declared part
    *  (default `true`), matching the lowered geometry from `mateFk`. `false`
-   *  traverses only the component containing parts[0]; every other part
+   *  traverses only components containing grounded roots; every other part
    *  rests where its `at` puts it and its mates are not applied. */
   solveDisconnectedComponents?: boolean;
   /** Continuation seed for articulated loops: the mate coordinates solved at
@@ -234,7 +235,7 @@ export async function solveMates(
     adjacency.get(bSide.partName)!.push({ mate: m, neighbor: aSide.partName, partIsA: false });
   }
 
-  // 2. Build a spanning tree via BFS from the first declared part. Mates not
+  // 2. Build a spanning tree via BFS from fixed world roots or the first part. Mates not
   //    in the tree become loop-closure constraints — passed to `loopSolve`.
   const partByName = new Map(parts.map((p) => [p.name, p]));
   const { worldT, loopMates, walk } = await walkSpanningTree(
@@ -480,7 +481,8 @@ export interface ResolvedMatePart {
 }
 
 /**
- * Pure mate-FK. Walks the mate graph (a BFS spanning tree from `parts[0]`,
+ * Pure mate-FK. Walks the mate graph (a BFS spanning tree from fixed world roots,
+ * or `parts[0]` when no root is declared,
  * then from the first declared part of each other mated component) and
  * composes per-part world transforms in the assembly root frame.
  *
@@ -517,6 +519,8 @@ export function mateFk(
 /** Closed-loop inputs for the pure mate FK. Without them every mate pose is
  *  an as-built value and nothing is driven. */
 export interface MateFkLoopOptions {
+  /** Existing world-fixed virtual joints; identical grounding in solve and render. */
+  readonly virtualJoints?: readonly VirtualJointRecord[];
   /** Mate names whose pose in `numericPoses` the caller drives. */
   readonly driven?: ReadonlySet<string>;
   /** As-built mate poses (seed). Default: `numericPoses` minus driven keys. */
@@ -547,7 +551,7 @@ export function mateFkWithPlacedParts(
 
   const adjacency = buildResolvedMateAdjacency(parts, mates);
   const partByName = new Map(parts.map((p) => [p.name, p]));
-  const { worldTByName, placedNames, walk } = walkResolvedMateTree(parts, adjacency, partByName, numericPoses);
+  const { worldTByName, placedNames, walk } = walkResolvedMateTree(parts, adjacency, partByName, numericPoses, loopOpts?.virtualJoints);
   closeResolvedLoops(walk, partByName, numericPoses, loopOpts, worldTByName);
 
   // 3. Re-key the result by FeatureId so callers (and the lowerer) can
@@ -588,7 +592,7 @@ function buildResolvedMateAdjacency(
   return adjacency;
 }
 
-/** 2. BFS spanning tree from `parts[0]` and each other mated component's
+/** 2. BFS spanning tree from the grounded roots and each other mated component's
  *  first part. Compose child world transform from
  *  parent's via the mate's local SE(3) contribution. `placedNames` holds
  *  every part a mate edge reached (the roots are not among them). */
@@ -628,6 +632,7 @@ function walkResolvedMateTree(
   adjacency: ReadonlyMap<string, MateEdge[]>,
   partByName: ReadonlyMap<string, ResolvedMatePart>,
   numericPoses: NumericPoses,
+  virtualJoints: readonly VirtualJointRecord[] = [],
 ): { worldTByName: Map<string, Transform>; placedNames: Set<string>; walk: MateWalkRecord } {
   const roots: Array<{ body: string; placement: Transform }> = [];
   const tree: MateTreeStep[] = [];
@@ -640,12 +645,15 @@ function walkResolvedMateTree(
   // Walk the grounded part's component first, then every other mated
   // component from its first declared part, so a mate between two parts
   // that never reach the grounded part still places its child.
-  let root: ResolvedMatePart | undefined = solverGroundedPart(parts);
-  while (root !== undefined) {
-    worldTByName.set(root.name, Transform.identity());
-    roots.push({ body: root.name, placement: Transform.identity() });
-    visited.add(root.name);
-    const queue: string[] = [root.name];
+  let rootParts = solverGroundedParts(parts, virtualJoints);
+  while (rootParts.length > 0) {
+    const queue: string[] = [];
+    for (const root of rootParts) {
+      worldTByName.set(root.name, Transform.identity());
+      roots.push({ body: root.name, placement: Transform.identity() });
+      visited.add(root.name);
+      queue.push(root.name);
+    }
 
     while (queue.length > 0) {
       const parentName = queue.shift()!;
@@ -669,7 +677,8 @@ function walkResolvedMateTree(
       }
     }
 
-    root = parts.find((part) => !visited.has(part.name) && (adjacency.get(part.name)?.length ?? 0) > 0);
+    const next = parts.find((part) => !visited.has(part.name) && (adjacency.get(part.name)?.length ?? 0) > 0);
+    rootParts = next ? [next] : [];
   }
 
   // Unmated parts default to identity. (Same convention as
@@ -797,7 +806,7 @@ function restingPlacementFor(
   };
 }
 
-/** BFS from `parts[0]`, then (unless the caller opts out) from the first
+/** BFS from world-fixed roots (or `parts[0]` when undeclared), then (unless the caller opts out) from the first
  *  unvisited part of each disconnected component. Visited neighbors compose their placement
  *  from the parent through the connecting mate; every root and every part the
  *  walk does not reach gets `rest(part)`. Mates that would connect
@@ -819,12 +828,14 @@ async function walkSpanningTree(
 
   const queue: string[] = [];
   const visited = new Set<string>();
-  let nextRoot: AssemblyPartStored | undefined = solverGroundedPart(parts);
-  while (nextRoot !== undefined) {
-    worldT.set(nextRoot.name, rest(nextRoot));
-    roots.push({ body: nextRoot.name, placement: rest(nextRoot) });
-    visited.add(nextRoot.name);
-    queue.push(nextRoot.name);
+  let rootParts = solverGroundedParts(parts, arm.__virtualJoints());
+  while (rootParts.length > 0) {
+    for (const root of rootParts) {
+      worldT.set(root.name, rest(root));
+      roots.push({ body: root.name, placement: rest(root) });
+      visited.add(root.name);
+      queue.push(root.name);
+    }
 
     while (queue.length > 0) {
       const parentName = queue.shift()!;
@@ -845,9 +856,8 @@ async function walkSpanningTree(
       }
     }
 
-    nextRoot = solveDisconnectedComponents
-      ? parts.find((part) => !visited.has(part.name))
-      : undefined;
+    const next = solveDisconnectedComponents ? parts.find((part) => !visited.has(part.name)) : undefined;
+    rootParts = next ? [next] : [];
   }
 
   // Parts the walk did not reach rest where they are, so callers always see
