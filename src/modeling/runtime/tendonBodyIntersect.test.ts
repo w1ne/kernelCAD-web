@@ -174,4 +174,28 @@ describe('checkTendonBodyIntersectAtPose — criterion 8 helper', () => {
     const results = checkTendonBodyIntersectAtPose(arm, sample);
     expect(fired(results, 'path-trap')).toBe(false);
   });
+
+  it('anchors a tendon on a part in no mate at its `at` placement', async () => {
+    // examples/kinematic/jointed-tendon-anchor-at.kcad.ts: a legacy joint is
+    // not a mate, so `solveMates` gives the placed base its scene motion
+    // (identity), while its scene shape already sits at x=100. The hook at
+    // local [-10, 0, 0] is at x=90; read without `at` it moved to x=-10 and
+    // the cable to the link eye at x=10 ran through the link.
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    const arm = kcad.assembly('placed');
+    const baseBox = kcad.box(20, 20, 10, true);
+    const linkBox = kcad.box(20, 20, 10, true);
+    arm.part('base', baseBox, { at: [100, 0, 0] })
+      .connector('hook', { type: 'frame', origin: { kind: 'vec3', value: [-10, 0, 0] } });
+    arm.part('link', linkBox)
+      .connector('eye', { type: 'frame', origin: { kind: 'vec3', value: [10, 0, 0] } });
+    arm.tendon('spring', { from: 'base.hook', to: 'link.eye', restLengthMm: 80, stiffnessNmm: 0.5 });
+    const boxes = {
+      base: (await kcad.box(20, 20, 10, true).translate(100, 0, 0).lower()) as OcctBackend,
+      link: (await linkBox.lower()) as OcctBackend,
+    };
+    const sample = makeSample(boxes, { base: Transform.identity(), link: Transform.identity() });
+    expect(checkTendonBodyIntersectAtPose(arm, sample)).toEqual([]);
+  });
 });

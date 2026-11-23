@@ -56704,7 +56704,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/mailbox.kcad.ts",
       "preview": "/assets/city-street-mailbox.png",
-      "sourceSha256": "7a8dea8a0330b6d15100c08c5075c7ae16f7ff06f31692b462047ec1ab2cc55d",
+      "sourceSha256": "74c8438c1f2e35658bb3ae267600a523c35ba485e7cf374d9407e795cae21009",
       "triangleBudget": 220,
       "params": [
         {
@@ -126830,7 +126830,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/blackout-curtain-drive.kcad.ts",
       "preview": "/assets/hydroponics-blackout-curtain-drive.png",
-      "sourceSha256": "21c4aced71da19c67732e64f1b3e9f09686e36a32ec8bae92f761bd6a76b8a23",
+      "sourceSha256": "a2f5d5f8fed8d0ab63acd919527f33aa965605d3b5175b7df50e721d7b89d288",
       "triangleBudget": 5000,
       "params": [
         {
@@ -126905,11 +126905,11 @@
         }
       },
       "stats": {
-        "triangles": 1788,
+        "triangles": 1944,
         "sizeM": [
           2.04,
           2.27,
-          2.1
+          2.48
         ],
         "minUpM": 0,
         "materials": 1
@@ -126935,7 +126935,10 @@
             "truss-web-5",
             "drive-shaft",
             "bearing-arm--830",
+            "bearing-hanger--830",
             "bearing-arm-830",
+            "bearing-hanger-830",
+            "gearbox-mount",
             "rack--500",
             "tooth--500-0",
             "tooth--500-1",
@@ -126955,6 +126958,11 @@
             "tooth--500-15",
             "tooth--500-16",
             "tooth--500-17",
+            "tooth--500-18",
+            "tooth--500-19",
+            "tooth--500-20",
+            "tooth--500-21",
+            "tooth--500-22",
             "rack-clamp--500",
             "push-rod--500",
             "rack-500",
@@ -126976,6 +126984,11 @@
             "tooth-500-15",
             "tooth-500-16",
             "tooth-500-17",
+            "tooth-500-18",
+            "tooth-500-19",
+            "tooth-500-20",
+            "tooth-500-21",
+            "tooth-500-22",
             "rack-clamp-500",
             "push-rod-500",
             "wire--700",
@@ -128614,7 +128627,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/dutch-bucket-row.kcad.ts",
       "preview": "/assets/hydroponics-dutch-bucket-row.png",
-      "sourceSha256": "e9aeb5bebeaa297e765fb47e2c431036635062cb45fc15af3187552380d86871",
+      "sourceSha256": "eb959691466df5523a8edc1a1c3ddf1d767c1a5538734fdb16a0065038f3bbbf",
       "triangleBudget": 5600,
       "params": [
         {
@@ -128664,18 +128677,21 @@
       ],
       "presets": {
         "tomato": {
+          "crop": "tomato",
           "bucket": "#2a2c2e",
           "plumbing": "#e6e7e1",
           "trellis": "#8f989c",
           "foliage": "#3f8436"
         },
         "sweetPepper": {
+          "crop": "pepper",
           "bucket": "#d9cfb4",
           "plumbing": "#e6e7e1",
           "trellis": "#8f989c",
           "foliage": "#2f7a30"
         },
         "cucumber": {
+          "crop": "cucumber",
           "bucket": "#2a2c2e",
           "plumbing": "#4a5a66",
           "trellis": "#c9a640",
@@ -128689,11 +128705,11 @@
         }
       },
       "stats": {
-        "triangles": 4712,
+        "triangles": 3304,
         "sizeM": [
           3,
           2.15,
-          0.414
+          0.412336
         ],
         "minUpM": 0,
         "materials": 1
@@ -132024,7 +132040,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/handheld-ph-meter.kcad.ts",
       "preview": "/assets/hydroponics-handheld-ph-meter.png",
-      "sourceSha256": "91e46e33feafc5b52d298c0a79b9ed7f2942e97cfcca173eec853631a6f78204",
+      "sourceSha256": "26a09e042931d4d7a2109b53c60290b5269cac11fb5e71ac276fc1663f262911",
       "triangleBudget": 3600,
       "params": [
         {
@@ -132099,10 +132115,10 @@
         }
       },
       "stats": {
-        "triangles": 1926,
+        "triangles": 2738,
         "sizeM": [
           0.3396,
-          0.269875,
+          0.268655,
           0.127
         ],
         "minUpM": 0,
@@ -132151,15 +132167,17 @@
           "color": "#1f2a1c",
           "parts": [
             "digit-0-top",
-            "digit-0-mid",
+            "digit-0-lower-right",
             "digit-0-bot",
-            "digit-0-left",
-            "digit-0-right",
+            "digit-0-lower-left",
+            "digit-0-upper-left",
+            "digit-0-mid",
             "digit-1-top",
-            "digit-1-mid",
+            "digit-1-upper-right",
+            "digit-1-lower-right",
             "digit-1-bot",
-            "digit-1-left",
-            "digit-1-right",
+            "digit-1-upper-left",
+            "digit-1-mid",
             "decimal-point",
             "ph-legend"
           ]
@@ -132187,9 +132205,10 @@
           ]
         },
         {
-          "name": "cable-0",
+          "name": "cable-inlet",
           "color": "#1e2124",
           "parts": [
+            "cable-inlet",
             "cable-0",
             "cable-1",
             "cable-2",
@@ -132198,7 +132217,71 @@
             "cable-5",
             "cable-6",
             "cable-7",
-            "cable-8"
+            "cable-8",
+            "cable-9",
+            "cable-10",
+            "cable-11",
+            "cable-12",
+            "cable-13",
+            "cable-14",
+            "cable-15",
+            "cable-16",
+            "cable-17",
+            "cable-18",
+            "cable-19",
+            "cable-20",
+            "cable-21",
+            "cable-22",
+            "cable-23",
+            "cable-24",
+            "cable-25",
+            "cable-26",
+            "cable-27",
+            "cable-28",
+            "cable-29",
+            "cable-30",
+            "cable-31",
+            "cable-32",
+            "cable-33",
+            "cable-34",
+            "cable-35",
+            "cable-36",
+            "cable-37",
+            "cable-38",
+            "cable-39",
+            "cable-40",
+            "cable-41",
+            "cable-42",
+            "cable-43",
+            "cable-44",
+            "cable-45",
+            "cable-46",
+            "cable-47",
+            "cable-48",
+            "cable-49",
+            "cable-50",
+            "cable-51",
+            "cable-52",
+            "cable-53",
+            "cable-54",
+            "cable-55",
+            "cable-56",
+            "cable-57",
+            "cable-58",
+            "cable-59",
+            "cable-60",
+            "cable-61",
+            "cable-62",
+            "cable-63",
+            "cable-64",
+            "cable-65",
+            "cable-66",
+            "cable-67",
+            "cable-68",
+            "cable-69",
+            "cable-70",
+            "cable-71",
+            "cable-outlet"
           ]
         },
         {
@@ -132571,7 +132654,7 @@
       "id": "hydroponic-grow-rack",
       "kit": "hydroponics",
       "title": "Hydroponic grow rack",
-      "description": "Three-tier vertical-farm NFT rack at about real size: slotted steel uprights with beams and end bracing, four lidded gutters per tier with planting holes and a growing crop, feed riser with drip tubes into each gutter head, return collector and drop pipe, and LED light bars above every tier. Material controls: rack frame, gutters, crop foliage and LED light colour, plus a crop choice. lettuce, basil, purpleLight and weathered presets.",
+      "description": "Three-tier vertical-farm NFT rack at about real size: slotted steel uprights with beams and end bracing, four open channels per tier with continuously slotted lids and nine crop stations per channel, feed riser with drip tubes into each gutter head, return collector and drop pipe, and LED light bars above every tier. Material controls: rack frame, gutters, crop foliage and LED light colour, plus a crop choice. lettuce, basil, purpleLight and weathered presets. Scene prop: roots, net-cup interiors and connected fluid passages are omitted.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -132598,7 +132681,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/hydroponic-grow-rack.kcad.ts",
       "preview": "/assets/hydroponics-hydroponic-grow-rack.png",
-      "sourceSha256": "13cd13f53c9e932b00c9524cd9aaa135b07bfbae111518b19aeb680258c87088",
+      "sourceSha256": "2c24214bccb08bee9912851fd4aa869dfbcc41b1561f0826cb8eb065cc6ab37c",
       "triangleBudget": 8000,
       "params": [
         {
@@ -132651,7 +132734,8 @@
           "frame": "#3a6f9e",
           "gutters": "#f0f0ea",
           "foliage": "#86bb4c",
-          "lights": "#f6f2ff"
+          "lights": "#f6f2ff",
+          "crop": "lettuce"
         },
         "basil": {
           "frame": "#3a6f9e",
@@ -132673,7 +132757,7 @@
         }
       },
       "stats": {
-        "triangles": 6266,
+        "triangles": 7832,
         "sizeM": [
           2.98,
           2.1,
@@ -177361,7 +177445,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/belt-magnet-separator.kcad.ts",
       "preview": "/assets/mining-belt-magnet-separator.png",
-      "sourceSha256": "e1b69ea3a7294ebbf0f96dace961612b1f0f5bb5ab4dfc3a79c7af07f3e3d8c4",
+      "sourceSha256": "035795270e88de69d8c18a374c92c01b6edad03fc8db6c9f77708fb1a2d8dc33",
       "triangleBudget": 2600,
       "params": [
         {
@@ -177429,7 +177513,7 @@
         }
       },
       "stats": {
-        "triangles": 2060,
+        "triangles": 2180,
         "sizeM": [
           8.14,
           3.86,
@@ -177561,7 +177645,9 @@
             "idler-wing-5-1",
             "return-idler-0",
             "return-idler-1",
-            "return-idler-2"
+            "return-idler-2",
+            "magnet-pulley-axle-0",
+            "magnet-pulley-axle-1"
           ]
         },
         {
@@ -177572,7 +177658,11 @@
             "head-motor",
             "magnet-block",
             "side-frame-0",
+            "magnet-support-0-0",
+            "magnet-support-0-1",
             "side-frame-1",
+            "magnet-support-1-0",
+            "magnet-support-1-1",
             "terminal-box",
             "drive-motor",
             "lifting-lug-0",
@@ -201250,7 +201340,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/nature/pine-tree.kcad.ts",
       "preview": "/assets/nature-pine-tree.png",
-      "sourceSha256": "a321f4af2a43c8f612d0b8af642a0cbeb329ba2bc3ac5e27e075480188aad697",
+      "sourceSha256": "98b5e7ed35b6306276a3b1109337c00a4c9278b13e7842c9735af479ee206101",
       "triangleBudget": 400,
       "params": [
         {
@@ -282081,7 +282171,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/roll-cage-trolley.kcad.ts",
       "preview": "/assets/retail-store-roll-cage-trolley.png",
-      "sourceSha256": "d48c6d14a8919b1d769d2f18827e5b1bc01066188dfb7fe619b0f98c02ae43c3",
+      "sourceSha256": "89b5c278d4eb2e68c3cfbdf0f1a412145ad2d21b6ff9b513743791b874adfb28",
       "triangleBudget": 2500,
       "params": [
         {
@@ -282149,7 +282239,7 @@
         }
       },
       "stats": {
-        "triangles": 1696,
+        "triangles": 1872,
         "sizeM": [
           0.808,
           1.7,
@@ -282167,18 +282257,22 @@
             "castor-swivel-lf",
             "castor-fork-l-lf",
             "castor-fork-r-lf",
+            "castor-axle-lf",
             "castor-plate-rf",
             "castor-swivel-rf",
             "castor-fork-l-rf",
             "castor-fork-r-rf",
+            "castor-axle-rf",
             "castor-plate-lb",
             "castor-swivel-lb",
             "castor-fork-l-lb",
             "castor-fork-r-lb",
+            "castor-axle-lb",
             "castor-plate-rb",
             "castor-swivel-rb",
             "castor-fork-l-rb",
             "castor-fork-r-rb",
+            "castor-axle-rb",
             "deck-frame",
             "side-l-0",
             "side-r-0",
@@ -307552,7 +307646,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/inline-skate.kcad.ts",
       "preview": "/assets/sports-inline-skate.png",
-      "sourceSha256": "d86d7131feab76efd74676fefd78edcc2e9f238ef673ae27a71b84b15612a50d",
+      "sourceSha256": "c71ad16d4366159fc1afeccb856f9db9654ded6e9f3bed2ed206b903ab1cb2b5",
       "triangleBudget": 2400,
       "params": [
         {
@@ -307616,9 +307710,9 @@
         }
       },
       "stats": {
-        "triangles": 1892,
+        "triangles": 1912,
         "sizeM": [
-          0.354,
+          0.377,
           0.359095,
           0.126
         ],
@@ -307676,7 +307770,8 @@
           "name": "moldedCuff",
           "color": "#24292e",
           "parts": [
-            "brake-arm",
+            "brake-arm-left",
+            "brake-arm-right",
             "sole",
             "toe-cap",
             "heel-counter",
@@ -336974,7 +337069,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/strip-light-battens.kcad.ts",
       "preview": "/assets/theatre-production-strip-light-battens.png",
-      "sourceSha256": "636d6b5a2b957c21d0526e1aace8aa637658e2ecb0926c5ff165fd969292568b",
+      "sourceSha256": "2c060ae969cd9c39c9c4ec0f852a5985e99aee539ea03b3997b909e5bb416f22",
       "triangleBudget": 3000,
       "params": [
         {
@@ -337032,7 +337127,7 @@
         }
       },
       "stats": {
-        "triangles": 1804,
+        "triangles": 2068,
         "sizeM": [
           3.424,
           0.353699,
@@ -337086,20 +337181,26 @@
             "runner-left-back",
             "stand-foot-left-l",
             "stand-upright-left-l",
+            "pivot-axle-left-l",
             "stand-foot-left-r",
             "stand-upright-left-r",
+            "pivot-axle-left-r",
             "runner-centre-front",
             "runner-centre-back",
             "stand-foot-centre-l",
             "stand-upright-centre-l",
+            "pivot-axle-centre-l",
             "stand-foot-centre-r",
             "stand-upright-centre-r",
+            "pivot-axle-centre-r",
             "runner-right-front",
             "runner-right-back",
             "stand-foot-right-l",
             "stand-upright-right-l",
+            "pivot-axle-right-l",
             "stand-foot-right-r",
-            "stand-upright-right-r"
+            "stand-upright-right-r",
+            "pivot-axle-right-r"
           ],
           "param": "hardware"
         },
@@ -354059,7 +354160,7 @@
       "id": "uv-disinfection-channel",
       "kit": "water-treatment",
       "title": "UV disinfection channel",
-      "description": "Open-channel UV disinfection system at about real size: a 1.2 m concrete channel with flowing effluent, two banks of eight vertical lamp modules with ballast heads above the water on a bank rail, cable trays to two power distribution cabinets on the deck, a downstream motorised flap gate for level control, a level sensor, handrail and a service rack holding two lifted modules with glowing quartz-sleeved lamps and wiper rings. Material controls: concrete, stainless modules and frame, cabinet coating, effluent; weathered, highVisibility and greyCabinet presets.",
+      "description": "Open-channel UV disinfection system at about real size: a 1.2 m concrete channel with flowing effluent, two banks of eight vertical lamp modules, each holding six submerged lamps, with ballast heads above the water on a bank rail, cable trays to two power distribution cabinets on the deck, a downstream motorised flap gate for level control, a level sensor, handrail and a service rack holding two lifted modules with glowing quartz-sleeved lamps and wiper rings. Material controls: concrete, stainless modules and frame, cabinet coating, effluent; weathered, highVisibility and greyCabinet presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -354080,8 +354181,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/uv-disinfection-channel.kcad.ts",
       "preview": "/assets/water-treatment-uv-disinfection-channel.png",
-      "sourceSha256": "7b8d4ccbe09b4b9e15e35185c03d5b63dc8ddc9acd2fdef41c5bbd17bfeda04d",
-      "triangleBudget": 2800,
+      "sourceSha256": "14a81fe5695e73c8b62e8ce31458272a0b755e133af3b8d2ac4a18b9659c24f4",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -354138,7 +354239,7 @@
         }
       },
       "stats": {
-        "triangles": 2328,
+        "triangles": 3480,
         "sizeM": [
           8.4,
           4.3,
@@ -354293,6 +354394,120 @@
           ]
         },
         {
+          "name": "bank-0-module-0-lamp-0",
+          "color": "#b6a8ff",
+          "parts": [
+            "bank-0-module-0-lamp-0",
+            "bank-0-module-0-lamp-1",
+            "bank-0-module-0-lamp-2",
+            "bank-0-module-0-lamp-3",
+            "bank-0-module-0-lamp-4",
+            "bank-0-module-0-lamp-5",
+            "bank-0-module-1-lamp-0",
+            "bank-0-module-1-lamp-1",
+            "bank-0-module-1-lamp-2",
+            "bank-0-module-1-lamp-3",
+            "bank-0-module-1-lamp-4",
+            "bank-0-module-1-lamp-5",
+            "bank-0-module-2-lamp-0",
+            "bank-0-module-2-lamp-1",
+            "bank-0-module-2-lamp-2",
+            "bank-0-module-2-lamp-3",
+            "bank-0-module-2-lamp-4",
+            "bank-0-module-2-lamp-5",
+            "bank-0-module-3-lamp-0",
+            "bank-0-module-3-lamp-1",
+            "bank-0-module-3-lamp-2",
+            "bank-0-module-3-lamp-3",
+            "bank-0-module-3-lamp-4",
+            "bank-0-module-3-lamp-5",
+            "bank-0-module-4-lamp-0",
+            "bank-0-module-4-lamp-1",
+            "bank-0-module-4-lamp-2",
+            "bank-0-module-4-lamp-3",
+            "bank-0-module-4-lamp-4",
+            "bank-0-module-4-lamp-5",
+            "bank-0-module-5-lamp-0",
+            "bank-0-module-5-lamp-1",
+            "bank-0-module-5-lamp-2",
+            "bank-0-module-5-lamp-3",
+            "bank-0-module-5-lamp-4",
+            "bank-0-module-5-lamp-5",
+            "bank-0-module-6-lamp-0",
+            "bank-0-module-6-lamp-1",
+            "bank-0-module-6-lamp-2",
+            "bank-0-module-6-lamp-3",
+            "bank-0-module-6-lamp-4",
+            "bank-0-module-6-lamp-5",
+            "bank-0-module-7-lamp-0",
+            "bank-0-module-7-lamp-1",
+            "bank-0-module-7-lamp-2",
+            "bank-0-module-7-lamp-3",
+            "bank-0-module-7-lamp-4",
+            "bank-0-module-7-lamp-5",
+            "bank-1-module-0-lamp-0",
+            "bank-1-module-0-lamp-1",
+            "bank-1-module-0-lamp-2",
+            "bank-1-module-0-lamp-3",
+            "bank-1-module-0-lamp-4",
+            "bank-1-module-0-lamp-5",
+            "bank-1-module-1-lamp-0",
+            "bank-1-module-1-lamp-1",
+            "bank-1-module-1-lamp-2",
+            "bank-1-module-1-lamp-3",
+            "bank-1-module-1-lamp-4",
+            "bank-1-module-1-lamp-5",
+            "bank-1-module-2-lamp-0",
+            "bank-1-module-2-lamp-1",
+            "bank-1-module-2-lamp-2",
+            "bank-1-module-2-lamp-3",
+            "bank-1-module-2-lamp-4",
+            "bank-1-module-2-lamp-5",
+            "bank-1-module-3-lamp-0",
+            "bank-1-module-3-lamp-1",
+            "bank-1-module-3-lamp-2",
+            "bank-1-module-3-lamp-3",
+            "bank-1-module-3-lamp-4",
+            "bank-1-module-3-lamp-5",
+            "bank-1-module-4-lamp-0",
+            "bank-1-module-4-lamp-1",
+            "bank-1-module-4-lamp-2",
+            "bank-1-module-4-lamp-3",
+            "bank-1-module-4-lamp-4",
+            "bank-1-module-4-lamp-5",
+            "bank-1-module-5-lamp-0",
+            "bank-1-module-5-lamp-1",
+            "bank-1-module-5-lamp-2",
+            "bank-1-module-5-lamp-3",
+            "bank-1-module-5-lamp-4",
+            "bank-1-module-5-lamp-5",
+            "bank-1-module-6-lamp-0",
+            "bank-1-module-6-lamp-1",
+            "bank-1-module-6-lamp-2",
+            "bank-1-module-6-lamp-3",
+            "bank-1-module-6-lamp-4",
+            "bank-1-module-6-lamp-5",
+            "bank-1-module-7-lamp-0",
+            "bank-1-module-7-lamp-1",
+            "bank-1-module-7-lamp-2",
+            "bank-1-module-7-lamp-3",
+            "bank-1-module-7-lamp-4",
+            "bank-1-module-7-lamp-5",
+            "lifted-module-a-lamp-0",
+            "lifted-module-a-lamp-1",
+            "lifted-module-a-lamp-2",
+            "lifted-module-a-lamp-3",
+            "lifted-module-a-lamp-4",
+            "lifted-module-a-lamp-5",
+            "lifted-module-b-lamp-0",
+            "lifted-module-b-lamp-1",
+            "lifted-module-b-lamp-2",
+            "lifted-module-b-lamp-3",
+            "lifted-module-b-lamp-4",
+            "lifted-module-b-lamp-5"
+          ]
+        },
+        {
           "name": "cabinet",
           "color": "#2f5f8a",
           "parts": [
@@ -354332,24 +354547,6 @@
             "cable-tray-post--2600",
             "cable-tray-post--200",
             "cable-tray-post-1300"
-          ]
-        },
-        {
-          "name": "lifted-module-a-lamp-0",
-          "color": "#b6a8ff",
-          "parts": [
-            "lifted-module-a-lamp-0",
-            "lifted-module-a-lamp-1",
-            "lifted-module-a-lamp-2",
-            "lifted-module-a-lamp-3",
-            "lifted-module-a-lamp-4",
-            "lifted-module-a-lamp-5",
-            "lifted-module-b-lamp-0",
-            "lifted-module-b-lamp-1",
-            "lifted-module-b-lamp-2",
-            "lifted-module-b-lamp-3",
-            "lifted-module-b-lamp-4",
-            "lifted-module-b-lamp-5"
           ]
         }
       ]

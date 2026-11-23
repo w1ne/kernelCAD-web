@@ -52,6 +52,8 @@ for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
   add(`castor-swivel-${tag}`, cylinder(14, 22, 12).translate(x, y, DZ - 44).color(mesh));
   add(`castor-fork-l-${tag}`, blk(x - 24, y + 12, WR - 4, 6, 70, DZ - 40 - WR + 4).color(mesh));
   add(`castor-fork-r-${tag}`, blk(x + 24, y + 12, WR - 4, 6, 70, DZ - 40 - WR + 4).color(mesh));
+  // The axle crosses the wheel and both fork plates, including their 4 mm gaps.
+  add(`castor-axle-${tag}`, cylinder(60, 8, 10).rotateY(90).translate(x - 30, y + 12, WR - 2).color(mesh));
   const wheel = cylinder(34, WR, 16).rotateY(90).translate(x - 17, y + 12, WR - 2);
   add(`castor-wheel-${tag}`, wheel.subtract(blk(x, y + 12, -20, 60, 140, 20)).color(castors));
 }

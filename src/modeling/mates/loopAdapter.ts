@@ -21,6 +21,7 @@ import {
   type LoopBranchState,
   type LoopJoint,
   type LoopJointKind,
+  type LoopModel,
   type LoopPin,
   type LoopSolveResult,
 } from '../../shared/kinematics/loopClosure';
@@ -127,11 +128,7 @@ function zeroFor(type: MateType): JointValue {
 
 /** Solve the loops of a recorded mate walk. Throws `Error` on a bad pin. */
 export function solveMateLoops(walk: MateWalkRecord, connector: ConnectorLookup, opts: MateLoopOptions): LoopSolveResult {
-  const model = {
-    roots: walk.roots,
-    tree: walk.tree.map((s) => treeJoint(s, connector)),
-    cuts: walk.loopMates.map((m) => cutJoint(m, connector)),
-  };
+  const model = groundedLoopModel(walk, connector);
   const driven: Record<string, JointValue> = {};
   const seed: Record<string, JointValue> = {};
   const allMates = [...walk.tree.map((s) => s.mate), ...walk.loopMates];
@@ -142,6 +139,27 @@ export function solveMateLoops(walk: MateWalkRecord, connector: ConnectorLookup,
     seed[m.name] = opts.seed?.[m.name] ?? opts.asBuilt[m.name] ?? zeroFor(m.type);
   }
   return solveLoops({ model, driven, seed, pins: opts.pins, previous: opts.previous });
+}
+
+/** Mate roots retain their authored translations. Join those fixed frames
+ * before solving a closure between them, so the existing loop solver sees
+ * one tree and cannot move an explicitly grounded base. No synthetic body
+ * is emitted; the first root supplies the common frame. */
+function groundedLoopModel(walk: MateWalkRecord, connector: ConnectorLookup): LoopModel {
+  const tree = walk.tree.map((step) => treeJoint(step, connector));
+  const cuts = walk.loopMates.map((mate) => cutJoint(mate, connector));
+  const first = walk.roots[0];
+  if (first === undefined || walk.roots.length < 2) return { roots: walk.roots, tree, cuts };
+  const names = new Set([...tree, ...cuts].map(joint => joint.name));
+  const anchors: LoopJoint[] = walk.roots.slice(1).map(root => {
+    let name = `world-fixed:${root.body}`;
+    while (names.has(name)) name += ':';
+    names.add(name);
+    return { name, kind: 'fixed', a: first.body, b: root.body,
+      aOrigin: first.placement.inverse().point(root.placement.point([0, 0, 0])),
+      bOrigin: [0, 0, 0], axis: [0, 0, 1] };
+  });
+  return { roots: [first], tree: [...anchors, ...tree], cuts };
 }
 
 /** Driven mates: the caller's pose keys, plus mates a coupling derives from

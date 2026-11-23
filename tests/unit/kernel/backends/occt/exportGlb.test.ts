@@ -136,6 +136,40 @@ describe('exportGlbAsync', () => {
     );
   });
 
+  it('keeps sharp B-rep edges sharp and curved faces smooth in default pbr normals', async () => {
+    const scene = makeScene([
+      { name: 'cube', shape: OcctBackend.box(10, 10, 10) },
+      { name: 'post', shape: OcctBackend.cylinder(20, 5) },
+    ]);
+    const doc = await new NodeIO().readBinary(
+      await exportGlbAsync(sceneToWorldFrameParts(scene), { format: 'glb', axis: 'z-up' }),
+    );
+    const attributes = (name: string) => {
+      const prim = doc.getRoot().listNodes().find((n) => n.getName() === name)!.getMesh()!.listPrimitives()[0]!;
+      const pos = prim.getAttribute('POSITION')!;
+      const nrm = prim.getAttribute('NORMAL')!;
+      return Array.from({ length: pos.getCount() }, (_, i) => ({ p: pos.getElement(i, []), n: nrm.getElement(i, []) }));
+    };
+
+    // Every cube vertex normal is one face's axis, never a corner average.
+    const cube = attributes('cube');
+    for (const { n } of cube) {
+      expect(Math.max(...n.map(Math.abs))).toBeCloseTo(1, 6);
+    }
+    expect(cube.length).toBe(24); // 8 corners x 3 faces
+
+    // Cylinder: side normals are radial with no z, caps are +-z.
+    for (const { p, n } of attributes('post')) {
+      if (Math.abs(n[2]!) > 0.5) {
+        expect(Math.abs(n[2]!)).toBeCloseTo(1, 6);
+        continue;
+      }
+      const r = Math.hypot(p[0]!, p[1]!);
+      expect(n[2]!).toBeCloseTo(0, 6);
+      expect(n[0]! * p[0]! / r + n[1]! * p[1]! / r).toBeGreaterThan(0.999);
+    }
+  });
+
   it('keeps explicit millimetre coordinates available for metadata-aware consumers', async () => {
     const scene = makeScene([{ name: 'plate', shape: OcctBackend.box(700, 300, 12) }]);
     const doc = await new NodeIO().readBinary(

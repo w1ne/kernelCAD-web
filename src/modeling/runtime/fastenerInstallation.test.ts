@@ -89,6 +89,33 @@ describe('measured fastener installation (real OCCT)', () => {
     const { report } = await audit({ lift: 1.5 });
     expect(metric(report, 'bearing-gap')).toMatchObject({ status: 'fail', value: 1.5 }); expect(report.ok).toBe(false);
   });
+  it.each([0, 0.08, 1.5])('measures the actual narrow washer bearing with lift %s', async lift => {
+    const source = `const a=assembly('narrow-washer');
+      a.part('support',cylinder(4,3).subtract(cylinder(4.2,1.5).translate(0,0,-.1)).translate(0,0,-4));
+      a.part('washer',cylinder(1,1.8).subtract(cylinder(1.2,1.6).translate(0,0,-.1)));
+      a.part('screw',(await lib.fetchPart('iso-4762-m3x10')).translate(0,0,${1+lift}));
+      return a.model();`;
+    const model = await buildModel({code:source,fileName:'narrow-washer.kcad.ts'});
+    const report = checkFastenerInstallation(model,{fasteners:[{part:'screw',against:['washer','support']}]});
+    expect(metric(report,'bearing-gap').value).toBeCloseTo(lift,4);
+    expect(metric(report,'bearing-gap').status).toBe(lift === 0 ? 'pass' : 'fail');
+    expect(report.ok).toBe(lift === 0);
+  });
+  it('keeps an unclassified slot separate from a remote cylindrical bore and farther bearing face', async () => {
+    const source = `const a=assembly('slot-and-remote-hole');
+      a.part('plate',box(30,20,3).translate(-10,-10,0)
+        .subtract(box(3.2,8,3.2).translate(-1.6,-4,-.1))
+        .subtract(cylinder(3.2,1.6).translate(12,0,-.1)));
+      a.part('backing',cylinder(1,3.5).subtract(cylinder(1.2,1.5).translate(0,0,-.1)).translate(0,0,-1));
+      a.part('screw',(await lib.fetchPart('iso-4762-m3x10')).translate(0,0,3));
+      return a.model();`;
+    const model = await buildModel({code:source,fileName:'slot-and-remote-hole.kcad.ts'});
+    const report = checkFastenerInstallation(model,{fasteners:[{part:'screw',against:['plate','backing']}]});
+    expect(report.status).toBe('partial');
+    expect(report.stations[0].metrics.find(m=>m.name==='coaxial-offset' && m.part==='plate')!.status).toBe('unknown');
+    expect(metric(report,'bearing-gap').status).toBe('unknown');
+    expect(report.stations[0].metrics.some(m=>m.status==='fail')).toBe(false);
+  });
   it('measures offset and tilt', async () => {
     const offset = (await audit({ offset: .5 })).report;
     expect(metric(offset, 'coaxial-offset').status).toBe('fail');
@@ -169,5 +196,103 @@ describe('catalog installation evidence binding', () => {
     const manual = model.records.find(r => r.id === screw.originalShape.id)!;
     manual.metadata = imported.metadata;
     expect(checkFastenerInstallation(model, { fasteners: [station] })).toMatchObject({ ok: false, status: 'partial' });
+  });
+});
+
+describe('local bore and coplanar bearing geometry (real OCCT)', () => {
+  it.each([false, true])('keeps a full target bore measurable with a remote notch=%s', async notch => {
+    const code = "const a=assembly('local-bore'); let plate=box(20,20,4).subtract(cylinder(6,1.7).translate(10,10,-1));"
+      + (notch ? "plate=plate.subtract(cylinder(6,3.1).translate(1.8,10,-1));" : "")
+      + "a.part('plate',plate); a.part('screw',(await lib.fetchPart('iso-4762-m3x10')).translate(10,10,4)); return a.model();";
+    const model = await buildModel({ code, fileName: 'local-bore.kcad.ts' });
+    const report = checkFastenerInstallation(model, { fasteners: [{ part: 'screw', against: ['plate'] }] });
+    expect(report.status, JSON.stringify(report)).toBe('pass');
+    expect(metric(report, 'bore-diameter')).toMatchObject({ status: 'pass' });
+    expect(metric(report, 'bore-diameter').value).toBeCloseTo(3.4, 5);
+  });
+  it('does not promote a breached target bore when unrelated full bores exist', async () => {
+    const code = "const a=assembly('breached-target'); const plate=box(30,20,4)"
+      + ".subtract(cylinder(6,1.7).translate(10,10,-1))"
+      + ".subtract(box(14,1.2,6).translate(-2,9.4,-1))"
+      + ".subtract(cylinder(6,1.7).translate(24,10,-1));"
+      + "a.part('plate',plate); a.part('screw',(await lib.fetchPart('iso-4762-m3x10')).translate(10,10,4)); return a.model();";
+    const model = await buildModel({ code, fileName: 'breached-target.kcad.ts' });
+    const report = checkFastenerInstallation(model, { fasteners: [{ part: 'screw', against: ['plate'] }] });
+    expect(report.ok).toBe(false);
+    expect(metric(report, 'bore-diameter').status).toBe('unknown');
+  });
+  it.each([0, .08, 1.5])('measures split coplanar bearing land with head lift %s', async lift => {
+    const code = "const a=assembly('split-bearing'); const plate=box(20,20,4)"
+      + ".union(box(10,20,4).translate(0,0,4))"
+      + ".subtract(cylinder(20,1.7).translate(10,10,-6))"
+      + ".subtract(cylinder(10,3.1).translate(10,10,4));"
+      + "a.part('plate',plate); a.part('screw',(await lib.fetchPart('iso-4762-m3x10')).translate(10,10," + (4+lift) + ")); return a.model();";
+    const model = await buildModel({ code, fileName: 'split-bearing.kcad.ts' });
+    const report = checkFastenerInstallation(model, { fasteners: [{ part: 'screw', against: ['plate'] }] });
+    expect(metric(report, 'bearing-gap').value, JSON.stringify(report)).toBeCloseTo(lift, 4);
+    expect(metric(report, 'bearing-gap').status).toBe(lift === 0 ? 'pass' : 'fail');
+    expect(report.ok).toBe(lift === 0);
+  });
+  it('does not combine bearing faces at different heights into support', async () => {
+    const code = "const a=assembly('stepped-bearing'); const plate=box(20,20,4)"
+      + ".union(box(10,20,.5).translate(0,0,4))"
+      + ".subtract(cylinder(20,1.7).translate(10,10,-6));"
+      + "a.part('plate',plate); a.part('screw',(await lib.fetchPart('iso-4762-m3x10')).translate(10,10,4.5)); return a.model();";
+    const model = await buildModel({ code, fileName: 'stepped-bearing.kcad.ts' });
+    const report = checkFastenerInstallation(model, { fasteners: [{ part: 'screw', against: ['plate'] }] });
+    expect(report.ok).toBe(false);
+    expect(metric(report, 'bearing-gap').status).toBe('unknown');
+  });
+});
+
+describe('conservative local fastener edge cases (real OCCT)', () => {
+  it.each([false, true])('keeps a narrow 45-degree target breach unknown, partial depth=%s', async partial => {
+    const code = "const a=assembly('narrow-breach'); const slot=box(20,.4," + (partial ? 2 : 6)
+      + ").translate(0,-.2," + (partial ? 1 : -1) + ").rotate([0,0,1],45).translate(10,10,0);"
+      + "a.part('plate',box(20,20,4).subtract(cylinder(6,1.7).translate(10,10,-1)).subtract(slot));"
+      + "a.part('screw',(await lib.fetchPart('iso-4762-m3x10')).translate(10,10,4)); return a.model();";
+    const model = await buildModel({ code, fileName: 'narrow-breach.kcad.ts' });
+    const report = checkFastenerInstallation(model, { fasteners: [{ part: 'screw', against: ['plate'] }] });
+    expect(report.ok, JSON.stringify(report)).toBe(false);
+    expect(metric(report, 'bore-diameter').status).toBe('unknown');
+  });
+  it.each([0, 90])('measures a split bearing after a rigid world transform at angle tolerance %s', async angleToleranceDeg => {
+    const code = "const a=assembly('rotated-split-bearing'); const plate=box(20,20,4)"
+      + ".union(box(10,20,4).translate(0,0,4))"
+      + ".subtract(cylinder(20,1.7).translate(10,10,-6))"
+      + ".subtract(cylinder(10,3.1).translate(10,10,4));"
+      + "a.part('plate',plate); a.part('screw',(await lib.fetchPart('iso-4762-m3x10')).translate(10,10,4)); return a.model();";
+    const model = await buildModel({ code, fileName: 'rotated-split-bearing.kcad.ts' });
+    const transform = Transform.translation(48, -21, 13).compose(Transform.rotationAxisAngleDeg([1, 0, 0], 90));
+    for (const [id, shape] of model.shapes) if (isSceneBackend(shape)) {
+      model.shapes.set(id, { ...shape, parts: shape.parts.map(p => ({ ...p, worldTransform: transform.compose(p.worldTransform) })) } as never);
+    }
+    model.rootShape = model.shapes.get(model.rootId!);
+    const report = checkFastenerInstallation(model, { angleToleranceDeg, fasteners: [{ part: 'screw', against: ['plate'] }] });
+    expect(report.status, JSON.stringify(report)).toBe('pass');
+    expect(metric(report, 'bearing-gap').value).toBeCloseTo(0, 4);
+  });
+});
+
+describe('measured fastener reach failures (real OCCT)', () => {
+  it.each([0, .02])('reports axial overlap %s instead of discarding a unique full bore', async overlap => {
+    const code = "const a=assembly('short-reach'); a.part('plate',box(20,20,4)"
+      + ".subtract(cylinder(6,1.7).translate(10,10,-1)).translate(0,0," + (-10+overlap) + "));"
+      + "a.part('screw',(await lib.fetchPart('iso-4762-m3x10')).translate(10,10,4)); return a.model();";
+    const model = await buildModel({ code, fileName: 'short-reach.kcad.ts' });
+    const report = checkFastenerInstallation(model, { fasteners: [{ part: 'screw', against: ['plate'] }] });
+    expect(metric(report, 'axial-overlap').status).toBe('fail');
+    expect(metric(report, 'axial-overlap').value).toBeCloseTo(overlap, 5);
+    expect(report.ok).toBe(false);
+  });
+  it('reports zero engagement when a full receiver bore lies beyond the tip', async () => {
+    const code = "const a=assembly('unreached-receiver');"
+      + "a.part('plate',box(20,20,4).subtract(cylinder(6,1.7).translate(10,10,-1)));"
+      + "a.part('receiver',cylinder(3,6).subtract(cylinder(5,1.5).translate(0,0,-1)).translate(10,10,-7));"
+      + "a.part('screw',(await lib.fetchPart('iso-4762-m3x6')).translate(10,10,4)); return a.model();";
+    const model = await buildModel({ code, fileName: 'unreached-receiver.kcad.ts' });
+    const report = checkFastenerInstallation(model, { fasteners: [{ part: 'screw', against: ['plate'], engagementPart: 'receiver', minEngagementMm: 2 }] });
+    expect(metric(report, 'engagement')).toMatchObject({ status: 'fail', value: 0 });
+    expect(report.status).toBe('fail');
   });
 });

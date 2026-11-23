@@ -59,6 +59,13 @@ material-named controls, keeps `weathered` and `highVisibility`, and gains a
 third preset (`algaeBloom`, `lagoonGreen`, `stainlessFrame`, `blueDrive`,
 `greyCabinet`). Their triangle budgets are 1,800 to 6,600.
 
+The UV channel's 16 installed modules now each hold six submerged lamp
+sleeves (#1676); before this, only the two lifted modules had lamps. The
+installed sleeves are square-section to stay inside the raised 3,600-triangle
+budget (3,480 at default). They sit inside the opaque effluent body, so the
+preview does not show them; `tests/integration/catalog/uvChannelInstalledLamps.test.ts`
+checks them as named GLB bodies.
+
 These are stylized visualization props. They do not specify flow rates,
 treatment performance, pressure capacity, chemical dosing accuracy, process
 safety, regulatory compliance, installation suitability, or physical

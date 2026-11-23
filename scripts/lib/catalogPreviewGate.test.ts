@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest';
 import {
-  exceptionApplies, pixelDiff, pixelSha256, previewMatches, touchedAssets, type RgbaImage,
+  exceptionApplies, pixelDiff, pixelSha256, previewMatches, shardPreviewAssets, touchedAssets, type RgbaImage,
 } from './catalogPreviewGate';
 
 const rows = [
@@ -68,5 +68,22 @@ describe('exceptionApplies', () => {
     expect(pixelSha256(image(4, 4, 7))).toBe(pixelSha256(image(4, 4, 7)));
     expect(pixelSha256(image(4, 4, 7))).not.toBe(pixelSha256(image(2, 8, 7)));
     expect(pixelSha256(image(4, 4, 7))).not.toBe(pixelSha256(image(4, 4, 8)));
+  });
+});
+
+
+describe('shardPreviewAssets', () => {
+  it('covers every changed asset exactly once across four CI runners', () => {
+    const ids = Array.from({ length: 50 }, (_, index) => `asset-${index}`);
+    const buckets = Array.from({ length: 4 }, (_, index) => shardPreviewAssets(ids, `${index + 1}/4`));
+    expect(buckets.map((bucket) => bucket.length)).toEqual([13, 13, 12, 12]);
+    const all = buckets.flat();
+    expect(all).toHaveLength(ids.length);
+    expect(new Set(all).size).toBe(ids.length);
+    expect(all.slice().sort()).toEqual(ids.slice().sort());
+    expect(shardPreviewAssets(ids)).toEqual(ids);
+  });
+  it.each(['0/4', '5/4', '1/0', '2', 'a/4', '2/1', '1/4.5', '', '999999999999999999/999999999999999999'])('fails closed on an invalid shard spec %s', (spec) => {
+    expect(() => shardPreviewAssets(['asset'], spec)).toThrow(/Invalid preview shard/);
   });
 });

@@ -37,6 +37,7 @@ export const ENGINEERING_MATERIAL_NAMES = [
   'pla',
   'petg',
   'abs',
+  'asa',
   'nylon',
 ] as const;
 
@@ -85,6 +86,17 @@ const ROWS: Readonly<Record<EngineeringMaterialName, EngineeringMaterialRow>> = 
   // No `petg` finish token exists; density seeds, appearance is left alone.
   petg: { catalog: 'pet', nu: 0.4, finish: undefined },
   abs: { catalog: 'abs', nu: 0.35, finish: 'abs' },
+  // ASA (acrylonitrile styrene acrylate): density 1.05 g/cm^3 (ISO 1183), E
+  // 2120 MPa and tensile strength 37 MPa (X-Y, ISO 527) from the Bambu Lab ASA
+  // TDS V3.0; nu 0.35 as for ABS (same styrenic family). Z-direction layer
+  // strength is lower (31 MPa) - pass explicit props for a Z-critical load.
+  // No `asa` finish token; it renders with the ABS shell finish.
+  asa: {
+    catalog: null,
+    own: { yieldStressPa: 37e6, youngsModulusPa: 2.12e9, densityKgPerM3: 1050 },
+    nu: 0.35,
+    finish: 'abs',
+  },
   nylon: {
     catalog: null,
     own: { yieldStressPa: 45e6, youngsModulusPa: 1.7e9, densityKgPerM3: 1010 },

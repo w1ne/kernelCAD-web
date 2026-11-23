@@ -29,7 +29,7 @@ const base = arm.part('base', baseShape);
 base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, baseH] }, axis: [0, 0, 1] });
 base.connector('servo-mount', { type: 'frame', origin: { kind: 'vec3', value: [-22, 0, baseH] } });
 
-const baseYawServo = arm.part('base-yaw-servo', box(servoW, servoD, servoH, true).color('actuator'));
+const baseYawServo = arm.part('base-yaw-servo', box(servoW, servoD, servoH, true).color('servo'));
 baseYawServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -servoH / 2] } });
 
 // Bracket spans y[-20,0] -- touches the shoulder joint plane (y=0) exactly on
@@ -44,7 +44,7 @@ rotor.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] 
 rotor.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, rotorTowerH + bracketH] }, axis: [0, 1, 0] });
 rotor.connector('servo-mount', { type: 'frame', origin: { kind: 'vec3', value: [-bracketW + 16, -bracketD + 10, rotorTowerH + bracketH] } });
 
-const shoulderServo = arm.part('shoulder-servo', box(servoW, servoD, servoH, true).color('actuator'));
+const shoulderServo = arm.part('shoulder-servo', box(servoW, servoD, servoH, true).color('servo'));
 shoulderServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -servoH / 2] } });
 
 // Upper arm: both end-bosses share the same y half-width (13) so a single
@@ -63,7 +63,7 @@ upperArm.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0
 upperArm.connector('elbow', { type: 'axis', origin: { kind: 'vec3', value: [upperLen, 0, 0] }, axis: [0, 1, 0] });
 upperArm.connector('servo-mount', { type: 'frame', origin: { kind: 'vec3', value: [upperLen - 13, 13, 11] } });
 
-const elbowServo = arm.part('elbow-servo', box(servoW, servoD, servoH, true).color('actuator'));
+const elbowServo = arm.part('elbow-servo', box(servoW, servoD, servoH, true).color('servo'));
 elbowServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -servoH / 2] } });
 
 // Forearm: near-elbow boss half-width is 10, so a uniform -10 shift makes it

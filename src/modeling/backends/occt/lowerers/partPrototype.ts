@@ -23,10 +23,9 @@
 
 import type { SceneBackendPart } from '../../../../kernel/backends/sceneBackend';
 import type { FeatureRecord, ShapeTransform } from '../../../../shared/intent/featureRecord';
-import type { FeatureRef } from '../../../../shared/intent/types';
 import { resolveParams } from '../../../../shared/runtime/resolveParams';
 import { Transform } from '../../../../shared/runtime/se3';
-import { structuralHashRecord } from '../../../compute/prefixReuse';
+import { createContentKeyResolver } from '../../../compute/contentKey';
 import type { LowerContext } from './context';
 
 export type PartPrototypeResolver = (
@@ -63,45 +62,11 @@ export function createPartPrototypeResolver(
   records: readonly FeatureRecord[],
 ): PartPrototypeResolver {
   const byId = new Map(records.map((record) => [record.id as string, record]));
-  const keyById = new Map<string, string>();
-  const keyByContent = new Map<string, string>();
   const resolveRecord = (record: FeatureRecord): FeatureRecord => {
     if (ctx.inputs.resolveRecord) return ctx.inputs.resolveRecord(record);
     return ctx.inputs.paramTable ? resolveParams(record, ctx.inputs.paramTable) as FeatureRecord : record;
   };
-
-  /** Key of `resolved` with only its first `transformCount` transforms; undefined when opaque. */
-  const keyOfContent = (resolved: FeatureRecord, transformCount: number): string | undefined => {
-    const inputs: Record<string, unknown> = {};
-    for (const [name, ref] of Object.entries(resolved.inputs) as [string, FeatureRef][]) {
-      if (ref.kind === 'feature') inputs[name] = { kind: ref.kind, id: contentKey(ref.id) };
-      else if (ref.kind === 'surface') return undefined;
-      else inputs[name] = { ...ref, featureId: contentKey(ref.featureId) };
-    }
-    const content = structuralHashRecord({
-      ...resolved,
-      inputs: inputs as FeatureRecord['inputs'],
-      transforms: resolved.transforms.slice(0, transformCount),
-    }, undefined);
-    const key = keyByContent.get(content) ?? `content:${keyByContent.size}`;
-    keyByContent.set(content, key);
-    return key;
-  };
-
-  const contentKey = (id: string): string => {
-    const known = keyById.get(id);
-    if (known !== undefined) return known;
-    const record = byId.get(id);
-    let key = `id:${id}`;
-    if (record !== undefined) {
-      // Guard a malformed cyclic graph: a revisit reads the id fallback.
-      keyById.set(id, key);
-      const resolved = resolveRecord(record);
-      key = keyOfContent(resolved, resolved.transforms.length) ?? key;
-    }
-    keyById.set(id, key);
-    return key;
-  };
+  const { keyOf: contentKey, keyOfContent } = createContentKeyResolver(records, resolveRecord);
 
   return (partRec, at) => {
     const source = partRec?.inputs.shape;

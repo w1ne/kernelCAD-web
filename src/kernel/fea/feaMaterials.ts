@@ -14,7 +14,7 @@
 // This module only converts units (Pa -> MPa) for the solver.
 //
 // Accepted names are the grades (`mild-steel`, `aluminum-6061`, `pla`, `petg`,
-// `abs`, `nylon`) and the registry's bulk aliases (`steel` -> mild-steel,
+// `abs`, `asa`, `nylon`) and the registry's bulk aliases (`steel` -> mild-steel,
 // `aluminum`/`aluminium` -> aluminum-6061, `pet` -> petg). The resolved
 // `name` is always the canonical grade.
 //

@@ -40,10 +40,13 @@ const ngon = (r: number) => {
 };
 
 const tree = assembly('pine-tree');
-tree.part('trunk', ngon(h * 0.04).extrude(h * 0.3).color(bark));
 const tierH = (h * 0.8) / n;
+const foliageBase = h * 0.2;
+// The trunk stops on the base of the lowest tier (face contact, no shared
+// volume). Each tier tip sits on the base of the tier above.
+tree.part('trunk', ngon(h * 0.04).extrude(foliageBase).color(bark));
 for (let i = 0; i < n; i++) {
-  const z0 = h * 0.2 + i * ((h * 0.8 - tierH) / (n - 1));
+  const z0 = foliageBase + i * ((h * 0.8 - tierH) / (n - 1));
   const r = h * 0.22 * (1 - i / (n + 1));
   const cone = ngon(r).loft(ngon(r * 0.04), { spacing: tierH, ruled: true }).translate(0, 0, z0);
   tree.part(`foliage-${i + 1}`, cone.color(leaves));

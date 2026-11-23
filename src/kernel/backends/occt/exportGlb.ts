@@ -54,6 +54,7 @@ import { resolveAndLoadTextureBytes } from '../../../shared/textures';
 import { attributionGenerator } from '../../../shared/links/attribution';
 import { createMaterialNameRegistry } from '../../export/materialNaming';
 import { measureGlbStats, rigStatsFlags } from '../../export/assetStats';
+import { creasedNormalMesh } from '../../export/creasedNormals';
 import {
   createPaletteCollector,
   flatColoredGeometry,
@@ -339,13 +340,16 @@ function createPartGeometry(
 ): THREE.BufferGeometry {
   // Projected UVs are serialized with the mesh; Node image bytes are embedded
   // later by the glTF-Transform post-process because GLTFExporter needs Canvas.
+  const creased = creasedNormalMesh(part.mesh.vertices, part.mesh.triangles);
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(part.mesh.vertices, 3));
-  geometry.setIndex(Array.from(part.mesh.triangles));
-  geometry.computeVertexNormals();
+  geometry.setAttribute('position', new THREE.BufferAttribute(creased.positions, 3));
+  geometry.setAttribute('normal', new THREE.BufferAttribute(creased.normals, 3));
+  // Keep 16-bit indices for meshes that fit, as three's number[] path did.
+  const indices = creased.positions.length / 3 <= 65536 ? new Uint16Array(creased.indices) : creased.indices;
+  geometry.setIndex(new THREE.BufferAttribute(indices, 1));
   const projection = part.material?.textureProjection;
   if (projection !== undefined && part.material?.textures?.albedo !== undefined) {
-    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(computeProjectedUVs(part.mesh.vertices, projection), 2));
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(computeProjectedUVs(creased.positions, projection), 2));
     wrappedParts.push({ name: part.name, projection });
   }
   return geometry;

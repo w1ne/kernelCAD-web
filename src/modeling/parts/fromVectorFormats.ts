@@ -108,15 +108,25 @@ function registerRegions(
 /**
  * `lib.fromDXF(path, opts?)` — import a 2D DXF drawing as closed sketches.
  *
- * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE, one closed
- * planar polyline HATCH boundary, and clamped continuous planar SPLINE
- * entities. Polyline and HATCH bulges keep their exact DXF arc geometry;
- * full and partial planar ellipses and supported splines retain exact rational
- * NURBS geometry. Multi-path HATCH is refused to preserve hole/island intent;
- * edge-based and out-of-plane HATCH boundaries are also refused. Nonplanar
- * ellipses, periodic,
- * fit-point-only, discontinuous and nonplanar SPLINE entities, plus INSERT,
- * are REFUSED with an entity and line diagnostic rather than dropped.
+ * Reads LINE, ARC, CIRCLE, planar ELLIPSE, LWPOLYLINE, POLYLINE, closed
+ * planar HATCH boundaries (polyline paths, or edge paths of line,
+ * circular-arc, elliptic-arc and spline edges), and clamped continuous planar
+ * SPLINE entities. Polyline and HATCH bulges and HATCH arc edges keep their
+ * exact DXF arc geometry; full and partial planar ellipses, HATCH elliptic-arc
+ * and spline edges and supported splines retain exact rational NURBS geometry.
+ * A multi-path HATCH keeps its declared holes: each filled area is ONE sketch
+ * whose inner paths are holes, and an island inside a hole is its own sketch.
+ * Elliptic-arc HATCH edges that end off the ellipse axes (where DXF readers
+ * disagree), fit-point-only spline edges, crossing and out-of-plane HATCH
+ * boundaries are refused. Periodic
+ * and unclamped SPLINE knots are clamped exactly; a cubic SPLINE with fit
+ * points only is interpolated through its fit points, as a C2 periodic cubic
+ * when it is closed. Nonplanar ellipses, non-cubic fit-point-only,
+ * discontinuous and nonplanar SPLINE entities are REFUSED
+ * with an entity and line diagnostic rather than dropped. INSERT block
+ * references are expanded exactly, including nested blocks and MINSERT grids;
+ * an arc under a non-uniform scale becomes an exact rational elliptical arc.
+ * External-reference blocks are refused.
  *
  * UNITS: `$INSUNITS` decides the scale. When it is absent or 0 (Unitless) the
  * coordinates are taken as millimetres — reported on the sketch metadata as

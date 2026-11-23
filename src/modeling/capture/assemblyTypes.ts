@@ -230,7 +230,7 @@ export interface AssemblyPartOpts {
    *  carries mass AND looks. Both are DEFAULTS: an explicit `density` here wins
    *  for mass, and an explicit `.finish()` / `.color()` / `.material()` already
    *  on the shape wins for appearance. Valid: `steel`, `aluminum` (alias
-   *  `aluminium`), `pla`, `abs`, `pet`. An unknown name throws
+   *  `aluminium`), `pla`, `abs`, `asa`, `pet`. An unknown name throws
    *  `feature.invalid-args` naming the valid materials — never a silent
    *  fallback to water density or a default finish. */
   material?: string;

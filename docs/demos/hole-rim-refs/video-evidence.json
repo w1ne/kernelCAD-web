@@ -1,0 +1,47 @@
+{
+  "invocation": "node --import tsx docs/demos/hole-rim-refs/make-video.mts",
+  "source": "make-video.mts",
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerScene": 4,
+    "scenes": 4,
+    "codec": "H.264 libx264",
+    "crf": 26,
+    "pixelFormat": "yuv420p",
+    "audio": false
+  },
+  "renderInvocations": [
+    "node dist/cli/index.js render mount-plate.kcad.ts -o plate.png --pose 30,40 --width 640 --height 480",
+    "node dist/cli/index.js render mount-plate.kcad.ts -o plate.png --pose 30,-40 --width 640 --height 480",
+    "node dist/cli/index.js render rim-closeup.kcad.ts -o c.png --pose 30,45 --width 640 --height 480"
+  ],
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "16.000000",
+      "size": "102422"
+    }
+  },
+  "inputSha256": {
+    "plate-top.png": "a1e75d706720222dc466f1674d19f23af7a0331629f69cebb70d326377bc9998",
+    "plate-bottom.png": "d98beafc6e7430a443465436fcc0aa71c28c85bd75dee1e9330b795a8b6076b5",
+    "rim-closeup.png": "abc4c5d61ff3318ac4a44ff242849015ac0cd7621bcafb9e750ff9eb14176658",
+    "evidence.json": "67491b46d33cfd8c77a8f85ed0b29b01d5ad85db092e72ce67c2a652723b829c"
+  },
+  "outputSha256": {
+    "demo.mp4": "d57a27e6c2f0178090149738efdcbfd5b71bb659fa3b458d46ecb9ce253b66bc",
+    "poster.png": "4bb12148b8ed0ac1b944254715f6ac9bfa9a5dd6a0682e19414c8f169ee742e8"
+  }
+}

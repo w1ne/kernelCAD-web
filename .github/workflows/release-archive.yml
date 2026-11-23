@@ -77,13 +77,18 @@ jobs:
           KERNELCAD_RELEASE_PLATFORM: ${{ matrix.platform }}
         run: node scripts/build-release-archive.mjs
 
+      # Only a tag publishes, so only a tag needs the archives handed to the
+      # publish job. A pull request proves every platform builds and stops
+      # there: uploading ~1 GB of binaries per PR run filled the account's
+      # Actions storage and blocked artifact uploads in every other repo.
       - name: Upload archive for release assembly
+        if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v4
         with:
           name: kernelcad-${{ matrix.platform }}
           path: release/kernelcad-*-${{ matrix.platform }}.*
           if-no-files-found: error
-          retention-days: 2
+          retention-days: 1
 
   publish-release:
     name: Attach archives and attestations
