@@ -1,0 +1,5 @@
+Candidate source files checked against the open PR #1507 diff (git diff --name-only origin/develop...HEAD at 5ace9580d): no matches.
+gh search issues and gh search prs "<id>" --repo w1ne/kernelCAD-web --state open returned zero results for each of the five candidate IDs.
+Open PRs at audit time: #1507 (this lane), #1601, #1309, #1253, #1094. None names an emergency power-off station, emergency-stop station or pedestal, turbidity analyzer panel or scanner sensor post asset.
+No earlier preview-review.md, README.md or preview-ledger.md file under artifacts/catalog-demos/ names any of the five IDs.
+Selection method: a source scan listed parts whose name implies a non-metal role (label, sign, cable, display, belt, grip and similar) but whose color control is a metal finish, in assets that no earlier ledger names. The scan gave 127 lines; most are correct metal parts (clamps, straps, posts). Five control-station and instrument-post assets from that list were then checked in their rendered previews.

@@ -1,0 +1,5 @@
+{
+  "command": "npx vitest run tests/integration/catalog/plateRollerConveyorSideFrameMaterials.test.ts --reporter=verbose",
+  "exitCode": 1,
+  "expected": "non-zero against the retained baseline source"
+}

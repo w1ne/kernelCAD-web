@@ -1,0 +1,33 @@
+{
+  "asset": "industrial-plant/electrical-control-cabinet",
+  "workflow": [
+    "inspect five checked-in industrial-plant software previews",
+    "correct the steel finish assignment on door-0",
+    "render the named catalog asset preview",
+    "rebuild catalog/index.json",
+    "run the model-level material regression test",
+    "compare before and after previews"
+  ],
+  "commands": [
+    "npx tsx scripts/renderCatalogPreviews.ts electrical-control-cabinet",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx vitest run tests/integration/catalog/electricalControlCabinetMaterials.test.ts",
+    "npx eslint catalog/kits/industrial-plant/ tests/integration/catalog/electricalControlCabinetMaterials.test.ts",
+    "npx vitest run tests/integration/catalog/",
+    "python3 artifacts/catalog-demos/industrial-plant-electrical-control-cabinet-door-material-review-20261117/make_review_assets.py",
+    "bash artifacts/catalog-demos/industrial-plant-electrical-control-cabinet-door-material-review-20261117/make_demo.sh",
+    "python3 artifacts/catalog-demos/industrial-plant-electrical-control-cabinet-door-material-review-20261117/inspect_video.py"
+  ],
+  "demo": {
+    "format": "MP4 / H.264 / 1280x720 / 25 fps",
+    "durationSeconds": 9.6,
+    "captions": [
+      "FIVE INDUSTRIAL PREVIEWS | one mismatched finish found",
+      "BEFORE | matching cabinet doors use different finishes",
+      "AFTER | paired steel doors; safety accents retained",
+      "SOFTWARE PREVIEW ONLY | unchanged geometry; no simulation or hardware acceptance"
+    ]
+  },
+  "provenance": "Checked-in catalog preview PNGs rendered locally from kernelCAD source. The before snapshot is from the parent commit; the after snapshot is regenerated from the corrected source.",
+  "verificationScope": "Local model evaluation, preview rendering, index generation, lint, and catalog integration tests. No deployment, simulation, or hardware acceptance."
+}

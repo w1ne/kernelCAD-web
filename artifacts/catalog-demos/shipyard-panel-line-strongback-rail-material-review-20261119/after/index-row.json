@@ -1,0 +1,121 @@
+{
+  "id": "panel-line-strongback",
+  "kit": "shipyard",
+  "title": "Panel line strongback",
+  "description": "Long modular strongback fixture with spaced cross rails, clamp blocks, end stops, and datum feet. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "shipyard",
+    "shipbuilding",
+    "drydock",
+    "refit",
+    "low poly",
+    "CC0",
+    "panel",
+    "line",
+    "strongback"
+  ],
+  "compat": [
+    "shipyard",
+    "marine",
+    "drydock",
+    "ship-repair"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/shipyard/panel-line-strongback.kcad.ts",
+  "preview": "/assets/shipyard-panel-line-strongback.png",
+  "sourceSha256": "9263498d7a434758237e79eccda7259b291a71ee93523d42b10fdc10972089d4",
+  "triangleBudget": 1800,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "yardPaint",
+      "type": "color",
+      "default": "#78867d",
+      "label": "Yard finish"
+    },
+    {
+      "name": "structuralSteel",
+      "type": "color",
+      "default": "#b6c1c4",
+      "label": "Structural steel"
+    },
+    {
+      "name": "safetyMarking",
+      "type": "color",
+      "default": "#efb934",
+      "label": "Safety marking"
+    }
+  ],
+  "presets": {
+    "fresh-coat": {
+      "yardPaint": "#909c94",
+      "structuralSteel": "#d0d7d8",
+      "safetyMarking": "#ffd44d"
+    },
+    "weathered-yard": {
+      "yardPaint": "#646f68",
+      "structuralSteel": "#828d91",
+      "safetyMarking": "#bd8528"
+    }
+  },
+  "stats": {
+    "triangles": 476,
+    "sizeM": [
+      3,
+      0.54,
+      1.52
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "yardPaint",
+      "color": "#78867d",
+      "parts": [
+        "longitudinal-rail-0",
+        "longitudinal-rail-1"
+      ],
+      "param": "yardPaint"
+    },
+    {
+      "name": "structuralSteel",
+      "color": "#b6c1c4",
+      "parts": [
+        "cross-rail-0",
+        "cross-rail-1",
+        "cross-rail-2",
+        "cross-rail-3",
+        "cross-rail-4",
+        "datum-foot-0",
+        "datum-foot-1",
+        "datum-foot-2",
+        "datum-foot-3"
+      ],
+      "param": "structuralSteel"
+    },
+    {
+      "name": "safetyMarking",
+      "color": "#efb934",
+      "parts": [
+        "clamp-block-0",
+        "clamp-block-1",
+        "clamp-block-2",
+        "clamp-block-3",
+        "clamp-block-4",
+        "clamp-block-5"
+      ],
+      "param": "safetyMarking"
+    }
+  ]
+}

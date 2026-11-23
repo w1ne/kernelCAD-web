@@ -1,0 +1,45 @@
+{
+  "assetCount": 2402,
+  "assetIdsSha256BeforeAndAfter": {
+    "before": "419fbd748f483b89c1ee41c50a55672ea69e39a7456bba1bbbd442595bf65ad9",
+    "after": "419fbd748f483b89c1ee41c50a55672ea69e39a7456bba1bbbd442595bf65ad9"
+  },
+  "changedAssetRows": 1,
+  "changedTargetFields": [
+    "palette",
+    "sourceSha256"
+  ],
+  "target": {
+    "id": "industrial-plant/steam-header-manifold",
+    "sourceSha256": {
+      "index": "bd40a6cbfb0a7c7e9de39c78708f74f2a19b66cd1d3659eb64e7de7a9a49ef95",
+      "source": "bd40a6cbfb0a7c7e9de39c78708f74f2a19b66cd1d3659eb64e7de7a9a49ef95"
+    },
+    "preview": "/assets/industrial-plant-steam-header-manifold.png",
+    "previewSha256": "2217686d992eee846b79e70fc3fa9f4f74ccf0439155b2327779bb04d4688afd",
+    "params": [
+      "scale",
+      "steel",
+      "safetyPaint",
+      "gaugeGlass"
+    ],
+    "presets": [
+      "highVisibility",
+      "weathered"
+    ],
+    "triangles": 980,
+    "triangleBudget": 1400
+  },
+  "checks": {
+    "assetCountUnchanged": true,
+    "assetIdsUnchanged": true,
+    "targetSourceHashCurrent": true,
+    "targetPreviewPathPresent": true,
+    "targetPreviewFilePresent": true,
+    "targetRowChanged": true,
+    "onlySourceAndPaletteRowsChanged": true,
+    "paletteDefinitionsUnchanged": true,
+    "fiveBranchPartsMovedFromSafetyPaintToSteel": true
+  },
+  "allChecksPass": true
+}

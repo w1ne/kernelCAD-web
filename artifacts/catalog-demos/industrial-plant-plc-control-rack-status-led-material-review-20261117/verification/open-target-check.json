@@ -1,0 +1,84 @@
+{
+  "checkedAt": "2026-11-17 UTC",
+  "sample": [
+    "plc-control-rack",
+    "pallet-rack-bay",
+    "electric-pallet-jack",
+    "vertical-storage-tank",
+    "diesel-generator-set"
+  ],
+  "openIssueSearches": {
+    "plc-control-rack": {
+      "count": 0,
+      "matches": []
+    },
+    "pallet-rack-bay": {
+      "count": 0,
+      "matches": []
+    },
+    "electric-pallet-jack": {
+      "count": 0,
+      "matches": []
+    },
+    "vertical-storage-tank": {
+      "count": 0,
+      "matches": []
+    },
+    "diesel-generator-set": {
+      "count": 0,
+      "matches": []
+    }
+  },
+  "openCatalogPullRequestSourcePaths": {
+    "1507": [
+      "catalog/kits/industrial-plant/inline-flow-meter.kcad.ts",
+      "catalog/kits/industrial-plant/packed-scrubber-column.kcad.ts",
+      "catalog/kits/industrial-plant/palletizer-robot-cell.kcad.ts",
+      "catalog/kits/industrial-plant/process-blower.kcad.ts",
+      "catalog/kits/industrial-plant/process-reactor-vessel.kcad.ts",
+      "catalog/kits/industrial-plant/roller-conveyor-line.kcad.ts",
+      "catalog/kits/industrial-plant/rooftop-air-handler.kcad.ts",
+      "catalog/kits/industrial-plant/steam-header-manifold.kcad.ts",
+      "catalog/kits/industrial-plant/valve-manifold-station.kcad.ts"
+    ]
+  },
+  "excludedFixPullRequests": {
+    "1298": {
+      "files": [
+        "catalog/kits/grid-substation/previews/substation-cable-ladder-section.png",
+        "catalog/kits/grid-substation/substation-cable-ladder-section.kcad.ts"
+      ],
+      "number": 1298,
+      "state": "MERGED",
+      "title": "Fix substation cable ladder floating rungs and misleading proportions"
+    },
+    "1305": {
+      "files": [
+        "catalog/kits/beverage-bottling-line/previews/sanitary-lobe-pump.png",
+        "catalog/kits/beverage-bottling-line/sanitary-lobe-pump.kcad.ts"
+      ],
+      "number": 1305,
+      "state": "MERGED",
+      "title": "Fix sanitary lobe pump missing cover fasteners and verify both orientations"
+    },
+    "1307": {
+      "files": [
+        "catalog/kits/data-center-infrastructure/previews/storage-array-chassis.png",
+        "catalog/kits/data-center-infrastructure/storage-array-chassis.kcad.ts"
+      ],
+      "number": 1307,
+      "state": "MERGED",
+      "title": "Fix duplicated storage array geometry with distinct 24-bay scene prop"
+    },
+    "1308": {
+      "files": [
+        "catalog/kits/standard-components/previews/split-shaft-collar.png",
+        "catalog/kits/standard-components/split-shaft-collar.kcad.ts"
+      ],
+      "number": 1308,
+      "state": "MERGED",
+      "title": "Repair missing split shaft collar clamp screw and opposed lugs"
+    }
+  },
+  "result": "No open issue or pull request targets any sampled asset. PR #1507 changes other industrial-plant assets; #1298, #1305, #1307 and #1308 are merged fixes for other assets."
+}

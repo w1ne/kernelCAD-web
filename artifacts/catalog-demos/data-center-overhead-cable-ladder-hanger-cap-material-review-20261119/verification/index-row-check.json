@@ -1,0 +1,23 @@
+{
+  "asset": "overhead-cable-ladder",
+  "sourceSha256": "767d863b34595cf9f69c6311be9dd5389affe2f64b9d513810e5ecf4652fec70",
+  "preview": "/assets/data-center-infrastructure-overhead-cable-ladder.png",
+  "changedIndexRows": [
+    "overhead-cable-ladder"
+  ],
+  "triangleCount": 292,
+  "boundsM": [
+    2.4,
+    0.41,
+    0.62
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountUnchanged": true,
+    "boundsUnchanged": true
+  },
+  "passed": true
+}

@@ -1,0 +1,4 @@
+Command: python3 artifacts/catalog-demos/mining-jaw-crusher-eccentric-shaft-material-review-20261117/make_review_assets.py
+
+Exit status: 0. Generated the five-preview contact sheet, before/after
+verification card, and magnified shaft-detail comparison.

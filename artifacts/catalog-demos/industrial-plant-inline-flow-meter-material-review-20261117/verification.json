@@ -1,0 +1,31 @@
+{
+  "targetChecksPass": true,
+  "catalogTarget": {
+    "id": "industrial-plant/inline-flow-meter",
+    "triangles": 212,
+    "triangleBudget": 1400
+  },
+  "checks": {
+    "focusedTest": "1 test passed after the source edit; failed on baseline at the flange steel assertion",
+    "integration": "129 files / 199 tests passed, including catalog source/index and export checks",
+    "eslint": "clean for catalog/kits/industrial-plant/ and the new regression test",
+    "index": "2,402 rows; only inline-flow-meter changed; source SHA-256 and preview path verified",
+    "localPage": "local detail page, controls, presets and rendered preview passed",
+    "livePage": "detail page and preview HTTP 200; live preview matches checked-in baseline, not local change"
+  },
+  "kitQuality": {
+    "kit": "industrial-plant",
+    "passing": 60,
+    "total": 60,
+    "rate": "100.00%"
+  },
+  "catalogQuality": {
+    "passing": 2398,
+    "total": 2402,
+    "rate": "99.83%",
+    "unrelatedThinAssets": 4,
+    "thinAssetKit": "standard-components",
+    "note": "The four global structural-gate findings are unrelated to this semantic correction."
+  },
+  "provenance": "Local software render and verification only. The branch is not deployed; no simulation, flow-performance evidence, or hardware acceptance is claimed."
+}

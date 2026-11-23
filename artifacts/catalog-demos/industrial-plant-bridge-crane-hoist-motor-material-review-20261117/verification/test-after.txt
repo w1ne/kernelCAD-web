@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/bridgeCraneHoistMotorMaterial.test.ts (1 test) 1087ms
+     ✓ uses the hoist machinery control for the hoist motor  821ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  10:14:49
+   Duration  6.56s (transform 4.31s, setup 99ms, import 5.24s, tests 1.09s, environment 0ms)

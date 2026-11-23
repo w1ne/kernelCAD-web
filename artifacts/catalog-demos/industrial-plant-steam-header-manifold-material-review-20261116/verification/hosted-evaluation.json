@@ -1,0 +1,24 @@
+{
+  "tool": "kernelCAD hosted evaluate_script",
+  "source": "catalog/kits/industrial-plant/steam-header-manifold.kcad.ts",
+  "staticGeometryCheck": {
+    "skipMechanismCheck": true,
+    "ok": true,
+    "buildOk": true,
+    "sceneValid": true,
+    "volumeMm3": 17136443.262077827,
+    "bboxMm": [920, 310, 373.8],
+    "faceCount": 72,
+    "featureCount": 47,
+    "partCount": 23,
+    "diagnostics": []
+  },
+  "defaultMechanismCheck": {
+    "ok": false,
+    "buildOk": true,
+    "diagnosticCode": "mechanism.interpenetration",
+    "severity": "error",
+    "occurrences": 25,
+    "interpretation": "Static named scene parts intersect at intended pipe/header connections; this material-only change does not alter geometry. No motion or physical acceptance is inferred."
+  }
+}

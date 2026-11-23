@@ -1,0 +1,12 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/mobileFastChargeCartTyreMaterial.test.ts (1 test) 1277ms
+     ✓ rolls on four rubber-tyred wheels with painted hubs and carries the enclosure on the chassis  656ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  02:11:14
+   Duration  28.27s (transform 20.64s, setup 576ms, import 23.18s, tests 1.28s, environment 0ms)
+
+exit 0

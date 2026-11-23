@@ -14,6 +14,18 @@ records the five-preview ledger, before/after preview, regression test, local
 checks and inspected MP4. The branch is not deployed; this color assignment
 does not make the scene prop an OEM or roadworthiness model.
 
+The Nov 18 semantic review sampled five additional construction-equipment
+previews. In `road-reclaimer`, seven cutter-tooth parts now use the existing
+structural-steel control instead of equipment enamel. The 816-triangle geometry,
+dimensions, controls and presets are unchanged. The regular catalog view does
+not expose the teeth behind the milling hood, so the
+[review handoff](../../../artifacts/catalog-demos/construction-road-reclaimer-cutting-tooth-material-review-20261118/README.md)
+includes a focused before/after render alongside the five-preview ledger,
+exported-GLB regression, refreshed index and inspected MP4. The review records
+the simplified silhouette and 1.54 × 1.00 × 1.089 m indexed envelope as a
+separate semantic concern; this color correction does not establish equipment
+dimensions, performance or physical acceptance, and the branch is not deployed.
+
 | id | asset | description | material controls and presets |
 | --- | --- | --- | --- |
 | `track-asphalt-paver` | Tracked asphalt paver | Tracked paving machine with front material hopper, operator canopy, feeder deck and rear screed. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |

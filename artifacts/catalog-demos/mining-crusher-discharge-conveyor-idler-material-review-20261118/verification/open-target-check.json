@@ -1,0 +1,95 @@
+{
+  "checkedAt": "2026-11-18T04:01:37.971086+00:00",
+  "repository": "w1ne/kernelCAD-web",
+  "selectedAssets": [
+    "mining/belt-magnet-separator",
+    "mining/crusher-discharge-conveyor",
+    "mining/flotation-cell-bank",
+    "mining/mine-sump-pump",
+    "mining/radial-stacker"
+  ],
+  "openPullRequests": [
+    {
+      "number": 1507,
+      "title": "fix(catalog): refine industrial-plant material finishes",
+      "assetSourcePaths": [
+        "catalog/kits/beverage-bottling-line/case-taper.kcad.ts",
+        "catalog/kits/beverage-bottling-line/pet-blow-molder.kcad.ts",
+        "catalog/kits/industrial-plant/bridge-crane.kcad.ts",
+        "catalog/kits/industrial-plant/cable-tray-bridge.kcad.ts",
+        "catalog/kits/industrial-plant/electrical-control-cabinet.kcad.ts",
+        "catalog/kits/industrial-plant/inline-flow-meter.kcad.ts",
+        "catalog/kits/industrial-plant/motor-control-center.kcad.ts",
+        "catalog/kits/industrial-plant/packed-scrubber-column.kcad.ts",
+        "catalog/kits/industrial-plant/palletizer-robot-cell.kcad.ts",
+        "catalog/kits/industrial-plant/plc-control-rack.kcad.ts",
+        "catalog/kits/industrial-plant/process-blower.kcad.ts",
+        "catalog/kits/industrial-plant/process-reactor-vessel.kcad.ts",
+        "catalog/kits/industrial-plant/process-water-silo.kcad.ts",
+        "catalog/kits/industrial-plant/roller-conveyor-line.kcad.ts",
+        "catalog/kits/industrial-plant/rooftop-air-handler.kcad.ts",
+        "catalog/kits/industrial-plant/scissor-lift-table.kcad.ts",
+        "catalog/kits/industrial-plant/steam-header-manifold.kcad.ts",
+        "catalog/kits/industrial-plant/valve-manifold-station.kcad.ts",
+        "catalog/kits/mining/jaw-crusher-module.kcad.ts",
+        "catalog/kits/recycling-facility/glass-breaker-screen.kcad.ts",
+        "catalog/kits/shipyard/hull-block-fabrication-jig.kcad.ts",
+        "catalog/kits/shipyard/mobile-hull-access-platform.kcad.ts",
+        "catalog/kits/shipyard/ship-lift-cradle.kcad.ts",
+        "catalog/kits/water-treatment/equalization-basin.kcad.ts"
+      ]
+    },
+    {
+      "number": 1400,
+      "title": "fix(examples): seat the meta-glasses parts without interpenetration",
+      "assetSourcePaths": []
+    },
+    {
+      "number": 1309,
+      "title": "Rebuild the compact supported arm as a desktop 4-DOF",
+      "assetSourcePaths": []
+    },
+    {
+      "number": 1253,
+      "title": "feat(catalog): downloadable GLB + STEP on every asset page (the acquisition loop)",
+      "assetSourcePaths": [
+        "catalog/kits/city-street/mailbox.kcad.ts"
+      ]
+    },
+    {
+      "number": 1187,
+      "title": "feat(params): plain JS math on params, fast and universal (dependency-aware rebuild)",
+      "assetSourcePaths": []
+    },
+    {
+      "number": 1094,
+      "title": "perf(gears): ring gear as one holed-profile extrude (HOLD: face IDs change)",
+      "assetSourcePaths": []
+    }
+  ],
+  "openIssuesScanned": 8,
+  "openPullRequestsScanned": 6,
+  "perAsset": {
+    "belt-magnet-separator": {
+      "issueMentions": [],
+      "pullRequestMentionsOrPaths": []
+    },
+    "crusher-discharge-conveyor": {
+      "issueMentions": [],
+      "pullRequestMentionsOrPaths": []
+    },
+    "flotation-cell-bank": {
+      "issueMentions": [],
+      "pullRequestMentionsOrPaths": []
+    },
+    "mine-sump-pump": {
+      "issueMentions": [],
+      "pullRequestMentionsOrPaths": []
+    },
+    "radial-stacker": {
+      "issueMentions": [],
+      "pullRequestMentionsOrPaths": []
+    }
+  },
+  "result": "no selected asset is mentioned or source/preview-path-targeted by an open issue or PR"
+}

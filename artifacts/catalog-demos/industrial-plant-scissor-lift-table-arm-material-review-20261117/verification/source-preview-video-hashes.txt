@@ -1,0 +1,5 @@
+6a6c19a23fa4c59c591e1eddad96accd4c2c3be97894a85a0ded4771cc2c3b36  artifacts/catalog-demos/industrial-plant-scissor-lift-table-arm-material-review-20261117/before/scissor-lift-table.kcad.ts
+07675a3d4b169afe8486eba00b3acb8c9d42149d1a976c1f93e3c9e433839201  artifacts/catalog-demos/industrial-plant-scissor-lift-table-arm-material-review-20261117/after/scissor-lift-table.kcad.ts
+c4b6a6bc9a04a127d00fbea8c1de5504d381ea677ab8cbbdbf86e60b5027bd22  artifacts/catalog-demos/industrial-plant-scissor-lift-table-arm-material-review-20261117/before/scissor-lift-table.png
+f018aecbe63caf982c089bcd5636c66a0fddb479ac0e6b41fd2f985fc53bcdd9  artifacts/catalog-demos/industrial-plant-scissor-lift-table-arm-material-review-20261117/after/scissor-lift-table.png
+ec5ecbc13276e4208dc9eb53a79b23a367b15079275b5af7831aebb9570e163b  artifacts/catalog-demos/industrial-plant-scissor-lift-table-arm-material-review-20261117/industrial-plant-scissor-lift-table-arm-material-review.mp4

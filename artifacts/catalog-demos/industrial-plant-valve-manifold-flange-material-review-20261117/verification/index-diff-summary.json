@@ -1,0 +1,13 @@
+{
+  "command": "npx tsx scripts/buildAssetCatalog.ts",
+  "changedAssetRows": [
+    "industrial-plant/valve-manifold-station"
+  ],
+  "source": "catalog/kits/industrial-plant/valve-manifold-station.kcad.ts",
+  "sourceSha256Before": "8d3cc6f66761e99ede3f761f0a8d7505f2e16b8d89659724327bb4ca6622cb60",
+  "sourceSha256After": "260375ff4ca05e6b88bc8fc6c4c9f43844cf54a89c0095ef75d578575f2cdb06",
+  "preview": "/assets/industrial-plant-valve-manifold-station.png",
+  "previewSha256After": "f357cfbd0ee7b6fe5469edacfc2cce9bbd393f9527d08c88d142919c50bbf7d7",
+  "triangles": 740,
+  "triangleBudget": 1400
+}

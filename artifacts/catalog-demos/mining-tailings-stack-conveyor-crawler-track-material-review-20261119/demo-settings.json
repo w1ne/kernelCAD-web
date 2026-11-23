@@ -1,0 +1,19 @@
+{
+  "demo": "tailings-stack-conveyor crawler material review",
+  "capturedAt": "2026-11-19",
+  "durationSeconds": 15.125,
+  "frameRate": 24,
+  "frameSize": "1280x720",
+  "videoCodec": "H.264, yuv420p",
+  "audio": false,
+  "slides": [
+    "Five locally rendered mining asset previews",
+    "Tailings stack conveyor before/after software previews",
+    "Crawler steel versus belt rubber material mapping",
+    "Local source, preview, index and regression evidence"
+  ],
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts tailings-stack-conveyor",
+  "testCommand": "npx vitest run tests/integration/catalog/miningTailingsCrawlerTrackMaterial.test.ts",
+  "captureMethod": "Pillow-generated evidence slides concatenated with ffmpeg; no browser capture",
+  "claims": "Local software rendering and exported-GLB regression only. Not a process simulation, deployment check, equipment-performance result or hardware acceptance."
+}

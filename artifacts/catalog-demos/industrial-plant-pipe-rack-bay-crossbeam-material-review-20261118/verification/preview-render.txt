@@ -1,0 +1,1 @@
+industrial-plant/pipe-rack-bay: 360 tris

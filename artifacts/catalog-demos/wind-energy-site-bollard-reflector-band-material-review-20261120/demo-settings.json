@@ -1,0 +1,21 @@
+{
+  "created": "2026-11-20",
+  "output": "review-demo.mp4",
+  "resolution": "1280x720",
+  "frameRate": 24,
+  "plannedSlideDurationSeconds": 4,
+  "slides": [
+    "Five rendered wind-energy previews",
+    "Before and after wind-site-bollard previews",
+    "Post, reflector band and foot material mapping",
+    "Local verification and evidence scope"
+  ],
+  "sourceImages": [
+    "samples/previews/*.png",
+    "before/wind-site-bollard.png",
+    "after/wind-site-bollard.png"
+  ],
+  "generationCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/wind-energy-site-bollard-reflector-band-material-review-20261120/make_demo.py",
+  "inspectionCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/wind-energy-site-bollard-reflector-band-material-review-20261120/inspect_video.py",
+  "claimScope": "Local source, software-rendered catalog preview, and exported-GLB material and band-size regression only; no deployment, simulation, safety assessment, or hardware acceptance."
+}

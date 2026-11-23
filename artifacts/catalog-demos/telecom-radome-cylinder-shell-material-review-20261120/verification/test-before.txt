@@ -1,0 +1,1 @@
+before (original source): FAIL - no powder-coated steel shell or cap may form the radome: expected [ Array(5) ] to not include 'shell'

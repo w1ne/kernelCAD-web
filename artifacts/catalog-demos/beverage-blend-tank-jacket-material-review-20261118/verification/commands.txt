@@ -1,0 +1,16 @@
+Audit base: e8dbbbb4d801cec9f55311ea9c309043098a953f
+PR #1258 status: verification/pr-1258-status.json
+PR #1507 baseline status: verification/pr-1507-before-status.json
+Open issue/PR target scan: python3 artifacts/catalog-demos/beverage-blend-tank-jacket-material-review-20261118/check_open_targets.py
+Public page check: HTTP 200 at https://kernelcad.com/catalog/beverage-bottling-line/beverage-blend-tank/
+Public preview check: HTTP 200 at https://kernelcad.com/catalog/beverage-bottling-line/beverage-blend-tank/preview.png
+Baseline public preview SHA-256: ed13a292b97d41f20adcf78b30dc220bbea95fdccea22d7fa4152e7f1f69af87
+Preview render: npx tsx scripts/renderCatalogPreviews.ts beverage-blend-tank
+Index regeneration: npx tsx scripts/buildAssetCatalog.ts
+Focused baseline regression: npx vitest run tests/integration/catalog/beverageBlendTankJacketMaterial.test.ts --reporter=verbose (expected fail)
+Focused corrected regression: npx vitest run tests/integration/catalog/beverageBlendTankJacketMaterial.test.ts --reporter=verbose
+ESLint: npx eslint catalog/kits/beverage-bottling-line/
+Kit quality: python3 scripts/checkCatalogQuality.py --kit beverage-bottling-line
+Global quality: python3 scripts/checkCatalogQuality.py
+Catalog integration suite: npx vitest run tests/integration/catalog/ --reporter=verbose
+Demo: python3 artifacts/catalog-demos/beverage-blend-tank-jacket-material-review-20261118/make_demo.py

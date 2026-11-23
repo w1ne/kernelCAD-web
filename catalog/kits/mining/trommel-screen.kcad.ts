@@ -3,8 +3,9 @@
 // washes gravel. What makes it one: a long cylindrical screen of perforated
 // panels held in a cage of stiffening rings and strakes, a blank feed section
 // with a chute running ore into the high end, two steel riding tyres turning on
-// pairs of trunnion rollers with the drive motor on one roller, a spray bar
-// along the top, an undersize hopper under the screen feeding a cross
+// pairs of trunnion rollers with the drive motor on one roller, a galvanized
+// spray bar along the top fed by a valved riser from the discharge plinth, an
+// undersize hopper under the screen feeding a cross
 // conveyor and fines pile, and oversize rock dropping from the open low end.
 // Millimetres, Z up, drum along X falling towards +X, cross conveyor towards
 // -Y (front), ground origin under the drum centre.
@@ -12,7 +13,7 @@ meta({
   name: "trommel-screen",
   license: 'CC0-1.0',
   title: "Rotary trommel screen",
-  description: "Rotary trommel screen at about real size: 7 m inclined drum with perforated screen panels in a cage of stiffening rings and longitudinal strakes, blank feed section and feed chute from a hopper of ore, two riding tyres on trunnion rollers with a geared motor driving one roller, spray-water bar with drop nozzles, undersize hopper over a cross conveyor building a fines pile, and an oversize chute dropping rock onto a pile, standing on a steel frame or on a tandem-axle trailer chassis. Material controls: drum and hopper coating, frame steel, screen panels, ore, plus a mounting choice (fixed, mobile). weathered, highVisibility and gravelWash presets.",
+  description: "Rotary trommel screen at about real size: 7 m inclined drum with perforated screen panels in a cage of stiffening rings and longitudinal strakes, blank feed section and feed chute from a hopper of ore, two riding tyres on trunnion rollers with a geared motor driving one roller, galvanized spray-water bar with drop nozzles fed by a valved riser, undersize hopper over a cross conveyor building a fines pile, and an oversize chute dropping rock onto a pile, standing on a steel frame or on a tandem-axle trailer chassis. Material controls: drum and hopper coating, frame steel, screen panels, ore, plus a mounting choice (fixed, mobile). weathered, highVisibility and gravelWash presets.",
   tags: ['mining', 'mineral processing', 'ore handling', 'trommel', 'rotary screen', 'screening', 'gravel', 'washing plant'],
   kit: 'mining',
   category: 'prop',
@@ -64,7 +65,9 @@ const profileYZ = (pts, t) => extrudePolygon(pts, t).rotateX(90).translate(0, t 
 // Square frustum (hopper) from a bottom half-width to a top half-width.
 const hopper = (r0, z0, r1, z1) => lathe([[r0 * Math.SQRT2, z0], [r1 * Math.SQRT2, z1]], 4).rotateZ(45);
 
-const dark = '#26292b', concrete = '#a6a196', guard = '#e8c21a', rubber = '#1f2224', water = '#9fc6d8';
+const dark = '#26292b', concrete = '#a6a196', guard = '#e8c21a', rubber = '#1f2224';
+// Spray water pipework is galvanized steel pipe with a cast iron valve.
+const galvanized = '#a7afb1', valveIron = '#3c4144', handwheel = '#c8322b';
 const mobile = mounting.value === 'mobile';
 const TILT = 4;
 const Zc = mobile ? 3000 : 3300; // drum centre height
@@ -102,9 +105,18 @@ add('drive-motor', latheX([[300, tyres[1] + 860], [300, tyres[1] + 1900]], dy, d
 add('drive-motor-cowl', latheX([[260, tyres[1] + 1900], [230, tyres[1] + 2100]], dy, dz, 14).color(dark));
 
 // ---- Spray bar with drop nozzles along the top ----
-add('spray-bar', drum(latheX([[70, -2700], [70, 3200]], 0, R + 400, 8)).color(stainlessSteel));
-for (let x = -2200; x <= 2800; x += 1000) add(`spray-nozzle-${x}`, drum(rod(30, R + 80, R + 400, 6).translate(x, 0, 0)).color(stainlessSteel));
-add('spray-supply', tube([3300, 0, zAt(3300) + R + 400], [3300, 1600, 600], 70, 8).color(water));
+add('spray-bar', drum(latheX([[70, -2700], [70, 3200]], 0, R + 400, 8)).color(galvanized));
+for (let x = -2200; x <= 2800; x += 1000) add(`spray-nozzle-${x}`, drum(rod(30, R + 80, R + 400, 6).translate(x, 0, 0)).color(galvanized));
+// Supply: level from the discharge end of the bar to the back, then a riser
+// with an isolating valve down to a flange on the plinth (or the ground when mobile).
+const sz = zAt(3300) + R + 400, sy = 1600, footZ = mobile ? 0 : 300;
+add('spray-supply', tube([3300, 0, sz], [3300, sy, sz], 70, 8).color(galvanized));
+add('spray-elbow', rod(80, sz - 80, sz + 80, 8).translate(3300, sy, 0).color(galvanized));
+add('spray-riser', rod(70, footZ + 40, sz - 80, 8).translate(3300, sy, 0).color(galvanized));
+add('spray-riser-flange', rod(150, footZ, footZ + 40, 10).translate(3300, sy, 0).color(galvanized));
+add('spray-valve', rod(130, footZ + 900, footZ + 1200, 10).translate(3300, sy, 0).color(valveIron));
+add('spray-valve-stem', tube([3300, sy + 130, footZ + 1050], [3300, sy + 330, footZ + 1050], 20, 6).color(valveIron));
+add('spray-valve-handwheel', rod(160, 0, 30, 12).rotateX(-90).translate(3300, sy + 330, footZ + 1050).color(handwheel));
 
 // ---- Feed hopper and chute into the high end ----
 const fx = -5400, fz = zAt(-3700) + 400;

@@ -1,0 +1,37 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/legacy-migrated/kernelcad-catalog-2000[39m
+
+ [31m❯[39m tests/integration/catalog/windTowerSectionShellMaterial.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1187[2mms[22m[39m
+[31m     [31m×[31m draws a tapered painted shell between steel flanges[39m[32m 255[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/catalog/windTowerSectionShellMaterial.test.ts[2m > [22mwind-energy/tower-section shell material[2m > [22mdraws a tapered painted shell between steel flanges
+[31m[1mAssertionError[22m: expected [ 'paintedSteel', 'stainlessSteel' ] to deeply equal [ 'flangeSteel', 'paintedSteel', …(1) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   "flangeSteel",[39m
+[2m    "paintedSteel",[22m
+[32m-   "towerPaint",[39m
+[31m+   "stainlessSteel",[39m
+[2m  ][22m
+
+[36m [2m❯[22m tests/integration/catalog/windTowerSectionShellMaterial.test.ts:[2m24:102[22m[39m
+    [90m 22| [39m    expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+    [90m 23| [39m    [34mexpect[39m(asset[33m.[39mstats[33m.[39mminUpM)[33m.[39m[34mtoBeCloseTo[39m([34m0[39m[33m,[39m [34m6[39m)[33m;[39m
+    [90m 24| [39m    expect(asset.params.filter((param) => param.type === 'color').map(…
+    [90m   | [39m                                                                                                     [31m^[39m
+    [90m 25| [39m      [32m'flangeSteel'[39m[33m,[39m [32m'paintedSteel'[39m[33m,[39m [32m'towerPaint'[39m[33m,[39m
+    [90m 26| [39m    ])[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 20:25:40
+[2m   Duration [22m 15.96s[2m (transform 11.60s, setup 281ms, import 14.04s, tests 1.19s, environment 0ms)[22m
+

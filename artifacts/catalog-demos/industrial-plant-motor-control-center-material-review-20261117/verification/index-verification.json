@@ -1,0 +1,13 @@
+{
+  "asset": "industrial-plant/motor-control-center",
+  "catalogRowsChanged": [
+    "industrial-plant/motor-control-center"
+  ],
+  "sourceSha256": "ce31e560fe5d397f3d1b3189f0617b3cf99216962f344bd8b726b19aa67ec242",
+  "indexedSourceSha256": "ce31e560fe5d397f3d1b3189f0617b3cf99216962f344bd8b726b19aa67ec242",
+  "sourceHashMatches": true,
+  "indexedPreview": "/assets/industrial-plant-motor-control-center.png",
+  "previewExists": true,
+  "afterPreviewSha256": "ecc6a6227c342afc4099fca9306e835835205fb427d8cb9b6fea76d31a299874",
+  "beforePreviewSha256": "db7f036eb2b620a2b0cdf034af15a0da49846c9eec4d019d027dfb022e497550"
+}

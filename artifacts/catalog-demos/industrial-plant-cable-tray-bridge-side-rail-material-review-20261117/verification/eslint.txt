@@ -1,0 +1,2 @@
+npx eslint catalog/kits/industrial-plant/ tests/integration/catalog/cableTrayBridgeMaterial.test.ts
+PASS

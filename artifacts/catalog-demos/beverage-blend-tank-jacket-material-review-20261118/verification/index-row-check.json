@@ -1,0 +1,32 @@
+{
+  "changedAssetIds": [
+    "beverage-blend-tank"
+  ],
+  "onlyTargetRowChanged": true,
+  "sourceSha256": "7432a6b58158f0ce53f3fdd086799426b3b42a9a7cc66ce44d5a7815e4b15f5c",
+  "sourceSha256MatchesFile": true,
+  "previewPath": "/assets/beverage-bottling-line-beverage-blend-tank.png",
+  "previewPathMatchesExpected": true,
+  "previewFileExists": true,
+  "triangleCountBeforeAndAfter": [
+    492,
+    492
+  ],
+  "triangleCountUnchanged": true,
+  "dimensionsBeforeAndAfterM": [
+    [
+      0.83,
+      1.69,
+      0.97
+    ],
+    [
+      0.83,
+      1.69,
+      0.97
+    ]
+  ],
+  "dimensionsUnchanged": true,
+  "presetsUnchanged": true,
+  "paramsUnchanged": true,
+  "passed": true
+}

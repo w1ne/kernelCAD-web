@@ -154,12 +154,12 @@ for (let i = 0; i <= 6; i++) {
 }
 for (const [k, s] of [-1, 1].entries()) {
   const y = s * 1700;
-  add(`track-${k}`, prismY(stadium, y - 400, y + 400).translate(CX, 0, 0).color(beltRubber));
+  add(`track-${k}`, prismY(stadium, y - 400, y + 400).translate(CX, 0, 0).color(crawlerSteel));
   add(`track-frame-${k}`, blk(CX - TL + 450, y - 430, 250, CX + TL - 450, y + 430, 800).color(crawlerSteel));
   add(`sprocket-${k}`, tube([CX + TL - 500, y - 460, 500], [CX + TL - 500, y + 460, 500], 330, 10).color(crawlerSteel));
   for (let g = 0; g < 9; g++) {
     const gx = CX - TL + 700 + g * ((2 * TL - 1400) / 8);
-    add(`grouser-${k}-${g}`, blk(gx - 50, y - 400, 1000, gx + 50, y + 400, 1060).color(beltRubber));
+    add(`grouser-${k}-${g}`, blk(gx - 50, y - 400, 1000, gx + 50, y + 400, 1060).color(crawlerSteel));
   }
 }
 add('carrier-deck', blk(CX - 1800, -1350, 800, CX + 1800, 1350, 1150).color(boomPaint));

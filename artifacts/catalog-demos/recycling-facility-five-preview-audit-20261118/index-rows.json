@@ -1,0 +1,1364 @@
+{
+  "sourceIndex": "catalog/index.json",
+  "assetCount": 5,
+  "rows": [
+    {
+      "id": "green-waste-shredder",
+      "kit": "recycling-facility",
+      "title": "Green-waste shredder",
+      "description": "Tracked mobile green-waste shredder at about real size: crawler tracks with road wheels and pads, flared hopper over a single toothed shredding shaft heaped with brush and branches (or empty), diesel engine module with grilles, exhaust stack, ladder and handrails, long inclined discharge conveyor carrying mulch with an overband magnet. Material controls: machine paint, tracks and chassis, hopper wear plate, green waste. komptech, doppstadt, weathered and highVisibility presets; hopper loaded or empty.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "recycling",
+        "shredder",
+        "mobile shredder",
+        "tracked shredder",
+        "green waste",
+        "composting",
+        "brush",
+        "mulch",
+        "biomass",
+        "waste management",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "recycling-facility",
+        "materials-recovery",
+        "waste-management",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/recycling-facility/green-waste-shredder.kcad.ts",
+      "preview": "/assets/recycling-facility-green-waste-shredder.png",
+      "sourceSha256": "0de088f79278da7ea68f93908fcaa04f0cc301df162c3ee0d3af8e22b42c5eaa",
+      "triangleBudget": 4400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#3f7d3a",
+          "label": "Machine body (paint)"
+        },
+        {
+          "name": "chassis",
+          "type": "color",
+          "default": "#2e3135",
+          "label": "Tracks and chassis"
+        },
+        {
+          "name": "hopper",
+          "type": "color",
+          "default": "#5b6266",
+          "label": "Hopper wear plate"
+        },
+        {
+          "name": "greenWaste",
+          "type": "color",
+          "default": "#4f8a2f",
+          "label": "Green waste (brush)"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "brush",
+          "label": "Hopper load",
+          "choices": [
+            "brush",
+            "empty"
+          ]
+        }
+      ],
+      "presets": {
+        "komptech": {
+          "body": "#3f7d3a",
+          "chassis": "#2e3135",
+          "hopper": "#5b6266",
+          "greenWaste": "#4f8a2f"
+        },
+        "doppstadt": {
+          "body": "#e0b12a",
+          "chassis": "#2e3135",
+          "hopper": "#4a4f53",
+          "greenWaste": "#5c8a34"
+        },
+        "weathered": {
+          "body": "#6d7458",
+          "chassis": "#3d3a36",
+          "hopper": "#6a5e50",
+          "greenWaste": "#7a7a3e"
+        },
+        "highVisibility": {
+          "body": "#d9692a",
+          "chassis": "#2f3438",
+          "hopper": "#5b6266",
+          "greenWaste": "#4f8a2f"
+        }
+      },
+      "stats": {
+        "triangles": 2500,
+        "sizeM": [
+          12.726623,
+          4.44,
+          3.100279
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "chassis",
+          "color": "#2e3135",
+          "parts": [
+            "track-l",
+            "track-r",
+            "deck-skirt",
+            "engine-roof",
+            "door-seam-1450",
+            "door-seam-2500",
+            "air-filter",
+            "conveyor-leg-l",
+            "conveyor-leg-r",
+            "conveyor-leg-tie"
+          ],
+          "param": "chassis"
+        },
+        {
+          "name": "track-pad-l-0",
+          "color": "#1d2023",
+          "parts": [
+            "track-pad-l-0",
+            "track-pad-l-1",
+            "track-pad-l-2",
+            "track-pad-l-3",
+            "track-pad-l-4",
+            "track-pad-l-5",
+            "track-pad-l-6",
+            "track-pad-l-7",
+            "track-pad-l-8",
+            "track-pad-l-9",
+            "track-pad-l-10",
+            "track-pad-l-11",
+            "track-pad-r-0",
+            "track-pad-r-1",
+            "track-pad-r-2",
+            "track-pad-r-3",
+            "track-pad-r-4",
+            "track-pad-r-5",
+            "track-pad-r-6",
+            "track-pad-r-7",
+            "track-pad-r-8",
+            "track-pad-r-9",
+            "track-pad-r-10",
+            "track-pad-r-11",
+            "grille-0",
+            "grille-1",
+            "grille-2",
+            "grille-3",
+            "grille-4",
+            "grille-5",
+            "grille-6",
+            "grille-7",
+            "grille-8"
+          ]
+        },
+        {
+          "name": "hopper",
+          "color": "#5b6266",
+          "parts": [
+            "idler-l-l",
+            "idler-l-r",
+            "idler-r-l",
+            "idler-r-r",
+            "road-wheel-0",
+            "road-wheel-1",
+            "road-wheel-2",
+            "road-wheel-3",
+            "road-wheel-4",
+            "hopper",
+            "door-handle",
+            "head-drum"
+          ],
+          "param": "hopper"
+        },
+        {
+          "name": "body",
+          "color": "#3f7d3a",
+          "parts": [
+            "deck",
+            "hopper-rim",
+            "hopper-rib--2600",
+            "hopper-rib--1200",
+            "hopper-rib-200",
+            "engine-module",
+            "conveyor-frame",
+            "conveyor-skirt-l",
+            "conveyor-skirt-r",
+            "overband-magnet",
+            "magnet-hanger--5100",
+            "magnet-hanger--4300"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "shaft",
+          "color": "#8e979c",
+          "parts": [
+            "shaft"
+          ]
+        },
+        {
+          "name": "shaft-tooth-0",
+          "color": "#b9c0c3",
+          "parts": [
+            "shaft-tooth-0",
+            "shaft-tooth-1",
+            "shaft-tooth-2",
+            "shaft-tooth-3",
+            "shaft-tooth-4",
+            "shaft-tooth-5",
+            "shaft-tooth-6",
+            "shaft-tooth-7",
+            "shaft-tooth-8",
+            "shaft-tooth-9",
+            "shaft-tooth-10",
+            "shaft-tooth-11"
+          ]
+        },
+        {
+          "name": "greenWaste",
+          "color": "#4f8a2f",
+          "parts": [
+            "brush-heap"
+          ],
+          "param": "greenWaste"
+        },
+        {
+          "name": "branch--1500",
+          "color": "#6b4a2b",
+          "parts": [
+            "branch--1500",
+            "branch--500",
+            "branch-300",
+            "branch--1000",
+            "branch-600",
+            "branch--200",
+            "mulch-1",
+            "mulch-2",
+            "mulch-4",
+            "mulch-5",
+            "mulch-7",
+            "mulch-8",
+            "mulch-10",
+            "mulch-11",
+            "mulch-13",
+            "mulch-14",
+            "mulch-16",
+            "mulch-17",
+            "mulch-19",
+            "mulch-20",
+            "mulch-22",
+            "mulch-23",
+            "mulch-pile"
+          ]
+        },
+        {
+          "name": "exhaust-stack",
+          "color": "#3d4448",
+          "parts": [
+            "exhaust-stack",
+            "exhaust-cap"
+          ]
+        },
+        {
+          "name": "ladder-rail-l",
+          "color": "#f0b429",
+          "parts": [
+            "ladder-rail-l",
+            "ladder-rail-r",
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "ladder-rung-5",
+            "ladder-rung-6",
+            "ladder-rung-7",
+            "ladder-rung-8",
+            "rail-post-l-f",
+            "rail-post-r-f",
+            "rail-post-l-b",
+            "rail-post-r-b",
+            "top-rail-f",
+            "top-rail-b"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f0ae32",
+          "parts": [
+            "beacon"
+          ]
+        },
+        {
+          "name": "conveyor-belt",
+          "color": "#24272a",
+          "parts": [
+            "conveyor-belt",
+            "magnet-belt"
+          ]
+        },
+        {
+          "name": "mulch-0",
+          "color": "#8a6a3c",
+          "parts": [
+            "mulch-0",
+            "mulch-3",
+            "mulch-6",
+            "mulch-9",
+            "mulch-12",
+            "mulch-15",
+            "mulch-18",
+            "mulch-21"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plastic-film-compactor",
+      "kit": "recycling-facility",
+      "title": "Plastic-film compactor",
+      "description": "Horizontal screw compactor for plastic film at about real size: open hopper with screw flights visible in the throat, gearmotor drive, ribbed barrel with bolted flanges and conical discharge nozzle, compressed film plug curving into a wheeled roll cage, loose film on the hopper rim and a control box with emergency stop. Material controls: frame paint, hopper and barrel steel, drive paint and plastic film. plant, weathered, stainless and highVisibility presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "recycling",
+        "compactor",
+        "screw compactor",
+        "auger",
+        "plastic film",
+        "stretch wrap",
+        "ldpe",
+        "roll cage",
+        "materials recovery",
+        "waste management",
+        "plastics",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "recycling-facility",
+        "materials-recovery",
+        "waste-management",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/recycling-facility/plastic-film-compactor.kcad.ts",
+      "preview": "/assets/recycling-facility-plastic-film-compactor.png",
+      "sourceSha256": "e29f6012d8b1072bc3fb6d301344acefdd323e8aa6da8bcb8d41f7a5ba86fbc7",
+      "triangleBudget": 2600,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#5f7380",
+          "label": "Stand and roll cage (paint)"
+        },
+        {
+          "name": "hopper",
+          "type": "color",
+          "default": "#b8bec0",
+          "label": "Hopper and barrel (steel)"
+        },
+        {
+          "name": "drive",
+          "type": "color",
+          "default": "#2f5d9a",
+          "label": "Gearmotor (paint)"
+        },
+        {
+          "name": "film",
+          "type": "color",
+          "default": "#e4eaee",
+          "label": "Plastic film"
+        },
+        {
+          "name": "cage",
+          "type": "choice",
+          "default": "filling",
+          "label": "Roll cage",
+          "choices": [
+            "filling",
+            "empty"
+          ]
+        }
+      ],
+      "presets": {
+        "plant": {
+          "frame": "#5f7380",
+          "hopper": "#b8bec0",
+          "drive": "#2f5d9a",
+          "film": "#e4eaee"
+        },
+        "weathered": {
+          "frame": "#5a5f5c",
+          "hopper": "#9ea4a4",
+          "drive": "#4a5a6a",
+          "film": "#d4d6cc"
+        },
+        "stainless": {
+          "frame": "#c4c9cb",
+          "hopper": "#d6dadb",
+          "drive": "#2b2f33",
+          "film": "#e4eaee"
+        },
+        "highVisibility": {
+          "frame": "#f0c419",
+          "hopper": "#b8bec0",
+          "drive": "#c8322a",
+          "film": "#b9dcef"
+        }
+      },
+      "stats": {
+        "triangles": 2102,
+        "sizeM": [
+          5.27,
+          2.444,
+          1.74
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#5f7380",
+          "parts": [
+            "leg-0-f",
+            "leg-0-b",
+            "leg-beam-0",
+            "leg-1200-f",
+            "leg-1200-b",
+            "leg-beam-1200",
+            "leg-2600-f",
+            "leg-2600-b",
+            "leg-beam-2600",
+            "base-rail-f",
+            "base-rail-b",
+            "hopper-rim",
+            "flange-320",
+            "flange-1300",
+            "flange-2100",
+            "barrel-rib-f",
+            "barrel-rib-b",
+            "cage-base",
+            "cage-post-l-f",
+            "cage-post-l-b",
+            "cage-post-r-f",
+            "cage-post-r-b",
+            "cage-hoop-700",
+            "cage-hoop-1300",
+            "cage-hoop-1860",
+            "cage-bar-back-1",
+            "cage-bar-right-1",
+            "cage-bar-back-2",
+            "cage-bar-right-2",
+            "cage-bar-back-3",
+            "cage-bar-right-3",
+            "cage-bar-back-4",
+            "cage-bar-right-4",
+            "cage-bar-back-5",
+            "cage-bar-right-5",
+            "control-post"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "hopper",
+          "color": "#b8bec0",
+          "parts": [
+            "hopper",
+            "throat",
+            "barrel",
+            "nozzle"
+          ],
+          "param": "hopper"
+        },
+        {
+          "name": "screw-shaft",
+          "color": "#2b2f33",
+          "parts": [
+            "screw-shaft",
+            "back-pressure-cylinder",
+            "motor-fan-cover",
+            "cage-wheel-l-f",
+            "cage-wheel-l-b",
+            "cage-wheel-r-f",
+            "cage-wheel-r-b",
+            "hour-meter"
+          ]
+        },
+        {
+          "name": "flight-0",
+          "color": "#8f979c",
+          "parts": [
+            "flight-0",
+            "flight-1",
+            "flight-2",
+            "flight-3",
+            "flight-4",
+            "flight-5"
+          ]
+        },
+        {
+          "name": "drive",
+          "color": "#2f5d9a",
+          "parts": [
+            "back-pressure-plate",
+            "gearbox",
+            "gearbox-flange",
+            "motor",
+            "motor-terminal-box"
+          ],
+          "param": "drive"
+        },
+        {
+          "name": "drive-guard",
+          "color": "#f0c419",
+          "parts": [
+            "drive-guard"
+          ]
+        },
+        {
+          "name": "film",
+          "color": "#e4eaee",
+          "parts": [
+            "film-plug",
+            "film-plug-elbow",
+            "film-plug-drop",
+            "film-pile",
+            "film-bag-2",
+            "loose-film-0",
+            "loose-film-2",
+            "loose-film-4"
+          ],
+          "param": "film"
+        },
+        {
+          "name": "film-bag-0",
+          "color": "#e58aa8",
+          "parts": [
+            "film-bag-0",
+            "loose-film-1"
+          ]
+        },
+        {
+          "name": "film-bag-1",
+          "color": "#7fb8d8",
+          "parts": [
+            "film-bag-1",
+            "loose-film-3"
+          ]
+        },
+        {
+          "name": "film-bag-3",
+          "color": "#9ccf8a",
+          "parts": [
+            "film-bag-3"
+          ]
+        },
+        {
+          "name": "control-box",
+          "color": "#d9d9d4",
+          "parts": [
+            "control-box"
+          ]
+        },
+        {
+          "name": "estop",
+          "color": "#d62f2a",
+          "parts": [
+            "estop"
+          ]
+        },
+        {
+          "name": "button-start",
+          "color": "#2f9a4f",
+          "parts": [
+            "button-start"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plastic-flake-silo",
+      "kit": "recycling-facility",
+      "title": "Plastic flake silo",
+      "description": "Aluminium plastic-flake silo at about real size: tall slim shell with weld-seam bands on a closed skirt with access door, rotary discharge valve into a pneumatic pick-up line, conveying line up the side to a roof cyclone receiver, caged ladder with rest platform and roof rail, on a concrete plinth. Material controls: silo shell, skirt, conveying pipework and safety rail. plant, weathered, food-grade and highVisibility presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "recycling",
+        "plastics",
+        "PET flake",
+        "HDPE",
+        "silo",
+        "pneumatic conveying",
+        "cyclone",
+        "rotary valve",
+        "materials recovery",
+        "waste management",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "recycling-facility",
+        "materials-recovery",
+        "waste-management",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/recycling-facility/plastic-flake-silo.kcad.ts",
+      "preview": "/assets/recycling-facility-plastic-flake-silo.png",
+      "sourceSha256": "08b5620c99b4b0b453ed37f0ff6e9447a60b6d4b4ffd49f96cc40a079f53004f",
+      "triangleBudget": 3600,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#c3c9cc",
+          "label": "Silo shell (aluminium)"
+        },
+        {
+          "name": "skirt",
+          "type": "color",
+          "default": "#3f7f8a",
+          "label": "Skirt and roof (painted steel)"
+        },
+        {
+          "name": "pipework",
+          "type": "color",
+          "default": "#7d8589",
+          "label": "Conveying pipework"
+        },
+        {
+          "name": "safety",
+          "type": "color",
+          "default": "#f0b429",
+          "label": "Ladder cage and handrail"
+        }
+      ],
+      "presets": {
+        "plant": {
+          "shell": "#c3c9cc",
+          "skirt": "#3f7f8a",
+          "pipework": "#7d8589",
+          "safety": "#f0b429"
+        },
+        "weathered": {
+          "shell": "#a9aba5",
+          "skirt": "#566b6c",
+          "pipework": "#6f716c",
+          "safety": "#bf9a45"
+        },
+        "foodGrade": {
+          "shell": "#e2e6e8",
+          "skirt": "#d8dcdc",
+          "pipework": "#b8c0c3",
+          "safety": "#2f6fb5"
+        },
+        "highVisibility": {
+          "shell": "#e8ebec",
+          "skirt": "#2a6fb5",
+          "pipework": "#d4572a",
+          "safety": "#f2d21b"
+        }
+      },
+      "stats": {
+        "triangles": 3188,
+        "sizeM": [
+          5.8,
+          15.4,
+          4.1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "plinth",
+          "color": "#a7a39b",
+          "parts": [
+            "plinth"
+          ]
+        },
+        {
+          "name": "skirt",
+          "color": "#3f7f8a",
+          "parts": [
+            "skirt",
+            "door-frame",
+            "roof",
+            "riser-clamp-2900",
+            "riser-clamp-5300",
+            "riser-clamp-7700",
+            "riser-clamp-10100",
+            "riser-clamp-12500",
+            "vent-cap"
+          ],
+          "param": "skirt"
+        },
+        {
+          "name": "skirt-door",
+          "color": "#2a2e31",
+          "parts": [
+            "skirt-door"
+          ]
+        },
+        {
+          "name": "shell",
+          "color": "#c3c9cc",
+          "parts": [
+            "shell",
+            "cyclone-barrel",
+            "cyclone-cone"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "pipework",
+          "color": "#7d8589",
+          "parts": [
+            "seam-2900",
+            "seam-4500",
+            "seam-6100",
+            "seam-7700",
+            "seam-9300",
+            "seam-10900",
+            "seam-12500",
+            "rotary-valve",
+            "pickup-line",
+            "pipe-stand--2600",
+            "pipe-stand--3500",
+            "fill-riser",
+            "fill-inlet",
+            "fill-bend",
+            "fill-roof-run",
+            "cyclone-vent",
+            "ladder-stile--1",
+            "ladder-stile-1",
+            "rung-550",
+            "rung-1150",
+            "rung-1750",
+            "rung-2350",
+            "rung-2950",
+            "rung-3550",
+            "rung-4150",
+            "rung-4750",
+            "rung-5350",
+            "rung-5950",
+            "rung-6550",
+            "rung-7150",
+            "rung-7750",
+            "rung-8350",
+            "rung-8950",
+            "rung-9550",
+            "rung-10150",
+            "rung-10750",
+            "rung-11350",
+            "rung-11950",
+            "rung-12550",
+            "rung-13150",
+            "rest-platform"
+          ],
+          "param": "pipework"
+        },
+        {
+          "name": "valve-motor",
+          "color": "#2f5d9a",
+          "parts": [
+            "valve-motor"
+          ]
+        },
+        {
+          "name": "safety",
+          "color": "#f0b429",
+          "parts": [
+            "rail-post-0",
+            "rail-post-1",
+            "rail-post-2",
+            "rail-post-3",
+            "rail-post-4",
+            "rail-post-5",
+            "rail-post-6",
+            "rail-post-7",
+            "rail-post-8",
+            "rail-post-9",
+            "rail-post-10",
+            "rail-post-11",
+            "handrail",
+            "hoop-front-2600",
+            "hoop-side-2600--1",
+            "hoop-side-2600-1",
+            "hoop-front-3800",
+            "hoop-side-3800--1",
+            "hoop-side-3800-1",
+            "hoop-front-5000",
+            "hoop-side-5000--1",
+            "hoop-side-5000-1",
+            "hoop-front-6200",
+            "hoop-side-6200--1",
+            "hoop-side-6200-1",
+            "hoop-front-7400",
+            "hoop-side-7400--1",
+            "hoop-side-7400-1",
+            "hoop-front-8600",
+            "hoop-side-8600--1",
+            "hoop-side-8600-1",
+            "hoop-front-9800",
+            "hoop-side-9800--1",
+            "hoop-side-9800-1",
+            "hoop-front-11000",
+            "hoop-side-11000--1",
+            "hoop-side-11000-1",
+            "hoop-front-12200",
+            "hoop-side-12200--1",
+            "hoop-side-12200-1",
+            "hoop-front-13400",
+            "hoop-side-13400--1",
+            "hoop-side-13400-1",
+            "cage-bar--380",
+            "cage-bar-0",
+            "cage-bar-380",
+            "rest-rail",
+            "rest-post"
+          ],
+          "param": "safety"
+        }
+      ]
+    },
+    {
+      "id": "recovered-plastic-bagger",
+      "kit": "recycling-facility",
+      "title": "Recovered-plastic bagger",
+      "description": "Big-bag (FIBC) filling station for recycled plastic flake at about real size: four-post steel frame with fill head and inflatable spout, inclined screw conveyor from a floor hopper, woven bulk bag hung from four loop hooks on a pallet on a weigh scale, weight indicator and flake spill. Material controls: frame, bulk bag, pallet and flake. plant, foodGrade, regrind and weathered presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "recycling",
+        "plastics",
+        "bagger",
+        "big bag",
+        "FIBC",
+        "bulk bag filler",
+        "flake",
+        "materials recovery",
+        "waste management",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "recycling-facility",
+        "materials-recovery",
+        "waste-management",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/recycling-facility/recovered-plastic-bagger.kcad.ts",
+      "preview": "/assets/recycling-facility-recovered-plastic-bagger.png",
+      "sourceSha256": "655db386bf11eee30a2a31c2c0369854323223fe8896488dbe22664da1332d1a",
+      "triangleBudget": 3600,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#d4572a",
+          "label": "Frame and conveyor (paint)"
+        },
+        {
+          "name": "bag",
+          "type": "color",
+          "default": "#eceee6",
+          "label": "Bulk bag (woven PP)"
+        },
+        {
+          "name": "pallet",
+          "type": "color",
+          "default": "#b08a58",
+          "label": "Pallet (timber)"
+        },
+        {
+          "name": "flake",
+          "type": "color",
+          "default": "#6fb4d8",
+          "label": "Plastic flake"
+        }
+      ],
+      "presets": {
+        "plant": {
+          "frame": "#d4572a",
+          "bag": "#eceee6",
+          "pallet": "#b08a58",
+          "flake": "#6fb4d8"
+        },
+        "foodGrade": {
+          "frame": "#c6ccce",
+          "bag": "#f6f6f2",
+          "pallet": "#3a6ea8",
+          "flake": "#e4ecef"
+        },
+        "regrind": {
+          "frame": "#3f7f4a",
+          "bag": "#c8b98a",
+          "pallet": "#8a6a44",
+          "flake": "#3c3f42"
+        },
+        "weathered": {
+          "frame": "#8a5a40",
+          "bag": "#cfcab8",
+          "pallet": "#7d6648",
+          "flake": "#5f8fa8"
+        }
+      },
+      "stats": {
+        "triangles": 1598,
+        "sizeM": [
+          3.77,
+          3.62,
+          2.031663
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "scale-base",
+          "color": "#2a2e31",
+          "parts": [
+            "scale-base",
+            "load-cell--1--1",
+            "load-cell--1-1",
+            "load-cell-1--1",
+            "load-cell-1-1",
+            "post-foot--1--1",
+            "post-foot--1-1",
+            "post-foot-1--1",
+            "post-foot-1-1",
+            "hook--1--1",
+            "hook--1-1",
+            "hook-1--1",
+            "hook-1-1",
+            "inflatable-collar",
+            "fill-valve",
+            "screw-flange-1",
+            "screw-flange-2",
+            "screw-flange-3",
+            "screw-flange-4",
+            "hopper-legs"
+          ]
+        },
+        {
+          "name": "scale-deck",
+          "color": "#9aa3a6",
+          "parts": [
+            "scale-deck"
+          ]
+        },
+        {
+          "name": "pallet",
+          "color": "#b08a58",
+          "parts": [
+            "pallet-runner--450",
+            "pallet-runner-0",
+            "pallet-runner-450",
+            "pallet-board-0",
+            "pallet-board-1",
+            "pallet-board-2",
+            "pallet-board-3",
+            "pallet-board-4",
+            "pallet-board-5",
+            "pallet-board-6"
+          ],
+          "param": "pallet"
+        },
+        {
+          "name": "bag",
+          "color": "#eceee6",
+          "parts": [
+            "bag-body",
+            "bag-top",
+            "bag-inlet",
+            "bag-loop--1--1",
+            "bag-loop--1-1",
+            "bag-loop-1--1",
+            "bag-loop-1-1",
+            "vent-filter"
+          ],
+          "param": "bag"
+        },
+        {
+          "name": "bag-seam--1--1",
+          "color": "#d6d8ce",
+          "parts": [
+            "bag-seam--1--1",
+            "bag-seam--1-1",
+            "bag-seam-1--1",
+            "bag-seam-1-1"
+          ]
+        },
+        {
+          "name": "bag-label",
+          "color": "#e8e6dc",
+          "parts": [
+            "bag-label"
+          ]
+        },
+        {
+          "name": "flake",
+          "color": "#6fb4d8",
+          "parts": [
+            "bag-label-text",
+            "hopper-flake",
+            "spill"
+          ],
+          "param": "flake"
+        },
+        {
+          "name": "frame",
+          "color": "#d4572a",
+          "parts": [
+            "post--1--1",
+            "post--1-1",
+            "post-1--1",
+            "post-1-1",
+            "beam-x--1",
+            "beam-x-1",
+            "beam-y--1",
+            "beam-y-1",
+            "hook-carriage",
+            "carriage-hanger--1",
+            "carriage-hanger-1",
+            "screw-tube",
+            "screw-head",
+            "screw-support",
+            "floor-hopper",
+            "indicator-arm"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "fill-spout",
+          "color": "#b9bfc2",
+          "parts": [
+            "fill-spout",
+            "fill-head",
+            "vent-pipe",
+            "screw-drop"
+          ]
+        },
+        {
+          "name": "screw-motor",
+          "color": "#3f7f4a",
+          "parts": [
+            "screw-motor"
+          ]
+        },
+        {
+          "name": "indicator",
+          "color": "#c9ced1",
+          "parts": [
+            "indicator"
+          ]
+        },
+        {
+          "name": "indicator-display",
+          "color": "#3fbf6a",
+          "parts": [
+            "indicator-display"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "product-pelletizer",
+      "kit": "recycling-facility",
+      "title": "Product pelletizer",
+      "description": "Plastic strand pelletizing line at about real size: motor and gearbox driving a horizontal extruder barrel with heater bands, tapered flake hopper, die head with a fan of strands running through an open water bath to a strand cutter that drops pellets into a bin. Material controls: machine frame, barrel and heaters, drive motor and pellets. plant, stainless, legacy and recycledBlack presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "recycling",
+        "plastics",
+        "pelletizer",
+        "extruder",
+        "strand pelletizing",
+        "materials recovery",
+        "waste management",
+        "machinery",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "recycling-facility",
+        "materials-recovery",
+        "waste-management",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/recycling-facility/product-pelletizer.kcad.ts",
+      "preview": "/assets/recycling-facility-product-pelletizer.png",
+      "sourceSha256": "f0d66747f6722d150c9cda1081609b9d6b6b4767c4c9496f005977afaa48bf0b",
+      "triangleBudget": 4200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "machine",
+          "type": "color",
+          "default": "#2f6fa8",
+          "label": "Machine frame (paint)"
+        },
+        {
+          "name": "barrel",
+          "type": "color",
+          "default": "#b9bfc2",
+          "label": "Barrel and heater bands"
+        },
+        {
+          "name": "drive",
+          "type": "color",
+          "default": "#3f7f4a",
+          "label": "Drive motor (paint)"
+        },
+        {
+          "name": "pellets",
+          "type": "color",
+          "default": "#e8eef0",
+          "label": "Pellets and strands"
+        }
+      ],
+      "presets": {
+        "plant": {
+          "machine": "#2f6fa8",
+          "barrel": "#b9bfc2",
+          "drive": "#3f7f4a",
+          "pellets": "#e8eef0"
+        },
+        "stainless": {
+          "machine": "#c6ccce",
+          "barrel": "#9aa3a6",
+          "drive": "#4a5054",
+          "pellets": "#7fb0d8"
+        },
+        "legacy": {
+          "machine": "#7a8a5a",
+          "barrel": "#8f8a80",
+          "drive": "#5a6070",
+          "pellets": "#d8c890"
+        },
+        "recycledBlack": {
+          "machine": "#d4572a",
+          "barrel": "#b9bfc2",
+          "drive": "#2f3437",
+          "pellets": "#2a2c2e"
+        }
+      },
+      "stats": {
+        "triangles": 1716,
+        "sizeM": [
+          5.87,
+          1.84,
+          1.337795
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "machine",
+          "color": "#2f6fa8",
+          "parts": [
+            "extruder-base",
+            "base-door",
+            "cooling-fan-0",
+            "cooling-fan-1",
+            "cooling-fan-2",
+            "cooling-fan-3",
+            "cooling-fan-4",
+            "cooling-fan-5",
+            "feed-throat",
+            "hopper",
+            "screen-changer",
+            "bath-leg-1200",
+            "bath-leg-b-1200",
+            "bath-leg-2700",
+            "bath-leg-b-2700",
+            "bath-rail",
+            "cutter-stand",
+            "cutter-housing"
+          ],
+          "param": "machine"
+        },
+        {
+          "name": "base-plinth",
+          "color": "#2a2e31",
+          "parts": [
+            "base-plinth",
+            "foot--1880--300",
+            "foot--1880-300",
+            "foot-880--300",
+            "foot-880-300",
+            "motor-fan-cover",
+            "heater-lead-0",
+            "heater-lead-1",
+            "heater-lead-2",
+            "heater-lead-3",
+            "heater-lead-4",
+            "heater-lead-5",
+            "hopper-rim",
+            "screen-handle",
+            "die-band",
+            "guide-roller-1350",
+            "guide-roller-1950",
+            "guide-roller-2550",
+            "cutter-intake",
+            "cabinet-door-line",
+            "hmi-arm",
+            "hmi-panel"
+          ]
+        },
+        {
+          "name": "drive",
+          "color": "#3f7f4a",
+          "parts": [
+            "motor",
+            "motor-terminal-box",
+            "gearbox",
+            "cutter-motor"
+          ],
+          "param": "drive"
+        },
+        {
+          "name": "coupling-guard",
+          "color": "#f0b429",
+          "parts": [
+            "coupling-guard",
+            "cutter-guard"
+          ]
+        },
+        {
+          "name": "barrel",
+          "color": "#b9bfc2",
+          "parts": [
+            "barrel",
+            "heater-0",
+            "heater-1",
+            "heater-2",
+            "heater-3",
+            "heater-4",
+            "heater-5",
+            "die-head",
+            "strand-die",
+            "bath",
+            "pellet-chute"
+          ],
+          "param": "barrel"
+        },
+        {
+          "name": "pellets",
+          "color": "#e8eef0",
+          "parts": [
+            "hopper-flake",
+            "strand-drop-0",
+            "strand-run-0",
+            "strand-rise-0",
+            "strand-drop-1",
+            "strand-run-1",
+            "strand-rise-1",
+            "strand-drop-2",
+            "strand-run-2",
+            "strand-rise-2",
+            "strand-drop-3",
+            "strand-run-3",
+            "strand-rise-3",
+            "strand-drop-4",
+            "strand-run-4",
+            "strand-rise-4",
+            "strand-drop-5",
+            "strand-run-5",
+            "strand-rise-5",
+            "pellet-heap"
+          ],
+          "param": "pellets"
+        },
+        {
+          "name": "water",
+          "color": "#5ba3c8",
+          "parts": [
+            "water",
+            "hmi-screen"
+          ]
+        },
+        {
+          "name": "pellet-bin",
+          "color": "#3a5a7a",
+          "parts": [
+            "pellet-bin"
+          ]
+        },
+        {
+          "name": "control-cabinet",
+          "color": "#c9ced1",
+          "parts": [
+            "control-cabinet"
+          ]
+        }
+      ]
+    }
+  ],
+  "allSourceHashesMatch": true
+}

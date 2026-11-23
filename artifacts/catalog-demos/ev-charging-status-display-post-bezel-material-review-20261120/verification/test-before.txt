@@ -1,0 +1,27 @@
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+ ❯ tests/integration/catalog/chargerStatusDisplayPostBezelMaterial.test.ts (1 test | 1 failed) 849ms
+     × frames the status screen in a polymer bezel on a display head at wayfinding height 428ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  tests/integration/catalog/chargerStatusDisplayPostBezelMaterial.test.ts > ev-charging-infrastructure/charger-status-display-post bezel material > frames the status screen in a polymer bezel on a display head at wayfinding height
+AssertionError: expected [ 'displayGlass', …(3) ] to deeply equal [ Array(5) ]
+- Expected
++ Received
+  [
+-   "bezelPolymer",
+    "displayGlass",
+    "engineeringPolymer",
+    "powderCoat",
+    "safetyPolymer",
+  ]
+ ❯ tests/integration/catalog/chargerStatusDisplayPostBezelMaterial.test.ts:22:59
+     20| 
+     21|     const colorParams = asset.params.filter((param) => param.type === …
+     22|     expect(colorParams.map((param) => param.name).sort()).toEqual([
+       |                                                           ^
+     23|       'bezelPolymer',
+     24|       'displayGlass',
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  02:47:29
+   Duration  11.19s (transform 8.21s, setup 231ms, import 9.76s, tests 849ms, environment 0ms)

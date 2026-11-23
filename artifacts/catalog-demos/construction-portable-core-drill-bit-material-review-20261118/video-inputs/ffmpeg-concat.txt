@@ -1,0 +1,7 @@
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/video-inputs/slide-01-five-preview-audit.png'
+duration 5
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/video-inputs/slide-02-before-after.png'
+duration 5
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/video-inputs/slide-03-verification-and-scope.png'
+duration 5
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/video-inputs/slide-03-verification-and-scope.png'

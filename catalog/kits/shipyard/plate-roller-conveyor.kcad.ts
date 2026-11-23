@@ -74,7 +74,7 @@ const c = (name: string, h: number, r: number, sides: number, at: [number, numbe
 };
 
 p.part("side-frame-0", b("side-frame-0", [2550, 140, 280], [0, -680, 140]).color(yardPaint));
-p.part("side-frame-1", b("side-frame-1", [2550, 140, 280], [0, 680, 140]).color(structuralSteel));
+p.part("side-frame-1", b("side-frame-1", [2550, 140, 280], [0, 680, 140]).color(yardPaint));
 p.part("feed-roller-0", c("feed-roller-0", 115, 115, 10, [-1000, 0, 300], [90, 0, 0], 90).color(structuralSteel));
 p.part("feed-roller-1", c("feed-roller-1", 115, 115, 10, [-600, 0, 300], [90, 0, 0], 90).color(structuralSteel));
 p.part("feed-roller-2", c("feed-roller-2", 115, 115, 10, [-200, 0, 300], [90, 0, 0], 90).color(structuralSteel));

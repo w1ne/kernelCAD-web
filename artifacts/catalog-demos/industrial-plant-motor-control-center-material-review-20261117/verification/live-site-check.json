@@ -1,0 +1,14 @@
+{
+  "checkedAtUtc": "2026-11-17",
+  "detailUrl": "https://kernelcad.com/catalog/industrial-plant/motor-control-center/",
+  "detailHttpStatus": 200,
+  "previewUrl": "https://kernelcad.com/assets/industrial-plant-motor-control-center.png",
+  "previewHttpStatus": 200,
+  "localBeforePreviewSha256": "db7f036eb2b620a2b0cdf034af15a0da49846c9eec4d019d027dfb022e497550",
+  "livePreviewSha256": "db7f036eb2b620a2b0cdf034af15a0da49846c9eec4d019d027dfb022e497550",
+  "liveMatchesBefore": true,
+  "localAfterPreviewSha256": "ecc6a6227c342afc4099fca9306e835835205fb427d8cb9b6fea76d31a299874",
+  "liveMatchesAfter": false,
+  "deployed": false,
+  "note": "This feature branch has not been deployed. The public page continues to serve its pre-fix preview."
+}

@@ -1,0 +1,6 @@
+Command: npx vitest run tests/integration/catalog/rooftopAirHandlerCabinetFinish.test.ts
+
+✓ tests/integration/catalog/rooftopAirHandlerCabinetFinish.test.ts (1 test)
+Test Files  1 passed (1)
+Tests       1 passed (1)
+Exit status: 0

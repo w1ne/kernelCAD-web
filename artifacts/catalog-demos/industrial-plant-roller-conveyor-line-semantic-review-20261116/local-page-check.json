@@ -1,0 +1,14 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/verify_local_page.py /tmp/kernelcad-roller-conveyor-line-pages-20261116",
+  "page": "/tmp/kernelcad-roller-conveyor-line-pages-20261116/catalog/industrial-plant/roller-conveyor-line/index.html",
+  "previewSha256": "1e4a923ef541fad09015ff664800289c566d1092c2b2d96f1d95aece498300f2",
+  "checks": {
+    "title": true,
+    "updatedDescription": true,
+    "rollerSteelColorControl": true,
+    "weatheredPreset": true,
+    "highVisibilityPreset": true,
+    "previewMatchesGeneratedSource": true
+  },
+  "pass": true
+}

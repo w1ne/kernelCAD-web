@@ -1,0 +1,15 @@
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-five-preview-audit-20261118/slides/slide-01-scope.png'
+duration 1.6
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-five-preview-audit-20261118/slides/slide-02-apron-feeder.png'
+duration 1.6
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-five-preview-audit-20261118/slides/slide-03-double-deck-screen.png'
+duration 1.6
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-five-preview-audit-20261118/slides/slide-04-flotation-conditioning-tank.png'
+duration 1.6
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-five-preview-audit-20261118/slides/slide-05-gyratory-crusher-station.png'
+duration 1.6
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-five-preview-audit-20261118/slides/slide-06-hydrocyclone-cluster.png'
+duration 1.6
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-five-preview-audit-20261118/slides/slide-07-result.png'
+duration 1.6
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-five-preview-audit-20261118/slides/slide-07-result.png'

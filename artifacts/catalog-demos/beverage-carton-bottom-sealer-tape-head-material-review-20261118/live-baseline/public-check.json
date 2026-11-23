@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-11-18T18:58:37Z",
+  "detailPage": "https://kernelcad.com/catalog/beverage-bottling-line/carton-bottom-sealer/",
+  "detailHttpStatus": 200,
+  "previewUrl": "https://kernelcad.com/assets/beverage-bottling-line-carton-bottom-sealer.png",
+  "previewHttpStatus": 200,
+  "previewSha256": "75b7e3013dece12efc4495c4f71f3a4f2963657d0f4538f4e047df255951fc93",
+  "localPreviewSha256": "75b7e3013dece12efc4495c4f71f3a4f2963657d0f4538f4e047df255951fc93",
+  "publicSourceUrl": "https://kernelcad.com/assets/beverage-bottling-line-carton-bottom-sealer.kcad.ts",
+  "sourceHttpStatus": 200,
+  "sourceSha256": "4fccc812e26c7855125e5999dd6f210da49467b9159293867f1a887465fb773d",
+  "localSourceSha256": "4fccc812e26c7855125e5999dd6f210da49467b9159293867f1a887465fb773d",
+  "visualObservation": "The live detail route, source and preview match the pre-edit local baseline; the preview is byte-identical."
+}

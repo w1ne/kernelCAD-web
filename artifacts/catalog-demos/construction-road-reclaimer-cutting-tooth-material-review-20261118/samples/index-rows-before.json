@@ -1,0 +1,677 @@
+[
+  {
+    "id": "articulated-dump-truck",
+    "kit": "construction-equipment",
+    "title": "Articulated dump truck",
+    "description": "Off-road articulated hauler with forward cab, rear dump body and six large tires. Material controls: cab glass, equipment enamel paint, tire and grip rubber, exposed structural steel; weathered and highVisibility presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "construction equipment",
+      "roadworks",
+      "jobsite",
+      "low poly",
+      "CC0"
+    ],
+    "compat": [
+      "construction",
+      "roadworks",
+      "jobsite",
+      "site-plan"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/construction-equipment/articulated-dump-truck.kcad.ts",
+    "preview": "/assets/construction-equipment-articulated-dump-truck.png",
+    "sourceSha256": "c20a96be39b45bc2fc9457e2cd19afa65427b4fd2ff78ff845e03b3b34c1ee8a",
+    "triangleBudget": 2800,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.7,
+        "max": 1.3,
+        "step": 0.05
+      },
+      {
+        "name": "cabGlassColor",
+        "type": "color",
+        "default": "#77a4b0",
+        "label": "Cab glass"
+      },
+      {
+        "name": "equipmentPaintColor",
+        "type": "color",
+        "default": "#e1a31b",
+        "label": "Equipment enamel paint"
+      },
+      {
+        "name": "tireRubberColor",
+        "type": "color",
+        "default": "#252a2d",
+        "label": "Tire and grip rubber"
+      },
+      {
+        "name": "structuralSteelColor",
+        "type": "color",
+        "default": "#89969a",
+        "label": "Exposed structural steel"
+      }
+    ],
+    "presets": {
+      "weathered": {
+        "cabGlassColor": "#66858b",
+        "equipmentPaintColor": "#a87b36",
+        "tireRubberColor": "#3a3a37",
+        "structuralSteelColor": "#716b61"
+      },
+      "highVisibility": {
+        "cabGlassColor": "#91bdc6",
+        "equipmentPaintColor": "#f06b26",
+        "tireRubberColor": "#292e31",
+        "structuralSteelColor": "#c1c7c2"
+      }
+    },
+    "stats": {
+      "triangles": 1232,
+      "sizeM": [
+        1.334328,
+        1,
+        0.8078
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "structuralSteelColor",
+        "color": "#89969a",
+        "parts": [
+          "hauler-chassis",
+          "hauler-wheel-0--1-hub--1",
+          "hauler-wheel-0--1-hub-1",
+          "hauler-wheel-0-1-hub--1",
+          "hauler-wheel-0-1-hub-1",
+          "hauler-wheel-1--1-hub--1",
+          "hauler-wheel-1--1-hub-1",
+          "hauler-wheel-1-1-hub--1",
+          "hauler-wheel-1-1-hub-1",
+          "front-grille",
+          "mirror-arm-left",
+          "mirror-arm-right",
+          "cab-step",
+          "cab-door-handle",
+          "dump-body-lift-ram-left",
+          "dump-body-lift-ram-right",
+          "tailgate-hinge-left",
+          "tailgate-hinge-right",
+          "articulation-pin-near",
+          "hauler-tandem-axle",
+          "hauler-tandem-hub-near",
+          "hauler-tandem-hub-far"
+        ],
+        "param": "structuralSteelColor"
+      },
+      {
+        "name": "tireRubberColor",
+        "color": "#252a2d",
+        "parts": [
+          "hauler-wheel-0--1",
+          "hauler-wheel-0-1",
+          "hauler-wheel-1--1",
+          "hauler-wheel-1-1",
+          "hauler-tandem-wheel-near",
+          "hauler-tandem-wheel-far"
+        ],
+        "param": "tireRubberColor"
+      },
+      {
+        "name": "equipmentPaintColor",
+        "color": "#e1a31b",
+        "parts": [
+          "hauler-cab",
+          "hauler-roof",
+          "dump-body-floor",
+          "dump-body-side--1",
+          "dump-body-side-1",
+          "dump-body-front",
+          "tailgate",
+          "lift-ram",
+          "articulation-joint"
+        ],
+        "param": "equipmentPaintColor"
+      },
+      {
+        "name": "cabGlassColor",
+        "color": "#77a4b0",
+        "parts": [
+          "hauler-cab-window",
+          "headlamp-near",
+          "headlamp-far",
+          "mirror-glass-left",
+          "mirror-glass-right",
+          "cab-windshield",
+          "cab-side-glazing-far"
+        ],
+        "param": "cabGlassColor"
+      }
+    ]
+  },
+  {
+    "id": "asphalt-transfer-conveyor",
+    "kit": "construction-equipment",
+    "title": "Road material transfer conveyor",
+    "description": "Mobile inclined conveyor with feed hopper, trussed belt frame and transport axle. Material controls: equipment enamel paint, tire and grip rubber, exposed structural steel; weathered and highVisibility presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "construction equipment",
+      "roadworks",
+      "jobsite",
+      "low poly",
+      "CC0"
+    ],
+    "compat": [
+      "construction",
+      "roadworks",
+      "jobsite",
+      "site-plan"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/construction-equipment/asphalt-transfer-conveyor.kcad.ts",
+    "preview": "/assets/construction-equipment-asphalt-transfer-conveyor.png",
+    "sourceSha256": "d88688a3d786d98253d79edfe9462fae040b58ddd4a4e957a96d874a75b218d4",
+    "triangleBudget": 2200,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.7,
+        "max": 1.3,
+        "step": 0.05
+      },
+      {
+        "name": "equipmentPaintColor",
+        "type": "color",
+        "default": "#e1a31b",
+        "label": "Equipment enamel paint"
+      },
+      {
+        "name": "tireRubberColor",
+        "type": "color",
+        "default": "#252a2d",
+        "label": "Tire and grip rubber"
+      },
+      {
+        "name": "structuralSteelColor",
+        "type": "color",
+        "default": "#89969a",
+        "label": "Exposed structural steel"
+      }
+    ],
+    "presets": {
+      "weathered": {
+        "equipmentPaintColor": "#a87b36",
+        "tireRubberColor": "#3a3a37",
+        "structuralSteelColor": "#716b61"
+      },
+      "highVisibility": {
+        "equipmentPaintColor": "#f06b26",
+        "tireRubberColor": "#292e31",
+        "structuralSteelColor": "#c1c7c2"
+      }
+    },
+    "stats": {
+      "triangles": 360,
+      "sizeM": [
+        1.722104,
+        1.2835,
+        0.6038
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "equipmentPaintColor",
+        "color": "#e1a31b",
+        "parts": [
+          "hopper"
+        ],
+        "param": "equipmentPaintColor"
+      },
+      {
+        "name": "tireRubberColor",
+        "color": "#252a2d",
+        "parts": [
+          "conveyor-belt",
+          "transport-wheel--1",
+          "transport-wheel-1"
+        ],
+        "param": "tireRubberColor"
+      },
+      {
+        "name": "structuralSteelColor",
+        "color": "#89969a",
+        "parts": [
+          "truss-rail--1",
+          "support-leg--1",
+          "truss-rail-1",
+          "support-leg-1",
+          "axle",
+          "transport-wheel--1-hub--1",
+          "transport-wheel--1-hub-1",
+          "transport-wheel-1-hub--1",
+          "transport-wheel-1-hub-1",
+          "discharge-chute"
+        ],
+        "param": "structuralSteelColor"
+      }
+    ]
+  },
+  {
+    "id": "ride-on-concrete-saw",
+    "kit": "construction-equipment",
+    "title": "Ride-on concrete saw",
+    "description": "Self-propelled slab saw with operator seat, blade guard and water tank. Material controls: equipment enamel paint, tire and grip rubber, exposed structural steel; weathered and highVisibility presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "construction equipment",
+      "roadworks",
+      "jobsite",
+      "low poly",
+      "CC0"
+    ],
+    "compat": [
+      "construction",
+      "roadworks",
+      "jobsite",
+      "site-plan"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/construction-equipment/ride-on-concrete-saw.kcad.ts",
+    "preview": "/assets/construction-equipment-ride-on-concrete-saw.png",
+    "sourceSha256": "2a43191c19be17ac4a144ffda6a9e7f3994a7b890ba7b54543549a8268a46fb0",
+    "triangleBudget": 2200,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.7,
+        "max": 1.3,
+        "step": 0.05
+      },
+      {
+        "name": "equipmentPaintColor",
+        "type": "color",
+        "default": "#e1a31b",
+        "label": "Equipment enamel paint"
+      },
+      {
+        "name": "tireRubberColor",
+        "type": "color",
+        "default": "#252a2d",
+        "label": "Tire and grip rubber"
+      },
+      {
+        "name": "structuralSteelColor",
+        "type": "color",
+        "default": "#89969a",
+        "label": "Exposed structural steel"
+      }
+    ],
+    "presets": {
+      "weathered": {
+        "equipmentPaintColor": "#a87b36",
+        "tireRubberColor": "#3a3a37",
+        "structuralSteelColor": "#716b61"
+      },
+      "highVisibility": {
+        "equipmentPaintColor": "#f06b26",
+        "tireRubberColor": "#292e31",
+        "structuralSteelColor": "#c1c7c2"
+      }
+    },
+    "stats": {
+      "triangles": 632,
+      "sizeM": [
+        0.94,
+        0.5588,
+        0.50924
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "tireRubberColor",
+        "color": "#252a2d",
+        "parts": [
+          "saw-wheel-0--1",
+          "saw-wheel-0-1",
+          "saw-wheel-1--1",
+          "saw-wheel-1-1"
+        ],
+        "param": "tireRubberColor"
+      },
+      {
+        "name": "structuralSteelColor",
+        "color": "#89969a",
+        "parts": [
+          "saw-wheel-0--1-hub--1",
+          "saw-wheel-0--1-hub-1",
+          "saw-wheel-0-1-hub--1",
+          "saw-wheel-0-1-hub-1",
+          "saw-wheel-1--1-hub--1",
+          "saw-wheel-1--1-hub-1",
+          "saw-wheel-1-1-hub--1",
+          "saw-wheel-1-1-hub-1",
+          "saw-frame",
+          "blade",
+          "blade-guard"
+        ],
+        "param": "structuralSteelColor"
+      },
+      {
+        "name": "equipmentPaintColor",
+        "color": "#e1a31b",
+        "parts": [
+          "engine-cover",
+          "operator-seat",
+          "water-tank"
+        ],
+        "param": "equipmentPaintColor"
+      }
+    ]
+  },
+  {
+    "id": "road-reclaimer",
+    "kit": "construction-equipment",
+    "title": "Road reclaimer",
+    "description": "Road reclamation machine with high-clearance chassis, milling chamber and long operator deck. Material controls: equipment enamel paint, tire and grip rubber, exposed structural steel; weathered and highVisibility presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "construction equipment",
+      "roadworks",
+      "jobsite",
+      "low poly",
+      "CC0"
+    ],
+    "compat": [
+      "construction",
+      "roadworks",
+      "jobsite",
+      "site-plan"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/construction-equipment/road-reclaimer.kcad.ts",
+    "preview": "/assets/construction-equipment-road-reclaimer.png",
+    "sourceSha256": "d489cacb502fee8bb1b364a43f94acaa13f29e9ff58aba0118d74345f1b0ae82",
+    "triangleBudget": 2200,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.7,
+        "max": 1.3,
+        "step": 0.05
+      },
+      {
+        "name": "equipmentPaintColor",
+        "type": "color",
+        "default": "#e1a31b",
+        "label": "Equipment enamel paint"
+      },
+      {
+        "name": "tireRubberColor",
+        "type": "color",
+        "default": "#252a2d",
+        "label": "Tire and grip rubber"
+      },
+      {
+        "name": "structuralSteelColor",
+        "type": "color",
+        "default": "#89969a",
+        "label": "Exposed structural steel"
+      }
+    ],
+    "presets": {
+      "weathered": {
+        "equipmentPaintColor": "#a87b36",
+        "tireRubberColor": "#3a3a37",
+        "structuralSteelColor": "#716b61"
+      },
+      "highVisibility": {
+        "equipmentPaintColor": "#f06b26",
+        "tireRubberColor": "#292e31",
+        "structuralSteelColor": "#c1c7c2"
+      }
+    },
+    "stats": {
+      "triangles": 816,
+      "sizeM": [
+        1.5415,
+        1.004,
+        1.089
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "tireRubberColor",
+        "color": "#252a2d",
+        "parts": [
+          "milling-wheel-0--1",
+          "milling-wheel-0-1",
+          "milling-wheel-1--1",
+          "milling-wheel-1-1"
+        ],
+        "param": "tireRubberColor"
+      },
+      {
+        "name": "structuralSteelColor",
+        "color": "#89969a",
+        "parts": [
+          "milling-wheel-0--1-hub--1",
+          "milling-wheel-0--1-hub-1",
+          "milling-wheel-0-1-hub--1",
+          "milling-wheel-0-1-hub-1",
+          "milling-wheel-1--1-hub--1",
+          "milling-wheel-1--1-hub-1",
+          "milling-wheel-1-1-hub--1",
+          "milling-wheel-1-1-hub-1",
+          "main-frame",
+          "cutter-drum",
+          "cutter-drum-hub--1",
+          "cutter-drum-hub-1"
+        ],
+        "param": "structuralSteelColor"
+      },
+      {
+        "name": "equipmentPaintColor",
+        "color": "#e1a31b",
+        "parts": [
+          "engine-cover",
+          "operator-deck",
+          "canopy-posts",
+          "canopy",
+          "milling-hood",
+          "cutting-tooth-0",
+          "cutting-tooth-1",
+          "cutting-tooth-2",
+          "cutting-tooth-3",
+          "cutting-tooth-4",
+          "cutting-tooth-5",
+          "cutting-tooth-6"
+        ],
+        "param": "equipmentPaintColor"
+      }
+    ]
+  },
+  {
+    "id": "water-tanker-truck",
+    "kit": "construction-equipment",
+    "title": "Construction water tanker truck",
+    "description": "Site water truck with cylindrical tank, cab, hose reel and rear spray manifold. Material controls: cab glass, equipment enamel paint, tire and grip rubber, exposed structural steel; weathered and highVisibility presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "construction equipment",
+      "roadworks",
+      "jobsite",
+      "low poly",
+      "CC0"
+    ],
+    "compat": [
+      "construction",
+      "roadworks",
+      "jobsite",
+      "site-plan"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/construction-equipment/water-tanker-truck.kcad.ts",
+    "preview": "/assets/construction-equipment-water-tanker-truck.png",
+    "sourceSha256": "ff008a91d54918995038aff95d879353335dd3bd53351aecbc88b4ad88217a0a",
+    "triangleBudget": 2200,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.7,
+        "max": 1.3,
+        "step": 0.05
+      },
+      {
+        "name": "cabGlassColor",
+        "type": "color",
+        "default": "#77a4b0",
+        "label": "Cab glass"
+      },
+      {
+        "name": "equipmentPaintColor",
+        "type": "color",
+        "default": "#e1a31b",
+        "label": "Equipment enamel paint"
+      },
+      {
+        "name": "tireRubberColor",
+        "type": "color",
+        "default": "#252a2d",
+        "label": "Tire and grip rubber"
+      },
+      {
+        "name": "structuralSteelColor",
+        "type": "color",
+        "default": "#89969a",
+        "label": "Exposed structural steel"
+      }
+    ],
+    "presets": {
+      "weathered": {
+        "cabGlassColor": "#66858b",
+        "equipmentPaintColor": "#a87b36",
+        "tireRubberColor": "#3a3a37",
+        "structuralSteelColor": "#716b61"
+      },
+      "highVisibility": {
+        "cabGlassColor": "#91bdc6",
+        "equipmentPaintColor": "#f06b26",
+        "tireRubberColor": "#292e31",
+        "structuralSteelColor": "#c1c7c2"
+      }
+    },
+    "stats": {
+      "triangles": 1196,
+      "sizeM": [
+        1.454394,
+        0.8306,
+        1.102
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "structuralSteelColor",
+        "color": "#89969a",
+        "parts": [
+          "site-truck-chassis",
+          "site-truck-wheel-0--1-hub--1",
+          "site-truck-wheel-0--1-hub-1",
+          "site-truck-wheel-0-1-hub--1",
+          "site-truck-wheel-0-1-hub-1",
+          "site-truck-wheel-1--1-hub--1",
+          "site-truck-wheel-1--1-hub-1",
+          "site-truck-wheel-1-1-hub--1",
+          "site-truck-wheel-1-1-hub-1",
+          "front-grille",
+          "mirror-arm-left",
+          "mirror-arm-right",
+          "cab-step",
+          "cab-door-handle"
+        ],
+        "param": "structuralSteelColor"
+      },
+      {
+        "name": "tireRubberColor",
+        "color": "#252a2d",
+        "parts": [
+          "site-truck-wheel-0--1",
+          "site-truck-wheel-0-1",
+          "site-truck-wheel-1--1",
+          "site-truck-wheel-1-1",
+          "hose-reel"
+        ],
+        "param": "tireRubberColor"
+      },
+      {
+        "name": "equipmentPaintColor",
+        "color": "#e1a31b",
+        "parts": [
+          "site-truck-cab",
+          "site-truck-roof",
+          "tank",
+          "tank-saddle-a",
+          "tank-saddle-b",
+          "spray-bar",
+          "spray-nozzle-0",
+          "spray-nozzle-1",
+          "spray-nozzle-2",
+          "spray-nozzle-3",
+          "spray-nozzle-4",
+          "spray-nozzle-5",
+          "spray-nozzle-6",
+          "spray-nozzle-7",
+          "spray-nozzle-8"
+        ],
+        "param": "equipmentPaintColor"
+      },
+      {
+        "name": "cabGlassColor",
+        "color": "#77a4b0",
+        "parts": [
+          "site-truck-cab-window",
+          "headlamp-near",
+          "headlamp-far",
+          "mirror-glass-left",
+          "mirror-glass-right",
+          "cab-windshield",
+          "cab-side-glazing-far"
+        ],
+        "param": "cabGlassColor"
+      }
+    ]
+  }
+]

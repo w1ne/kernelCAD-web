@@ -1,0 +1,20 @@
+{
+  "source": "before/ and after/ snapshots captured from catalog/kits/industrial-plant/process-reactor-vessel.kcad.ts and its generated preview",
+  "invocation": "python3 artifacts/catalog-demos/industrial-plant-process-reactor-rings-material-review-20261117/capture_demo.py",
+  "output": "industrial-plant-process-reactor-rings-material-review.mp4",
+  "video": {
+    "codec": "H.264",
+    "width": 1280,
+    "height": 720,
+    "durationSeconds": 15,
+    "frameRate": 30
+  },
+  "sequence": [
+    "five rendered-preview audit",
+    "before reactor preview and palette mismatch",
+    "four source material assignments before and after",
+    "after reactor preview",
+    "focused GLB test, indexed source hash and evidence limits"
+  ],
+  "claims": "Local source, software render, catalog-index build and GLB regression only; no deployment, simulation, fabrication or hardware acceptance."
+}

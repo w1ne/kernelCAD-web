@@ -1,0 +1,4 @@
+287d501840f91b9d5a0a51464f61fd7543c02e0644b98494ff561f28095c480a  catalog/kits/construction-equipment/portable-core-drill-stand.kcad.ts
+314e9afefe7dde3b77cac15dfee13def3efa882dfc55f163a83b5274f33c1572  catalog/kits/construction-equipment/previews/portable-core-drill-stand.png
+287d501840f91b9d5a0a51464f61fd7543c02e0644b98494ff561f28095c480a  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/live-baseline/public-source.kcad.ts
+314e9afefe7dde3b77cac15dfee13def3efa882dfc55f163a83b5274f33c1572  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/live-baseline/public-preview.png

@@ -1,0 +1,101 @@
+{
+  "id": "motor-control-center",
+  "kit": "industrial-plant",
+  "title": "Motor control center",
+  "description": "Motor-control-center lineup with three matching steel cabinet sections, operator panels and a shared cable base. Controls: overall scale, steel, safety paint.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "industrial plant",
+    "factory",
+    "process equipment",
+    "low poly",
+    "CC0"
+  ],
+  "compat": [
+    "industrial-plant",
+    "factory",
+    "manufacturing",
+    "industrial-scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/industrial-plant/motor-control-center.kcad.ts",
+  "preview": "/assets/industrial-plant-motor-control-center.png",
+  "sourceSha256": "ce31e560fe5d397f3d1b3189f0617b3cf99216962f344bd8b726b19aa67ec242",
+  "triangleBudget": 1400,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "steel",
+      "type": "color",
+      "default": "#687b84",
+      "label": "Structural steel"
+    },
+    {
+      "name": "safetyPaint",
+      "type": "color",
+      "default": "#e3a944",
+      "label": "Safety paint"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "steel": "#575851",
+      "safetyPaint": "#9e722f"
+    },
+    "highVisibility": {
+      "safetyPaint": "#f5c640"
+    }
+  },
+  "stats": {
+    "triangles": 396,
+    "sizeM": [
+      0.8208,
+      0.8565,
+      0.298
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "safetyPaint",
+      "color": "#e3a944",
+      "parts": [
+        "shared-plinth",
+        "operator-panel-0",
+        "operator-panel-1",
+        "operator-panel-2",
+        "top-cable-duct"
+      ],
+      "param": "safetyPaint"
+    },
+    {
+      "name": "steel",
+      "color": "#687b84",
+      "parts": [
+        "bay-0",
+        "bay-door-0",
+        "pushbutton-0-0",
+        "pushbutton-0-1",
+        "bay-1",
+        "bay-door-1",
+        "pushbutton-1-0",
+        "pushbutton-1-1",
+        "bay-2",
+        "bay-door-2",
+        "pushbutton-2-0",
+        "pushbutton-2-1"
+      ],
+      "param": "steel"
+    }
+  ]
+}

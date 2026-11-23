@@ -42,13 +42,14 @@ const loftCylinder = (height:number, radius:number, sides:number) => {
 const c=(x:number,y:number,z:number,h:number,r:number,n=10)=>loftCylinder(h,r,n).translate(x,y,z).scale(scale);
 
 const p=assembly("equalization-basin");
-p.part("floor",b(0,0,0,1400,1100,40).color(stainlessSteel));
+// The floor slab is concrete like the perimeter walls; stainless steel is reserved for equipment.
+p.part("floor",b(0,0,0,1400,1100,40).color(concrete));
 p.part("wall-front",b(0,-520,20,1400,60,480).color(concrete));
 p.part("wall-back",b(0,520,20,1400,60,480).color(concrete));
 p.part("wall-left",b(-670,0,20,60,1000,480).color(concrete));
 p.part("wall-right",b(670,0,20,60,1000,480).color(concrete));
-p.part("mixer-pedestal",c(0,0,40,460,120,10).color(concrete));
-p.part("mixer-arm",b(0,0,480,800,70,60).color(concrete));
-p.part("mixer-hub",c(0,0,410,140,95,10).color(concrete));
+p.part("mixer-pedestal",c(0,0,40,460,120,10).color(stainlessSteel));
+p.part("mixer-arm",b(0,0,480,800,70,60).color(stainlessSteel));
+p.part("mixer-hub",c(0,0,410,140,95,10).color(stainlessSteel));
 
 return p.model();

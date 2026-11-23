@@ -1,0 +1,21 @@
+{
+  "created": "2026-11-19",
+  "output": "review-demo.mp4",
+  "resolution": "1280x720",
+  "frameRate": 24,
+  "plannedSlideDurationSeconds": 4,
+  "slides": [
+    "Five rendered water-treatment previews",
+    "Before and after ferric-dosing-tank previews",
+    "Tank, bund and pipework material mapping",
+    "Local verification and evidence scope"
+  ],
+  "sourceImages": [
+    "samples/previews/*.png",
+    "before/ferric-dosing-tank.png",
+    "after/ferric-dosing-tank.png"
+  ],
+  "generationCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/water-treatment-ferric-dosing-tank-polymer-material-review-20261119/make_demo.py",
+  "inspectionCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/water-treatment-ferric-dosing-tank-polymer-material-review-20261119/inspect_video.py",
+  "claimScope": "Local source, software-rendered catalog preview, and exported-GLB material and part-placement regression only; no deployment, simulation, safety assessment, or hardware acceptance."
+}

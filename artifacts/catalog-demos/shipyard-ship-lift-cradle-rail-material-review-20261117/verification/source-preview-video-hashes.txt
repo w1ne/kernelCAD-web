@@ -1,0 +1,7 @@
+c5157d4e1a5be382976afd7ea9f953f1970c700bc2c005d7e4450cc8d8e50aea  catalog/kits/shipyard/ship-lift-cradle.kcad.ts
+4752ac21e1f9cbf53fd9acbed3b1cec501d3a666ac21ebbc15de8776f60e712f  catalog/kits/shipyard/previews/ship-lift-cradle.png
+4a05b8d44f7bc47c87144b57d0af57416e7b28c909d38c81f54ccf415597b2c8  artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/before/ship-lift-cradle.kcad.ts
+1a2646b7b442a909311138104ee9d1bdf8665c4f2c3f70597f72f5dffeafd5cf  artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/before/ship-lift-cradle.png
+c5157d4e1a5be382976afd7ea9f953f1970c700bc2c005d7e4450cc8d8e50aea  artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/after/ship-lift-cradle.kcad.ts
+4752ac21e1f9cbf53fd9acbed3b1cec501d3a666ac21ebbc15de8776f60e712f  artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/after/ship-lift-cradle.png
+6d01811b5456bb90d3efac5761bed05db95b76b2c856c52c120df696588a95a9  artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/shipyard-ship-lift-cradle-rail-material-review.mp4

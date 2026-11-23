@@ -1,0 +1,2 @@
+npx eslint catalog/kits/industrial-plant/ tests/integration/catalog/palletizerRobotCellFloorMaterial.test.ts
+Result: exit 0 (clean).

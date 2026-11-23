@@ -1,0 +1,5 @@
+npx vitest run tests/integration/catalog/ --maxWorkers=2
+ Test Files  200 passed (200)
+      Tests  292 passed (292)
+   Duration  1056.17s (transform 57.48s, setup 6.69s, import 434.96s, tests 1402.93s, environment 30ms)
+exit=0

@@ -1,0 +1,5 @@
+02d071de5a7c93767cc34ff7f5725fcb2c730ab1dc44bacd20bca1164705d318  artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/after-cable-tray-bridge.kcad.ts
+67048d8c45a26c1b63203d0b5f26072d3b58f506087f3ec33939413e513c1335  artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/after-cable-tray-bridge.png
+889560185c95ce21d55ca4979fd96d8fb598cf3738641e0fe635ac582b764941  artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/industrial-plant-cable-tray-bridge-side-rail-material-review.mp4
+ef2ac3548f1c93840f7f34d94abd17ef309a7c619dc1e7a084881cfd31b45fb2  tests/integration/catalog/cableTrayBridgeMaterial.test.ts
+17e405f75e7be7bf6bff89f6c702925c8c2c8ee1a16149048efeb859f8d61231  catalog/index.json

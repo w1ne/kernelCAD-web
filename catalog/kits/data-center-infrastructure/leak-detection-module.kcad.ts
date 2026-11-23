@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: CC0-1.0
 // Leak detection module: Water-leak monitor enclosure with probe terminals and floor sensor puck.
+// The floor puck is a moulded polymer sensor body, so it takes the polymer finish, not steel.
 
 meta({
   name: "leak-detection-module",
   license: 'CC0-1.0',
   title: "Leak detection module",
-  description: "Water-leak monitor enclosure with probe terminals and floor sensor puck. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility.",
+  description: "Water-leak monitor enclosure with probe terminals and a moulded polymer floor sensor puck. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility.",
   tags: ['data center', 'critical infrastructure', 'IT equipment', 'power', 'cooling', 'scene prop'],
   kit: 'data-center-infrastructure',
   category: 'prop',
@@ -42,7 +43,7 @@ p.part("monitor-box", b(0, 0, 0, 460, 300, 250).color(steel));
 p.part("control-face", b(0, -160, 40, 400, 24, 170).color(polymer));
 p.part("probe-terminal-left", c(-120, -190, 130, 65, 30, 8).color(steel));
 p.part("probe-terminal-right", c(120, -190, 130, 65, 30, 8).color(steel));
-p.part("floor-sensor-puck", b(420, 0, 0, 180, 180, 40).color(steel));
+p.part("floor-sensor-puck", b(420, 0, 0, 180, 180, 40).color(polymer));
 p.part("sensor-cable", hy(250, 0, 25, 500, 14, 8).color(rubber));
 
 return p.model();

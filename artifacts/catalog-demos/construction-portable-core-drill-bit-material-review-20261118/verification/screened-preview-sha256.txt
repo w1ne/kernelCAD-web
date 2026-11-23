@@ -1,0 +1,7 @@
+47cf4363249da930421fac4a62aa86b8c4c06b7b659c5e0c77bbbc59fae1c6ae  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/samples/previews/asphalt-paver-screed.png
+0c3fc17cd0abb47aa9d8c897a7596df5f7e99cd0c1b32e9dd09558bb50f4508d  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/samples/previews/jobsite-tile-saw.png
+b9834bda015b21abf7079592fd5e13824e4bd266a93d3ea2d07ba47c9685216a  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/samples/previews/masonry-mixer.png
+314e9afefe7dde3b77cac15dfee13def3efa882dfc55f163a83b5274f33c1572  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/samples/previews/portable-core-drill-stand.png
+13aa56a09e84f7cf0bf068a6835bb9e18d3986e630084102282988427aeb960a  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/samples/previews/rebar-bending-machine.png
+314e9afefe7dde3b77cac15dfee13def3efa882dfc55f163a83b5274f33c1572  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/before/portable-core-drill-stand.png
+a1e92c2d58fb060d0beccd72c2cd4f1d308914493963d3166cf90c2bdca07835  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/after/portable-core-drill-stand.png

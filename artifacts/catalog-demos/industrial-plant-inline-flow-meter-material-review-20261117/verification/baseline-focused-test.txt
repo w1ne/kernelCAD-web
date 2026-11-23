@@ -1,0 +1,9 @@
+Command:
+  npx vitest run tests/integration/catalog/inlineFlowMeterFlangeMaterial.test.ts --reporter=dot
+
+Run against the unchanged source before the material correction:
+  Test Files  1 failed (1)
+  Tests       1 failed (1)
+  Failure     flange--1 should use the steel finish: expected false to be true
+
+The test reached the exported GLB and rejected the current yellow flange material.

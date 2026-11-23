@@ -1,0 +1,5 @@
+ ✓ tests/integration/catalog/chargerStatusDisplayPostBezelMaterial.test.ts (1 test) 520ms
+ Test Files  180 passed (180)
+      Tests  250 passed (250)
+   Duration  1023.30s (transform 29.71s, setup 5.71s, import 331.42s, tests 1339.85s, environment 30ms)
+exit 0

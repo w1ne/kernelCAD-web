@@ -1,0 +1,3 @@
+a73db4bb9f898f22d95aadc176db905fb48ab420f0a2c2324d3c786abc7f6361  catalog/kits/industrial-plant/rooftop-air-handler.kcad.ts
+d3bd9e9bed671cac310f3d477297cccad55aded738673339733d1359192665eb  catalog/kits/industrial-plant/previews/rooftop-air-handler.png
+b0bf1e43623f4976320df7e220010c7a52f17a8d6ff80173d81038e6aebee2a6  artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/industrial-plant-rooftop-air-handler-material-review.mp4

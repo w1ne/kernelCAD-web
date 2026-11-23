@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-18",
+  "video": "shipyard-plate-roller-conveyor-side-frame-material-review.mp4",
+  "durationSeconds": 14.97,
+  "resolution": "1280x720",
+  "frameRate": 30,
+  "codec": "H.264, yuv420p",
+  "invocation": "python3 artifacts/catalog-demos/shipyard-plate-roller-conveyor-side-frame-material-review-20261118/make_demo.py",
+  "renderInvocation": "npx tsx scripts/renderCatalogPreviews.ts plate-roller-conveyor",
+  "catalogInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "focusedTestInvocation": "npx vitest run tests/integration/catalog/plateRollerConveyorSideFrameMaterials.test.ts --reporter=verbose",
+  "lintInvocation": "npx eslint catalog/kits/shipyard/ tests/integration/catalog/plateRollerConveyorSideFrameMaterials.test.ts",
+  "qualityInvocation": "python3 scripts/checkCatalogQuality.py --kit shipyard",
+  "reviewSamples": [
+    "shipyard/coating-mix-cabinet",
+    "shipyard/optical-measurement-station",
+    "shipyard/pipe-spool-saddle-stand",
+    "shipyard/plate-roller-conveyor",
+    "shipyard/temporary-work-light-mast"
+  ],
+  "claims": "Local software-rendered previews, generated catalog index and exported-GLB material regression only; no simulation, deployed behavior, or hardware acceptance is shown."
+}

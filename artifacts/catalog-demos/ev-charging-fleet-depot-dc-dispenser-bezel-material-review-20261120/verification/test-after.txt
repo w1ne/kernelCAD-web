@@ -1,0 +1,4 @@
+ ✓ tests/integration/catalog/fleetDepotDcDispenserBezelMaterial.test.ts (1 test) 1317ms
+     ✓ frames the status screen in a black polymer bezel, not in display glass  596ms
+      Tests  1 passed (1)
+EXIT 0

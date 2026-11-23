@@ -1,0 +1,11 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/labCleanroomSingleDoorPushPlateMaterial.test.ts (1 test) 821ms
+     ✓ draws a stainless push plate that lies on the door leaf face  326ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  19:44:58
+   Duration  16.34s (transform 12.59s, setup 337ms, import 14.98s, tests 821ms, environment 0ms)
+

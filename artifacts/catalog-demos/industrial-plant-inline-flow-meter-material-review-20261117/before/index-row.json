@@ -1,0 +1,105 @@
+{
+  "id": "inline-flow-meter",
+  "kit": "industrial-plant",
+  "title": "Inline flow meter",
+  "description": "Inline flow meter with flanged pipe ends, instrument body, readable display block and cable gland. Controls: overall scale, steel, safety paint, gauge glass.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "industrial plant",
+    "factory",
+    "process equipment",
+    "low poly",
+    "CC0"
+  ],
+  "compat": [
+    "industrial-plant",
+    "factory",
+    "manufacturing",
+    "industrial-scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/industrial-plant/inline-flow-meter.kcad.ts",
+  "preview": "/assets/industrial-plant-inline-flow-meter.png",
+  "sourceSha256": "c1c311175d44589d70131bae3682f1474b41c56b5b48261837ab451bd5dbfa76",
+  "triangleBudget": 1400,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "steel",
+      "type": "color",
+      "default": "#6e7e84",
+      "label": "Structural steel"
+    },
+    {
+      "name": "safetyPaint",
+      "type": "color",
+      "default": "#e1aa48",
+      "label": "Safety paint"
+    },
+    {
+      "name": "gaugeGlass",
+      "type": "color",
+      "default": "#91c6c8",
+      "label": "Gauge glass"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "steel": "#575851",
+      "safetyPaint": "#9e722f",
+      "gaugeGlass": "#78989b"
+    },
+    "highVisibility": {
+      "safetyPaint": "#f5c640"
+    }
+  },
+  "stats": {
+    "triangles": 212,
+    "sizeM": [
+      0.52,
+      0.325,
+      0.23
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "steel",
+      "color": "#6e7e84",
+      "parts": [
+        "pipe-run",
+        "cable-gland",
+        "instrument-neck"
+      ],
+      "param": "steel"
+    },
+    {
+      "name": "safetyPaint",
+      "color": "#e1aa48",
+      "parts": [
+        "flange--1",
+        "flange-1",
+        "meter-housing"
+      ],
+      "param": "safetyPaint"
+    },
+    {
+      "name": "gaugeGlass",
+      "color": "#91c6c8",
+      "parts": [
+        "display"
+      ],
+      "param": "gaugeGlass"
+    }
+  ]
+}

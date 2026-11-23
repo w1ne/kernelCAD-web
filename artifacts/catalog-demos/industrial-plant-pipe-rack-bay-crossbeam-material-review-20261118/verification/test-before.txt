@@ -1,0 +1,32 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ × tests/integration/catalog/pipeRackBayCrossbeamMaterial.test.ts > industrial-plant/pipe-rack-bay materials > keeps both structural crossbeams steel while retaining safety paint on marked parts 568ms
+   → crossbeam--1 should use structural steel: expected false to be true // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/pipeRackBayCrossbeamMaterial.test.ts > industrial-plant/pipe-rack-bay materials > keeps both structural crossbeams steel while retaining safety paint on marked parts
+AssertionError: crossbeam--1 should use structural steel: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/integration/catalog/pipeRackBayCrossbeamMaterial.test.ts:55:87
+     53|       const colors = colorsFor(part);
+     54|       expect(colors.length, `${part} should render`).toBeGreaterThan(0…
+     55|       expect(colors.every(matches('#707d84')), `${part} should use str…
+       |                                                                                       ^
+     56|     }
+     57|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  17:23:53
+   Duration  27.33s (transform 19.42s, setup 619ms, import 24.63s, tests 1.54s, environment 0ms)

@@ -1,0 +1,32 @@
+{
+  "video": "industrial-plant-electrical-control-cabinet-door-material-review.mp4",
+  "sha256": "4e2234007856292bc5cad72c5f418beebb1a2bfc08190f8fb5234607cecad05f",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "frameRate": "25/1",
+  "durationSeconds": 9.6,
+  "samples": [
+    {
+      "seconds": 0.5,
+      "path": "frame-0.png",
+      "sha256": "2665ba80c22114fdae22ead3c648fef889bfc1c0242e56ae39948d51fd7e02eb"
+    },
+    {
+      "seconds": 3.3,
+      "path": "frame-1.png",
+      "sha256": "ce163f7563f81e871597d80e84a8f2f48c203ef51b3df452d93a6f12f2b99761"
+    },
+    {
+      "seconds": 5.7,
+      "path": "frame-2.png",
+      "sha256": "59badff330ddea8dc56d57b2ef3686be3ae488cc4d08d0f3e7228676a3ace3f6"
+    },
+    {
+      "seconds": 8.1,
+      "path": "frame-3.png",
+      "sha256": "fd108c3b0e34ea6eaeed82ca35388f0366883821aa76983b6c0d8b9d355a6047"
+    }
+  ],
+  "visualReview": "Extracted frames inspected: audit, before, after, and scope caption are legible; the paired door finish changes while safety-painted details remain."
+}

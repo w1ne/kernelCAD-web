@@ -1,0 +1,41 @@
+{
+  "changedRows": [
+    "industrial-plant/bridge-crane"
+  ],
+  "expectedChangedRow": "industrial-plant/bridge-crane",
+  "sourceSha256": "3c1f349d038b6300b3620175cca8fbef308463d986758aa8db8daf064308c238",
+  "sourceSha256Matches": true,
+  "preview": "/assets/industrial-plant-bridge-crane.png",
+  "previewExists": true,
+  "triangles": 4104,
+  "triangleBudget": 6000,
+  "paletteZones": {
+    "hoist": [
+      "wheel--1350--1",
+      "wheel-flange--1350--1",
+      "wheel-1350--1",
+      "wheel-flange-1350--1",
+      "drive-gearbox--1",
+      "drive-motor--1",
+      "wheel--1350-1",
+      "wheel-flange--1350-1",
+      "wheel-1350-1",
+      "wheel-flange-1350-1",
+      "drive-gearbox-1",
+      "drive-motor-1",
+      "trolley-frame",
+      "trolley-wheel--1--650",
+      "trolley-wheel--1-650",
+      "trolley-wheel-1--650",
+      "trolley-wheel-1-650",
+      "hoist-drum",
+      "drum-bearing--700",
+      "drum-bearing-700",
+      "hoist-gearbox",
+      "hoist-motor",
+      "trolley-cover",
+      "hook-crosshead",
+      "hook-nut"
+    ]
+  }
+}

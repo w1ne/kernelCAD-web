@@ -1,0 +1,56 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/glassBreakerFlailsMaterial.test.ts (1 test | 1 failed) 1458ms
+     × keeps all chain flails on the editable wear-steel control 1206ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/glassBreakerFlailsMaterial.test.ts > recycling-facility/glass-breaker-screen flail materials > keeps all chain flails on the editable wear-steel control
+AssertionError: expected [ 'rotor-shaft', 'rotor-disc-0', …(5) ] to deeply equal ArrayContaining{…}
+
+- Expected
++ Received
+
+- ArrayContaining [
+-   "flail-0-0",
+-   "flail-0-1",
+-   "flail-0-2",
+-   "flail-0-3",
+-   "flail-1-0",
+-   "flail-1-1",
+-   "flail-1-2",
+-   "flail-1-3",
+-   "flail-2-0",
+-   "flail-2-1",
+-   "flail-2-2",
+-   "flail-2-3",
+-   "flail-3-0",
+-   "flail-3-1",
+-   "flail-3-2",
+-   "flail-3-3",
++ [
++   "rotor-shaft",
++   "rotor-disc-0",
++   "rotor-disc-1",
++   "rotor-disc-2",
++   "rotor-disc-3",
++   "infeed-tail",
++   "screen-mesh",
+  ]
+
+ ❯ tests/integration/catalog/glassBreakerFlailsMaterial.test.ts:30:30
+     28|     const flailNames = Array.from({ length: 16 }, (_, index) => `flail…
+     29|     const wearSteel = asset.palette.find((zone) => zone.name === 'wear…
+     30|     expect(wearSteel?.parts).toEqual(expect.arrayContaining(flailNames…
+       |                              ^
+     31|     expect(wearSteel?.parts).toHaveLength(23);
+     32|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  02:22:41
+   Duration  7.58s (transform 4.53s, setup 88ms, import 5.72s, tests 1.46s, environment 0ms)

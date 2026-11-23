@@ -1,0 +1,2 @@
+22a0f407855f33a690e276673ebe0b1dac054dab0545463848ce0ab31bcae7f5  artifacts/catalog-demos/industrial-plant-process-blower-motor-material-review-20261117/samples/process-blower.png
+22a0f407855f33a690e276673ebe0b1dac054dab0545463848ce0ab31bcae7f5  artifacts/catalog-demos/industrial-plant-process-blower-motor-material-review-20261117/live-baseline/process-blower.png

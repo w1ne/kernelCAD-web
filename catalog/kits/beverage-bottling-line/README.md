@@ -21,3 +21,11 @@ promotion handoff](../../../artifacts/catalog-demos/beverage-bottling-line-quali
 contains the source transformation, preset render command, inspected MP4 and
 local verification evidence. The [original wave demo](../../../artifacts/catalog-demos/beverage-bottling-line-wave-20261103/README.md)
 records the initial source and preview workflow.
+
+The [PET blow molder enclosure material review](../../../artifacts/catalog-demos/beverage-pet-blow-molder-enclosure-material-review-20261117/README.md)
+records the rendered-preview audit, finish-control change, before/after image,
+and local verification evidence.
+
+The [carton sealer tape-head material review](../../../artifacts/catalog-demos/beverage-carton-bottom-sealer-tape-head-material-review-20261118/README.md)
+records the five-preview audit, separates the steel taping head from its
+polymer tape roll, and retains the before/after preview and exported-GLB test.

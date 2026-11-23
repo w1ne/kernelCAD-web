@@ -1,0 +1,17 @@
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/slides/slide-01-scope.png'
+duration 1.6
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/slides/slide-02-before-after.png'
+duration 1.6
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/slides/slide-03-core-tray-rack.png'
+duration 1.6
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/slides/slide-04-mine-refuge-chamber.png'
+duration 1.6
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/slides/slide-05-mine-survey-tripod.png'
+duration 1.6
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/slides/slide-06-mine-ventilation-fan.png'
+duration 1.6
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/slides/slide-07-verification.png'
+duration 1.6
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/slides/slide-08-result.png'
+duration 1.6
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/slides/slide-08-result.png'

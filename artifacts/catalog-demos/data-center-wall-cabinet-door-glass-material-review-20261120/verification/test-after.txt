@@ -1,0 +1,8 @@
+ ✓ tests/integration/catalog/wallCabinetDoorGlassMaterial.test.ts (1 test) 982ms
+     ✓ builds the front door as a painted-steel frame around a tempered glass panel  558ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  08:37:38
+   Duration  22.74s (transform 18.67s, setup 369ms, import 21.14s, tests 982ms, environment 0ms)
+

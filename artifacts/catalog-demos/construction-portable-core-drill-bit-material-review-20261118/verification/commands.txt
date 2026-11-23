@@ -1,0 +1,21 @@
+# Baseline and target scan (before editing)
+gh pr view 1258 -R w1ne/kernelCAD-web --json reviewDecision,reviews,mergedAt
+gh pr view 1507 -R w1ne/kernelCAD-web --json number,title,state,headRefOid,reviewDecision,mergeStateStatus,statusCheckRollup
+# Five default previews checked in this audit
+# See preview-review.md and verification/screened-preview-sha256.txt
+# Before/after live baseline
+curl -L -sS https://kernelcad.com/catalog/construction-equipment/portable-core-drill-stand/
+curl -L -sS https://kernelcad.com/assets/construction-equipment-portable-core-drill-stand.png
+curl -L -sS https://kernelcad.com/assets/construction-equipment-portable-core-drill-stand.kcad.ts
+# Source-driven preview and generated index
+npx tsx scripts/renderCatalogPreviews.ts portable-core-drill-stand
+npx tsx scripts/buildAssetCatalog.ts
+python3 artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/verify_index_row.py
+# Regression, lint and quality gates
+npx vitest run tests/integration/catalog/portableCoreDrillStandMaterial.test.ts
+npx eslint catalog/kits/construction-equipment/ tests/integration/catalog/portableCoreDrillStandMaterial.test.ts
+python3 scripts/checkCatalogQuality.py --kit construction-equipment
+npx vitest run tests/integration/catalog/
+# Handoff video and inspection
+python3 artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/make_demo.py
+python3 artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/inspect_video.py

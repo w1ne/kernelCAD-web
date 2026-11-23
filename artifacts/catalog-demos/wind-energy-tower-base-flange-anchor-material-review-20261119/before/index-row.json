@@ -1,0 +1,94 @@
+{
+  "id": "tower-base-flange",
+  "kit": "wind-energy",
+  "title": "Tower base flange",
+  "description": "Circular tower base flange with raised center sleeve and eight anchor bosses. Controls: scale and structural steel, stainless steel; weathered and high-visibility presets.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "wind",
+    "energy",
+    "renewable",
+    "low poly",
+    "scene prop"
+  ],
+  "compat": [
+    "wind",
+    "energy",
+    "industrial",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/wind-energy/tower-base-flange.kcad.ts",
+  "preview": "/assets/wind-energy-tower-base-flange.png",
+  "sourceSha256": "24f909a3410721c9843b2c59b7437e408ff41aad0aec4e001170d927d6b0a3e2",
+  "triangleBudget": 900,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "structuralSteel",
+      "type": "color",
+      "default": "#556971",
+      "label": "Structural steel"
+    },
+    {
+      "name": "stainlessSteel",
+      "type": "color",
+      "default": "#b8c2c5",
+      "label": "Stainless steel"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "structuralSteel": "#425258",
+      "stainlessSteel": "#c7d2d5"
+    },
+    "highVisibility": {
+      "structuralSteel": "#d8a62b"
+    }
+  },
+  "stats": {
+    "triangles": 440,
+    "sizeM": [
+      0.62,
+      0.63,
+      0.62
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "structuralSteel",
+      "color": "#556971",
+      "parts": [
+        "flange",
+        "sleeve"
+      ],
+      "param": "structuralSteel"
+    },
+    {
+      "name": "stainlessSteel",
+      "color": "#b8c2c5",
+      "parts": [
+        "anchor-0",
+        "anchor-1",
+        "anchor-2",
+        "anchor-3",
+        "anchor-4",
+        "anchor-5",
+        "anchor-6",
+        "anchor-7"
+      ],
+      "param": "stainlessSteel"
+    }
+  ]
+}

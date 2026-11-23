@@ -51,4 +51,9 @@ The [turnover-cradle material review](../../../artifacts/catalog-demos/shipyard-
 records why both matching end frames use the editable yard-finish control and
 includes before/after previews, a GLB regression, and a short local workflow demo.
 
+The [ship-lift cradle rail review](../../../artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/README.md)
+records the paired guide-rail finish correction, five-preview ledger,
+before/after renders, exported-GLB regression, generated-index check, and
+inspected local demo.
+
 These are generic visualization props. They do not specify vessel structure, lift capacity, welding procedures, drydock certification, occupational-safety compliance, or repair instructions. Catalog validation does not establish shipyard or vessel safety, regulatory compliance, or operational acceptance.

@@ -1,0 +1,40 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/plcControlRackStatusLedsMaterial.test.ts (1 test | 1 failed) 610ms
+     × uses separate channel, RUN, and ERROR lens colors and steel module housings 346ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/plcControlRackStatusLedsMaterial.test.ts > industrial-plant/plc-control-rack status indicator materials > uses separate channel, RUN, and ERROR lens colors and steel module housings
+AssertionError: expected [ 'steel', 'safetyPaint' ] to deeply equal [ 'steel', 'channelLed', …(2) ]
+
+- Expected
++ Received
+
+  [
+    "steel",
+-   "channelLed",
+-   "runLed",
+-   "errorLed",
++   "safetyPaint",
+  ]
+
+ ❯ tests/integration/catalog/plcControlRackStatusLedsMaterial.test.ts:23:95
+     21|     expect(asset.stats.triangles).toBe(384);
+     22|     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+     23|     expect(asset.params.filter((param) => param.type === 'color').map(…
+       |                                                                                               ^
+     24|       'steel', 'channelLed', 'runLed', 'errorLed',
+     25|     ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  06:08:01
+   Duration  5.13s (transform 3.54s, setup 81ms, import 4.34s, tests 610ms, environment 0ms)
+
+
+baseline exit code: 1

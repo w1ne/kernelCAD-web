@@ -1,0 +1,17 @@
+{
+  "capturedOn": "2026-11-17",
+  "workflow": "five published industrial-plant previews -> material review -> source correction -> target preview render -> regenerated catalog index -> local checks",
+  "video": "artifacts/catalog-demos/industrial-plant-steam-header-manifold-material-review-20261116/industrial-plant-steam-header-manifold-material-review.mp4",
+  "canvas": {
+    "width": 1280,
+    "height": 720
+  },
+  "frames": 5,
+  "durationSeconds": 15,
+  "ffmpeg": "ffmpeg -framerate 1/3 -c:v libx264 -r 24 -pix_fmt yuv420p -crf 24 -movflags +faststart",
+  "invocation": "python3 artifacts/catalog-demos/industrial-plant-steam-header-manifold-material-review-20261116/capture_demo.py",
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts steam-header-manifold",
+  "indexInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "inspectionInvocation": "python3 artifacts/catalog-demos/industrial-plant-steam-header-manifold-material-review-20261116/inspect_video.py",
+  "provenance": "Local software renders and checks of the checked-in kernelCAD source. This branch has not been deployed; no simulation or physical acceptance is claimed."
+}

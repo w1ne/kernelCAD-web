@@ -1,0 +1,40 @@
+{
+  "invocation": "Results from the commands listed in README.md, captured on 2026-11-16.",
+  "targetChecksPass": true,
+  "assetIdsAndCountsUnchanged": true,
+  "asset": {
+    "id": "industrial-plant/roller-conveyor-line",
+    "triangles": 652,
+    "triangleBudget": 1400,
+    "params": ["scale", "steel", "rollerSteel", "safetyPaint"],
+    "presets": ["weathered", "highVisibility"]
+  },
+  "kitQuality": {
+    "passing": 60,
+    "total": 60,
+    "rate": "100.00%"
+  },
+  "catalogQuality": {
+    "passing": 2398,
+    "total": 2402,
+    "rate": "99.83%",
+    "remainingThin": 4,
+    "failingAssets": [
+      "standard-components/beam-coupling",
+      "standard-components/din-rail",
+      "standard-components/hose-barb-adapter",
+      "standard-components/retaining-ring"
+    ]
+  },
+  "checks": {
+    "focusedTest": "passed (1 test)",
+    "integration": "passed (126 files / 196 tests)",
+    "eslint": "passed",
+    "index": "passed (2,402 source hashes and preview references; one changed index row)",
+    "localPage": "passed (updated description, roller-steel control, presets, and matching preview)"
+  },
+  "limits": [
+    "The branch is not deployed.",
+    "The evidence shows local CAD software renders and checks only; it does not establish simulation, engineering, manufacturing, or physical acceptance."
+  ]
+}

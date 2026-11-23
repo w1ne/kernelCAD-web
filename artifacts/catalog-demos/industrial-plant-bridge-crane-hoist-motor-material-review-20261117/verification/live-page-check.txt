@@ -1,0 +1,15 @@
+Checked 2026-11-17 UTC, before the branch correction was deployed.
+
+GET https://kernelcad.com/catalog/industrial-plant/bridge-crane/
+HTTP 200
+Title: Bridge crane - free low-poly structure model (CC0) | kernelCAD
+Open Graph preview: https://kernelcad.com/catalog/industrial-plant/bridge-crane/preview.png
+
+GET https://kernelcad.com/assets/industrial-plant-bridge-crane.png
+HTTP 200, 46,539 bytes
+Live preview SHA-256: f562df67d4011fd9fd334dbd30b6899afda213a22d3696612df2e724cd1ca028
+Local baseline preview SHA-256: f562df67d4011fd9fd334dbd30b6899afda213a22d3696612df2e724cd1ca028
+
+The detail page and current preview were accessible and the preview matched the
+local baseline byte-for-byte. This branch is not deployed; the site still shows
+the previous motor finish.

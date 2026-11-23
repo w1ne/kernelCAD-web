@@ -1,0 +1,43 @@
+{
+  "video": "review-demo.mp4",
+  "sha256": "5be2794af71683d702fedafa31331344e802a1f92c5e7c10f08bf3499430db99",
+  "durationSeconds": 15.033333,
+  "sizeBytes": 229636,
+  "streams": [
+    {
+      "codec": "h264",
+      "width": 1280,
+      "height": 720,
+      "frameRate": "30/1",
+      "pixelFormat": "yuv420p"
+    }
+  ],
+  "sampledFrames": [
+    {
+      "seconds": 1.5,
+      "path": "frame-01.png",
+      "sha256": "8361db6c35ba432ee520b249b3cb1af69d31cf8829738d04cf7f96d4c4e3a8a1"
+    },
+    {
+      "seconds": 4.5,
+      "path": "frame-02.png",
+      "sha256": "eeb0e84d1f0ee18009cd28347d1c5e51fa5caba70bbb0d49d53d6e73efce784f"
+    },
+    {
+      "seconds": 7.5,
+      "path": "frame-03.png",
+      "sha256": "2618ea32caaf4214e831045b3cb871d4a133dbc0aa99d6b11e69ebcb407a10bd"
+    },
+    {
+      "seconds": 10.5,
+      "path": "frame-04.png",
+      "sha256": "2b39e2b8e53becfe022b6decfb820ecd07224ff44b75ffbffe24c9b3b22c696a"
+    },
+    {
+      "seconds": 13.5,
+      "path": "frame-05.png",
+      "sha256": "0f283e9372565422daa8c7168be3711d6f51d14812c5524db413d8ff28af92b2"
+    }
+  ],
+  "inspection": "Extracted frames were opened and checked against the source previews and result captions."
+}

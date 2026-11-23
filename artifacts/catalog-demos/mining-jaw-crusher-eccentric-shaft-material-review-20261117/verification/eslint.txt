@@ -1,0 +1,3 @@
+Command: npx eslint catalog/kits/mining/
+
+Exit status: 0. No diagnostics.

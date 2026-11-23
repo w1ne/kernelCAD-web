@@ -1,0 +1,32 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ × tests/integration/catalog/plateRollerConveyorSideFrameMaterials.test.ts > shipyard/plate-roller-conveyor side-frame materials > uses one painted-steel finish for both mirrored side frames 283ms
+   → side-frame-1 should use the shared yard-painted finish: expected false to be true // Object.is equality
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  22:41:18
+   Duration  10.79s (transform 8.28s, setup 228ms, import 9.42s, tests 577ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/plateRollerConveyorSideFrameMaterials.test.ts > shipyard/plate-roller-conveyor side-frame materials > uses one painted-steel finish for both mirrored side frames
+AssertionError: side-frame-1 should use the shared yard-painted finish: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/integration/catalog/plateRollerConveyorSideFrameMaterials.test.ts:55:101
+     53|       const colors = colorsFor(name);
+     54|       expect(colors.length, `${name} should be present in the exported…
+     55|       expect(colors.every(matches('#78847e')), `${name} should use the…
+       |                                                                                                     ^
+     56|     }
+     57|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

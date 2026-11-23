@@ -38,6 +38,7 @@ const paddlePart = (z:number,w:number,d:number,h:number,angle:number) => box(w,d
 const p = assembly("beverage-blend-tank");
 const finishPart = (name: string, shape: ReturnType<typeof boxPart>) => {
   const component = name.toLowerCase();
+  if (component === "jacket-band") return shape.color(stainlessSteel);
   if (/sight-glass|glass|viewport|window|lens/i.test(component)) return shape.color(glass);
   if (/base|leg|foot|frame|support|stand|control|housing|cabinet|motor|drive|beam|panel|hood|skid|mount|platform|guard|rail|post|lift|jacket/i.test(component)) return shape.color(powderCoat);
   return shape.color(stainlessSteel);

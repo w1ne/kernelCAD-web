@@ -3,7 +3,7 @@ meta({
   name: "hull-block-spreader-beam",
   license: 'CC0-1.0',
   title: "Hull block spreader beam",
-  description: "Generic lifting spreader with a central beam, four adjustable drop links, and soft-contact end shoes. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+  description: "Generic lifting spreader with a central beam, four adjustable drop links, and end shoes with elastomer contact pads. Material controls: yard paint, structural steel, and elastomer pads; includes fresh-coat and weathered-yard presets.",
   tags: ["shipyard", "shipbuilding", "drydock", "refit", "low poly", "CC0", "hull", "block", "spreader", "beam"],
   kit: 'shipyard',
   category: 'prop',
@@ -15,10 +15,11 @@ meta({
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const yardPaint = param("yardPaint", "#78827a", { label: "Yard finish" });
 const structuralSteel = param("structuralSteel", "#b6c1c4", { label: "Structural steel" });
+const elastomer = param("elastomer", "#30383b", { label: "Soft-contact pads (elastomer)" });
 
 presets({
-  'fresh-coat': {"yardPaint": "#909892", "structuralSteel": "#d0d7d8"},
-  'weathered-yard': {"yardPaint": "#646c65", "structuralSteel": "#828d91"},
+  'fresh-coat': {"yardPaint": "#909892", "structuralSteel": "#d0d7d8", "elastomer": "#3a4245"},
+  'weathered-yard': {"yardPaint": "#646c65", "structuralSteel": "#828d91", "elastomer": "#252b2d"},
 });
 
 const p = assembly("hull-block-spreader-beam");
@@ -80,10 +81,10 @@ p.part("drop-link-0", b("drop-link-0", [110, 110, 980], [-1320, -580, 1000]).col
 p.part("drop-link-1", b("drop-link-1", [110, 110, 980], [-1320, 580, 1000]).color(yardPaint));
 p.part("drop-link-2", b("drop-link-2", [110, 110, 980], [1320, -580, 1000]).color(yardPaint));
 p.part("drop-link-3", b("drop-link-3", [110, 110, 980], [1320, 580, 1000]).color(yardPaint));
-p.part("contact-shoe-0", b("contact-shoe-0", [500, 420, 160], [-1320, -580, 440]).color(yardPaint));
-p.part("contact-shoe-1", b("contact-shoe-1", [500, 420, 160], [-1320, 580, 440]).color(yardPaint));
-p.part("contact-shoe-2", b("contact-shoe-2", [500, 420, 160], [1320, -580, 440]).color(yardPaint));
-p.part("contact-shoe-3", b("contact-shoe-3", [500, 420, 160], [1320, 580, 440]).color(yardPaint));
+p.part("contact-shoe-0", b("contact-shoe-0", [500, 420, 160], [-1320, -580, 440]).color(elastomer));
+p.part("contact-shoe-1", b("contact-shoe-1", [500, 420, 160], [-1320, 580, 440]).color(elastomer));
+p.part("contact-shoe-2", b("contact-shoe-2", [500, 420, 160], [1320, -580, 440]).color(elastomer));
+p.part("contact-shoe-3", b("contact-shoe-3", [500, 420, 160], [1320, 580, 440]).color(elastomer));
 p.part("shackle-pin-0", c("shackle-pin-0", 320, 80, 10, [-1150, 0, 1990], [90, 0, 0], 90).color(structuralSteel));
 p.part("shackle-pin-1", c("shackle-pin-1", 320, 80, 10, [1150, 0, 1990], [90, 0, 0], 90).color(structuralSteel));
 

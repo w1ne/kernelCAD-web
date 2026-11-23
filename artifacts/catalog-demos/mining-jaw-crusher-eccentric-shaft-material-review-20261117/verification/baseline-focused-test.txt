@@ -1,0 +1,8 @@
+Command: npx vitest run tests/integration/catalog/jawCrusherEccentricShaftMaterial.test.ts
+
+Outcome on the pre-fix source: 1 test failed.
+
+The exported-GLB check found that `eccentric-shaft` did not use the expected
+`structuralSteel` color (`#4b5459`). This reproduces the assignment defect
+before the source correction. The fixed run is recorded in
+`focused-test-pass.txt`.

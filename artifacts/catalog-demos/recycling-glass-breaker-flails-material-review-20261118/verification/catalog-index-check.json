@@ -1,0 +1,18 @@
+{
+  "command": "npx tsx scripts/buildAssetCatalog.ts",
+  "result": "completed successfully",
+  "catalogCounts": {
+    "assetsBefore": 2402,
+    "assetsAfter": 2402,
+    "kitsBefore": 50,
+    "kitsAfter": 50
+  },
+  "changedTargetFields": [
+    "sourceSha256",
+    "palette"
+  ],
+  "sourceSha256": "1cd893c65cdf5616d88bc54c1006bbef22dd115e5e5e3c4fde8d4bf5c291e5f9",
+  "actualSourceSha256Matches": true,
+  "preview": "/assets/recycling-facility-glass-breaker-screen.png",
+  "previewExists": true
+}

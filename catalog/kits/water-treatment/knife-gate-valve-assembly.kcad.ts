@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
-// Knife gate valve assembly: Process valve with square gate body, rising stem, handwheel and paired pipe flanges. Low-poly visualization geometry in millimetres, Z up.
+// Knife gate valve assembly: Process valve with a coated square gate body on a mount foot, a bare stainless rising stem, an amber handwheel and two stainless pipe stubs that leave the body along Y. Low-poly visualization geometry in millimetres, Z up.
 
 meta({
   name: "knife-gate-valve-assembly",
   license: 'CC0-1.0',
   title: "Knife gate valve assembly",
-  description: "Process valve with square gate body, rising stem, handwheel and paired pipe flanges. Parameters: overall scale and coated equipment steel, structural steel, stainless steel, safety amber; weathered and highVisibility presets.",
+  description: "Process valve with a coated square gate body, a stainless rising stem, a handwheel and two stainless pipe stubs on the pipe run axis. Parameters: overall scale and coated equipment steel, structural steel, stainless steel, safety amber; weathered and highVisibility presets.",
   tags: ['water treatment', 'water utility', 'infrastructure', 'low poly', 'scene prop'],
   kit: 'water-treatment',
   category: 'prop',
@@ -42,13 +42,15 @@ const loftCylinder = (height:number, radius:number, sides:number) => {
   });
 };
 const c=(x:number,y:number,z:number,h:number,r:number,n=10)=>loftCylinder(h,r,n).translate(x,y,z).scale(scale);
+// Horizontal stub that starts at (x, y, z) and runs along Y; dir -1 sends it toward -Y.
+const stubY=(x:number,y:number,z:number,len:number,r:number,dir:1|-1,n=10)=>loftCylinder(len,r,n).rotateX(-90*dir).translate(x,y,z).scale(scale);
 
 const p=assembly("knife-gate-valve-assembly");
-p.part("gate-body",b(0,0,65,300,300,240).color(coatedSteel));
-p.part("pipe-left",c(0,-220,135,130,100,10).color(stainlessSteel));
-p.part("pipe-right",c(0,220,135,130,100,10).color(stainlessSteel));
+p.part("gate-body",b(0,0,45,300,300,260).color(coatedSteel));
+p.part("pipe-left",stubY(0,-140,175,180,100,-1).color(stainlessSteel));
+p.part("pipe-right",stubY(0,140,175,180,100,1).color(stainlessSteel));
 p.part("bonnet",b(0,0,305,180,180,70).color(coatedSteel));
-p.part("stem",c(0,0,375,280,28,10).color(coatedSteel));
+p.part("stem",c(0,0,375,280,28,10).color(stainlessSteel));
 p.part("handwheel",c(0,0,655,30,105,12).color(warningAmber));
 p.part("mount-foot",b(0,0,0,380,380,45).color(structuralSteel));
 

@@ -53,7 +53,8 @@ const b = (name: string, size: [number, number, number], at: [number, number, nu
 };
 
 p.part("longitudinal-rail-0", b("longitudinal-rail-0", [3000, 150, 180], [0, -620, 90]).color(yardPaint));
-p.part("longitudinal-rail-1", b("longitudinal-rail-1", [3000, 150, 180], [0, 620, 90]).color(structuralSteel));
+// Both longitudinal rails are the painted main members, so they share the yard finish.
+p.part("longitudinal-rail-1", b("longitudinal-rail-1", [3000, 150, 180], [0, 620, 90]).color(yardPaint));
 p.part("cross-rail-0", b("cross-rail-0", [165, 1320, 130], [-1200, 0, 245]).color(structuralSteel));
 p.part("cross-rail-1", b("cross-rail-1", [165, 1320, 130], [-600, 0, 245]).color(structuralSteel));
 p.part("cross-rail-2", b("cross-rail-2", [165, 1320, 130], [0, 0, 245]).color(structuralSteel));

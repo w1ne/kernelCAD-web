@@ -1,0 +1,6 @@
+HTTP/2 200
+date: Tue, 17 Nov 2026 03:27:35 GMT
+content-type: image/png
+content-length: 31169
+etag: "52f563bf16adda5018919f43bf6c024b"
+cf-cache-status: HIT

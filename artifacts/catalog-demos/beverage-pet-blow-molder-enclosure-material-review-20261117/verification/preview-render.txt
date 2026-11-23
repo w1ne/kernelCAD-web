@@ -1,0 +1,4 @@
+Command: npx tsx scripts/renderCatalogPreviews.ts pet-blow-molder
+Output: beverage-bottling-line/pet-blow-molder: 364 tris
+Exit status: 0
+The updated local PNG was opened and reviewed after rendering.

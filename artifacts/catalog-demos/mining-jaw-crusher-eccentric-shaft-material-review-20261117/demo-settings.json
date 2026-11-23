@@ -1,0 +1,36 @@
+{
+  "capture": "Local rendered catalog PNGs assembled into an evidence video; no browser replay, simulation, or hardware connection.",
+  "source": "catalog/kits/mining/jaw-crusher-module.kcad.ts",
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts jaw-crusher-module",
+  "indexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "focusedRegression": "npx vitest run tests/integration/catalog/jawCrusherEccentricShaftMaterial.test.ts",
+  "segments": [
+    "Five rendered mining previews and the selected material-control mismatch",
+    "Baseline jaw-crusher preview with the eccentric shaft bound to the manganese liner control",
+    "Regenerated preview with the eccentric shaft on structural steel and manganese retained on both liners",
+    "Magnified before/after crop around the eccentric shaft",
+    "Exported-GLB regression result and unchanged triangle count",
+    "Local software-preview status; no simulation or hardware acceptance"
+  ],
+  "segmentSeconds": 2.8,
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "frameRate": 25,
+    "codec": "H.264",
+    "crf": 22,
+    "pixelFormat": "yuv420p",
+    "audio": false
+  },
+  "commands": [
+    "npx tsx scripts/renderCatalogPreviews.ts jaw-crusher-module",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx vitest run tests/integration/catalog/jawCrusherEccentricShaftMaterial.test.ts",
+    "npx eslint catalog/kits/mining/",
+    "python3 scripts/checkCatalogQuality.py --kit mining",
+    "npx vitest run tests/integration/catalog/",
+    "python3 artifacts/catalog-demos/mining-jaw-crusher-eccentric-shaft-material-review-20261117/make_review_assets.py",
+    "artifacts/catalog-demos/mining-jaw-crusher-eccentric-shaft-material-review-20261117/make_demo.sh",
+    "python3 artifacts/catalog-demos/mining-jaw-crusher-eccentric-shaft-material-review-20261117/inspect_video.py"
+  ]
+}

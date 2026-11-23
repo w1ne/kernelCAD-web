@@ -1,0 +1,27 @@
+{
+  "workflow": "five-preview shipyard semantic review with one material correction",
+  "source": "catalog/kits/shipyard/hull-block-fabrication-jig.kcad.ts",
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts hull-block-fabrication-jig",
+  "indexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "renderInspectCommand": "PW_CDP_URL=http://127.0.0.1:9333 npx tsx src/agent/cli/index.ts render inspect artifacts/catalog-demos/shipyard-hull-block-fabrication-jig-base-rail-material-review-20261117/after/hull-block-fabrication-jig.kcad.ts artifacts/catalog-demos/shipyard-hull-block-fabrication-jig-base-rail-material-review-20261117/inspection/final",
+  "testCommand": "npx vitest run tests/integration/catalog/hullBlockFabricationJigBaseRailMaterial.test.ts",
+  "lintCommand": "npx eslint catalog/kits/shipyard/ tests/integration/catalog/hullBlockFabricationJigBaseRailMaterial.test.ts",
+  "videoCommand": "python3 create_demo.py && ./make_demo.sh",
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "fps": 25,
+    "codec": "H.264 / yuv420p",
+    "crf": 22,
+    "slideSeconds": 2.8,
+    "slides": [
+      "samples/five-preview-contact-sheet.png",
+      "before/hull-block-fabrication-jig.png",
+      "source-mapping.png",
+      "after/hull-block-fabrication-jig.png",
+      "verification-card.png"
+    ]
+  },
+  "renderInspectStatus": "Not produced: the existing Chrome CDP attachment timed out. No new browser was launched; the before/after catalog PNGs were opened and visually inspected directly.",
+  "provenance": "Local catalog preview PNGs and an exported-GLB regression. The clip does not show deployment, simulation, or hardware acceptance."
+}

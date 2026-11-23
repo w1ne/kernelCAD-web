@@ -1,0 +1,33 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/substationTransformerRadiatorBankManifoldMaterial.test.ts (1 test | 1 failed) 873ms
+     × uses the radiator steel finish for both oil manifolds and keeps the source controls live 404ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/substationTransformerRadiatorBankManifoldMaterial.test.ts > grid-substation/substation-transformer-radiator-bank manifolds > uses the radiator steel finish for both oil manifolds and keeps the source controls live
+AssertionError: inlet-manifold should use the radiator steel finish: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/integration/catalog/substationTransformerRadiatorBankManifoldMaterial.test.ts:48:59
+     46|       expect(colors.every((color) => expected.every((channel, index) =>
+     47|         Math.abs(channel - color[index]!) < 0.015,
+     48|       )), `${name} should use the radiator steel finish`).toBe(true);
+       |                                                           ^
+     49|     }
+     50| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  19:48:24
+   Duration  13.00s (transform 9.71s, setup 225ms, import 11.70s, tests 873ms, environment 0ms)
+

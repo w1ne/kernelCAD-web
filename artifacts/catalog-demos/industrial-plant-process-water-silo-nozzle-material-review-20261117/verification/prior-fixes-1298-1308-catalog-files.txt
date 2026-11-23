@@ -1,0 +1,8 @@
+catalog/kits/grid-substation/previews/substation-cable-ladder-section.png
+catalog/kits/grid-substation/substation-cable-ladder-section.kcad.ts
+catalog/kits/beverage-bottling-line/previews/sanitary-lobe-pump.png
+catalog/kits/beverage-bottling-line/sanitary-lobe-pump.kcad.ts
+catalog/kits/data-center-infrastructure/previews/storage-array-chassis.png
+catalog/kits/data-center-infrastructure/storage-array-chassis.kcad.ts
+catalog/kits/standard-components/previews/split-shaft-collar.png
+catalog/kits/standard-components/split-shaft-collar.kcad.ts

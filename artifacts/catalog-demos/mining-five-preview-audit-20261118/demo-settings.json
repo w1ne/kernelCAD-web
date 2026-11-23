@@ -1,0 +1,28 @@
+{
+  "task": "Local rendered-preview semantic audit of five mining equipment assets",
+  "checkedAtUtc": "2026-11-18",
+  "assets": [
+    "apron-feeder",
+    "double-deck-screen",
+    "flotation-conditioning-tank",
+    "gyratory-crusher-station",
+    "hydrocyclone-cluster"
+  ],
+  "previewSource": "catalog/kits/mining/previews/*.png",
+  "video": {
+    "resolution": "1280x720",
+    "frameRate": 24,
+    "codec": "H.264 / libx264",
+    "pixelFormat": "yuv420p",
+    "secondsPerSlide": 1.6,
+    "slideCount": 7,
+    "audio": false
+  },
+  "claimLimits": [
+    "local rendered-preview review only",
+    "no source or index changes",
+    "no simulation claim",
+    "no deployment claim",
+    "no hardware acceptance claim"
+  ]
+}

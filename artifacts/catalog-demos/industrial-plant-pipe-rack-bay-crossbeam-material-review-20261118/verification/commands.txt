@@ -1,0 +1,28 @@
+# PR and target checks (selection-time)
+gh pr view 1258 --json number,title,state,url,statusCheckRollup,reviews
+gh pr view 1507 --json number,title,state,url,headRefName,headRefOid,mergeStateStatus,statusCheckRollup,reviews
+gh api --paginate 'repos/w1ne/kernelCAD-web/pulls/1507/files?per_page=100'
+gh issue list --state open --search '"pipe-rack-bay"'
+gh pr list --state open --search '"pipe-rack-bay"'
+
+# Baseline check
+curl -I https://kernelcad.com/catalog/industrial-plant/pipe-rack-bay/
+curl -o live-baseline/pipe-rack-bay.png https://kernelcad.com/assets/industrial-plant-pipe-rack-bay.png
+
+# Regression and lint
+npx vitest run tests/integration/catalog/pipeRackBayCrossbeamMaterial.test.ts --reporter=verbose
+npx eslint catalog/kits/industrial-plant/
+
+# Regenerate the preview and the full generated catalog index
+npx tsx scripts/renderCatalogPreviews.ts pipe-rack-bay
+npx tsx scripts/buildAssetCatalog.ts
+
+# Full catalog integration verification
+npx vitest run tests/integration/catalog/
+npx vitest run tests/integration/catalog/catalogFreshShapes.test.ts --reporter=verbose
+npx vitest run tests/integration/catalog/ --maxWorkers=2
+
+# Recreate the handoff demo from repo root
+python3 artifacts/catalog-demos/industrial-plant-pipe-rack-bay-crossbeam-material-review-20261118/make_demo.py
+python3 artifacts/catalog-demos/industrial-plant-pipe-rack-bay-crossbeam-material-review-20261118/inspect_video.py
+ffprobe -v error -show_format -show_streams -of json artifacts/catalog-demos/industrial-plant-pipe-rack-bay-crossbeam-material-review-20261118/review-demo.mp4

@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: CC0-1.0
-// Distribution panelboard: Panelboard enclosure with hinged door, breaker rows, and cable entry gland.
+// Distribution panelboard: painted steel enclosure with hinged door and deadfront, four rows of
+// moulded-case polymer breakers, and a rubber cable entry gland.
 
 meta({
   name: "distribution-panelboard",
   license: 'CC0-1.0',
   title: "Distribution panelboard",
-  description: "Panelboard enclosure with hinged door, breaker rows, and cable entry gland. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility.",
+  description: "Painted steel panelboard enclosure with hinged door, four rows of moulded polymer breakers, and cable entry gland. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility.",
   tags: ['data center', 'critical infrastructure', 'IT equipment', 'power', 'cooling', 'scene prop'],
   kit: 'data-center-infrastructure',
   category: 'prop',
@@ -40,10 +41,10 @@ const p=assembly("distribution-panelboard");
 p.part("wall-enclosure", b(0, 0, 0, 760, 300, 1300).color(steel));
 p.part("door", b(0, -165, 90, 700, 32, 1120).color(steel));
 p.part("interior-deadfront", b(0, -188, 250, 560, 22, 780).color(steel));
-p.part("breaker-row-0", b(0, -210, 350, 460, 26, 105).color(steel));
-p.part("breaker-row-1", b(0, -210, 510, 460, 26, 105).color(steel));
-p.part("breaker-row-2", b(0, -210, 670, 460, 26, 105).color(steel));
-p.part("breaker-row-3", b(0, -210, 830, 460, 26, 105).color(steel));
+p.part("breaker-row-0", b(0, -210, 350, 460, 26, 105).color(polymer));
+p.part("breaker-row-1", b(0, -210, 510, 460, 26, 105).color(polymer));
+p.part("breaker-row-2", b(0, -210, 670, 460, 26, 105).color(polymer));
+p.part("breaker-row-3", b(0, -210, 830, 460, 26, 105).color(polymer));
 p.part("cable-entry", c(0, 0, 0, 65, 58, 10).color(rubber));
 p.part("door-latch", c(300, -195, 650, 46, 24, 8).color(polymer));
 

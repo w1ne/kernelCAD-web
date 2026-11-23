@@ -1,0 +1,20 @@
+{
+  "purpose": "Show the five local preview audit, selected case-taper material mismatch, source assignment, after preview, and local verification.",
+  "frameSize": "1280x720",
+  "frameRate": 24,
+  "codec": "H.264 / libx264",
+  "pixelFormat": "yuv420p",
+  "crf": 19,
+  "durationsSeconds": [4, 3, 3, 4, 2],
+  "finalFrameHoldSeconds": 2,
+  "expectedDurationSeconds": 18,
+  "slides": [
+    "01-five-preview-audit.png",
+    "02-before.png",
+    "03-source-material.png",
+    "04-after.png",
+    "05-verification.png"
+  ],
+  "invocation": "python3 artifacts/catalog-demos/beverage-case-taper-tape-head-material-review-20261118/make_demo.py",
+  "provenance": "Local kernelCAD source, rendered catalog preview, exported-GLB regression and catalog checks. No process simulation or hardware acceptance."
+}

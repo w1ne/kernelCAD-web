@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-18",
+  "video": "review-demo.mp4",
+  "durationSeconds": 15,
+  "resolution": "1280x720",
+  "frameRate": 30,
+  "codec": "H.264, yuv420p",
+  "invocation": "python3 artifacts/catalog-demos/grid-substation-transformer-radiator-manifold-material-review-20261118/make_demo.py",
+  "renderInvocation": "npx tsx scripts/renderCatalogPreviews.ts substation-transformer-radiator-bank",
+  "catalogInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "testInvocation": "npx vitest run tests/integration/catalog/substationTransformerRadiatorBankManifoldMaterial.test.ts",
+  "reviewSamples": [
+    "grid-substation/substation-main-power-transformer",
+    "grid-substation/substation-oil-cooling-pump-skid",
+    "grid-substation/substation-station-battery-rack",
+    "grid-substation/substation-dead-tank-breaker",
+    "grid-substation/substation-transformer-radiator-bank"
+  ],
+  "claims": "Local software-rendered catalog previews and exported-GLB material regression only. No simulation, deployment, or hardware acceptance is shown."
+}

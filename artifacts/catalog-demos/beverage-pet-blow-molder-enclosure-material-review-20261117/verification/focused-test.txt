@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/petBlowMolderEnclosureMaterial.test.ts (1 test) 619ms
+     ✓ separates the light enclosure finish from stainless tooling and the powder-coated base  311ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  13:10:21
+   Duration  8.59s (transform 6.41s, setup 178ms, import 7.56s, tests 619ms, environment 0ms)

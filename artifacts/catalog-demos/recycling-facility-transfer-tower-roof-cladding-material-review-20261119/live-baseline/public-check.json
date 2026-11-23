@@ -1,0 +1,1540 @@
+[
+  {
+    "asset": "recycling-facility/conveyor-transfer-tower",
+    "pageUrl": "https://kernelcad.com/catalog/recycling-facility/conveyor-transfer-tower/",
+    "previewUrl": "https://kernelcad.com/catalog/recycling-facility/conveyor-transfer-tower/preview.png",
+    "sourceUrl": "https://kernelcad.com/assets/recycling-facility-conveyor-transfer-tower.kcad.ts",
+    "pageHttp": 200,
+    "previewHttp": 200,
+    "sourceHttp": 200,
+    "localSourceSha256": "b7d2ec611d2a4ab8cb04e3d629c3c8f850d3326624dee3927c5fb78d95bf7bbd",
+    "publicSourceSha256": "b7d2ec611d2a4ab8cb04e3d629c3c8f850d3326624dee3927c5fb78d95bf7bbd",
+    "sourceMatchesLocal": true,
+    "localPreviewSha256": "485c5aeb971c6c189ddb0b9774cb35dedd5df70e71032b03cc6052b65991b071",
+    "publicPreviewSha256": "485c5aeb971c6c189ddb0b9774cb35dedd5df70e71032b03cc6052b65991b071",
+    "previewMatchesLocal": true,
+    "indexSourceSha256": "b7d2ec611d2a4ab8cb04e3d629c3c8f850d3326624dee3927c5fb78d95bf7bbd",
+    "indexPreview": "/assets/recycling-facility-conveyor-transfer-tower.png",
+    "indexRow": {
+      "id": "conveyor-transfer-tower",
+      "kit": "recycling-facility",
+      "title": "Conveyor transfer tower",
+      "description": "Enclosed conveyor transfer tower at about real size: clad square tower on corner columns with mono-pitch roof, roof vent and louvre band, inclined clad conveyor gallery with window strip arriving from a tail house over a braced trestle, outgoing open conveyor with load and head pulley at the base, personnel door with steps, caged ladder to a railed landing. Material controls: cladding, structure, gallery and belts. plant, weathered, highVisibility and oxide presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "recycling",
+        "conveyor",
+        "transfer tower",
+        "conveyor gallery",
+        "trestle",
+        "cladding",
+        "materials recovery",
+        "waste management",
+        "sorting",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "recycling-facility",
+        "materials-recovery",
+        "waste-management",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/recycling-facility/conveyor-transfer-tower.kcad.ts",
+      "preview": "/assets/recycling-facility-conveyor-transfer-tower.png",
+      "sourceSha256": "b7d2ec611d2a4ab8cb04e3d629c3c8f850d3326624dee3927c5fb78d95bf7bbd",
+      "triangleBudget": 4400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "cladding",
+          "type": "color",
+          "default": "#b9c2c4",
+          "label": "Tower cladding (profiled sheet)"
+        },
+        {
+          "name": "structure",
+          "type": "color",
+          "default": "#e0a526",
+          "label": "Structure, ladder and rails (paint)"
+        },
+        {
+          "name": "gallery",
+          "type": "color",
+          "default": "#5d7f8c",
+          "label": "Gallery cladding"
+        },
+        {
+          "name": "belts",
+          "type": "color",
+          "default": "#24272a",
+          "label": "Belts (rubber)"
+        }
+      ],
+      "presets": {
+        "plant": {
+          "cladding": "#b9c2c4",
+          "structure": "#e0a526",
+          "gallery": "#5d7f8c",
+          "belts": "#24272a"
+        },
+        "weathered": {
+          "cladding": "#9a9690",
+          "structure": "#8a7a52",
+          "gallery": "#6e6a62",
+          "belts": "#2c2a28"
+        },
+        "highVisibility": {
+          "cladding": "#e2e4e2",
+          "structure": "#f0c419",
+          "gallery": "#2f6b8f",
+          "belts": "#1c1d1e"
+        },
+        "oxide": {
+          "cladding": "#8a3a2c",
+          "structure": "#3a3d40",
+          "gallery": "#b9c2c4",
+          "belts": "#24272a"
+        }
+      },
+      "stats": {
+        "triangles": 2054,
+        "sizeM": [
+          17.83,
+          6.8,
+          3.902507
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "cladding",
+          "color": "#b9c2c4",
+          "parts": [
+            "tower-body",
+            "rib-front-0",
+            "rib-side-0",
+            "rib-front-1",
+            "rib-side-1",
+            "rib-front-2",
+            "rib-side-2",
+            "rib-front-3",
+            "rib-side-3",
+            "rib-front-4",
+            "rib-side-4",
+            "rib-front-5",
+            "rib-side-5",
+            "rib-front-6",
+            "rib-side-6",
+            "rib-front-7",
+            "rib-side-7",
+            "rib-front-8",
+            "rib-side-8",
+            "roof-vent",
+            "tail-house"
+          ],
+          "param": "cladding"
+        },
+        {
+          "name": "structure",
+          "color": "#e0a526",
+          "parts": [
+            "column-lf",
+            "column-rf",
+            "column-lb",
+            "column-rb",
+            "girt-2000",
+            "girt-4000",
+            "roof",
+            "roof-vent-cap",
+            "roof-vent-stay-a",
+            "roof-vent-stay-b",
+            "louvre-frame",
+            "gallery-roof-trim",
+            "gallery-frame-0",
+            "gallery-frame-1",
+            "gallery-frame-2",
+            "gallery-frame-3",
+            "gallery-frame-4",
+            "gallery-frame-5",
+            "gallery-frame-6",
+            "gallery-collar",
+            "tail-house-roof",
+            "trestle-leg-f-a",
+            "trestle-leg-f-b",
+            "trestle-leg-b-a",
+            "trestle-leg-b-b",
+            "trestle-brace-a-1",
+            "trestle-brace-a-2",
+            "trestle-brace-b-1",
+            "trestle-brace-b-2",
+            "trestle-head",
+            "out-stringer-f",
+            "out-stringer-b",
+            "out-head-pulley",
+            "out-leg-2600-f",
+            "out-leg-2600-b",
+            "out-leg-tie-2600",
+            "out-leg-4400-f",
+            "out-leg-4400-b",
+            "out-leg-tie-4400",
+            "out-leg-6400-f",
+            "out-leg-6400-b",
+            "out-leg-tie-6400",
+            "out-rail-post-2600",
+            "out-rail-post-4400",
+            "out-rail-post-6400",
+            "out-rail",
+            "door-frame",
+            "ladder-stile-l",
+            "ladder-stile-r",
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "ladder-rung-5",
+            "ladder-rung-6",
+            "ladder-rung-7",
+            "ladder-rung-8",
+            "ladder-rung-9",
+            "ladder-rung-10",
+            "ladder-rung-11",
+            "ladder-rung-12",
+            "ladder-rung-13",
+            "ladder-rung-14",
+            "cage-hoop-0",
+            "cage-hoop-1",
+            "cage-hoop-2",
+            "cage-hoop-3",
+            "cage-hoop-4",
+            "cage-hoop-5",
+            "cage-strap-l",
+            "cage-strap-c",
+            "cage-strap-r",
+            "ladder-bracket-1500",
+            "ladder-bracket-3000",
+            "landing-post--150",
+            "landing-post-450",
+            "landing-post-1350",
+            "landing-rail",
+            "landing-midrail"
+          ],
+          "param": "structure"
+        },
+        {
+          "name": "plinth",
+          "color": "#a39f96",
+          "parts": [
+            "plinth",
+            "trestle-foot-f",
+            "trestle-foot-b",
+            "step-0",
+            "step-1"
+          ]
+        },
+        {
+          "name": "louvre-0",
+          "color": "#3a3d40",
+          "parts": [
+            "louvre-0",
+            "louvre-1",
+            "louvre-2",
+            "louvre-3",
+            "louvre-4",
+            "louvre-5"
+          ]
+        },
+        {
+          "name": "gallery",
+          "color": "#5d7f8c",
+          "parts": [
+            "gallery-shell",
+            "tail-house-door",
+            "door",
+            "landing-door"
+          ],
+          "param": "gallery"
+        },
+        {
+          "name": "gallery-windows",
+          "color": "#2a3a44",
+          "parts": [
+            "gallery-windows"
+          ]
+        },
+        {
+          "name": "belts",
+          "color": "#24272a",
+          "parts": [
+            "out-belt"
+          ],
+          "param": "belts"
+        },
+        {
+          "name": "out-load-0",
+          "color": "#9a8f7a",
+          "parts": [
+            "out-load-0",
+            "out-load-3",
+            "out-load-6"
+          ]
+        },
+        {
+          "name": "out-load-1",
+          "color": "#8a7f68",
+          "parts": [
+            "out-load-1",
+            "out-load-4",
+            "out-load-7"
+          ]
+        },
+        {
+          "name": "out-load-2",
+          "color": "#a89a7c",
+          "parts": [
+            "out-load-2",
+            "out-load-5",
+            "out-load-8"
+          ]
+        },
+        {
+          "name": "out-drive",
+          "color": "#3a5c8a",
+          "parts": [
+            "out-drive"
+          ]
+        },
+        {
+          "name": "out-walkway",
+          "color": "#7d8285",
+          "parts": [
+            "out-walkway",
+            "landing"
+          ]
+        },
+        {
+          "name": "door-handle",
+          "color": "#1c1d1e",
+          "parts": [
+            "door-handle"
+          ]
+        },
+        {
+          "name": "door-sign",
+          "color": "#2f7a46",
+          "parts": [
+            "door-sign"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "asset": "recycling-facility/conveyor-transfer-chute",
+    "pageUrl": "https://kernelcad.com/catalog/recycling-facility/conveyor-transfer-chute/",
+    "previewUrl": "https://kernelcad.com/catalog/recycling-facility/conveyor-transfer-chute/preview.png",
+    "sourceUrl": "https://kernelcad.com/assets/recycling-facility-conveyor-transfer-chute.kcad.ts",
+    "pageHttp": 200,
+    "previewHttp": 200,
+    "sourceHttp": 200,
+    "localSourceSha256": "b692a4c15c0eb3864c940abb521ba81a083cc828bfd6c6341389c89c199a96e8",
+    "publicSourceSha256": "b692a4c15c0eb3864c940abb521ba81a083cc828bfd6c6341389c89c199a96e8",
+    "sourceMatchesLocal": true,
+    "localPreviewSha256": "dcbb30f42c49eb86b2df654a4095b505481a4caf4151db9ff6cdca7184b24e84",
+    "publicPreviewSha256": "dcbb30f42c49eb86b2df654a4095b505481a4caf4151db9ff6cdca7184b24e84",
+    "previewMatchesLocal": true,
+    "indexSourceSha256": "b692a4c15c0eb3864c940abb521ba81a083cc828bfd6c6341389c89c199a96e8",
+    "indexPreview": "/assets/recycling-facility-conveyor-transfer-chute.png",
+    "indexRow": {
+      "id": "conveyor-transfer-chute",
+      "kit": "recycling-facility",
+      "title": "Conveyor transfer chute",
+      "description": "Conveyor transfer point at about real size: inclined feed conveyor to a head pulley with drive motor and bearings, head hood and lined drop chute with curved spoon, bolted wear liners, hinged inspection doors, skirtboards onto a receiving conveyor at right angles, load on both belts, braced four-column tower. Doors open or closed. Material controls: chute, structure, belts and inspection doors. plant, weathered and highVisibility presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "recycling",
+        "conveyor",
+        "transfer chute",
+        "transfer point",
+        "head pulley",
+        "skirtboard",
+        "materials recovery",
+        "waste management",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "recycling-facility",
+        "materials-recovery",
+        "waste-management",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/recycling-facility/conveyor-transfer-chute.kcad.ts",
+      "preview": "/assets/recycling-facility-conveyor-transfer-chute.png",
+      "sourceSha256": "b692a4c15c0eb3864c940abb521ba81a083cc828bfd6c6341389c89c199a96e8",
+      "triangleBudget": 4800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "chute",
+          "type": "color",
+          "default": "#5d7f8c",
+          "label": "Chute and hood (paint)"
+        },
+        {
+          "name": "structure",
+          "type": "color",
+          "default": "#e0a526",
+          "label": "Tower and stringers (paint)"
+        },
+        {
+          "name": "belts",
+          "type": "color",
+          "default": "#24272a",
+          "label": "Belts (rubber)"
+        },
+        {
+          "name": "doors",
+          "type": "color",
+          "default": "#d77632",
+          "label": "Inspection doors (paint)"
+        },
+        {
+          "name": "doorState",
+          "type": "choice",
+          "default": "open",
+          "label": "Inspection door",
+          "choices": [
+            "open",
+            "closed"
+          ]
+        }
+      ],
+      "presets": {
+        "plant": {
+          "chute": "#5d7f8c",
+          "structure": "#e0a526",
+          "belts": "#24272a",
+          "doors": "#d77632"
+        },
+        "weathered": {
+          "chute": "#6e6a62",
+          "structure": "#8a7a52",
+          "belts": "#2c2a28",
+          "doors": "#9a5a36"
+        },
+        "highVisibility": {
+          "chute": "#2f6b8f",
+          "structure": "#f0c419",
+          "belts": "#1c1d1e",
+          "doors": "#c8322a"
+        }
+      },
+      "stats": {
+        "triangles": 1604,
+        "sizeM": [
+          4.825505,
+          2.87,
+          4.4
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "belts",
+          "color": "#24272a",
+          "parts": [
+            "feed-belt",
+            "receive-belt"
+          ],
+          "param": "belts"
+        },
+        {
+          "name": "feed-load",
+          "color": "#9a8b6a",
+          "parts": [
+            "feed-load",
+            "receive-load"
+          ]
+        },
+        {
+          "name": "feed-bit-0",
+          "color": "#3c7fc0",
+          "parts": [
+            "feed-bit-0",
+            "receive-bit-1"
+          ]
+        },
+        {
+          "name": "feed-bit-1",
+          "color": "#e8e4d6",
+          "parts": [
+            "feed-bit-1",
+            "receive-bit-0"
+          ]
+        },
+        {
+          "name": "feed-bit-2",
+          "color": "#b0402c",
+          "parts": [
+            "feed-bit-2"
+          ]
+        },
+        {
+          "name": "feed-bit-3",
+          "color": "#5aa04a",
+          "parts": [
+            "feed-bit-3",
+            "receive-bit-2"
+          ]
+        },
+        {
+          "name": "structure",
+          "color": "#e0a526",
+          "parts": [
+            "feed-stringer-f",
+            "feed-leg-f-3000",
+            "feed-leg-f-1700",
+            "feed-stringer-b",
+            "feed-leg-b-3000",
+            "feed-leg-b-1700",
+            "feed-leg-tie-3000",
+            "feed-leg-tie-1700",
+            "drive-gearbox",
+            "drive-platform",
+            "flange-2230",
+            "flange-1750",
+            "receive-stringer-l",
+            "receive-leg-l-f",
+            "receive-leg-l-b",
+            "receive-stringer-r",
+            "receive-leg-r-f",
+            "receive-leg-r-b",
+            "tower-column-fl",
+            "tower-column-fr",
+            "tower-column-bl",
+            "tower-column-br",
+            "tower-beam-f",
+            "tower-brace-f",
+            "tower-beam-b",
+            "tower-brace-b",
+            "tower-tie-l",
+            "tower-tie-r",
+            "chute-hanger-l"
+          ],
+          "param": "structure"
+        },
+        {
+          "name": "feed-idler-0",
+          "color": "#5d6366",
+          "parts": [
+            "feed-idler-0",
+            "feed-idler-1",
+            "feed-idler-2",
+            "feed-idler-3",
+            "feed-idler-4",
+            "head-shaft",
+            "receive-idler-p1400",
+            "receive-idler-p700",
+            "receive-idler-m2300",
+            "tower-base-fl",
+            "tower-base-fr",
+            "tower-base-bl",
+            "tower-base-br"
+          ]
+        },
+        {
+          "name": "bearing-f",
+          "color": "#3a3d40",
+          "parts": [
+            "bearing-f",
+            "bearing-b",
+            "liner-bolt-0-2-l25",
+            "liner-bolt-0-2-r25",
+            "liner-bolt-0-2-l185",
+            "liner-bolt-0-2-r185",
+            "liner-bolt-1-2-l25",
+            "liner-bolt-1-2-r25",
+            "liner-bolt-1-2-l185",
+            "liner-bolt-1-2-r185",
+            "liner-bolt-2-0-l25",
+            "liner-bolt-2-0-r25",
+            "liner-bolt-2-0-l185",
+            "liner-bolt-2-0-r185",
+            "liner-bolt-2-1-l25",
+            "liner-bolt-2-1-r25",
+            "liner-bolt-2-1-l185",
+            "liner-bolt-2-1-r185",
+            "liner-bolt-2-2-l25",
+            "liner-bolt-2-2-r25",
+            "liner-bolt-2-2-l185",
+            "liner-bolt-2-2-r185",
+            "door-hinge-1890",
+            "door-hinge-2230"
+          ]
+        },
+        {
+          "name": "drive-motor",
+          "color": "#2c5ea8",
+          "parts": [
+            "drive-motor"
+          ]
+        },
+        {
+          "name": "motor-fan-cowl",
+          "color": "#2b2e30",
+          "parts": [
+            "motor-fan-cowl"
+          ]
+        },
+        {
+          "name": "chute",
+          "color": "#5d7f8c",
+          "parts": [
+            "chute-body",
+            "skirtboard-l",
+            "skirtboard-r",
+            "skirt-cover"
+          ],
+          "param": "chute"
+        },
+        {
+          "name": "liner-0-2",
+          "color": "#7b8488",
+          "parts": [
+            "liner-0-2",
+            "liner-1-2",
+            "liner-2-0",
+            "liner-2-1",
+            "liner-2-2"
+          ]
+        },
+        {
+          "name": "door-opening",
+          "color": "#1c1d1e",
+          "parts": [
+            "door-opening",
+            "door-handle",
+            "door-wedge",
+            "hood-door-handle",
+            "skirt-rubber-l",
+            "skirt-rubber-r"
+          ]
+        },
+        {
+          "name": "door-liner-glimpse",
+          "color": "#6b6050",
+          "parts": [
+            "door-liner-glimpse"
+          ]
+        },
+        {
+          "name": "doors",
+          "color": "#d77632",
+          "parts": [
+            "door-panel",
+            "hood-door"
+          ],
+          "param": "doors"
+        }
+      ]
+    }
+  },
+  {
+    "asset": "recycling-facility/color-sorter-camera",
+    "pageUrl": "https://kernelcad.com/catalog/recycling-facility/color-sorter-camera/",
+    "previewUrl": "https://kernelcad.com/catalog/recycling-facility/color-sorter-camera/preview.png",
+    "sourceUrl": "https://kernelcad.com/assets/recycling-facility-color-sorter-camera.kcad.ts",
+    "pageHttp": 200,
+    "previewHttp": 200,
+    "sourceHttp": 200,
+    "localSourceSha256": "b3edb0bd64eb2631ee0da50e509a5997f642e1a39fbc2fbdaf955bf80a22d9d8",
+    "publicSourceSha256": "b3edb0bd64eb2631ee0da50e509a5997f642e1a39fbc2fbdaf955bf80a22d9d8",
+    "sourceMatchesLocal": true,
+    "localPreviewSha256": "68ca257edef30eb6e61d054336703b215bb62678560acc762ad34bff4953fe26",
+    "publicPreviewSha256": "68ca257edef30eb6e61d054336703b215bb62678560acc762ad34bff4953fe26",
+    "previewMatchesLocal": true,
+    "indexSourceSha256": "b3edb0bd64eb2631ee0da50e509a5997f642e1a39fbc2fbdaf955bf80a22d9d8",
+    "indexPreview": "/assets/recycling-facility-color-sorter-camera.png",
+    "indexRow": {
+      "id": "color-sorter-camera",
+      "kit": "recycling-facility",
+      "title": "Color-sorter camera",
+      "description": "Line-scan colour-sorter camera module on its service stand at about real size: long rounded aluminium housing tilted toward the scan line, three or four lens barrels with glass windows, two angled LED light bars, air-purge rail with nozzles, cable glands with cables to a junction box, clamp brackets on two uprights, and the inclined stainless chute below with flakes sliding past a white background tile to the ejector bar. Material controls: camera housing, lens glass, LED diffusers and stand brackets. plant, weathered, blackAnodised and highVisibility presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "recycling",
+        "camera",
+        "line scan",
+        "colour sorter",
+        "color sorter",
+        "optical sorter",
+        "led light bar",
+        "chute",
+        "materials recovery",
+        "waste management",
+        "sorting",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "recycling-facility",
+        "materials-recovery",
+        "waste-management",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/recycling-facility/color-sorter-camera.kcad.ts",
+      "preview": "/assets/recycling-facility-color-sorter-camera.png",
+      "sourceSha256": "b3edb0bd64eb2631ee0da50e509a5997f642e1a39fbc2fbdaf955bf80a22d9d8",
+      "triangleBudget": 3000,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "housing",
+          "type": "color",
+          "default": "#c9ccce",
+          "label": "Camera housing (anodised aluminium)"
+        },
+        {
+          "name": "lens",
+          "type": "color",
+          "default": "#1c2a33",
+          "label": "Lens windows (glass)"
+        },
+        {
+          "name": "ledBar",
+          "type": "color",
+          "default": "#f4f7ff",
+          "label": "LED diffusers"
+        },
+        {
+          "name": "bracket",
+          "type": "color",
+          "default": "#2f6bb5",
+          "label": "Stand and brackets (paint)"
+        },
+        {
+          "name": "lenses",
+          "type": "choice",
+          "default": "three",
+          "label": "Lens count",
+          "choices": [
+            "three",
+            "four"
+          ]
+        }
+      ],
+      "presets": {
+        "plant": {
+          "housing": "#c9ccce",
+          "lens": "#1c2a33",
+          "ledBar": "#f4f7ff",
+          "bracket": "#2f6bb5"
+        },
+        "weathered": {
+          "housing": "#9a9d9e",
+          "lens": "#2a3a40",
+          "ledBar": "#e6e2d0",
+          "bracket": "#4f6478"
+        },
+        "blackAnodised": {
+          "housing": "#2b2f33",
+          "lens": "#14202a",
+          "ledBar": "#ffe9b0",
+          "bracket": "#8a9196"
+        },
+        "highVisibility": {
+          "housing": "#e4e7e7",
+          "lens": "#1c2a33",
+          "ledBar": "#ffffff",
+          "bracket": "#e0a526"
+        }
+      },
+      "stats": {
+        "triangles": 1284,
+        "sizeM": [
+          1.97,
+          1.49,
+          0.99
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "housing",
+          "color": "#c9ccce",
+          "parts": [
+            "camera-housing",
+            "led-bar-f",
+            "led-bar-b"
+          ],
+          "param": "housing"
+        },
+        {
+          "name": "end-cap-l",
+          "color": "#3a3d40",
+          "parts": [
+            "end-cap-l",
+            "end-cap-r",
+            "lens-barrel-0",
+            "lens-barrel-1",
+            "lens-barrel-2",
+            "cable-gland-0",
+            "cable-gland-1"
+          ]
+        },
+        {
+          "name": "bracket",
+          "color": "#2f6bb5",
+          "parts": [
+            "clamp-l",
+            "clamp-r",
+            "label-band",
+            "led-arm-f-l",
+            "led-arm-f-r",
+            "led-arm-b-l",
+            "led-arm-b-r",
+            "upright-l",
+            "foot-l",
+            "arm-l",
+            "upright-r",
+            "foot-r",
+            "arm-r",
+            "top-beam",
+            "bottom-tie",
+            "chute-leg-l-b",
+            "chute-leg-r-b",
+            "ejector-leg-l",
+            "ejector-leg-r"
+          ],
+          "param": "bracket"
+        },
+        {
+          "name": "status-led",
+          "color": "#2f9a4f",
+          "parts": [
+            "status-led"
+          ]
+        },
+        {
+          "name": "lens",
+          "color": "#1c2a33",
+          "parts": [
+            "lens-window-0",
+            "lens-window-1",
+            "lens-window-2"
+          ],
+          "param": "lens"
+        },
+        {
+          "name": "purge-nozzle-0",
+          "color": "#9aa1a4",
+          "parts": [
+            "purge-nozzle-0",
+            "purge-nozzle-1",
+            "purge-nozzle-2",
+            "purge-rail"
+          ]
+        },
+        {
+          "name": "ledBar",
+          "color": "#f4f7ff",
+          "parts": [
+            "led-diffuser-f",
+            "led-diffuser-b"
+          ],
+          "param": "ledBar"
+        },
+        {
+          "name": "junction-box",
+          "color": "#d8dcdd",
+          "parts": [
+            "junction-box"
+          ]
+        },
+        {
+          "name": "cable-0",
+          "color": "#24272a",
+          "parts": [
+            "cable-0",
+            "cable-1"
+          ]
+        },
+        {
+          "name": "chute-plate",
+          "color": "#b6bec1",
+          "parts": [
+            "chute-plate",
+            "chute-cheek-l",
+            "chute-cheek-r"
+          ]
+        },
+        {
+          "name": "background-tile",
+          "color": "#f2f2ee",
+          "parts": [
+            "background-tile"
+          ]
+        },
+        {
+          "name": "ejector-bar",
+          "color": "#2b2f33",
+          "parts": [
+            "ejector-bar"
+          ]
+        },
+        {
+          "name": "flake-0",
+          "color": "#a9d3e0",
+          "parts": [
+            "flake-0",
+            "flake-6",
+            "flake-12"
+          ]
+        },
+        {
+          "name": "flake-1",
+          "color": "#3f8f5a",
+          "parts": [
+            "flake-1",
+            "flake-7",
+            "flake-13"
+          ]
+        },
+        {
+          "name": "flake-2",
+          "color": "#e9e6dc",
+          "parts": [
+            "flake-2",
+            "flake-8",
+            "flake-14"
+          ]
+        },
+        {
+          "name": "flake-3",
+          "color": "#8a5a2b",
+          "parts": [
+            "flake-3",
+            "flake-9",
+            "flake-15"
+          ]
+        },
+        {
+          "name": "flake-4",
+          "color": "#2f6fb5",
+          "parts": [
+            "flake-4",
+            "flake-10"
+          ]
+        },
+        {
+          "name": "flake-5",
+          "color": "#c84a3a",
+          "parts": [
+            "flake-5",
+            "flake-11"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "asset": "recycling-facility/inclined-belt-conveyor",
+    "pageUrl": "https://kernelcad.com/catalog/recycling-facility/inclined-belt-conveyor/",
+    "previewUrl": "https://kernelcad.com/catalog/recycling-facility/inclined-belt-conveyor/preview.png",
+    "sourceUrl": "https://kernelcad.com/assets/recycling-facility-inclined-belt-conveyor.kcad.ts",
+    "pageHttp": 200,
+    "previewHttp": 200,
+    "sourceHttp": 200,
+    "localSourceSha256": "ec8670d5747919af88561083ab899488d0faa85277ae69c2c762a419088b822c",
+    "publicSourceSha256": "ec8670d5747919af88561083ab899488d0faa85277ae69c2c762a419088b822c",
+    "sourceMatchesLocal": true,
+    "localPreviewSha256": "8cca696a5156ea5b70c67a4412ff238e4808eb1ca57f1c57fd1b08a860d257f3",
+    "publicPreviewSha256": "8cca696a5156ea5b70c67a4412ff238e4808eb1ca57f1c57fd1b08a860d257f3",
+    "previewMatchesLocal": true,
+    "indexSourceSha256": "ec8670d5747919af88561083ab899488d0faa85277ae69c2c762a419088b822c",
+    "indexPreview": "/assets/recycling-facility-inclined-belt-conveyor.png",
+    "indexRow": {
+      "id": "inclined-belt-conveyor",
+      "kit": "recycling-facility",
+      "title": "Inclined belt conveyor",
+      "description": "Pit-to-incline cleated belt conveyor at about real size: flat loading section with receiving hopper, knee up to about 25 degrees, cleated belt between tall bolted sidewalls, trestle legs rising toward the head, hooded head drive with motor and gearbox, discharge chute and access ladder. Material controls: frame and sidewall paint, belt rubber, drive and roll steel, safety trim; mixed recyclables, cardboard or containers on the belt. plant, weathered, stainless and highVisibility presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "recycling",
+        "belt conveyor",
+        "inclined conveyor",
+        "incline",
+        "cleated belt",
+        "pit conveyor",
+        "hopper",
+        "head drive",
+        "materials recovery",
+        "waste management",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "recycling-facility",
+        "materials-recovery",
+        "waste-management",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/recycling-facility/inclined-belt-conveyor.kcad.ts",
+      "preview": "/assets/recycling-facility-inclined-belt-conveyor.png",
+      "sourceSha256": "ec8670d5747919af88561083ab899488d0faa85277ae69c2c762a419088b822c",
+      "triangleBudget": 1900,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#2f6a9a",
+          "label": "Frame, sidewalls and hood (paint)"
+        },
+        {
+          "name": "belt",
+          "type": "color",
+          "default": "#2b2f31",
+          "label": "Belt and cleat rubber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#a9b0b3",
+          "label": "Drive, shafts and rolls (steel)"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#f0b429",
+          "label": "Guards, ladder and safety trim"
+        },
+        {
+          "name": "angle",
+          "type": "choice",
+          "default": "25",
+          "label": "Incline angle (degrees)",
+          "choices": [
+            "18",
+            "25",
+            "30"
+          ]
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "mixed",
+          "label": "Material on belt",
+          "choices": [
+            "mixed",
+            "cardboard",
+            "containers",
+            "empty"
+          ]
+        }
+      ],
+      "presets": {
+        "plant": {
+          "frame": "#2f6a9a",
+          "belt": "#2b2f31",
+          "steel": "#a9b0b3",
+          "trim": "#f0b429"
+        },
+        "weathered": {
+          "frame": "#56646c",
+          "belt": "#3a3836",
+          "steel": "#86857e",
+          "trim": "#a8893f"
+        },
+        "stainless": {
+          "frame": "#c6cbcd",
+          "belt": "#30363a",
+          "steel": "#e0e4e5",
+          "trim": "#2f5d9a"
+        },
+        "highVisibility": {
+          "frame": "#e0702a",
+          "belt": "#1f2224",
+          "steel": "#c9ced1",
+          "trim": "#f2d21b"
+        }
+      },
+      "stats": {
+        "triangles": 1428,
+        "sizeM": [
+          2.555,
+          4.28368,
+          10.194155
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "belt",
+          "color": "#2b2f31",
+          "parts": [
+            "belt-flat",
+            "belt-incline",
+            "cleat-flat-0",
+            "cleat-flat-1",
+            "cleat-flat-2",
+            "cleat-flat-3",
+            "cleat-0",
+            "cleat-1",
+            "cleat-2",
+            "cleat-3",
+            "cleat-4",
+            "cleat-5",
+            "cleat-6",
+            "cleat-7",
+            "cleat-8",
+            "cleat-9",
+            "cleat-10",
+            "cleat-11",
+            "motor-fan-cowl"
+          ],
+          "param": "belt"
+        },
+        {
+          "name": "frame",
+          "color": "#2f6a9a",
+          "parts": [
+            "sidewall-flat--1",
+            "sidewall-incline--1",
+            "stiffener--1-0",
+            "stiffener--1-1",
+            "stiffener--1-2",
+            "stiffener--1-3",
+            "stiffener--1-4",
+            "stiffener--1-5",
+            "stiffener--1-6",
+            "stiffener--1-7",
+            "sidewall-flat-1",
+            "sidewall-incline-1",
+            "stiffener-1-0",
+            "stiffener-1-1",
+            "stiffener-1-2",
+            "stiffener-1-3",
+            "stiffener-1-4",
+            "stiffener-1-5",
+            "stiffener-1-6",
+            "stiffener-1-7",
+            "bed-pan-flat",
+            "bed-pan-incline",
+            "hopper",
+            "head-hood",
+            "discharge-chute",
+            "motor",
+            "pit-leg--1-600",
+            "pit-leg-1-600",
+            "pit-leg--1-2200",
+            "pit-leg-1-2200",
+            "trestle-leg-0--1",
+            "trestle-leg-0-1",
+            "trestle-tie-0",
+            "trestle-brace-0--1",
+            "trestle-brace-0-1",
+            "trestle-leg-1--1",
+            "trestle-leg-1-1",
+            "trestle-tie-1",
+            "trestle-brace-1--1",
+            "trestle-brace-1-1",
+            "trestle-leg-2--1",
+            "trestle-leg-2-1",
+            "trestle-tie-2",
+            "trestle-brace-2--1",
+            "trestle-brace-2-1"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "trim",
+          "color": "#f0b429",
+          "parts": [
+            "sidewall-cap--1",
+            "sidewall-cap-1",
+            "hopper-rim",
+            "drive-guard",
+            "ladder-rail--1",
+            "ladder-rail-1",
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "ladder-rung-5",
+            "ladder-rung-6",
+            "ladder-rung-7",
+            "ladder-rung-8",
+            "platform-rail"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "steel",
+          "color": "#a9b0b3",
+          "parts": [
+            "tail-pulley",
+            "tail-shaft",
+            "head-pulley"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "tail-takeup--1",
+          "color": "#5a6266",
+          "parts": [
+            "tail-takeup--1",
+            "tail-takeup-1",
+            "head-platform"
+          ]
+        },
+        {
+          "name": "gearbox",
+          "color": "#3d4448",
+          "parts": [
+            "gearbox"
+          ]
+        },
+        {
+          "name": "lump-0",
+          "color": "#8a6f55",
+          "parts": [
+            "lump-0",
+            "lump-2",
+            "lump-4",
+            "lump-6",
+            "lump-8",
+            "pit-lump-0",
+            "pit-lump-2"
+          ]
+        },
+        {
+          "name": "lump-1",
+          "color": "#c8a23a",
+          "parts": [
+            "lump-1",
+            "lump-3",
+            "lump-5",
+            "lump-7",
+            "lump-9",
+            "pit-lump-1"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "asset": "recycling-facility/magnet-cleanout-drum",
+    "pageUrl": "https://kernelcad.com/catalog/recycling-facility/magnet-cleanout-drum/",
+    "previewUrl": "https://kernelcad.com/catalog/recycling-facility/magnet-cleanout-drum/preview.png",
+    "sourceUrl": "https://kernelcad.com/assets/recycling-facility-magnet-cleanout-drum.kcad.ts",
+    "pageHttp": 200,
+    "previewHttp": 200,
+    "sourceHttp": 200,
+    "localSourceSha256": "a85023c042b03799484b4214f5bd6383c9da00c890c7518e1a8a969ca432796d",
+    "publicSourceSha256": "a85023c042b03799484b4214f5bd6383c9da00c890c7518e1a8a969ca432796d",
+    "sourceMatchesLocal": true,
+    "localPreviewSha256": "3acaea61b317f79c253c2c08742922c8a01027869846ef496933b00a9294d060",
+    "publicPreviewSha256": "3acaea61b317f79c253c2c08742922c8a01027869846ef496933b00a9294d060",
+    "previewMatchesLocal": true,
+    "indexSourceSha256": "a85023c042b03799484b4214f5bd6383c9da00c890c7518e1a8a969ca432796d",
+    "indexPreview": "/assets/recycling-facility-magnet-cleanout-drum.png",
+    "indexRow": {
+      "id": "magnet-cleanout-drum",
+      "kit": "recycling-facility",
+      "title": "Magnet clean-out drum",
+      "description": "Magnetic drum separator at about real size: vibrating feed pan on coil springs with twin vibrator motors, horizontal stainless drum on bearing posts with a side gear motor, curved hood, splitter plate, product chute into a non-ferrous bin and ferrous chute into a steel scrap bin, with steel pieces held on the drum underside. Material controls: frame paint, stainless drum, hood paint, steel scrap. plant, weathered, highVisibility and stainless presets.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "recycling",
+        "magnetic separator",
+        "drum magnet",
+        "ferrous recovery",
+        "tramp metal",
+        "materials recovery",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "recycling-facility",
+        "materials-recovery",
+        "waste-management",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/recycling-facility/magnet-cleanout-drum.kcad.ts",
+      "preview": "/assets/recycling-facility-magnet-cleanout-drum.png",
+      "sourceSha256": "a85023c042b03799484b4214f5bd6383c9da00c890c7518e1a8a969ca432796d",
+      "triangleBudget": 4400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#2f5f8f",
+          "label": "Frame, feeder and bin paint"
+        },
+        {
+          "name": "drum",
+          "type": "color",
+          "default": "#b9c3c7",
+          "label": "Drum shell (stainless steel)"
+        },
+        {
+          "name": "hood",
+          "type": "color",
+          "default": "#d9a521",
+          "label": "Hood and ferrous bin paint"
+        },
+        {
+          "name": "scrap",
+          "type": "color",
+          "default": "#8a5636",
+          "label": "Steel scrap (rusty)"
+        }
+      ],
+      "presets": {
+        "plant": {
+          "frame": "#2f5f8f",
+          "drum": "#b9c3c7",
+          "hood": "#d9a521",
+          "scrap": "#8a5636"
+        },
+        "weathered": {
+          "frame": "#4c5d66",
+          "drum": "#9aa1a2",
+          "hood": "#a68745",
+          "scrap": "#6e4a33"
+        },
+        "highVisibility": {
+          "frame": "#2b2f33",
+          "drum": "#c9d0d3",
+          "hood": "#e8542a",
+          "scrap": "#94603c"
+        },
+        "stainless": {
+          "frame": "#8d969b",
+          "drum": "#d4dadc",
+          "hood": "#3c7d5a",
+          "scrap": "#7d5236"
+        }
+      },
+      "stats": {
+        "triangles": 3768,
+        "sizeM": [
+          4.53,
+          2.27,
+          2.365
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "drum",
+          "color": "#b9c3c7",
+          "parts": [
+            "drum-shell",
+            "drum-end-f",
+            "splitter"
+          ],
+          "param": "drum"
+        },
+        {
+          "name": "drum-hub-f",
+          "color": "#2a2e31",
+          "parts": [
+            "drum-hub-f",
+            "drum-end-b",
+            "drum-shaft",
+            "bearing-f",
+            "bearing-b",
+            "gear-motor",
+            "motor-fan-cover",
+            "vibrator-f",
+            "vibrator-b"
+          ]
+        },
+        {
+          "name": "frame",
+          "color": "#2f5f8f",
+          "parts": [
+            "post-f",
+            "post-foot-f",
+            "post-b",
+            "post-foot-b",
+            "post-tie",
+            "gearbox",
+            "motor-stand",
+            "product-chute",
+            "product-bin",
+            "pan-floor",
+            "pan-wall-f",
+            "leg-f--2300",
+            "leg-foot-f--2300",
+            "spring-bracket-f--2300",
+            "leg-f--300",
+            "leg-foot-f--300",
+            "spring-bracket-f--300",
+            "pan-wall-b",
+            "leg-b--2300",
+            "leg-foot-b--2300",
+            "spring-bracket-b--2300",
+            "leg-b--300",
+            "leg-foot-b--300",
+            "spring-bracket-b--300",
+            "pan-back"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "hood",
+          "color": "#d9a521",
+          "parts": [
+            "hood",
+            "hood-front-lip",
+            "hood-cheek-f",
+            "hood-cheek-b",
+            "ferrous-chute",
+            "ferrous-bin",
+            "spring-f--2300-0",
+            "spring-f--2300-1",
+            "spring-f--2300-2",
+            "spring-f--300-0",
+            "spring-f--300-1",
+            "spring-f--300-2",
+            "spring-b--2300-0",
+            "spring-b--2300-1",
+            "spring-b--2300-2",
+            "spring-b--300-0",
+            "spring-b--300-1",
+            "spring-b--300-2"
+          ],
+          "param": "hood"
+        },
+        {
+          "name": "feed-0",
+          "color": "#c9c2b0",
+          "parts": [
+            "feed-0",
+            "feed-4",
+            "feed-8",
+            "feed-12",
+            "product-load-2",
+            "product-load-3",
+            "product-load-6",
+            "product-load-7"
+          ]
+        },
+        {
+          "name": "scrap",
+          "color": "#8a5636",
+          "parts": [
+            "feed-1",
+            "feed-5",
+            "feed-9",
+            "feed-13",
+            "held-steel-0",
+            "held-steel-1",
+            "held-steel-2",
+            "held-steel-3",
+            "held-steel-4",
+            "held-steel-5",
+            "held-steel-6",
+            "ferrous-load-0",
+            "ferrous-load-1",
+            "ferrous-load-2",
+            "ferrous-load-3",
+            "ferrous-load-4",
+            "ferrous-load-5",
+            "ferrous-load-6",
+            "ferrous-load-7",
+            "ferrous-load-8"
+          ],
+          "param": "scrap"
+        },
+        {
+          "name": "feed-2",
+          "color": "#a83c32",
+          "parts": [
+            "feed-2",
+            "feed-6",
+            "feed-10",
+            "feed-14",
+            "product-load-0",
+            "product-load-4",
+            "product-load-8"
+          ]
+        },
+        {
+          "name": "feed-3",
+          "color": "#d8d2c0",
+          "parts": [
+            "feed-3",
+            "feed-7",
+            "feed-11",
+            "feed-15",
+            "product-load-1",
+            "product-load-5"
+          ]
+        }
+      ]
+    }
+  }
+]

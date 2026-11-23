@@ -1,0 +1,26 @@
+{
+  "asset": "charger-status-display-post",
+  "sourceSha256": "f8d76ff966d7bb4e51dd710b932ef90ccfee05129406aee0090f2740dccf5fa2",
+  "preview": "/assets/ev-charging-infrastructure-charger-status-display-post.png",
+  "changedIndexRows": [
+    "charger-status-display-post"
+  ],
+  "triangleCount": 264,
+  "boundsM": [
+    0.5022,
+    1.785,
+    0.321
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountRecorded": true,
+    "triangleCountWithinBudget": true,
+    "boundsRecorded": true,
+    "bezelControlAdded": true,
+    "descriptionNamesScreenBezel": true
+  },
+  "passed": true
+}

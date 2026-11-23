@@ -1,0 +1,1 @@
+lab-infrastructure/cleanroom-single-door-module: 72 tris

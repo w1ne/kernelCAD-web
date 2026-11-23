@@ -1,0 +1,7 @@
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/video-review/slides/slide-01.png'
+duration 5
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/video-review/slides/slide-02.png'
+duration 5
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/video-review/slides/slide-03.png'
+duration 5
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/video-review/slides/slide-03.png'

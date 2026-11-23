@@ -1,0 +1,12 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/parkingCableProtectionRampMaterial.test.ts (1 test) 1213ms
+     ✓ draws a moulded rubber ramp with polymer lids and visible steel anchors  683ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  00:44:14
+   Duration  15.44s (transform 11.68s, setup 343ms, import 13.60s, tests 1.21s, environment 0ms)
+
+exit 0

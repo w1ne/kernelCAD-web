@@ -1,0 +1,36 @@
+$ npx vitest run tests/integration/catalog/roadReclaimerCuttingToothMaterialBaseline.test.ts
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/roadReclaimerCuttingToothMaterialBaseline.test.ts (1 test | 1 failed) 516ms
+     × uses structural steel for the cutter teeth while keeping the machine paint separate 278ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/roadReclaimerCuttingToothMaterialBaseline.test.ts > construction-equipment/road-reclaimer cutting-tool material > uses structural steel for the cutter teeth while keeping the machine paint separate
+AssertionError: cutting-tooth-0 should use structural steel: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/integration/catalog/roadReclaimerCuttingToothMaterialBaseline.test.ts:57:87
+     55|       const colors = colorsFor(name);
+     56|       expect(colors.length, `${name} should render`).toBeGreaterThan(0…
+     57|       expect(colors.every(matches('#89969a')), `${name} should use str…
+       |                                                                                       ^
+     58|     }
+     59|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  06:25:18
+   Duration  4.60s (transform 3.14s, setup 103ms, import 3.88s, tests 516ms, environment 0ms)
+
+
+Expected baseline failure exit code: 1

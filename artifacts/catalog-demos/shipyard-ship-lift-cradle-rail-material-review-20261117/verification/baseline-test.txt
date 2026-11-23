@@ -1,0 +1,31 @@
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/shipLiftCradleRailMaterial.test.ts (1 test | 1 failed) 788ms
+     × uses the same yard finish on both paired guide rails 453ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/shipLiftCradleRailMaterial.test.ts > shipyard/ship-lift-cradle rail materials > uses the same yard finish on both paired guide rails
+AssertionError: side-rail-1 should use the shared yard finish: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/integration/catalog/shipLiftCradleRailMaterial.test.ts:56:93
+     54|       const colors = colorsFor(name);
+     55|       expect(colors.length, `${name} should render`).toBeGreaterThan(0…
+     56|       expect(colors.every(matches('#76847b')), `${name} should use the…
+       |                                                                                             ^
+     57|     }
+     58|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  11:52:40
+   Duration  12.15s (transform 9.34s, setup 316ms, import 10.67s, tests 788ms, environment 0ms)

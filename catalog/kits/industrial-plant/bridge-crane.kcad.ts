@@ -122,7 +122,7 @@ add('hoist-drum', alongY(rod(450, -650, 650)).translate(0, ty, tz + 820).color(h
 for (let i = 0; i < 12; i++) add(`rope-wrap-${i}`, alongY(ring(450, 470, -600 + i * 100, -560 + i * 100)).translate(0, ty, tz + 820).color('#9da3a6'));
 for (const dy of [-700, 700]) add(`drum-bearing-${dy}`, prismX([[ty + dy - 60, tz + 350], [ty + dy + 60, tz + 350], [ty + dy + 60, tz + 900], [ty + dy - 60, tz + 900]], -300, 300).color(hoist));
 add('hoist-gearbox', blk(-450, ty + 760, tz + 350, 450, ty + 1100, tz + 1150).color(hoist));
-add('hoist-motor', alongX(turned([[0, -900], [230, -900], [250, -860], [250, -300], [200, -250], [0, -250]])).translate(0, ty + 930, tz + 640).color(girder));
+add('hoist-motor', alongX(turned([[0, -900], [230, -900], [250, -860], [250, -300], [200, -250], [0, -250]])).translate(0, ty + 930, tz + 640).color(hoist));
 add('hoist-brake', alongX(rod(170, -1000, -900)).translate(0, ty + 930, tz + 640).color(hook));
 add('trolley-cover', prismY([[-gx - 350, tz + 1150], [gx + 350, tz + 1150], [gx + 200, tz + 1350], [-gx - 200, tz + 1350]], ty + 700, ty + 1150).color(hoist));
 

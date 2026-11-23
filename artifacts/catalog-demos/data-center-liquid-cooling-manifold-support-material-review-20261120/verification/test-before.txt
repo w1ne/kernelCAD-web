@@ -1,0 +1,31 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/liquidCoolingManifoldSupportMaterial.test.ts (1 test | 1 failed) 1187ms
+     × paints both support saddles steel and puts the polymer control on the valve levers 537ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/liquidCoolingManifoldSupportMaterial.test.ts > data-center-infrastructure/liquid-cooling-manifold support material > paints both support saddles steel and puts the polymer control on the valve levers
+AssertionError: expected 'Engineering polymer' to be 'Valve lever grips (engineering polyme…' // Object.is equality
+
+Expected: "Valve lever grips (engineering polymer)"
+Received: "Engineering polymer"
+
+ ❯ tests/integration/catalog/liquidCoolingManifoldSupportMaterial.test.ts:24:8
+     22|     expect(colorParams.map((param) => param.name).sort()).toEqual(['po…
+     23|     expect(colorParams.find((param) => param.name === 'polymer')?.labe…
+     24|       .toBe('Valve lever grips (engineering polymer)');
+       |        ^
+     25|     expect(Object.keys(asset.presets)).toEqual(['facilityStandard', 'h…
+     26|     expect(asset.description).toMatch(/two painted-steel support saddl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  05:29:24
+   Duration  19.45s (transform 14.62s, setup 349ms, import 17.51s, tests 1.19s, environment 0ms)
+
+rc=1

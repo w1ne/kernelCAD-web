@@ -1,0 +1,5 @@
+a9bec1aa7dfd806d7a521537e3cc4d44f56464408defa02e80cf02eec141dd90  artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/samples/forklift-truck.png
+3955729ffc266f97e5de7105cc75dfa5034905ab5286cd56e74ab90e841a52f3  artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/samples/distillation-column.png
+e17189d23e03daf4c2c4bac7e9749ab5c0af6608cadcfd0e898352f43ac2dbd9  artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/samples/centrifugal-pump.png
+b73a2974c5eddd59fa69de0a227b5b5dc12fe8104b09f640e26acdd44d3c8c62  artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/samples/palletizer-robot-cell.png
+7f37c1446acaac57fe27a58268fd9c4d3e2454d3027db692c4fd873b523ea27c  artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/samples/bucket-elevator.png

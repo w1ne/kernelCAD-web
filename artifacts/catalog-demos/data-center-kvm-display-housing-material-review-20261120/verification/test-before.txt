@@ -1,0 +1,21 @@
+ ❯ tests/integration/catalog/kvmDisplayHousingMaterial.test.ts (1 test | 1 failed) 447ms
+     × builds the display housing in painted steel with a glass screen 174ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  tests/integration/catalog/kvmDisplayHousingMaterial.test.ts > data-center-infrastructure/rack-kvm-console display material > builds the display housing in painted steel with a glass screen
+AssertionError: expected 248 to be 260 // Object.is equality
+- Expected
++ Received
+- 260
++ 248
+ ❯ tests/integration/catalog/kvmDisplayHousingMaterial.test.ts:24:35
+     22|     expect(colorParams.map((param) => param.name).sort()).toEqual(['gl…
+     23|     expect(Object.keys(asset.presets)).toEqual(['facilityStandard', 'h…
+     24|     expect(asset.stats.triangles).toBe(260);
+       |                                   ^
+     25|     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+     26|     expect(asset.stats.minUpM).toBeCloseTo(0, 6);
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  07:25:35
+   Duration  7.50s (transform 5.33s, setup 105ms, import 6.48s, tests 447ms, environment 0ms)

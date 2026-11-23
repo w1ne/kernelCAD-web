@@ -1,0 +1,2 @@
+Command: npx eslint catalog/kits/data-center-infrastructure/ tests/integration/catalog/dataCenterOverheadPowerBuswayMaterial.test.ts
+Result: clean; exit_code=0

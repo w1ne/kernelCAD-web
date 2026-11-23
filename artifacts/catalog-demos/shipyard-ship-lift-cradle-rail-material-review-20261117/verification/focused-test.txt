@@ -1,0 +1,9 @@
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/shipLiftCradleRailMaterial.test.ts (1 test) 1000ms
+     ✓ uses the same yard finish on both paired guide rails  477ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  12:01:57
+   Duration  12.71s (transform 8.32s, setup 227ms, import 9.99s, tests 1.00s, environment 0ms)

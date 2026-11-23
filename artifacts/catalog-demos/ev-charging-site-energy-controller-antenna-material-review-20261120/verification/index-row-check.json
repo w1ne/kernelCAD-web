@@ -1,0 +1,26 @@
+{
+  "asset": "site-energy-management-controller",
+  "sourceSha256": "5d106e1902589ade776cfe428791710c061e9e00a21f55094fa18f5024b27d93",
+  "preview": "/assets/ev-charging-infrastructure-site-energy-management-controller.png",
+  "changedIndexRows": [
+    "site-energy-management-controller"
+  ],
+  "triangleCount": 328,
+  "boundsM": [
+    0.56,
+    1.082,
+    0.3585
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountRecorded": true,
+    "triangleCountWithinBudget": true,
+    "boundsRecorded": true,
+    "antennaControlAdded": true,
+    "descriptionNamesAntennaPolymer": true
+  },
+  "passed": true
+}

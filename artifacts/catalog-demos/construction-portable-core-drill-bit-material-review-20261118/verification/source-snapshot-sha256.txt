@@ -1,0 +1,7 @@
+634e85e3a6ced95f642315adc13403bb4c27365eaa1178763ca2a0699133edd3  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/samples/sources/asphalt-paver-screed.kcad.ts
+77a47106ce2435665fe94551cd5932e03ef23b02d292c55df4321c6dba64ef96  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/samples/sources/jobsite-tile-saw.kcad.ts
+4d3b79bbbc4496c579250bea5b1f6a67abb8cdc8ac28341edbec853688509b5d  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/samples/sources/masonry-mixer.kcad.ts
+287d501840f91b9d5a0a51464f61fd7543c02e0644b98494ff561f28095c480a  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/samples/sources/portable-core-drill-stand.kcad.ts
+cd68dd7e4f031a86a65206d6c4f0a7c16f82e7947d63d80f59d830433dce101b  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/samples/sources/rebar-bending-machine.kcad.ts
+287d501840f91b9d5a0a51464f61fd7543c02e0644b98494ff561f28095c480a  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/before/portable-core-drill-stand.kcad.ts
+65523ecd8560ed4cd256b1613e77c52e516a60399617b20cb574292f48fda633  artifacts/catalog-demos/construction-portable-core-drill-bit-material-review-20261118/after/portable-core-drill-stand.kcad.ts

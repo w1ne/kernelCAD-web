@@ -1,0 +1,9 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+·
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  01:59:03
+   Duration  11.35s (transform 8.84s, setup 206ms, import 10.02s, tests 945ms, environment 0ms)

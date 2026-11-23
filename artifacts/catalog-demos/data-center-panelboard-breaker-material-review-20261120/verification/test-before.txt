@@ -1,0 +1,34 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/panelboardBreakerMaterial.test.ts (1 test | 1 failed) 576ms
+     × moulds the breaker rows in polymer, not painted steel 244ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/panelboardBreakerMaterial.test.ts > data-center-infrastructure/distribution-panelboard breaker material > moulds the breaker rows in polymer, not painted steel
+AssertionError: breaker-row-0 should use the moulded polymer finish: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectFinish tests/integration/catalog/panelboardBreakerMaterial.test.ts:57:76
+     55|         const colors = colorsFor(name);
+     56|         expect(colors.length, `${name} should render`).toBeGreaterThan…
+     57|         expect(colors.every(matches(hex)), `${name} should use ${finis…
+       |                                                                            ^
+     58|       }
+     59|     };
+ ❯ tests/integration/catalog/panelboardBreakerMaterial.test.ts:60:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  06:46:39
+   Duration  8.16s (transform 6.02s, setup 163ms, import 7.22s, tests 576ms, environment 0ms)
+

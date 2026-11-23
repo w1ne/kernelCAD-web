@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-17",
+  "output": "palletizer-robot-cell-floor-material-review.mp4",
+  "durationSeconds": 14,
+  "frames": [
+    "preview-review-five-assets.png",
+    "previews/before/palletizer-robot-cell.png",
+    "previews/after/palletizer-robot-cell.png",
+    "previews/after/edited-concrete.png",
+    "verification-card.png"
+  ],
+  "frameSeconds": 2.8,
+  "resolution": "1280x720",
+  "fps": 25,
+  "videoCodec": "H.264 / libx264",
+  "crf": 22,
+  "pixelFormat": "yuv420p",
+  "audio": "none",
+  "claims": "Local source-param edit, software preview rendering and exported-GLB regression only; not simulation, deployment verification, or hardware acceptance."
+}

@@ -1,0 +1,24 @@
+{
+  "asset": "vehicle-barrier-gate",
+  "sourceSha256": "eaa2427e4365ee20843a20e4120cb43b29d21da01117b04fb512e3b60760d288",
+  "preview": "/assets/recycling-facility-vehicle-barrier-gate.png",
+  "changedIndexRows": [
+    "vehicle-barrier-gate"
+  ],
+  "triangleCount": 1050,
+  "boundsM": [
+    4.52,
+    1.266,
+    0.595
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountUnchanged": true,
+    "boundsMatchMovedPhotoEyes": true,
+    "widthAndHeightUnchanged": true
+  },
+  "passed": true
+}

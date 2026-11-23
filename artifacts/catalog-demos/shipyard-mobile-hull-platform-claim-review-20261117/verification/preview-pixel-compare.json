@@ -1,0 +1,10 @@
+{
+  "dimensions": [
+    512,
+    512
+  ],
+  "pixelIdentical": true,
+  "beforeFileSha256": "89e06228c9019924ba62363cde8d86142178010ce88c741039241b15586649e8",
+  "afterFileSha256": "735985476104fecb5328dad952c0946cedeaa00bd70b0b7a0c60aa3b5b1e3a7e",
+  "note": "PNG file bytes differ after re-render; decoded RGBA pixels are identical."
+}

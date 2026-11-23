@@ -1,0 +1,2 @@
+b73a2974c5eddd59fa69de0a227b5b5dc12fe8104b09f640e26acdd44d3c8c62  catalog/kits/industrial-plant/previews/palletizer-robot-cell.png
+b73a2974c5eddd59fa69de0a227b5b5dc12fe8104b09f640e26acdd44d3c8c62  artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/samples/live-baseline-palletizer-robot-cell.png

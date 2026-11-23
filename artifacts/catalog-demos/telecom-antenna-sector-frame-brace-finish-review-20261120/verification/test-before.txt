@@ -1,0 +1,3 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: top should use the galvanized finish: expected false to be true // Object.is equality
+      Tests  1 failed (1)

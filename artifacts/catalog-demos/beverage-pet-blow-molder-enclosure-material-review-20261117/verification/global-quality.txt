@@ -1,0 +1,56 @@
+  RICH   airfield                     40/40   material-controls/asset=3.67
+  RICH   alpine-expedition            50/50   material-controls/asset=2.86
+  RICH   amusement-park               70/70   material-controls/asset=4.64
+  RICH   apiary                       50/50   material-controls/asset=3.12
+  RICH   archaeology-fieldwork        50/50   material-controls/asset=2.78
+  RICH   beverage-bottling-line       50/50   material-controls/asset=3.08
+  RICH   characters                   35/35   material-controls/asset=4.74
+  RICH   city-street                  65/65   material-controls/asset=3.18
+  RICH   construction-equipment       60/60   material-controls/asset=4.05
+  RICH   containers                   12/12   material-controls/asset=3.83
+  RICH   data-center-infrastructure   50/50   material-controls/asset=2.82
+  RICH   electronics                  12/12   material-controls/asset=4.08
+  RICH   ev-charging-infrastructure   50/50   material-controls/asset=3.50
+  RICH   farm-machinery               60/60   material-controls/asset=3.90
+  RICH   fire-rescue                  60/60   material-controls/asset=4.62
+  RICH   fire-station                 70/70   material-controls/asset=3.51
+  RICH   food-kitchen                 12/12   material-controls/asset=4.00
+  RICH   garden                       40/40   material-controls/asset=2.75
+  RICH   grid-substation              80/80   material-controls/asset=3.14
+  RICH   hydroponics                  52/52   material-controls/asset=4.60
+  RICH   industrial-plant             60/60   material-controls/asset=2.83
+  RICH   interior                     72/72   material-controls/asset=3.22
+  RICH   lab-infrastructure           60/60   material-controls/asset=3.47
+  RICH   lighting                     12/12   material-controls/asset=3.58
+  RICH   marine                       40/40   material-controls/asset=3.05
+  RICH   medical                      40/40   material-controls/asset=3.30
+  RICH   mining                       50/50   material-controls/asset=8.34
+  RICH   music                        40/40   material-controls/asset=3.30
+  RICH   nature                       66/66   material-controls/asset=2.68
+  RICH   office                       40/40   material-controls/asset=3.20
+  RICH   outdoor-gear                 12/12   material-controls/asset=2.92
+  RICH   photo-video-studio           40/40   material-controls/asset=3.20
+  RICH   postal-logistics             52/52   material-controls/asset=3.25
+  RICH   props                        45/45   material-controls/asset=3.44
+  RICH   railway                      40/40   material-controls/asset=3.48
+  RICH   recycling-facility          153/153  material-controls/asset=5.07
+  RICH   retail-store                 48/48   material-controls/asset=4.73
+  RICH   shipyard                     70/70   material-controls/asset=2.93
+  RICH   solar-energy                 40/40   material-controls/asset=3.62
+  RICH   space-exploration            52/52   material-controls/asset=3.02
+  RICH   sports                       40/40   material-controls/asset=3.45
+  MIXED  standard-components          46/50   material-controls/asset=2.44
+  RICH   telecom-infrastructure       56/56   material-controls/asset=2.91
+  RICH   terrain                      30/30   material-controls/asset=4.10
+  RICH   theatre-production           52/52   material-controls/asset=5.79
+  RICH   tools-equipment              12/12   material-controls/asset=3.33
+  RICH   travel-gear                  12/12   material-controls/asset=4.33
+  RICH   vet-clinic                   50/50   material-controls/asset=4.50
+  RICH   water-treatment              50/50   material-controls/asset=3.38
+  RICH   wind-energy                  50/50   material-controls/asset=2.84
+
+  2398/2402 assets pass (99.83%; 49 rich kits, 0 thin kits)
+  4 thin assets = 0.17% of the catalog
+
+  worst 1:
+    1c 1p 0g  catalog/kits/standard-components/din-rail.kcad.ts

@@ -1,0 +1,3 @@
+kernelcad: mesh-heavy command 'render' with a 2096 MB heap limit — re-executing with --max-old-space-size=8192
+kernelcad render: render surface = static-player (http://127.0.0.1:40827)
+page.waitForFunction: Timeout 30000ms exceeded.

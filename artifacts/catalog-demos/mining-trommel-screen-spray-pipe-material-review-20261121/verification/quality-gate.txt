@@ -1,0 +1,1 @@
+python3 -I scripts/checkCatalogQuality.py --kit mining: 50/50 assets pass (100.00%)

@@ -1,0 +1,10 @@
+npx vitest run tests/integration/catalog/equalizationBasinFloorMaterial.test.ts  # baseline expected failure; corrected source pass
+npx tsx scripts/renderCatalogPreviews.ts equalization-basin
+npx eslint catalog/kits/water-treatment/ tests/integration/catalog/equalizationBasinFloorMaterial.test.ts
+python3 -B scripts/checkCatalogQuality.py --kit water-treatment
+python3 -B scripts/checkCatalogQuality.py  # global result includes unrelated existing thin assets
+npx tsx scripts/buildAssetCatalog.ts
+npx vitest run tests/integration/catalog/
+python3 artifacts/catalog-demos/water-treatment-equalization-basin-material-review-20261118/make_review_assets.py
+bash artifacts/catalog-demos/water-treatment-equalization-basin-material-review-20261118/make_demo.sh
+ffprobe -v error -show_format -show_streams -of json artifacts/catalog-demos/water-treatment-equalization-basin-material-review-20261118/water-treatment-equalization-basin-material-review.mp4

@@ -2,7 +2,7 @@
 // Assay sample divider, the bench machine in a mine laboratory that splits a
 // bag of crushed drill core into identical portions so one goes to the
 // assay furnace and the rest are kept. What makes one: an even, unbiased
-// split. The rotary type does it with a ring of sample jars turning under
+// split. The rotary type does it with a ring of stainless sample buckets turning under
 // a fixed feed: a stainless hopper drops ore onto a vibrating feeder trough
 // that trickles it into whichever jar is passing, while a drive base with
 // a sloped control panel turns the carousel. The riffle type (a Jones
@@ -13,7 +13,7 @@ meta({
   name: "assay-sample-divider",
   license: 'CC0-1.0',
   title: "Assay sample divider",
-  description: "Laboratory sample divider for crushed ore at about real size. Rotary type: drive base with sloped control panel, display, start and stop buttons and rubber feet, turntable carrying a ring of open sample jars partly filled with ore, stainless feed hopper on a column with ore inside, vibrating feeder trough and vibrator drive. Riffle type: Jones riffle splitter with alternating chutes and fins between two side walls, two receiving pans holding the split ore and a scoop pan of feed on top. Jar count choice for the rotary type (8 or 12). Material controls: housing paint, stainless steel, sample ore and jar plastic. weathered, labWhite and highVisibility presets.",
+  description: "Laboratory sample divider for crushed ore at about real size. Rotary type: drive base with sloped control panel, display, start and stop buttons and rubber feet, turntable carrying a ring of open stainless sample buckets partly filled with ore, stainless feed hopper on a column with ore inside, vibrating feeder trough and vibrator drive. Riffle type: Jones riffle splitter with alternating chutes and fins between two side walls, two receiving pans holding the split ore and a scoop pan of feed on top. Bucket count choice for the rotary type (8 or 12). Material controls: housing paint, stainless steel and sample ore. weathered, labWhite and highVisibility presets.",
   tags: ['mining', 'laboratory', 'assay', 'sample preparation', 'sample divider', 'riffle splitter', 'drill core'],
   kit: 'mining',
   category: 'prop',
@@ -26,13 +26,12 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const housingPaint = param('housingPaint', '#2f6fa8', { label: 'Housing paint' });
 const stainlessSteel = param('stainlessSteel', '#b9c1c4', { label: 'Stainless steel' });
 const sampleOre = param('sampleOre', '#8a6a4c', { label: 'Sample ore' });
-const jarPlastic = param('jarPlastic', '#e4e1d4', { label: 'Jar plastic' });
 const divider = param('divider', 'rotary', { choices: ['rotary', 'riffle'], label: 'Divider type' });
 const jars = param('jars', 'eight', { choices: ['eight', 'twelve'], label: 'Sample jars (rotary)' });
 presets({
-  weathered: { housingPaint: '#4f6577', stainlessSteel: '#979d9c', sampleOre: '#6f5a46', jarPlastic: '#c9c3ae' },
-  labWhite: { housingPaint: '#e6e6e0', stainlessSteel: '#c3cacc', sampleOre: '#5d5b57', jarPlastic: '#3d6fa8' },
-  highVisibility: { housingPaint: '#e48a1e', stainlessSteel: '#c5ccca', sampleOre: '#9b5a3a', jarPlastic: '#f2efe2' },
+  weathered: { housingPaint: '#4f6577', stainlessSteel: '#979d9c', sampleOre: '#6f5a46' },
+  labWhite: { housingPaint: '#e6e6e0', stainlessSteel: '#c3cacc', sampleOre: '#5d5b57' },
+  highVisibility: { housingPaint: '#e48a1e', stainlessSteel: '#c5ccca', sampleOre: '#9b5a3a' },
 });
 
 const p = assembly("assay-sample-divider");
@@ -74,14 +73,14 @@ if (divider.value === 'rotary') {
   add('stop-button', onSlope(rod(18, 3, 13, 10).translate(120, -20, 0)).color('#d23a2a'));
   add('speed-knob', onSlope(rod(22, 3, 19, 10).translate(190, -20, 0)).color(rubber));
 
-  // ---- Turntable and sample jars ----
+  // ---- Turntable and stainless sample buckets ----
   const TX = 60, TY = 30, n = jars.value === 'twelve' ? 12 : 8, RJ = n === 8 ? 150 : 175, rj = n === 8 ? 42 : 32;
   add('turntable-hub', rod(60, 230, 260, 12).translate(TX, TY, 0).color(stainlessSteel));
   add('turntable', rod(RJ + rj + 25, 260, 275, 24).translate(TX, TY, 0).color(stainlessSteel));
   for (let i = 0; i < n; i++) {
     const a = (2 * Math.PI * i) / n, x = TX + RJ * Math.cos(a), y = TY + RJ * Math.sin(a);
-    add(`jar-${i}`, lathe([[rj, 275], [rj + 3, 290], [rj + 3, 400], [rj - 4, 420]], 10).subtract(rod(rj - 4, 285, 430, 10)).translate(x, y, 0).color(jarPlastic));
-    add(`jar-ore-${i}`, lathe([[rj - 4, 285], [rj - 4, 330 + (i % 3) * 15], [rj * 0.4, 345 + (i % 3) * 15]], 10).translate(x, y, 0).color(sampleOre));
+    add(`sample-bucket-${i}`, lathe([[rj, 275], [rj + 3, 290], [rj + 3, 400], [rj - 4, 420]], 10).subtract(rod(rj - 4, 285, 430, 10)).translate(x, y, 0).color(stainlessSteel));
+    add(`sample-bucket-ore-${i}`, lathe([[rj - 4, 285], [rj - 4, 330 + (i % 3) * 15], [rj * 0.4, 345 + (i % 3) * 15]], 10).translate(x, y, 0).color(sampleOre));
   }
 
   // ---- Feed hopper, column and vibrating feeder ----
