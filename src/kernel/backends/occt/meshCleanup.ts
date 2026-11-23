@@ -239,12 +239,7 @@ class CleanupState {
     v: number, u: number, star: number[], ringV: Set<number>, planeTolerance: number,
     nOld: Float64Array, nNew: Float64Array,
   ): boolean {
-    // Link condition: v and u share exactly the two vertices opposite edge uv.
-    const starU = this.liveStar(u);
-    const ringU = this.ring(u, starU);
-    let common = 0;
-    for (const x of ringV) if (ringU.has(x)) common++;
-    if (common !== 2) return false;
+    if (!this.linkConditionHolds(u, ringV)) return false;
     let removed = 0;
     for (const t of star) {
       const a = this.T[3 * t], b = this.T[3 * t + 1], c = this.T[3 * t + 2];
@@ -255,21 +250,34 @@ class CleanupState {
         if (this.liveStar(w).length <= 3) return false;
         continue;
       }
-      // u must lie in this triangle's plane...
-      if (this.planeDistance(u, a, b, c) > planeTolerance) return false;
-      // ...and the moved triangle must keep its orientation and some area.
-      this.normal(a, b, c, nOld);
-      const na = a === v ? u : a, nb = b === v ? u : b, nc = c === v ? u : c;
-      this.normal(na, nb, nc, nNew);
-      const lenNew = Math.hypot(nNew[0], nNew[1], nNew[2]);
-      const lenOld = Math.hypot(nOld[0], nOld[1], nOld[2]);
-      if (lenNew === 0 || lenOld === 0) return false;
-      const cos = (nOld[0] * nNew[0] + nOld[1] * nNew[1] + nOld[2] * nNew[2]) / (lenNew * lenOld);
-      if (cos < 1 - 1e-9) return false;
-      // Do not trade a removable vertex for a cap.
-      if (this.quality(na, nb, nc) < 1e-3 && this.quality(na, nb, nc) < this.quality(a, b, c)) return false;
+      if (!this.movedTriangleStays(v, u, a, b, c, planeTolerance, nOld, nNew)) return false;
     }
     return removed === 2;
+  }
+
+  /** v and u share exactly the two vertices opposite edge uv. */
+  linkConditionHolds(u: number, ringV: Set<number>): boolean {
+    const ringU = this.ring(u, this.liveStar(u));
+    let common = 0;
+    for (const x of ringV) if (ringU.has(x)) common++;
+    return common === 2;
+  }
+
+  /**
+   * Triangle (a, b, c) with v replaced by u stays in its plane, keeps its
+   * orientation and some area, and does not become a cap.
+   */
+  movedTriangleStays(
+    v: number, u: number, a: number, b: number, c: number, planeTolerance: number,
+    nOld: Float64Array, nNew: Float64Array,
+  ): boolean {
+    if (this.planeDistance(u, a, b, c) > planeTolerance) return false;
+    const na = a === v ? u : a, nb = b === v ? u : b, nc = c === v ? u : c;
+    const oldN = this.unitNormal(a, b, c, nOld);
+    const newN = this.unitNormal(na, nb, nc, nNew);
+    if (oldN === null || newN === null || dot3(oldN, newN) < 1 - 1e-9) return false;
+    const qNew = this.quality(na, nb, nc);
+    return !(qNew < 1e-3 && qNew < this.quality(a, b, c));
   }
 
   collapse(v: number, u: number, star: number[]): void {
@@ -306,86 +314,109 @@ class CleanupState {
    */
   flipEdges(tolerance: number, flatTolerance: number): number {
     let flipped = 0;
-    const nRefA = new Float64Array(3);
-    const nRefB = new Float64Array(3);
-    const n1 = new Float64Array(3);
-    const n2 = new Float64Array(3);
     const nt = this.T.length / 3;
     const queue: number[] = [];
     const queued = new Uint8Array(nt);
-    for (let t = nt - 1; t >= 0; t--) if (this.alive[t]) { queue.push(t); queued[t] = 1; }
+    const enqueue = (x: number) => { if (x >= 0 && !queued[x]) { queued[x] = 1; queue.push(x); } };
+    for (let t = nt - 1; t >= 0; t--) if (this.alive[t]) enqueue(t);
     let budget = MAX_FLIPS_PER_TRIANGLE * nt;
     while (queue.length > 0 && budget > 0) {
       const t = queue.pop()!;
       queued[t] = 0;
       if (!this.alive[t]) continue;
-      const i = 3 * t;
       for (let k = 0; k < 3; k++) {
-        const a = this.T[i + k], b = this.T[i + ((k + 1) % 3)], c = this.T[i + ((k + 2) % 3)];
-        const t0 = this.T[i], t1 = this.T[i + 1], t2 = this.T[i + 2];
-        const s = this.triangleWithEdge(b, a);
-        if (s < 0) continue;
-        const j = 3 * s;
-        const s0 = this.T[j], s1 = this.T[j + 1], s2 = this.T[j + 2];
-        const q = this.T[j] !== a && this.T[j] !== b ? this.T[j] : this.T[j + 1] !== a && this.T[j + 1] !== b ? this.T[j + 1] : this.T[j + 2];
-        if (q === c) continue;
-        // Reference plane the flipped pair must stay in. Flat flip: both
-        // triangles already share it. Cap flip: the cap's normal is noise, so
-        // the plane is its partner's; the new triangles split the partner.
-        const diagonalGap = segmentDistance(this.V, a, b, c, q);
-        const nA = this.unitNormal(a, b, c, nRefA);
-        const nB = this.unitNormal(b, a, q, nRefB);
-        let ref: Float64Array;
-        let minCos: number;
-        if (diagonalGap <= flatTolerance && nA !== null && nB !== null && dot3(nA, nB) >= FLAT_COS) {
-          ref = nA;
-          minCos = FLAT_COS;
-        } else {
-          const edge = Math.sqrt(this.dist2(a, b));
-          const hc = this.edgeHeight(c, a, b), hq = this.edgeHeight(q, a, b);
-          const capHeight = Math.min(hc, hq);
-          if (capHeight > tolerance || capHeight > CAP_RELATIVE_HEIGHT * edge) continue;
-          if (diagonalGap > capHeight * (1 + 1e-9) + flatTolerance) continue;
-          // The apex must project strictly inside the long edge, else the
-          // flipped pair overlaps instead of splitting the partner.
-          const apex = hc <= hq ? c : q;
-          const along = this.projectOnEdge(apex, a, b);
-          if (!(along > CAP_END_MARGIN && along < 1 - CAP_END_MARGIN)) continue;
-          const partner = hc <= hq ? nB : nA;
-          if (partner === null) continue;
-          ref = partner;
-          minCos = 0;
-        }
-        const qualityBefore = Math.min(this.quality(a, b, c), this.quality(b, a, q));
-        const qualityAfter = Math.min(this.quality(c, a, q), this.quality(c, q, b));
-        if (!(qualityAfter > qualityBefore * (1 + 1e-6) + 1e-12)) continue;
-        // No existing edge c–q (the flip would duplicate it).
-        if (this.triangleWithEdge(c, q) >= 0 || this.triangleWithEdge(q, c) >= 0) continue;
-        const m1 = this.unitNormal(c, a, q, n1);
-        const m2 = this.unitNormal(c, q, b, n2);
-        if (m1 === null || m2 === null || dot3(m1, ref) <= minCos || dot3(m2, ref) <= minCos) continue;
-        this.T[i] = c; this.T[i + 1] = a; this.T[i + 2] = q;
-        this.T[j] = c; this.T[j + 1] = q; this.T[j + 2] = b;
-        // A cap flip moves the surface by up to the cap height. Near a knife
-        // edge (two faces meeting at a grazing angle) another sheet of the
-        // surface can be closer than that, so check the neighbourhood.
-        if (minCos === 0 && this.crossesNeighbourhood(t, s, [a, b, c, q])) {
-          this.T[i] = t0; this.T[i + 1] = t1; this.T[i + 2] = t2;
-          this.T[j] = s0; this.T[j + 1] = s1; this.T[j + 2] = s2;
-          continue;
-        }
-        // Star bookkeeping: t gains q, s gains c (stale entries are skipped on read).
-        this.star[q].push(t);
-        this.star[c].push(s);
+        const touched = this.tryFlip(t, k, tolerance, flatTolerance);
+        if (touched === null) continue;
         flipped++;
         budget--;
-        for (const x of [t, s, this.triangleWithEdge(a, c), this.triangleWithEdge(c, b), this.triangleWithEdge(b, q), this.triangleWithEdge(q, a)]) {
-          if (x >= 0 && !queued[x]) { queued[x] = 1; queue.push(x); }
-        }
+        for (const x of touched) enqueue(x);
         break;
       }
     }
     return flipped;
+  }
+
+  /**
+   * Flip the edge of triangle t that starts at corner k, if allowed. Returns
+   * the triangles whose edges changed, or null when nothing was flipped.
+   */
+  tryFlip(t: number, k: number, tolerance: number, flatTolerance: number): number[] | null {
+    const i = 3 * t;
+    const a = this.T[i + k], b = this.T[i + ((k + 1) % 3)], c = this.T[i + ((k + 2) % 3)];
+    const s = this.triangleWithEdge(b, a);
+    if (s < 0) return null;
+    const j = 3 * s;
+    const q = this.oppositeVertex(s, a, b);
+    if (q === c) return null;
+    const plane = this.flipPlane(a, b, c, q, tolerance, flatTolerance);
+    if (plane === null || !this.flipImproves(a, b, c, q, plane)) return null;
+    const oldT = [this.T[i], this.T[i + 1], this.T[i + 2]];
+    const oldS = [this.T[j], this.T[j + 1], this.T[j + 2]];
+    this.T[i] = c; this.T[i + 1] = a; this.T[i + 2] = q;
+    this.T[j] = c; this.T[j + 1] = q; this.T[j + 2] = b;
+    // A cap flip moves the surface by up to the cap height. Near a knife
+    // edge (two faces meeting at a grazing angle) another sheet of the
+    // surface can be closer than that, so check the neighbourhood.
+    if (plane.cap && this.crossesNeighbourhood(t, s, [a, b, c, q])) {
+      this.T.set(oldT, i);
+      this.T.set(oldS, j);
+      return null;
+    }
+    // Star bookkeeping: t gains q, s gains c (stale entries are skipped on read).
+    this.star[q].push(t);
+    this.star[c].push(s);
+    return [t, s, this.triangleWithEdge(a, c), this.triangleWithEdge(c, b), this.triangleWithEdge(b, q), this.triangleWithEdge(q, a)];
+  }
+
+  /** The vertex of triangle s that is neither a nor b. */
+  oppositeVertex(s: number, a: number, b: number): number {
+    const j = 3 * s;
+    for (let k = 0; k < 3; k++) {
+      const x = this.T[j + k];
+      if (x !== a && x !== b) return x;
+    }
+    return -1;
+  }
+
+  /**
+   * Flipping ab to cq raises the worse triangle quality, does not duplicate
+   * an existing edge c-q, and keeps both new triangles facing `plane.ref`.
+   */
+  flipImproves(a: number, b: number, c: number, q: number, plane: { ref: Float64Array; minCos: number }): boolean {
+    const qualityBefore = Math.min(this.quality(a, b, c), this.quality(b, a, q));
+    const qualityAfter = Math.min(this.quality(c, a, q), this.quality(c, q, b));
+    if (!(qualityAfter > qualityBefore * (1 + 1e-6) + 1e-12)) return false;
+    if (this.triangleWithEdge(c, q) >= 0 || this.triangleWithEdge(q, c) >= 0) return false;
+    const m1 = this.unitNormal(c, a, q, SCRATCH_N1);
+    const m2 = this.unitNormal(c, q, b, SCRATCH_N2);
+    return m1 !== null && m2 !== null && dot3(m1, plane.ref) > plane.minCos && dot3(m2, plane.ref) > plane.minCos;
+  }
+
+  /**
+   * The plane a flip of edge ab (quad a, c, b, q) must stay in, or null when
+   * the flip could move the surface. Flat flip: both triangles already share
+   * it. Cap flip: the cap's normal is noise, so the plane is its partner's;
+   * the new triangles split the partner.
+   */
+  flipPlane(
+    a: number, b: number, c: number, q: number, tolerance: number, flatTolerance: number,
+  ): { ref: Float64Array; minCos: number; cap: boolean } | null {
+    const diagonalGap = segmentDistance(this.V, a, b, c, q);
+    const nA = this.unitNormal(a, b, c, SCRATCH_A);
+    const nB = this.unitNormal(b, a, q, SCRATCH_B);
+    if (diagonalGap <= flatTolerance && nA !== null && nB !== null && dot3(nA, nB) >= FLAT_COS) {
+      return { ref: nA, minCos: FLAT_COS, cap: false };
+    }
+    const hc = this.edgeHeight(c, a, b), hq = this.edgeHeight(q, a, b);
+    const capHeight = Math.min(hc, hq);
+    if (capHeight > tolerance || capHeight > CAP_RELATIVE_HEIGHT * Math.sqrt(this.dist2(a, b))) return null;
+    if (diagonalGap > capHeight * (1 + 1e-9) + flatTolerance) return null;
+    // The apex must project strictly inside the long edge, else the flipped
+    // pair overlaps instead of splitting the partner.
+    const along = this.projectOnEdge(hc <= hq ? c : q, a, b);
+    if (!(along > CAP_END_MARGIN && along < 1 - CAP_END_MARGIN)) return null;
+    const partner = hc <= hq ? nB : nA;
+    return partner === null ? null : { ref: partner, minCos: 0, cap: true };
   }
 
   /** True when triangle t or s crosses a live triangle within two rings of `seeds`. */
@@ -464,6 +495,10 @@ class CleanupState {
 }
 
 const SCRATCH_N = new Float64Array(3);
+const SCRATCH_A = new Float64Array(3);
+const SCRATCH_B = new Float64Array(3);
+const SCRATCH_N1 = new Float64Array(3);
+const SCRATCH_N2 = new Float64Array(3);
 
 /** Flat flip: old and new normals agree to ~0.08 degrees. */
 const FLAT_COS = 1 - 1e-6;
