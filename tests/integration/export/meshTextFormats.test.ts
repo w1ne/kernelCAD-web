@@ -105,4 +105,28 @@ describe('standalone OBJ and USD mesh exports', () => {
     expect(text).toContain('interpolation = "faceVarying"');
     expect(list('int\\[\\] primvars:normals:indices')).toHaveLength(list('int\\[\\] faceVertexIndices').length);
   });
+
+  it('loads each usd-isaac link mesh layer in the three.js USD reader with flat box faces', async () => {
+    const code = `
+const arm = assembly('arm');
+const base = arm.part('base', box(40, 40, 20, true), { material: 'steel' });
+const link1 = arm.part('link1', box(20, 20, 100, true).translate(0, 0, 60), { material: 'aluminum' });
+base.connector('j', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 10] }, axis: [0, 0, 1] });
+link1.connector('j', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 10] }, axis: [0, 0, 1] });
+arm.mate('j', 'base.j', 'link1.j', 'revolute');
+return arm.model();`;
+    const result = await runAndExport({ code, fileName: 'arm.kcad.ts', format: 'usd-isaac' });
+    expect(result.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    expect(result.meshes?.map(m => m.relPath).sort()).toEqual(['./meshes/base.usda', './meshes/link1.usda']);
+    for (const layer of result.meshes!) {
+      const meshes: Mesh[] = [];
+      new USDLoader().parse(new TextDecoder().decode(layer.bytes)).traverse(o => {
+        if ((o as Mesh).isMesh) meshes.push(o as Mesh);
+      });
+      expect(meshes, layer.relPath).toHaveLength(1);
+      const normals = cornerNormals(meshes[0]!);
+      expect(normals, layer.relPath).toHaveLength(36);
+      for (const n of normals) expect(Math.max(...n.map(Math.abs))).toBeCloseTo(1, 5);
+    }
+  });
 });

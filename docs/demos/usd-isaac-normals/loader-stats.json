@@ -1,0 +1,16 @@
+[
+  {
+    "url": "/before",
+    "meshes": 2,
+    "corners": 106116,
+    "baseAxisAlignedCornerNormals": 36,
+    "diagonal": 0.14000000044703487
+  },
+  {
+    "url": "/after",
+    "meshes": 2,
+    "corners": 106116,
+    "baseAxisAlignedCornerNormals": 1584,
+    "diagonal": 0.14000000044703487
+  }
+]

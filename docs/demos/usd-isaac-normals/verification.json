@@ -1,0 +1,54 @@
+{
+  "part": "docs/demos/usd-isaac-normals/arm.kcad.ts",
+  "export": "runAndExport({ format: 'usd-isaac' })",
+  "reader": "three.js USDLoader (node_modules/three/examples/jsm/loaders/USDLoader.js), headless Chromium",
+  "files": {
+    "before/arm.usda": {
+      "source": "origin/develop 60c1d34a0",
+      "bytes": 4479,
+      "sha256_16": "2f1bd664ebd2b514"
+    },
+    "before/meshes/base.usda": {
+      "source": "origin/develop 60c1d34a0",
+      "bytes": 33788,
+      "sha256_16": "254dacd91167a12b"
+    },
+    "before/meshes/link1.usda": {
+      "source": "origin/develop 60c1d34a0",
+      "bytes": 1328300,
+      "sha256_16": "297ff51b2aad7698"
+    },
+    "after/arm.usda": {
+      "source": "this branch",
+      "bytes": 4479,
+      "sha256_16": "2f1bd664ebd2b514"
+    },
+    "after/meshes/base.usda": {
+      "source": "this branch",
+      "bytes": 56643,
+      "sha256_16": "f4eff9963025c2b7"
+    },
+    "after/meshes/link1.usda": {
+      "source": "this branch",
+      "bytes": 2554593,
+      "sha256_16": "249e6b6a79717573"
+    }
+  },
+  "diff": "after/meshes/*.usda minus the primvars:normals, primvars:normals:indices and interpolation metadata lines is byte-identical to before/meshes/*.usda; arm.usda is byte-identical",
+  "loader": {
+    "before": {
+      "meshes": 2,
+      "corners": 106116,
+      "baseAxisAlignedCornerNormals": 36,
+      "diagonal": 0.14000000044703487
+    },
+    "after": {
+      "meshes": 2,
+      "corners": 106116,
+      "baseAxisAlignedCornerNormals": 1584,
+      "diagonal": 0.14000000044703487
+    }
+  },
+  "base_corner_normals": 3072,
+  "usda_files_committed": false
+}
