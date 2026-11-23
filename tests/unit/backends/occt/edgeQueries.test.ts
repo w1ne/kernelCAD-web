@@ -432,3 +432,50 @@ describe('FIX-03 EdgeSegment circle data', () => {
     expect(seam[0].boundary).toBe(false);
   });
 });
+
+describe('FaceQuery.extreme and EdgeQuery.ofFace', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  // A 10x10x5 base with a 4x4x5 boss on top: two up-facing faces (z = 5 ring, z = 10 cap).
+  const stacked = () => {
+    const base = OcctBackend.box(10, 10, 5);
+    const boss = OcctBackend.box(4, 4, 5).translate(3, 3, 5);
+    return base.union(boss);
+  };
+
+  it('extreme "Z" keeps the face furthest along +Z', () => {
+    const faces = resolveFaceQuery(stacked(), { byNormal: 'Z', extreme: 'Z' });
+    expect(faces).toHaveLength(1);
+    expect(faces[0].center.z).toBeCloseTo(10, 6);
+  });
+
+  it('extreme "-Z" keeps the face furthest along -Z, and combines with byNormal', () => {
+    const lowest = resolveFaceQuery(stacked(), { extreme: '-Z' });
+    expect(lowest).toHaveLength(1);
+    expect(lowest[0].center.z).toBeCloseTo(0, 6);
+    const lowestUp = resolveFaceQuery(stacked(), { byNormal: 'Z', extreme: '-Z' });
+    expect(lowestUp).toHaveLength(1);
+    expect(lowestUp[0].center.z).toBeCloseTo(5, 6);
+  });
+
+  it('extreme rejects a non-direction value', () => {
+    expect(() => resolveFaceQuery(stacked(), { extreme: 'up' as never })).toThrow(/extreme/);
+  });
+
+  it('ofFace keeps only edges that border a matching face', () => {
+    const box = OcctBackend.box(10, 10, 5);
+    expect(resolveEdgeQuery(box, { ofFace: { byNormal: 'Z' } })).toHaveLength(4);
+    expect(resolveEdgeQuery(box, { ofFace: { byNormal: 'Z' }, parallel: 'X' })).toHaveLength(2);
+  });
+
+  it('ofFace composes with extreme to pick the edges of the topmost face', () => {
+    const edges = resolveEdgeQuery(stacked(), { ofFace: { byNormal: 'Z', extreme: 'Z' } });
+    expect(edges).toHaveLength(4);
+    for (const e of edges) expect(e.startPoint.z).toBeCloseTo(10, 6);
+  });
+
+  it('a face key on an EdgeQuery points to ofFace and the fillet/chamfer face argument', () => {
+    const box = OcctBackend.box(10, 10, 5);
+    expect(() => resolveEdgeQuery(box, { face: 'top' } as never)).toThrow(/ofFace/);
+  });
+});

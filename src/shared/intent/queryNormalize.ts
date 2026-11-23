@@ -166,6 +166,8 @@ export interface NormalizedEdgeQuery {
   ofCurveType?: string;
   tolerance?: number;
   angleTolerance?: number;
+  /** Validated FaceQuery, kept in its raw form for the face resolver. */
+  ofFace?: FaceQuery;
 }
 
 export interface NormalizedFaceQuery {
@@ -184,20 +186,22 @@ export interface NormalizedFaceQuery {
   minArea?: number;
   maxArea?: number;
   boundingBoxIn?: BoundingRegion;
+  /** Direction (unit-agnostic vector) the surviving faces must be furthest along. */
+  extreme?: Vec3;
 }
 
 /** Every key an EdgeQuery accepts, aliases included (for hints). */
 export const EDGE_QUERY_ACCEPTED_KEYS: readonly string[] = [
   'atZ', 'atX', 'atY', 'near', 'within', 'parallel', 'parallelTo',
   'perpendicular', 'perpendicularTo', 'convex', 'concave', 'minAngle',
-  'maxAngle', 'ofCurveType', 'tolerance', 'angleTolerance',
+  'maxAngle', 'ofCurveType', 'tolerance', 'angleTolerance', 'ofFace',
 ];
 
 /** Every key a FaceQuery accepts, aliases included (for hints). */
 export const FACE_QUERY_ACCEPTED_KEYS: readonly string[] = [
   'atZ', 'atX', 'atY', 'parallelTo', 'parallel', 'inPlane', 'ofSurfaceType',
   'containsPoint', 'near', 'tolerance', 'byNormal', 'minArea', 'maxArea',
-  'boundingBoxIn',
+  'boundingBoxIn', 'extreme',
 ];
 
 type QueryName = 'EdgeQuery' | 'FaceQuery';
@@ -227,6 +231,27 @@ const KEY_EXAMPLES: Readonly<Record<string, string>> = {
   minArea: '{ minArea: 100 }',
   maxArea: '{ maxArea: 100 }',
   boundingBoxIn: '{ boundingBoxIn: { zMin: 9, zMax: 11 } }',
+  extreme: "{ byNormal: 'Z', extreme: 'Z' }",
+  ofFace: "{ ofFace: { byNormal: 'Z' } }",
+};
+
+/**
+ * Keys a caller reaches for that are not query keys, with the call that does
+ * what they meant. Appended to the unknown-key hint.
+ */
+const UNKNOWN_KEY_REDIRECTS: Readonly<Record<string, string>> = {
+  face: "to round or chamfer the edges of one face pass it to the operation: .fillet(r, { face: 'top' }) / .chamfer(d, { face: 'top' }); to SELECT the edges of faces use { ofFace: <FaceQuery> }, e.g. { ofFace: { byNormal: 'Z', extreme: 'Z' } }",
+  faces: "use ofFace for the edges of faces: { ofFace: { byNormal: 'Z' } }",
+  edge: 'a query takes the keys listed above; select one edge with selectEdge(shape, query)',
+  highest: "use { extreme: 'Z' } on a FaceQuery for the highest face",
+  lowest: "use { extreme: '-Z' } on a FaceQuery for the lowest face",
+  byNormal: "a FaceQuery key. For the edges of a face pass it to the operation: .chamfer(d, { face: { byNormal: '-Z' } }); to list them use { ofFace: { byNormal: '-Z' } }",
+  ofSurfaceType: "a FaceQuery key. For the edges of such faces use { ofFace: { ofSurfaceType: 'CYLINDER' } }",
+  inPlane: "a FaceQuery key. For the edges of such faces use { ofFace: { inPlane: 'XY' } }",
+  minArea: 'a FaceQuery key; combine it under ofFace to filter the faces whose edges you want',
+  maxArea: 'a FaceQuery key; combine it under ofFace to filter the faces whose edges you want',
+  direction: 'use parallel / perpendicular (EdgeQuery) or byNormal / parallelTo (FaceQuery)',
+  axis: 'use parallel / perpendicular (EdgeQuery) or byNormal / parallelTo (FaceQuery)',
 };
 
 function exampleFor(key: string): string {
@@ -272,6 +297,11 @@ function requireObject(queryName: QueryName, raw: unknown): Record<string, unkno
   return raw as Record<string, unknown>;
 }
 
+function redirectsFor(unknown: readonly string[]): string {
+  const notes = unknown.flatMap((k) => (UNKNOWN_KEY_REDIRECTS[k] !== undefined ? [`'${k}': ${UNKNOWN_KEY_REDIRECTS[k]}`] : []));
+  return notes.length === 0 ? '' : `. ${notes.join('; ')}`;
+}
+
 function rejectUnknownKeys(queryName: QueryName, obj: Record<string, unknown>, accepted: readonly string[]): void {
   const allowed = new Set(accepted);
   const unknown = Object.keys(obj).filter((k) => !allowed.has(k));
@@ -280,7 +310,7 @@ function rejectUnknownKeys(queryName: QueryName, obj: Record<string, unknown>, a
     api: queryName,
     path: unknown.join(', '),
     gotText: `unknown key${unknown.length > 1 ? 's' : ''} ${unknown.join(', ')}`,
-    requires: `only valid ${queryName} keys: ${accepted.join(', ')}`,
+    requires: `only valid ${queryName} keys: ${accepted.join(', ')}${redirectsFor(unknown)}`,
     example: '{ atZ: 10 }',
     hintSlug: 'invalid-args.selector.unknown-key',
   });
@@ -449,6 +479,10 @@ export function normalizeEdgeQuery(raw: EdgeQuery | unknown): NormalizedEdgeQuer
     out.ofCurveType = ct;
   }
   assign(out, 'tolerance', num(Q, 'tolerance', obj.tolerance, { positive: true }));
+  if (obj.ofFace !== undefined) {
+    normalizeFaceQuery(obj.ofFace as FaceQuery); // validate now; the resolver reads the raw form
+    out.ofFace = obj.ofFace as FaceQuery;
+  }
   assign(out, 'angleTolerance', num(Q, 'angleTolerance', obj.angleTolerance, { positive: true }));
   return out;
 }
@@ -490,5 +524,7 @@ export function normalizeFaceQuery(raw: FaceQuery | unknown): NormalizedFaceQuer
   assign(out, 'minArea', num(Q, 'minArea', obj.minArea, { nonNegative: true }));
   assign(out, 'maxArea', num(Q, 'maxArea', obj.maxArea, { nonNegative: true }));
   assign(out, 'boundingBoxIn', region(Q, 'boundingBoxIn', obj.boundingBoxIn));
+  // extreme is SIGNED ('Z' is the highest face, '-Z' the lowest).
+  assign(out, 'extreme', direction(Q, 'extreme', obj.extreme, false));
   return out;
 }

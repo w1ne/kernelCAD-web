@@ -20,6 +20,7 @@ import { getStlBbox } from '../../oracle/stlBbox';
 import type { HarnessCtx, HarnessResult } from '../../types';
 
 const TARGET_BBOX: [number, number, number] = [120, 60, 25.981];
+const EXPECTED_COMPONENTS = 1;
 
 function axisWithinTolerance(actual: number, target: number): boolean {
   const tol = Math.max(2, Math.abs(target) * 0.05);
@@ -66,7 +67,9 @@ export default async function harness(scriptPath: string, ctx?: HarnessCtx): Pro
   if (ctx) {
     const referencePath = join(ctx.taskDir, 'reference.stl');
     try {
-      const result = await runCadQueryEvalScorer(scriptPath, referencePath, ctx.runDir);
+      const result = await runCadQueryEvalScorer(scriptPath, referencePath, ctx.runDir, {
+        expectedComponents: EXPECTED_COMPONENTS,
+      });
       scorerPassed = !!result?.passed;
       metrics = {
         cqe_passed: result.passed,
