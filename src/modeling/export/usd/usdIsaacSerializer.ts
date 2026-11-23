@@ -54,6 +54,7 @@ import type { MateCouplingRecord } from '../../mates/coupledPoses';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { meshShapeForExport, type OcctBackend } from '../../../kernel/backends/occt/occtBackend';
+import { usdNormals } from '../../../kernel/export/meshFormats';
 import {
   lookupColorFromLineage,
   lookupMaterialFromLineage,
@@ -312,6 +313,10 @@ function meshLayerText(primName: string, shape: OcctBackend): string {
     ]));
   }
   const triCount = Math.floor(meshed.triangles.length / 3);
+  // Authored normals: the export mesh shares vertices across B-rep faces, so
+  // a renderer that computes smooth normals (Hydra, three.js) shades every
+  // sharp CAD edge as a bevel. Normals are unitless; no metre scale applies.
+  const normals = usdNormals({ vertices: meshed.vertices, triangles: meshed.triangles.slice(0, triCount * 3) });
   return [
     '#usda 1.0',
     '(',
@@ -325,6 +330,12 @@ function meshLayerText(primName: string, shape: OcctBackend): string {
     `    int[] faceVertexCounts = [${new Array(triCount).fill(3).join(', ')}]`,
     `    int[] faceVertexIndices = [${meshed.triangles.slice(0, triCount * 3).join(', ')}]`,
     `    point3f[] points = [${pts.join(', ')}]`,
+    // Metadata on its own lines: the three.js USDA parser drops the array
+    // when `(interpolation = ...)` follows it on the same line.
+    `    normal3f[] primvars:normals = [${normals.tuples.join(', ')}] (`,
+    '        interpolation = "faceVarying"',
+    '    )',
+    `    int[] primvars:normals:indices = [${normals.indices.join(', ')}]`,
     '    uniform token subdivisionScheme = "none"',
     '    uniform token orientation = "rightHanded"',
     '}',

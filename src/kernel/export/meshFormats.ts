@@ -163,7 +163,7 @@ function writeUsdMesh(part: NamedMesh, slot: MeshMaterialSlot, used: Set<string>
     `        int[] faceVertexCounts = [${Array.from({ length: faceCount }, () => '3').join(', ')}]`,
     `        int[] faceVertexIndices = [${Array.from(triangles).join(', ')}]`,
     '        normal3f[] primvars:normals = [',
-    normals.lines.join(',\n'),
+    normals.tuples.map(t => `            ${t}`).join(',\n'),
     '        ] (',
     '            interpolation = "faceVarying"',
     '        )',
@@ -178,18 +178,20 @@ function pointLines(vertices: IndexedMesh['vertices']): string {
   return triples(vertices).map(([x, y, z]) => `            (${number(x)}, ${number(y)}, ${number(z)})`).join(',\n');
 }
 
-/** Crease-split normals as distinct USDA tuples plus one index per face vertex. */
-function usdNormals(mesh: IndexedMesh): { lines: string[]; indices: number[] } {
+/** Crease-split normals as distinct USDA tuples plus one index per face
+ *  vertex, for a `faceVarying` indexed `primvars:normals`. Also used by the
+ *  Isaac per-link mesh layers. */
+export function usdNormals(mesh: IndexedMesh): { tuples: string[]; indices: number[] } {
   const split = splitByCrease(mesh, USD_CREASE_ANGLE_DEG);
-  const lines: string[] = [];
-  const lineIndex = new Map<string, number>();
+  const tuples: string[] = [];
+  const tupleIndex = new Map<string, number>();
   const ids = triples(split.normals).map(([x, y, z]) => {
-    const line = `            (${unit(x)}, ${unit(y)}, ${unit(z)})`;
-    let id = lineIndex.get(line);
-    if (id === undefined) { id = lines.length; lineIndex.set(line, id); lines.push(line); }
+    const tuple = `(${unit(x)}, ${unit(y)}, ${unit(z)})`;
+    let id = tupleIndex.get(tuple);
+    if (id === undefined) { id = tuples.length; tupleIndex.set(tuple, id); tuples.push(tuple); }
     return id;
   });
-  return { lines, indices: Array.from(split.triangles, index => ids[index]!) };
+  return { tuples, indices: Array.from(split.triangles, index => ids[index]!) };
 }
 
 function unit(value: number): string {
