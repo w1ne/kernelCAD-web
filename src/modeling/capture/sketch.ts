@@ -21,6 +21,7 @@ import { type TangentEntity2D } from '../../shared/capture/tangency';
 import { reflectSketchCommands } from './sketchReflect';
 import { rotateSketchOf, scaleSketchOf, translateSketchOf } from './sketchTransform';
 import { circleCommands } from './pathCircle';
+import { slotCommands, type SlotOptions } from './pathSlot';
 import { ellipseCommands, ellipseArcCommands, type EllipseOptions, type EllipseArcOptions } from './pathEllipse';
 import { checkSweepSection } from './sweepSection';
 import { symmetricParam } from './symmetricOption';
@@ -1355,6 +1356,20 @@ export class PathBuilder {
       params: {},
       metadata: { commands: this.commands },
     });
+  }
+
+  /**
+   * Closed slot (stadium) centred on `(cx, cy)`, long axis along +X; terminal
+   * like `circle()`. `width` is the diameter of the round ends. Give
+   * `centerDistance` (between the arc centres) or `length` (overall, end to
+   * end), never both; `angleDeg` turns it. Cutout coordinates are measured
+   * from the entry face centre:
+   *   plate.cutout(path().slot(0, 0, { width: 10, length: 30 }), { face: 'top', depth: 'through' })
+   */
+  slot(cx: Editable<number>, cy: Editable<number>, opts: SlotOptions): Sketch {
+    const loop = slotCommands(cx, cy, opts, this.session.paramTable, this.commands.length);
+    this.commands.push(...loop, { kind: 'close' });
+    return this.session.createSketch({ kind: 'sketch', inputs: {}, params: {}, metadata: { commands: this.commands } });
   }
 
   /**

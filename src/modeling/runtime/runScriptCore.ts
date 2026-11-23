@@ -27,6 +27,8 @@ import { findTopLevelImport, normalizeUserScript } from '../../shared/runtime/no
 import { NO_WRAP_OFFSET, type IsolationOptions, type IsolationResult, type ScriptWrapOffset } from './isolationTypes';
 import { ScriptLocationResolver } from './scriptLocationCapture';
 import { shapeMethodHint } from './shapeMethodHintExamples';
+import { publicNames, withMissingMemberHint } from './missingMemberHint';
+import { PathBuilder, Sketch } from '../capture/sketch';
 
 /** Pluggable script runner. `runIsolated` (node `vm`) backs the node facade;
  *  `runInRealm` (new Function) backs the browser facade. */
@@ -150,7 +152,7 @@ export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScrip
       returnValue = await (returnValue as Promise<unknown>);
     }
   } catch (e) {
-    throw withShapeMethodHint(e);
+    throw withShapeMethodHint(e, [...publicNames(Shape.prototype, Sketch.prototype, PathBuilder.prototype), ...Object.keys(apiGlobals)]);
   }
   returnValue = normalizeArrayReturnValue(returnValue, session, code);
   // The returned model counts as consumed; then give statement-form
@@ -231,16 +233,16 @@ function arrayEntryType(value: unknown): string {
  * method, say so: it is called on a body (`body.holes(...)`). Any other
  * error passes through unchanged.
  */
-function withShapeMethodHint(e: unknown): unknown {
+function withShapeMethodHint(e: unknown, known: readonly string[]): unknown {
   const name = (e as { name?: unknown } | null)?.name;
   const message = e instanceof Error || typeof (e as { message?: unknown })?.message === 'string'
     ? String((e as { message: unknown }).message)
     : '';
   const m = /^(\w+) is not defined$/.exec(message);
-  if (name !== 'ReferenceError' || !m) return e;
+  if (name !== 'ReferenceError' || !m) return withMissingMemberHint(e, known);
   const method = m[1];
   const proto = Shape.prototype as unknown as Record<string, unknown>;
-  if (typeof proto[method] !== 'function') return e;
+  if (typeof proto[method] !== 'function') return withMissingMemberHint(e, known);
   return new KernelError(
     'cli.script-exception',
     `ReferenceError: ${method} is not defined — ${method} is a Shape method, not a global function.`,

@@ -1,5 +1,13 @@
 # Unreleased
 
+- `lookup_api({ query })` now declares its `query` input, answers names an author reaches for (`cboreHole`, `polarArray`, `arcTo`, `workplane`, `">Z"`) with an `idioms` hint naming the kernelCAD call, and drops prose-only noise once a name matches.
+- A call to a name that does not exist (`x.arcTo is not a function`, `polarArray is not defined`) fails with the replacement, or the nearest real method, in the hint.
+- `path().slot(cx, cy, { width, centerDistance | length, angleDeg? })`: closed slot profile.
+- `FaceQuery.extreme` picks the face furthest along a direction (`{ byNormal: 'Z', extreme: 'Z' }` is the highest up-facing face); `EdgeQuery.ofFace` selects the edges of faces a FaceQuery matches.
+- `param()` values work inside `selectEdges` / `selectEdge` queries; `translate([x, y, z])` and `patternCircular({ axis: 'Z' })` accept the vector and axis-name forms.
+- Clearer diagnostics: cutout profile frame (face centre), `holes()` with a diameter per position, FaceQuery keys on an EdgeQuery, ambiguous `'top'` after a union.
+- New example `examples/selection-by-extent-and-slot.kcad.ts` and cookbook snippet `housing-select-drill-chamfer-by-extent`.
+
 - `examples/kinematic/tendon-finger.kcad.ts` now passes `evaluate_script`
   with `ok: true` and `mechanism: real`; before, it returned 5 errors. Each
   phalanx is 2 mm narrower than the fork that holds it, the three pins are on

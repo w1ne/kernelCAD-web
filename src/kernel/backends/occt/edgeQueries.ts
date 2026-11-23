@@ -114,6 +114,7 @@ export function resolveEdgeQuery(base: OcctBackend, rawQuery: EdgeQuery): Edge[]
     const w = query.within;
     edges = edges.filter(e => pointInRegion(edgeMidpoint(e), w));
   }
+  edges = keepEdgesOfFaces(base, edges, query.ofFace);
   if (query.parallel) {
     const p = query.parallel;
     edges = edges.filter(e => isParallel(edgeDirection(e), p, angleTol));
@@ -138,6 +139,25 @@ export function resolveEdgeQuery(base: OcctBackend, rawQuery: EdgeQuery): Edge[]
   }
 
   return edges;
+}
+
+/**
+ * Keep the faces furthest along `direction`: project each face centre on it
+ * and retain those within the position tolerance of the maximum.
+ */
+function keepFurthestFaces(faces: Face[], direction: Vec3 | undefined, tol: number): Face[] {
+  const dir = direction === undefined ? null : unit(direction);
+  if (dir === null || faces.length === 0) return faces;
+  const along = new Map(faces.map((f) => [f, dot3(vec(f.center), dir)]));
+  const best = Math.max(...along.values());
+  return faces.filter(f => best - along.get(f)! <= tol);
+}
+
+/** Edges that border at least one face matching `faceQuery`. */
+function keepEdgesOfFaces(base: OcctBackend, edges: Edge[], faceQuery: FaceQuery | undefined): Edge[] {
+  if (faceQuery === undefined) return edges;
+  const bordering = resolveFaceQuery(base, faceQuery).flatMap(f => f.edges as Edge[]);
+  return edges.filter(e => bordering.some(b => isSameEdge(b, e)));
 }
 
 function pointInRegion(m: Vec3, w: BoundingRegion): boolean {
@@ -530,6 +550,8 @@ export function resolveFaceQuery(base: OcctBackend, rawQuery: FaceQuery): Face[]
       return true;
     });
   }
+
+  faces = keepFurthestFaces(faces, query.extreme, tol);
 
   return faces;
 }

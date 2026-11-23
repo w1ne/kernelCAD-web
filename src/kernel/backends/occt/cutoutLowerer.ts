@@ -432,6 +432,7 @@ function pushProfileBboxWarning(
   if (fbb && fbb.bounds) {
     const [fmin, fmax] = fbb.bounds;
     const faceMaxR = Math.max(fmax[0] - fmin[0], fmax[1] - fmin[1], fmax[2] - fmin[2]) / 2;
+    const centre = [0, 1, 2].map((i) => (fmin[i] + fmax[i]) / 2);
     if (pBboxR > faceMaxR + 1e-3) {
       diagnostics.push({
         target: 'export-occt',
@@ -439,7 +440,9 @@ function pushProfileBboxWarning(
         featureId,
         severity: 'warn',
         message: 'Cutout profile bbox exceeds the entry face bbox.',
-        hint: 'Cutout profile is larger than the target face. If this is intentional (edge-bridging cut), ignore this warning.',
+        hint:
+          `Cutout profile coordinates are measured from the entry face centre (${centre.map((n) => Math.round(n * 1000) / 1000).join(', ')}), like hole() u/v, not from the world origin: a profile centred on the face is built around (0, 0). ` +
+          'Subtract the face centre from world coordinates. If the profile really is larger than the face (an edge-bridging cut), ignore this warning.',
       });
     }
   }

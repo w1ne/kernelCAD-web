@@ -78,6 +78,7 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `PathBuilder.close() => Sketch` | Close the path; returns a Sketch that can be extruded/revolved/swept. |
 | `PathBuilder.label(name: string) => PathBuilder` | Tag the previous segment so it can be referenced later in fillet/chamfer/shell as `{face: name}`. |
 | `PathBuilder.circle(cx: Editable<number>, cy: Editable<number>, r: Editable<number>, segments?: number) => Sketch` | Closed circle profile centered at (cx, cy) with radius r. |
+| `PathBuilder.slot(cx: Editable<number>, cy: Editable<number>, opts: { width: Editable<number>, centerDistance?: Editable<number>, length?: Editable<number>, angleDeg?: number }) => Sketch` | Closed slot (stadium: two parallel flats and two semicircular ends) centred at (cx, cy), long axis along sketch +X; angleDeg turns it counterclockwise. |
 | `PathBuilder.ellipse(cx: Editable<number>, cy: Editable<number>, rx: Editable<number>, ry: Editable<number>, opts?: { rotationDeg?: number }) => Sketch` | Closed ellipse profile centered at (cx, cy) with semi-axes rx (along sketch +X) and ry; opts.rotationDeg turns the rx axis counterclockwise. |
 | `PathBuilder.ellipseArc(x: number, y: number, rx: number, ry: number, opts?: { rotationDeg?: number; largeArc?: boolean; clockwise?: boolean }) => PathBuilder` | Exact elliptical arc from the current pen to (x, y) on an ellipse with semi-axes rx, ry (SVG `A`, Y axis up). |
 | `PathBuilder.tangentArc(x: Editable<number>, y: Editable<number>) => PathBuilder` | Arc continuing tangent from the previous segment to (x, y). |
@@ -192,7 +193,7 @@ Move a body into position, mirror it, or repeat it.
 
 | Call | What it does |
 |---|---|
-| `Shape.translate(x: Editable<number>, y: Editable<number>, z: Editable<number>) => Shape` | Translate by (x, y, z). |
+| `Shape.translate(x: Editable<number>, y: Editable<number>, z: Editable<number>) => Shape; (vector: [x, y, z]) => Shape` | Translate by (x, y, z), or by one [x, y, z] array. |
 | `Sketch.translate(dx: Editable<number>, dy: Editable<number>) => Sketch` | Move this sketch by (dx, dy) mm in its own plane, returning a new Sketch. |
 | `Shape.rotate(axis: [Editable<number>, Editable<number>, Editable<number>], degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]) => Shape` | Rotate `degrees` around `axis` (vector); pivot defaults to origin. |
 | `Sketch.rotate(angleDeg: number, center?: [Editable<number>, Editable<number>]) => Sketch` | Turn this sketch counter-clockwise by angleDeg in its own plane about `center` (default the sketch origin [0, 0]), returning a new Sketch. |
@@ -209,7 +210,7 @@ Move a body into position, mirror it, or repeat it.
 | `Shape.mirror(plane: 'xy' \| 'xz' \| 'yz' \| { plane: 'xy' \| 'xz' \| 'yz'; offset: number }) => Shape` | Boolean union of the source and its reflection across a cardinal plane. |
 | `Shape.patternLinear({ count, direction, spacing }) => Shape` | Repeat this shape in a linear array. |
 | `Shape.patternGrid({ x: { count, direction, spacing }, y: { count, direction, spacing } }) => Shape` | Repeat this shape in a two-axis grid. |
-| `Shape.patternCircular({ count, axis, angleDeg? }) => Shape` | Repeat this shape around an axis. |
+| `Shape.patternCircular({ count, axis: [x, y, z] \| 'X' \| 'Y' \| 'Z' \| '-X' \| '-Y' \| '-Z', angleDeg? }) => Shape` | Repeat this shape around an axis through the world origin (a bolt circle on an XY plate is `axis: 'Z'`). |
 | `Shape.recenter(opts?: { x?: boolean; y?: boolean; z?: boolean }) => Promise<Shape>` | Translate this Shape so its bounding-box center lands on the world origin, then return it for chaining. |
 | `Shape.seatOnFloor(opts?: { center?: boolean }) => Promise<Shape>` | Translate this Shape so it rests on the z = 0 floor (bbox min.z → 0), centered in x/y over the origin; returns it for chaining. |
 

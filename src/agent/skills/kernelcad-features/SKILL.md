@@ -255,6 +255,8 @@ origin. Face names and axes follow the part through `.rotate()`.
 
 Convert a world point: `u = worldU - centreU`, `v = worldV - centreV`.
 
+`cutout(profile, ...)` uses the same frame: profile coordinates are measured from the face centre, so a profile centred on the face is built around `(0, 0)`, and a profile drawn in world coordinates lands off-centre (`feature.kernel-failed` warns "Cutout profile bbox exceeds the entry face bbox" and names the face centre). `holes()` takes ONE `diameter` per call; for several sizes call it once per size.
+
 ```typescript
 // Plate spans Z 5..60, so the 'front' centre is at Z 32.5.
 // Hole wanted at world X 0, Z 45.5:
