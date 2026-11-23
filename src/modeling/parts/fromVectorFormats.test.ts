@@ -599,6 +599,31 @@ describe('lib.fromSVG — round trip to a solid', () => {
     // Exact, not a polygon approximation: two true semicircular arcs.
     expect(backend.volume()).toBeCloseTo(Math.PI * 64 * 5, 6);
   });
+
+  it('imports C/S/Q/T Béziers as exact curved faces, including under a non-uniform transform', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: process.cwd() });
+
+    const [outline, hole] = await api.lib.fromSVG('examples/interoperability/svg-bezier/bezier-cam-plate.svg');
+    expect(hole).toBeDefined();
+    const backend = await lower(session, outline.extrude(3).subtract(hole.extrude(3)).id);
+    const shape = backend.getReplicadShape();
+    expect(isValidShape(getOC(), shape.wrapped)).toBe(true);
+    // Green's theorem on the Bézier poles: the outer crown encloses 2182.5
+    // mm², the quadratic hole 120 mm² before its 1.5 x 1 stretch. librsvg
+    // rasterizes the same file to 2002.496 mm² at 100 px/mm.
+    const exact = (2182.5 - 1.5 * 120) * 3;
+    expect(Math.abs(backend.volume() - exact) / exact).toBeLessThan(1e-6);
+    expect(backend.boundingBox()).toMatchObject({
+      min: [expect.closeTo(0, 6), expect.closeTo(0, 6), expect.closeTo(0, 6)],
+      max: [expect.closeTo(60, 6), expect.closeTo(40, 6), expect.closeTo(3, 6)],
+    });
+    // Two cubic walls and four quadratic hole walls are smooth swept
+    // surfaces; the other faces are the three straight sides and two caps.
+    const types = shape.faces.map(face => face.geomType);
+    expect(types.filter(type => type === 'EXTRUSION_SURFACE')).toHaveLength(2 + 4);
+    expect(types.filter(type => type === 'PLANE')).toHaveLength(3 + 2);
+  });
 });
 
 describe('lib.fromDXF / lib.fromSVG — failures surface as actionable KernelErrors', () => {

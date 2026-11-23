@@ -1,5 +1,6 @@
 # Unreleased
 
+- `lib.fromSVG` imports cubic and quadratic Béziers (`C`/`S`/`Q`/`T`) exactly: each one is a single NURBS segment, also under a non-uniform `<g transform>`, so an extruded Bézier wall is one smooth face instead of chord facets. Before, they were flattened within `curveTolerance`; the fixture `examples/interoperability/svg-bezier/bezier-cam-plate.svg` extruded with 4.4e-5 relative volume error and now matches the analytic 6007.5 mm³ within 1e-6. `<ellipse>` and non-circular `A` arcs are still chord-approximated.
 - `lookup_api({ query })` now declares its `query` input, answers names an author reaches for (`cboreHole`, `polarArray`, `arcTo`, `workplane`, `">Z"`) with an `idioms` hint naming the kernelCAD call, and drops prose-only noise once a name matches.
 - A call to a name that does not exist (`x.arcTo is not a function`, `polarArray is not defined`) fails with the replacement, or the nearest real method, in the hint.
 - `path().slot(cx, cy, { width, centerDistance | length, angleDeg? })`: closed slot profile.
