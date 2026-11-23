@@ -67,6 +67,22 @@ function changedDetail(pairs: readonly BindingPair[]): string {
     .join(' | ');
 }
 
+function isTypedEdgeMiss(selection: SelectionRecord, pairs: readonly BindingPair[]): boolean {
+  const sourceCounts = new Map<string, number>();
+  for (const fingerprint of selection.fingerprints) {
+    if (fingerprint.entityKind !== 'edge' || fingerprint.sourceId === undefined) continue;
+    sourceCounts.set(fingerprint.sourceId, (sourceCounts.get(fingerprint.sourceId) ?? 0) + 1);
+  }
+  if ([...sourceCounts.values()].some((count) => count > 1)) return true;
+  return pairs.some((pair) => {
+    const edge = pair.before?.entityKind === 'edge' || pair.after?.entityKind === 'edge';
+    if (!edge) return false;
+    if (pair.before?.sourceId !== undefined && pair.after === undefined) return true;
+    if (pair.after?.sourceId !== undefined && pair.before === undefined) return true;
+    return pair.comparison.reasons.some((reason) => reason.startsWith('edge lineage '));
+  });
+}
+
 export function selectionDriftDiagnostics(
   baseline: readonly SelectionRecord[],
   current: readonly SelectionRecord[],
@@ -81,14 +97,19 @@ export function selectionDriftDiagnostics(
       if (!prior) return;
       const pairs = compareSelections(prior, after);
       if (pairs.some((p) => p.comparison.verdict === 'changed')) {
+        const edgeMiss = isTypedEdgeMiss(after, pairs);
         diagnostics.push({
           target: 'export-occt',
-          code: 'selector.binding-changed',
+          code: edgeMiss ? 'feature.selection.no-match' : 'selector.binding-changed',
           featureId: after.consumerFeatureId,
-          severity: 'warn',
+          severity: edgeMiss ? 'error' : 'warn',
           details: { consumerFeature: after.consumerFeatureId, selector: after.selectorText, syntax: after.syntax },
-          message: `selector '${after.selectorText}' (${after.syntax}) now selects a different entity: ${changedDetail(pairs)}.`,
-          hint: 'The edit re-bound this selector to another entity, so the feature now acts on a different place than before. Tighten the selector (name the feature or add a position/size filter) or pin the intended entity, then re-evaluate.',
+          message: edgeMiss
+            ? `Edge selector '${after.selectorText}' no longer resolves to the same unique edge lineage: ${changedDetail(pairs)}.`
+            : `selector '${after.selectorText}' (${after.syntax}) now selects a different entity: ${changedDetail(pairs)}.`,
+          hint: edgeMiss
+            ? 'An edge was deleted, split into ambiguous descendants, or replaced after the upstream edit. Re-pick the intended edge or refine the selector before continuing.'
+            : 'The edit re-bound this selector to another entity, so the feature now acts on a different place than before. Tighten the selector (name the feature or add a position/size filter) or pin the intended entity, then re-evaluate.',
         });
         return;
       }

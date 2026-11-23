@@ -1,0 +1,210 @@
+{
+  "scope": "Local kernelCAD Node API: Sketch.intersect, Sketch.union and Sketch.subtract of line-and-arc profiles, extrude to a keyhole hanger plate, OCCT area, volume, validity, overlap and distance measurement against two screw gauges.",
+  "invocation": "node --import tsx docs/demos/sketch-boolean/capture-demo.mts",
+  "source": "docs/demos/sketch-boolean/keyhole-hanger.kcad.ts",
+  "sourceSha256": "6188aeed8c6b001c24fe7a6c4f28e5c8d63ed457b2e28207c71e3a04bda6452b",
+  "implementationSha256": {
+    "src/kernel/backends/occt/sketchBoolean.ts": "042fa7d7e537fa284db59bf803247998a06f3fb4eae2e215a9dd4a0bd1dfa98e",
+    "src/modeling/capture/sketchBoolean.ts": "3c8f3cfd1b5d98808a1b3ca37c79cbcdef04b2bed1aa00c8522704b1df5e4c0f"
+  },
+  "dimensionsMm": {
+    "blankWidth": 70,
+    "blankHeight": 36,
+    "clipRadius": 37,
+    "thickness": 3,
+    "entryDiameter": 9,
+    "slotWidth": 4.5,
+    "slotTravel": 10,
+    "screwSpacing": 44,
+    "shankDiameter": 4,
+    "headDiameter": 8
+  },
+  "expected": {
+    "basis": "closed form from the dimensions in the source script",
+    "outlineAreaMm2": 2490.476957,
+    "keyholeAreaMm2": 97.198025,
+    "profileAreaMm2": 2296.080907,
+    "plateVolumeMm3": 6888.242721,
+    "shankToSlotGapMm": 0.25,
+    "headBearingAreaMm2": 25.313648,
+    "entryClearanceMm": 0.5
+  },
+  "measured": {
+    "errorDiagnostics": 0,
+    "outline": {
+      "areaMm2": 2490.476957,
+      "lines": 4,
+      "arcs": 4,
+      "loop": [
+        [
+          "moveTo",
+          32.32646,
+          -18
+        ],
+        [
+          "bulgeArc",
+          35,
+          -12,
+          0.044471
+        ],
+        [
+          "lineTo",
+          35,
+          12
+        ],
+        [
+          "bulgeArc",
+          32.32646,
+          18,
+          0.044471
+        ],
+        [
+          "lineTo",
+          -32.32646,
+          18
+        ],
+        [
+          "bulgeArc",
+          -35,
+          12,
+          0.044471
+        ],
+        [
+          "lineTo",
+          -35,
+          -12
+        ],
+        [
+          "bulgeArc",
+          -32.32646,
+          -18,
+          0.044471
+        ],
+        [
+          "lineTo",
+          32.32646,
+          -18
+        ],
+        [
+          "close"
+        ]
+      ]
+    },
+    "keyholes": [
+      {
+        "areaMm2": 97.198025,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            -19.75,
+            -0.102886
+          ],
+          [
+            "lineTo",
+            -19.75,
+            6
+          ],
+          [
+            "bulgeArc",
+            -24.25,
+            6,
+            1
+          ],
+          [
+            "lineTo",
+            -24.25,
+            -0.102886
+          ],
+          [
+            "bulgeArc",
+            -19.75,
+            -0.102886,
+            3.732051
+          ],
+          [
+            "close"
+          ]
+        ]
+      },
+      {
+        "areaMm2": 97.198025,
+        "lines": 2,
+        "arcs": 2,
+        "loop": [
+          [
+            "moveTo",
+            24.25,
+            -0.102886
+          ],
+          [
+            "lineTo",
+            24.25,
+            6
+          ],
+          [
+            "bulgeArc",
+            19.75,
+            6,
+            1
+          ],
+          [
+            "lineTo",
+            19.75,
+            -0.102886
+          ],
+          [
+            "bulgeArc",
+            24.25,
+            -0.102886,
+            3.732051
+          ],
+          [
+            "close"
+          ]
+        ]
+      }
+    ],
+    "profile": {
+      "areaMm2": 2296.080907,
+      "loopCount": 3,
+      "holeCount": 2
+    },
+    "plateVolumeMm3": 6888.242721,
+    "plateBoundsMm": [
+      70,
+      36,
+      3
+    ],
+    "plateValid": true,
+    "screws": [
+      {
+        "xMm": -22,
+        "shankPlateOverlapMm3": 0,
+        "shankToSlotGapMm": 0.25,
+        "headBearingAreaMm2": 25.313648,
+        "headPlateOverlapAtEntryMm3": 0,
+        "headToEntryHoleClearanceMm": 0.5
+      },
+      {
+        "xMm": 22,
+        "shankPlateOverlapMm3": 0,
+        "shankToSlotGapMm": 0.25,
+        "headBearingAreaMm2": 25.313648,
+        "headPlateOverlapAtEntryMm3": 0,
+        "headToEntryHoleClearanceMm": 0.5
+      }
+    ]
+  },
+  "limits": [
+    "The boolean is computed when the script runs: a param()-driven coordinate is refused.",
+    "A profile with a spline segment is refused.",
+    "The screws are hand-modelled check gauges (Ø4 shank, Ø8 head), not catalog parts.",
+    "No part was printed or machined, and no fit was tested on hardware.",
+    "No other CAD system opened the result."
+  ],
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}

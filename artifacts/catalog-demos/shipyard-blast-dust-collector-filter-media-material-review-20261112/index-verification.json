@@ -1,0 +1,18 @@
+{
+  "assetCount": 2402,
+  "kitCount": 50,
+  "changedIndexRows": [
+    "blast-dust-collector"
+  ],
+  "targetSourceSha256": "c85643f747d3fe8dbdc140343e18b9f2c89d35979f87a3d7c9f9d5732aab2dae",
+  "targetPreview": "/assets/shipyard-blast-dust-collector.png",
+  "targetPreviewSha256": "f1d3e8fecd217f1ef4b8a80feebd6fc9579727e8ab4293fb8e50de66355052a0",
+  "triangles": 356,
+  "triangleBudget": 1800,
+  "sizeM": [
+    2.05,
+    2.13,
+    0.995
+  ],
+  "missingReferencedPreviews": 0
+}

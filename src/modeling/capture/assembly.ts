@@ -2,13 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { Scene } from '../validation/scene';
 import type { MateCouplingRecord } from '../mates/coupledPoses';
-import type {
-  MateCapacity,
-  MateLimitRange,
-  MateLoadLimit,
-  MatePose,
-  MateRecord,
-} from '../mates/mate';
+import type { MateRecord } from '../mates/mate';
 import type { MateType } from '../mates/mateTypes';
 import type {
   TendonOptions,
@@ -25,6 +19,8 @@ import type {
 import type { PartLineageMap } from '../../kernel/naming/evolutionRecord';
 import type { CaptureSession } from './captureSession';
 import type { Shape } from './proxy';
+import type { FlightStudyHandle, FlightStudySpec } from '../../shared/intent/flightStudyRecord';
+import { captureFlightStudy } from './flightStudyRecord';
 import {
   ballJoint,
   connectFixed,
@@ -35,6 +31,7 @@ import {
   recordWorkspaceTarget,
   revoluteJoint,
 } from './assemblyJoints';
+import type { MateOptions } from './assemblyJoints';
 import {
   recordDisabledCollision,
   recordEndEffector,
@@ -50,6 +47,8 @@ import { buildMateMetadata, recordSolvedModel, solveJoints, type SolvedModelOpti
 import { recordModel } from './assemblyModel';
 import { SolvedKinematics } from './solvedKinematics';
 import { recordPart, recordSubAssembly } from './assemblyParts';
+import { applyAssemblyVariant, declareAssemblyVariant, importPlanFromState, type AssemblyImportPlan } from './assemblyVariant';
+import { instantiateConfiguredPart } from './configuredInstance';
 import { createAssemblyState, type AssemblyState } from './assemblyState';
 import { recordLoopMode, type LoopModeOpts, type LoopPin } from './assemblyLoopModes';
 
@@ -60,6 +59,7 @@ import type {
   AssemblyConnectRef,
   AssemblyJointRef,
   AssemblyJointStored,
+  AssemblyInstanceOpts,
   AssemblyPartOpts,
   AssemblyPartRef,
   AssemblyPartStored,
@@ -75,7 +75,9 @@ import type {
   Poses,
   PrismaticJointOpts,
   RevoluteJointOpts,
+  AssemblyVariantOpts,
   SubAssemblyHandle,
+  SubAssemblyImportOpts,
   TransmissionIntentOpts,
   TransmissionIntentRecord,
   VirtualJointRecord,
@@ -105,10 +107,28 @@ export class Assembly {
     return recordPart(this.state, this, name, shape, opts);
   }
 
+  /** Evaluate one named configuration of a part file as this part. */
+  instance(name: string, opts: AssemblyInstanceOpts): Promise<AssemblyPartRef> {
+    return instantiateConfiguredPart(this.state, this, name, opts);
+  }
+
   /** See `recordSubAssembly` in `assemblyParts.ts` for the full
-   *  sub-assembly-import contract. */
-  subAssembly(name: string, other: Assembly): SubAssemblyHandle {
-    return recordSubAssembly(this.state, this, name, other);
+   *  sub-assembly-import contract. `opts.variant` copies that named set
+   *  from `other` and does not change which parts `other` shows. */
+  subAssembly(name: string, other: Assembly, opts?: SubAssemblyImportOpts): SubAssemblyHandle {
+    return recordSubAssembly(this.state, this, name, other, opts);
+  }
+
+  /** Name a set of parts to leave out. A connected child of a named part is included when the variant is applied. */
+  variant(name: string, opts?: AssemblyVariantOpts): this {
+    declareAssemblyVariant(this.state, name, opts);
+    return this;
+  }
+
+  /** Apply a named variant to this assembly's parts, mates, joints, and mate couplings. */
+  useVariant(name: string): this {
+    applyAssemblyVariant(this.state, name);
+    return this;
   }
 
   /** See `revoluteJoint` in `assemblyJoints.ts`. */
@@ -137,27 +157,7 @@ export class Assembly {
     aRef: string,
     bRef: string,
     type: MateType,
-    opts?: {
-      pose?: MatePose;
-      limitsDeg?: MateLimitRange;
-      limitsMm?: MateLimitRange;
-      exposure?: 'exposed' | 'concealed';
-      capacity?: MateCapacity;
-      /** @deprecated legacy manual-load API */
-      maxLoad?: MateLoadLimit;
-      /** Revolute only: torsional spring N·mm/deg (>= 0). */
-      stiffnessNmmPerDeg?: number;
-      /** Revolute only: spring zero-torque angle (deg); may lie outside limitsDeg. */
-      springRefDeg?: number;
-      /** Revolute only: viscous damping N·mm·s/deg (>= 0). */
-      dampingNmmsPerDeg?: number;
-      /** Prismatic only: linear spring N/mm (>= 0). */
-      stiffnessNPerMm?: number;
-      /** Prismatic only: zero-force position (mm); may lie outside limitsMm. */
-      springRefMm?: number;
-      /** Prismatic only: viscous damping N·s/mm (>= 0). */
-      dampingNsPerMm?: number;
-    },
+    opts?: MateOptions,
   ): this {
     recordMate(this.state, name, aRef, bRef, type, opts);
     return this;
@@ -255,6 +255,19 @@ export class Assembly {
   transmission(name: string, opts: TransmissionIntentOpts): this {
     recordTransmission(this.state, name, opts);
     return this;
+  }
+
+  /**
+   * Declare a model-rocket flight study on this assembly. Mass and CG come
+   * from the parts (material / density / massKg), `motor.part` is replaced by
+   * the declared motor (CG shifts as it burns), and the Barrowman CP comes
+   * from `aero.nose.part` / `aero.fins.part` geometry or declared dimensions.
+   * Declaration-only; `run_flight` runs it. A declared `minStabilityCal`
+   * makes evaluate fail with `flight.stability.below-min`. The script must
+   * return `arm.model()` (or `solvedModel()`) so the parts are lowered.
+   */
+  flightStudy(spec: FlightStudySpec): FlightStudyHandle {
+    return captureFlightStudy(this.state.session, spec, { assembly: this.name });
   }
 
   /**
@@ -411,6 +424,11 @@ export class Assembly {
    */
   __session(): CaptureSession {
     return this.state.session;
+  }
+
+  /** Parts and mates `subAssembly` would copy. Not part of the agent-facing surface. */
+  __importPlan(variant?: string): AssemblyImportPlan {
+    return importPlanFromState(this.state, variant);
   }
   __buildMateMetadata(): import('./captureSession').SolvedAssemblyMateMetadata | undefined {
     if (this.state.mates.length === 0) return undefined;

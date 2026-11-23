@@ -118,6 +118,17 @@ const DET_EPS = 1e-12;
 const AREA_EPS = 1e-12;
 const BARY_EPS = 1e-9;
 const PARITY_T_EPS = 1e-9;
+// A forward hit this close (barycentric) to a triangle edge is a graze: the
+// ray may pierce the surface there or only touch it, so parity cannot tell.
+const GRAZE_EPS = 1e-7;
+// Parity rays for the retry after a graze. The components have irrational
+// ratios, so a retry ray does not lie in a face plane of axis-aligned or
+// rationally tilted CAD geometry.
+const PARITY_RETRY_DIRS: readonly Vec3[] = [
+  [1, Math.SQRT2 - 1, (Math.sqrt(5) - 1) / 2],
+  [(Math.sqrt(5) - 1) / 2, 1, Math.sqrt(3) - 1],
+  [Math.SQRT2 - 1, Math.sqrt(3) - 1, 1],
+];
 const LEAF_SIZE = 8;
 
 /** Widest centroid axis: 0 = x, 1 = y, 2 = z (ties prefer the lower axis). */
@@ -153,6 +164,8 @@ export class TriangleBvh {
   // fresh Int32Array allocation per query. Depth 128 covers any tree this
   // layout can produce (worst-case depth ~ 2*log2(n) << 128).
   private readonly traversalStack = new Int32Array(128);
+  // Set by intersectTri when a forward hit lies on a triangle edge or vertex.
+  private grazed = false;
   // Parallel stack of node ENTRY t (raycast only): lets a popped node be
   // discarded with one comparison when bestT shrank below its entry after
   // it was pushed.
@@ -349,7 +362,9 @@ export class TriangleBvh {
     const qz = sx * e1y - sy * e1x;
     const v = (dx * qx + dy * qy + dz * qz) * inv;
     if (v < -BARY_EPS || u + v > 1 + BARY_EPS) return NaN;
-    return (e2x * qx + e2y * qy + e2z * qz) * inv;
+    const t = (e2x * qx + e2y * qy + e2z * qz) * inv;
+    if (t > 0 && (u < GRAZE_EPS || v < GRAZE_EPS || u + v > 1 - GRAZE_EPS)) this.grazed = true;
+    return t;
   }
 
   /** Ray/AABB slab test for node `node` over the t interval [tMin, tMax].
@@ -708,13 +723,35 @@ export class TriangleBvh {
    *  fewest tree cells — a thin slab is probed through its thickness in a
    *  point-location-style descent instead of swept across its span. Axis
    *  choice is per-mesh deterministic, and parity is axis-invariant on
-   *  watertight input. */
+   *  watertight input.
+   *
+   *  A ray that meets a triangle on an edge or vertex gives no reliable
+   *  parity: a ray in a face plane touches the neighbour faces on their
+   *  shared edges and counts them as crossings. Such a query is repeated
+   *  along the tilted PARITY_RETRY_DIRS and the first ray with no graze
+   *  decides. If every ray grazes, the majority decides and a tie keeps the
+   *  axis-ray answer. */
   pointInside(p: Vec3): boolean {
     if (this.triangleCount === 0) return false; // empty tree: placeholder root bounds must not be read
     const b = this.bounds;
     const ex = b[3] - b[0], ey = b[4] - b[1], ez = b[5] - b[2];
     const dir: Vec3 =
       ex <= ey ? (ex <= ez ? [1, 0, 0] : [0, 0, 1]) : ey <= ez ? [0, 1, 0] : [0, 0, 1];
+    const axisInside = this.rayParityInside(p, dir);
+    if (!this.grazed) return axisInside;
+    let votes = axisInside ? 1 : -1;
+    for (const retryDir of PARITY_RETRY_DIRS) {
+      const inside = this.rayParityInside(p, retryDir);
+      if (!this.grazed) return inside;
+      votes += inside ? 1 : -1;
+    }
+    return votes === 0 ? axisInside : votes > 0;
+  }
+
+  /** Odd number of distinct forward crossings along `dir`. Leaves
+   *  `this.grazed` set when a crossing lies on a triangle edge or vertex. */
+  private rayParityInside(p: Vec3, dir: Vec3): boolean {
+    this.grazed = false;
     const hits = this.allHits(p, dir, 0);
     let crossings = 0;
     let lastT = -Infinity;

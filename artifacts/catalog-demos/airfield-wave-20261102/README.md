@@ -32,3 +32,12 @@ All build, mesh, index, preview and page-generation checks are local to the feat
 ## Provenance
 
 All 40 assets are original kernelCAD programs dedicated to the public domain under CC0 1.0. Geometry is generated from source primitives; no third-party model meshes, textures or palettes are included.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/airfield-wave-20261102/capture_airfield_demo.py`
+- video review: `python3 artifacts/catalog-demos/airfield-wave-20261102/inspect_airfield_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

@@ -104,6 +104,43 @@ export interface ResolvedInputs {
    * Absent when the engine ran without one.
    */
   paramTable?: import('../../shared/runtime/paramTable').ParamTable;
+  /**
+   * The recompute pass this lowering belongs to. A lowerer keeps pass-local
+   * memos here (identical sub-results of repeated parts); they are dropped,
+   * and their `dispose` run, when the pass ends. Absent when a caller drives
+   * a lowerer directly.
+   */
+  pass?: LoweringPass;
+}
+
+/** Pass-local memo storage handed to lowerers by the recompute engine. */
+export interface LoweringPass {
+  /** The value stored under `key` for this pass, created on first use. */
+  memo<T>(key: string, create: () => T, dispose?: (value: T) => void): T;
+}
+
+/** A `LoweringPass` the engine owns: `end()` disposes every memo. */
+export class LoweringPassScope implements LoweringPass {
+  private readonly entries = new Map<string, { value: unknown; dispose?: (value: unknown) => void }>();
+
+  memo<T>(key: string, create: () => T, dispose?: (value: T) => void): T {
+    const hit = this.entries.get(key);
+    if (hit) return hit.value as T;
+    const value = create();
+    this.entries.set(key, { value, ...(dispose ? { dispose: dispose as (value: unknown) => void } : {}) });
+    return value;
+  }
+
+  end(): void {
+    for (const { value, dispose } of this.entries.values()) {
+      try {
+        dispose?.(value);
+      } catch {
+        // A memo that cannot be released must not fail the pass.
+      }
+    }
+    this.entries.clear();
+  }
 }
 
 export interface LowerResult {

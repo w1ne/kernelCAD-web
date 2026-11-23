@@ -1,0 +1,229 @@
+{
+  "scope": "Local kernelCAD Node API: Sketch.offset of a rounded outline, extrude and boolean to a tray and a lid, OCCT volume, validity, overlap and distance measurement.",
+  "invocation": "node --import tsx docs/demos/sketch-offset/capture-demo.mts",
+  "source": "docs/demos/sketch-offset/tray-and-lid.kcad.ts",
+  "sourceSha256": "6abb11305cdfcf87e1f884d3f0387d62a32508230b81beea0ea0e20ae3ee37ba",
+  "implementationSha256": {
+    "src/kernel/backends/occt/sketchOffset.ts": "0442ec0dd72407a302b0b42ee781f33b04e5dd00487f60816afb115aebdb6a75",
+    "src/modeling/capture/sketchOffset.ts": "5bee3c8bbfc97f5dac03be506283149547fd6636542949e08968a9b24e00989e"
+  },
+  "dimensionsMm": {
+    "width": 60,
+    "depth": 40,
+    "cornerRadius": 6,
+    "wall": 2,
+    "clearance": 0.2,
+    "trayHeight": 20,
+    "floor": 2,
+    "lidPlate": 2,
+    "plugDepth": 3
+  },
+  "expected": {
+    "basis": "closed form from the dimensions in the source script",
+    "outlineAreaMm2": 2369.097336,
+    "cavityAreaMm2": 2002.265482,
+    "plugAreaMm2": 1966.964598,
+    "cavityCornerRadiusMm": 4,
+    "plugCornerRadiusMm": 3.8,
+    "trayVolumeMm3": 11341.168026,
+    "lidVolumeMm3": 10639.088465,
+    "plugToWallGapMm": 0.2
+  },
+  "measured": {
+    "errorDiagnostics": 0,
+    "outlineLoop": [
+      [
+        "moveTo",
+        -24,
+        -20
+      ],
+      [
+        "lineTo",
+        24,
+        -20
+      ],
+      [
+        "bulgeArc",
+        30,
+        -14,
+        0.414214
+      ],
+      [
+        "lineTo",
+        30,
+        14
+      ],
+      [
+        "bulgeArc",
+        24,
+        20,
+        0.414214
+      ],
+      [
+        "lineTo",
+        -24,
+        20
+      ],
+      [
+        "bulgeArc",
+        -30,
+        14,
+        0.414214
+      ],
+      [
+        "lineTo",
+        -30,
+        -14
+      ],
+      [
+        "bulgeArc",
+        -24,
+        -20,
+        0.414214
+      ],
+      [
+        "close"
+      ]
+    ],
+    "cavity": {
+      "areaMm2": 2002.265482,
+      "cornerRadiiMm": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "loop": [
+        [
+          "moveTo",
+          -24,
+          -18
+        ],
+        [
+          "lineTo",
+          24,
+          -18
+        ],
+        [
+          "bulgeArc",
+          28,
+          -14,
+          0.414214
+        ],
+        [
+          "lineTo",
+          28,
+          14
+        ],
+        [
+          "bulgeArc",
+          24,
+          18,
+          0.414214
+        ],
+        [
+          "lineTo",
+          -24,
+          18
+        ],
+        [
+          "bulgeArc",
+          -28,
+          14,
+          0.414214
+        ],
+        [
+          "lineTo",
+          -28,
+          -14
+        ],
+        [
+          "bulgeArc",
+          -24,
+          -18,
+          0.414214
+        ],
+        [
+          "close"
+        ]
+      ]
+    },
+    "plug": {
+      "areaMm2": 1966.964598,
+      "cornerRadiiMm": [
+        3.8,
+        3.8,
+        3.8,
+        3.8
+      ],
+      "loop": [
+        [
+          "moveTo",
+          -24,
+          -17.8
+        ],
+        [
+          "lineTo",
+          24,
+          -17.8
+        ],
+        [
+          "bulgeArc",
+          27.8,
+          -14,
+          0.414214
+        ],
+        [
+          "lineTo",
+          27.8,
+          14
+        ],
+        [
+          "bulgeArc",
+          24,
+          17.8,
+          0.414214
+        ],
+        [
+          "lineTo",
+          -24,
+          17.8
+        ],
+        [
+          "bulgeArc",
+          -27.8,
+          14,
+          0.414214
+        ],
+        [
+          "lineTo",
+          -27.8,
+          -14
+        ],
+        [
+          "bulgeArc",
+          -24,
+          -17.8,
+          0.414214
+        ],
+        [
+          "close"
+        ]
+      ]
+    },
+    "trayVolumeMm3": 11341.168026,
+    "lidVolumeMm3": 10639.088465,
+    "trayValid": true,
+    "lidValid": true,
+    "trayLidOverlapMm3": 0,
+    "plugToWallGapMm": 0.2
+  },
+  "limits": [
+    "The offset is computed when the script runs: a param() distance or coordinate is refused.",
+    "No part was printed or machined, and no fit was tested on hardware.",
+    "No other CAD system opened the result."
+  ],
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}

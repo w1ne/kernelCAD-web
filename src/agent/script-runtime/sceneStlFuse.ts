@@ -17,13 +17,17 @@
 // fuse gives for parts that only touch or sit with clearance, and a union
 // that every slicer computes itself for parts that overlap.
 
-import { meshShapeForExport } from '../../kernel/backends/occt/backendMesh';
-import { encodeBinaryStl } from '../../kernel/backends/occt/exportStlBinary';
-import { verifyWatertight } from '../../kernel/backends/occt/meshHeal';
+import { geometryBox } from '../../kernel/backends/occt/backendBounds';
+import { exportMeshDeflection, meshShapeForExport, type ExportMeshDeflection, type ExportMeshToleranceOptions, type MeshDeviationReport } from '../../kernel/backends/occt/backendMesh';
+import { encodeBinaryStlShellsBytes, stampStlMeshTolerance } from '../../kernel/backends/occt/exportStlBinary';
+import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import type { WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../shared/diagnostics/registry';
-import { stlNotWatertightDiagnostic } from './exportDiagnostics';
+import { meshToleranceNotMetDiagnostic, stlNotWatertightDiagnostic } from './exportDiagnostics';
+import { measureBrepSurfaceDeviationFromBinaryStl } from './meshDeviation';
+import type { ExportResult } from './export';
+import { crackSeams, describeCrackSeams } from './sceneStlSeams';
 
 /** Overlapping free-form face pairs between two parts above which the fuse is
  *  skipped. A lofted handle on a lofted body is a few pairs; two threaded
@@ -73,17 +77,35 @@ export function freeformFuseOverBudget(parts: readonly WorldFramePart[]): Freefo
   return worst;
 }
 
-/** Mesh every part on its own and concatenate the meshes (index-offset). */
-export function meshPartsAsShells(parts: readonly WorldFramePart[]): { vertices: number[]; triangles: number[] } {
-  const vertices: number[] = [];
-  const triangles: number[] = [];
-  for (const p of parts) {
-    const m = meshShapeForExport(p.shape.getReplicadShape());
-    const offset = vertices.length / 3;
-    for (const v of m.vertices) vertices.push(v);
-    for (const t of m.triangles) triangles.push(t + offset);
-  }
-  return { vertices, triangles };
+/** One closed mesh per part, in part order. */
+export type PartShells = readonly { vertices: Float64Array; triangles: Uint32Array }[];
+
+/**
+ * Mesh every part on its own. The shells stay separate typed arrays: a part
+ * shares no vertex with another part, so the STL and the watertight report of
+ * the list equal those of the index-offset concatenation, which a dense
+ * assembly cannot afford to hold next to the STL bytes.
+ */
+export function meshPartsAsShells(
+  parts: readonly WorldFramePart[],
+  deflection?: ExportMeshDeflection,
+): PartShells {
+  return parts.map((p) => {
+    const m = meshShapeForExport(p.shape.getReplicadShape(), deflection);
+    return { vertices: Float64Array.from(m.vertices), triangles: Uint32Array.from(m.triangles) };
+  });
+}
+
+/** `verifyWatertight` over all shells: counts summed, the 5 largest clusters kept. */
+export function verifyShellsWatertight(shells: PartShells): WatertightReport {
+  const reports = shells.map(shell => verifyWatertight(shell));
+  if (reports.every(report => report.ok)) return { ok: true, openEdgeCount: 0, nonManifoldEdgeCount: 0, clusters: [] };
+  return {
+    ok: false,
+    openEdgeCount: reports.reduce((n, report) => n + report.openEdgeCount, 0),
+    nonManifoldEdgeCount: reports.reduce((n, report) => n + report.nonManifoldEdgeCount, 0),
+    clusters: reports.flatMap(report => report.clusters).sort((x, y) => y.edgeCount - x.edgeCount).slice(0, 5),
+  };
 }
 
 function shapeBox(p: WorldFramePart): Box | undefined {
@@ -106,7 +128,10 @@ function freeformFaceBoxes(p: WorldFramePart): Box[] {
     }
     if (!FREEFORM_SURFACES.has(type)) continue;
     try {
-      const [min, max] = face.boundingBox.bounds;
+      // The geometry box, not `face.boundingBox`: that one reads the
+      // triangulation once the part is meshed, so the price would depend on
+      // whether the Scene was rendered before the export.
+      const { min, max } = geometryBox(face.wrapped);
       out.push([min, max]);
     } catch {
       // A face without a box cannot be priced; skip it.
@@ -135,10 +160,34 @@ export function exportSceneStlAsShells(
   diagnostics: readonly CompilerDiagnostic[],
   featureCount: number,
   verify: boolean,
-): { bytes: Uint8Array; featureCount: number; diagnostics: CompilerDiagnostic[] } {
-  const mesh = meshPartsAsShells(worldParts);
-  const report = verifyWatertight(mesh);
-  const bytes = Uint8Array.from(encodeBinaryStl(mesh));
+  options?: ExportMeshToleranceOptions,
+): { bytes: Uint8Array; featureCount: number; diagnostics: CompilerDiagnostic[]; mesh_deviation?: MeshDeviationReport } {
+  const requested = options?.tolerance;
+  const initialDeflection = requested === undefined
+    ? exportMeshDeflection(options)
+    : exportMeshDeflection({ angularToleranceDeg: options?.angularToleranceDeg });
+  let mesh = meshPartsAsShells(worldParts, initialDeflection);
+  let report = verifyShellsWatertight(mesh);
+  let bytes: Uint8Array<ArrayBufferLike> = encodeBinaryStlShellsBytes(mesh);
+  let mesh_deviation: MeshDeviationReport | undefined;
+  if (requested !== undefined) {
+    mesh_deviation = measureBrepSurfaceDeviationFromBinaryStl(
+      worldParts.map(part => part.shape.getReplicadShape()),
+      bytes,
+      requested,
+    );
+    if (mesh_deviation.measured_max_mm > requested * 1.05) {
+      mesh = meshPartsAsShells(worldParts, exportMeshDeflection(options));
+      report = verifyShellsWatertight(mesh);
+      bytes = encodeBinaryStlShellsBytes(mesh);
+      mesh_deviation = measureBrepSurfaceDeviationFromBinaryStl(
+        worldParts.map(part => part.shape.getReplicadShape()),
+        bytes,
+        requested,
+      );
+    }
+    bytes = stampStlMeshTolerance(bytes, requested);
+  }
   const skipped: CompilerDiagnostic = {
     target: 'export-occt',
     code: 'export.stl.fuse-skipped',
@@ -152,6 +201,120 @@ export function exportSceneStlAsShells(
     nextAction: NEXT_ACTIONS['export.stl.fuse-skipped'],
   };
   const out = [...diagnostics, skipped];
+  if (mesh_deviation !== undefined && mesh_deviation.measured_max_mm > requested! * 1.05) {
+    out.push(meshToleranceNotMetDiagnostic(mesh_deviation, targetId));
+  }
   if (verify && !report.ok) out.push(stlNotWatertightDiagnostic(report, targetId));
-  return { bytes, featureCount, diagnostics: out };
+  return { bytes, featureCount, diagnostics: out, ...(mesh_deviation === undefined ? {} : { mesh_deviation }) };
+}
+
+/** `exportFused` writes the torn fused STL again. It runs only when the
+ *  per-part shells do not close, so the fused bytes are not held while the
+ *  shells are meshed. */
+export async function exportFusedSeamFallback(
+  worldParts: readonly WorldFramePart[],
+  exportFused: () => Promise<{ bytes: Uint8Array; mesh_deviation?: MeshDeviationReport }>,
+  fusedReport: ReturnType<typeof verifyWatertight>,
+  targetId: string,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+  options?: ExportMeshToleranceOptions,
+): Promise<ExportResult> {
+  const seams = describeCrackSeams(crackSeams(
+    fusedReport,
+    worldParts.map(part => ({ name: part.name, bbox: part.shape.boundingBox() })),
+  ));
+  const fallback = watertightSeamShells(worldParts, options);
+  if (fallback !== undefined) {
+    const toleranceFailure = meshToleranceFailure(fallback.mesh_deviation, targetId);
+    return {
+      bytes: fallback.bytes,
+      featureCount,
+      diagnostics: [
+        ...diagnostics,
+        seamFallbackDiagnostic(worldParts.length, fusedReport, seams, targetId),
+        ...(toleranceFailure === undefined ? [] : [toleranceFailure]),
+      ],
+      ...(fallback.mesh_deviation === undefined ? {} : { mesh_deviation: fallback.mesh_deviation }),
+    };
+  }
+  const base = stlNotWatertightDiagnostic(fusedReport, targetId);
+  const { bytes: fusedBytes, mesh_deviation: fusedDeviation } = await exportFused();
+  const toleranceFailure = meshToleranceFailure(fusedDeviation, targetId);
+  return {
+    bytes: fusedBytes,
+    featureCount,
+    diagnostics: [
+      ...diagnostics,
+      { ...base, message: `${base.message} Seams: ${seams}.` },
+      ...(toleranceFailure === undefined ? [] : [toleranceFailure]),
+    ],
+    ...(fusedDeviation === undefined ? {} : { mesh_deviation: fusedDeviation }),
+  };
+}
+
+function watertightSeamShells(
+  worldParts: readonly WorldFramePart[],
+  options?: ExportMeshToleranceOptions,
+): { bytes: Uint8Array; mesh_deviation?: MeshDeviationReport } | undefined {
+  if (worldParts.length <= 1) return undefined;
+  const tolerance = options?.tolerance;
+  const initialDeflection = tolerance === undefined
+    ? exportMeshDeflection(options)
+    : exportMeshDeflection({ angularToleranceDeg: options?.angularToleranceDeg });
+  let shells = meshPartsAsShells(worldParts, initialDeflection);
+  if (!verifyShellsWatertight(shells).ok) return undefined;
+  let bytes: Uint8Array = encodeBinaryStlShellsBytes(shells);
+  let mesh_deviation = measureShellDeviation(worldParts, bytes, tolerance);
+  if (deviationExceedsTolerance(mesh_deviation)) {
+    shells = meshPartsAsShells(worldParts, exportMeshDeflection(options));
+    if (!verifyShellsWatertight(shells).ok) return undefined;
+    bytes = encodeBinaryStlShellsBytes(shells);
+    mesh_deviation = measureShellDeviation(worldParts, bytes, tolerance);
+  }
+  if (tolerance !== undefined) bytes = stampStlMeshTolerance(bytes, tolerance);
+  return { bytes, ...(mesh_deviation === undefined ? {} : { mesh_deviation }) };
+}
+
+function measureShellDeviation(
+  worldParts: readonly WorldFramePart[],
+  bytes: Uint8Array,
+  tolerance: number | undefined,
+): MeshDeviationReport | undefined {
+  return tolerance === undefined
+    ? undefined
+    : measureBrepSurfaceDeviationFromBinaryStl(
+        worldParts.map(part => part.shape.getReplicadShape()),
+        bytes,
+        tolerance,
+      );
+}
+
+function deviationExceedsTolerance(report: MeshDeviationReport | undefined): boolean {
+  return report !== undefined && report.measured_max_mm > report.requested_mm * 1.05;
+}
+
+function seamFallbackDiagnostic(
+  partCount: number,
+  fusedReport: ReturnType<typeof verifyWatertight>,
+  seams: string,
+  targetId: string,
+): CompilerDiagnostic {
+  return {
+    target: 'export-occt',
+    code: 'export.mesh.fused-seam-fallback',
+    featureId: targetId,
+    severity: 'warn',
+    message: `The fused union of the ${partCount} parts meshed with ${fusedReport.openEdgeCount} open edge(s) (${seams}). Shipped each part as its own closed shell instead: the STL is watertight and slices as the union.`,
+    hint: HINT_TEMPLATES['export.mesh.fused-seam-fallback'].template,
+    nextAction: NEXT_ACTIONS['export.mesh.fused-seam-fallback'],
+  };
+}
+
+function meshToleranceFailure(
+  report: MeshDeviationReport | undefined,
+  targetId: string,
+): CompilerDiagnostic | undefined {
+  if (report === undefined || report.measured_max_mm <= report.requested_mm * 1.05) return undefined;
+  return meshToleranceNotMetDiagnostic(report, targetId);
 }

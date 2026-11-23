@@ -1,0 +1,112 @@
+{
+  "kind": "source/index/preview and local page verification; no deployment performed",
+  "asset": {
+    "id": "water-treatment/backwash-pump-skid",
+    "source": "catalog/kits/water-treatment/backwash-pump-skid.kcad.ts",
+    "sourceSha256": "afc48c6618f766e15ca0a13903a1b8302cbdb821b418933a66546fcbd258b2a5",
+    "preview": "/assets/water-treatment-backwash-pump-skid.png",
+    "triangles": 2648,
+    "triangleBudget": 3600,
+    "materialControls": [
+      "coatedSteel",
+      "structuralSteel",
+      "stainlessSteel",
+      "rubber"
+    ],
+    "presets": [
+      "weathered",
+      "highVisibility"
+    ],
+    "choices": {
+      "scale": null,
+      "pumpArrangement": [
+        "single",
+        "duplex"
+      ],
+      "coatedSteel": null,
+      "structuralSteel": null,
+      "stainlessSteel": null,
+      "rubber": null
+    }
+  },
+  "waterTreatmentQuality": {
+    "passing": 50,
+    "total": 50
+  },
+  "catalogQuality": {
+    "passing": 2402,
+    "total": 2402
+  },
+  "variants": [
+    {
+      "asset": "water-treatment/backwash-pump-skid",
+      "variant": "single",
+      "values": {
+        "pumpArrangement": "single"
+      },
+      "sourceSha256": "afc48c6618f766e15ca0a13903a1b8302cbdb821b418933a66546fcbd258b2a5",
+      "triangles": 1640,
+      "triangleBudget": 3600,
+      "png": "variants/backwash-pump-skid-single.png"
+    },
+    {
+      "asset": "water-treatment/backwash-pump-skid",
+      "variant": "duplex",
+      "values": {
+        "pumpArrangement": "duplex"
+      },
+      "sourceSha256": "afc48c6618f766e15ca0a13903a1b8302cbdb821b418933a66546fcbd258b2a5",
+      "triangles": 2648,
+      "triangleBudget": 3600,
+      "png": "variants/backwash-pump-skid-duplex.png"
+    },
+    {
+      "asset": "water-treatment/backwash-pump-skid",
+      "variant": "duplex-high-visibility",
+      "values": {
+        "coatedSteel": "#e5682d",
+        "structuralSteel": "#505b60",
+        "stainlessSteel": "#e1ddd0",
+        "rubber": "#272c2e",
+        "pumpArrangement": "duplex"
+      },
+      "sourceSha256": "afc48c6618f766e15ca0a13903a1b8302cbdb821b418933a66546fcbd258b2a5",
+      "triangles": 2648,
+      "triangleBudget": 3600,
+      "png": "variants/backwash-pump-skid-duplex-high-visibility.png"
+    }
+  ],
+  "checks": {
+    "sourceSha256MatchesIndex": true,
+    "previewExists": true,
+    "previewPathIndexed": true,
+    "qualityGate": true,
+    "fourMaterialControls": true,
+    "namedPresets": true,
+    "singleDuplexChoice": true,
+    "defaultUnderTriangleBudget": true,
+    "assetCountUnchanged": true,
+    "waterTreatmentQuality50of50": true,
+    "catalogQuality2402of2402": true,
+    "variantCount": true,
+    "variant1SourceHashMatches": true,
+    "variant1UnderBudget": true,
+    "variant1PreviewExists": true,
+    "variant2SourceHashMatches": true,
+    "variant2UnderBudget": true,
+    "variant2PreviewExists": true,
+    "variant3SourceHashMatches": true,
+    "variant3UnderBudget": true,
+    "variant3PreviewExists": true,
+    "localPageExists": true,
+    "localPagePreviewExists": true,
+    "localPageControlsAndPresetsVisible": true,
+    "eslintPassed": true,
+    "integrationPassed": true,
+    "lintIntegration": "passed",
+    "localPage": "passed"
+  },
+  "passed": 26,
+  "total": 26,
+  "pass": true
+}

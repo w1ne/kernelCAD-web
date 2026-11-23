@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// Identity of files a script reads beside itself (`lib.fromSTEP`, fonts).
+// Identity of files a script reads beside itself (`lib.fromSTEP`, `lib.from3MF`, fonts).
 // The source text can stay the same while those bytes change. A path we
 // cannot resolve is not a match: the document is rebuilt.
 
@@ -9,7 +9,7 @@ import { getHostFs } from '../../shared/runtime/hostFs';
 
 // `meshFromSTL` must be listed whole: a `\bfromSTL` boundary does not see it.
 // `fromGLB` / `fromGLTF` are not loaders. `fetchPart` is resolved below.
-const IMPORT_CALL = /\b(?:meshFromSTL|fromSTEP|fromBREP|fromSTL|fromDXF|fromSVG|referenceImage|fontPath|fetchPart)\s*\(\s*/g;
+const IMPORT_CALL = /\b(?:meshFromSTL|fromSTEP|fromBREP|fromSTL|from3MF|fromDXF|fromSVG|referenceImage|fontPath|fetchPart)\s*\(\s*/g;
 
 function hashBytes(bytes: Uint8Array): string {
   let h1 = 0x811c9dc5;

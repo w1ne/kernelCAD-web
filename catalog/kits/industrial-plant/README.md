@@ -4,6 +4,62 @@ Sixty original low-poly factory scene assets for process equipment, power and co
 
 The [industrial plant wave demo bundle](../../../artifacts/catalog-demos/industrial-plant-wave-20261102/README.md) retains the original kit capture and verification. The [2026-11-05 quality promotion bundle](../../../artifacts/catalog-demos/industrial-plant-quality-promotion-20261105/README.md) records the in-place material, preset, geometry, preview, and local validation work. Both bundles distinguish local source and preview checks from deployment and physical equipment acceptance.
 
+The Nov 9 machine-detail follow-up refines the existing diesel generator,
+belt conveyor, and distribution transformer after preview review. Their
+material controls distinguish enclosure paint, radiator metal, rubber
+isolators, belt rubber, porcelain insulation and copper terminals. The
+generator has a visible louvered radiator and service controls; the conveyor's
+support legs meet the deck and its belt rollers and drive motor are modelled;
+the transformer has two fin banks and ribbed primary and secondary bushings.
+Louver count, support-station count and radiator-fin count change geometry.
+The [machine-quality handoff](../../../artifacts/catalog-demos/industrial-plant-machine-quality-20261109/README.md)
+records source-driven variants, refreshed previews, local checks and an
+inspected MP4. No asset IDs or kit counts changed.
+
+The Nov 10 air-compressor refinement turns the existing model into a joined
+receiver, saddle and skid package with a belt-driven motor, finned single/twin
+pump, open guard, intake filter and pressure controls. Its 80/120-gallon
+receiver choice changes the tank and frame geometry; four material controls
+separate receiver steel, pump iron, motor paint and rubber. The default render
+is 4,594 triangles under a 5,200 budget. The
+[air-compressor handoff](../../../artifacts/catalog-demos/industrial-plant-air-compressor-quality-20261110/README.md)
+records before/after previews, source variants, local checks and an inspected
+MP4. No asset IDs or kit counts changed.
+
+The Nov 10 chiller refinement replaces the block silhouette with paired
+horizontal shell-and-tube vessels, dished heads, nozzles, a compressor and drive
+motor, pipework, controls, support steel and a skid. Its compact/large shell
+choice changes vessel and frame geometry; four material controls separate
+shell steel, support steel, compressor paint and pipework. The default render
+is 3,968 triangles under a 4,500 budget. The
+[chiller handoff](../../../artifacts/catalog-demos/industrial-plant-chiller-quality-20261110/README.md)
+records source variants, refreshed previews, local checks and an inspected
+MP4. No asset IDs or kit counts changed.
+
+The Nov 10 baghouse refinement moves the filter media inside the plenum,
+connects four tapered hopper walls to the dust outlet, and extends the support
+legs to the collector body. Its visible steel and safety-paint controls retain
+the `weathered` and `highVisibility` palettes. The default render is 552
+triangles under a 1,400 budget. The [semantic-review handoff](../../../artifacts/catalog-demos/industrial-plant-baghouse-semantic-review-20261110/README.md)
+includes the audit ledger, before/after previews, regression test, local checks
+and inspected MP4. No asset IDs or kit counts changed.
+
+The Nov 11 positive-displacement-pump refinement makes the pump head distinct
+from its motor: a bolted circular service cover, raised suction/discharge
+flanges and an integral relief-return feature now sit on a separate skid with a
+guarded coupling. The palette distinguishes pump steel, motor enamel and the
+safety finish. The default render is 1,508 triangles under a 1,800 budget. Its
+[semantic-review handoff](../../../artifacts/catalog-demos/industrial-plant-positive-displacement-pump-semantic-review-20261111/README.md)
+records the five-preview ledger, before/after evidence, GLB regression, local
+checks and inspected MP4. No asset IDs or kit counts changed.
+
+The Nov 11 compressed-air-receiver material review gives the welded heads and
+top nozzle necks the same steel control as the pressure shell; the safety
+finish remains on the supports and skid. Geometry, scale, presets, and asset
+count are unchanged. Its [semantic-review handoff](../../../artifacts/catalog-demos/industrial-plant-compressed-air-receiver-material-review-20261111/README.md)
+records the five-preview ledger, before/after images, GLB color regression,
+local checks, and inspected MP4.
+
 | id | asset | description | knobs |
 | --- | --- | --- | --- |
 | `vertical-storage-tank` | Vertical storage tank | Vertical liquid storage tank with a domed-looking roof, service ladder and foundation legs. | scale · steel · safety paint |
@@ -18,30 +74,30 @@ The [industrial plant wave demo bundle](../../../artifacts/catalog-demos/industr
 | `process-water-silo` | Process water silo | Tall process silo with a roof cap, ring stiffeners, discharge hopper and four support legs. | scale · steel · safety paint |
 | `centrifugal-pump` | Centrifugal process pump | End-suction pump set at about real size: spiral volute with discharge neck and suction nozzle, bolted flanges, ribbed bearing frame, half-round coupling guard and finned TEFC motor on a drip-rim baseplate. | scale · casing · motor · base · metal |
 | `chemical-metering-skid` | Chemical metering skid | Chemical dosing skid with paired metering pumps, a shared manifold, gauges and a raised control box. | scale · steel · safety paint · gauge glass |
-| `positive-displacement-pump` | Positive displacement pump | Compact positive-displacement pump with a ribbed gearbox, inlet flange and pressure bypass. | scale · steel · safety paint |
-| `air-compressor` | Industrial air compressor | Packaged air compressor with a receiver tank, motor head, intake filter and service gauge. | scale · steel · safety paint · gauge glass |
+| `positive-displacement-pump` | Positive displacement pump | Compact external-gear pump scene prop with a horizontal motor, guarded coupling, bolted circular head, raised suction/discharge flanges and a relief return. | scale · steel · motor enamel · safety finish |
+| `air-compressor` | Industrial air compressor | Horizontal receiver on saddles and skid with a belt-driven motor, finned single/twin pump, intake filter and pressure controls. | scale · receiver capacity · pump arrangement · receiver steel · pump iron · motor paint · rubber |
 | `vacuum-pump-unit` | Vacuum pump unit | Vacuum pump package with a horizontal motor, exhaust silencer, intake pipe and base rails. | scale · steel · safety paint · gauge glass |
 | `process-blower` | Process blower | Industrial process blower with a broad intake housing, drive motor and raised discharge duct. | scale · steel · safety paint |
-| `diesel-generator-set` | Diesel generator set | Packaged diesel generator with a sound enclosure, radiator grille, exhaust stack and skid base. | scale · steel · safety paint |
+| `diesel-generator-set` | Diesel generator set | Packaged generator with a louvered radiator, isolated skid mounts, service door, controls and exhaust stack. | scale · louver count · enclosure paint · steel · radiator core · rubber |
 | `industrial-boiler` | Industrial boiler | Packaged firetube steam boiler at about real size: banded shell on saddles and skid, dished doors, burner and blower housing with gas train and control panel, rear stack, stop and safety valves, water column with gauge glass. | scale · shell · trim · piping · gauge glass |
 | `burner-management-skid` | Burner management skid | Burner management skid with a gas train, control cabinet, paired valves and a pilot stack. | scale · steel · safety paint |
 | `steam-header-manifold` | Steam header manifold | Steam distribution header with five branch risers, isolation wheels and a raised pressure gauge. | scale · steel · safety paint · gauge glass |
 | `rooftop-air-handler` | Rooftop air handler | Packaged rooftop air handler with intake and filter sections, exhaust fans and raised service feet. | scale · steel · safety paint |
-| `centrifugal-chiller` | Centrifugal chiller | Industrial chiller package with two compressor domes, condenser barrels and pipe connections. | scale · steel · safety paint |
+| `centrifugal-chiller` | Centrifugal chiller | Water-cooled chiller package with two dished shell-and-tube vessels, a centrifugal compressor and drive motor, connecting pipework, controls cabinet and supported skid. | scale · shell package · shell steel · frame steel · compressor paint · pipework |
 | `axial-flow-fan` | Axial flow fan | Axial flow fan with a faceted shroud, central hub, support frame and adjustable service mount. | scale · steel · safety paint |
-| `baghouse-dust-collector` | Baghouse dust collector | Baghouse collector with filter tubes, a hopper bottom, service platform and induced-draft fan. | scale · steel · safety paint |
+| `baghouse-dust-collector` | Baghouse dust collector | Enclosed filter media inside a supported plenum, tapered dust hopper with outlet, service walkway and induced-draft fan. | scale · steel · safety paint |
 | `cartridge-filter-housing` | Cartridge filter housing | Vertical cartridge-filter vessel with a quick-access lid, inlet and outlet pipes and a drain. | scale · steel · safety paint |
 | `cyclone-separator` | Cyclone separator | Cyclone separator with a tangential inlet, tall outlet stack and a segmented dust hopper. | scale · steel · safety paint |
-| `industrial-transformer` | Industrial distribution transformer | Compact distribution transformer with radiator panels, lifting lugs, bushings and wheel skids. | scale · steel · safety paint |
+| `industrial-transformer` | Industrial distribution transformer | Oil-filled transformer with two fin banks, ribbed porcelain bushings, copper terminals, lifting lugs and wheel skids. | scale · radiator fin count · tank paint · steel · porcelain · copper |
 | `electrical-control-cabinet` | Electrical control cabinet | Floor-standing control cabinet with twin doors, vent slots, indicator lamps and a plinth. | scale · steel · safety paint · gauge glass |
 | `motor-control-center` | Motor control center | Motor-control-center lineup with three distinct bays, operator panels and a shared cable base. | scale · steel · safety paint |
 | `plc-control-rack` | PLC control rack | Open PLC rack with modular I/O cards, side rails, a communication module and wire duct. | scale · steel · safety paint |
 | `variable-frequency-drive-cabinet` | Variable frequency drive cabinet | Drive cabinet with a large heat-sink back, status display, cooling fan and disconnect handle. | scale · steel · safety paint · gauge glass |
 | `cable-tray-bridge` | Cable tray bridge | Raised cable tray bridge with perforated-looking rails, crossbars and two support frames. | scale · steel · safety paint |
-| `belt-conveyor` | Belt conveyor | Straight belt conveyor with a raised deck, roller ends, side guides and adjustable support legs. | scale · steel · safety paint |
+| `belt-conveyor` | Belt conveyor | Straight conveyor with a rubber belt, transverse carrying and return rollers, guarded frame, adjustable support stations and drive motor. | scale · support stations · frame steel · belt rubber · roller steel · safety paint |
 | `roller-conveyor-line` | Roller conveyor line | Gravity roller conveyor section with a sturdy side frame, repeated rollers and end stops. | scale · steel · safety paint |
 | `screw-conveyor` | Screw conveyor | Inclined screw conveyor with an enclosed tube, drive gearbox, feed hopper and support saddles. | scale · steel · safety paint |
-| `bucket-elevator` | Bucket elevator | Bucket elevator with a tall casing, boot housing, head pulley cover and service ladder. | scale · steel · safety paint |
+| `bucket-elevator` | Bucket elevator | Bucket elevator with a tall casing, front inspection cutaway showing the contained bucket belt, boot housing, head pulley cover and service ladder. | scale · steel · safety paint · belt rubber · bucket polymer |
 | `vibratory-feeder` | Vibratory feeder | Vibratory feeder with a wide feed pan, coil supports, drive unit and hopper transition. | scale · steel · safety paint |
 | `weigh-hopper` | Weigh hopper | Batch weigh hopper with a broad upper bin, load-cell supports, tapered rectangular discharge chute and outlet gate. | scale · steel · safety paint · wear liner |
 | `bulk-loading-spout` | Bulk loading spout | Bulk loading spout with a telescoping-looking outlet, overhead frame and dust skirt. | scale · steel · safety paint |
@@ -73,12 +129,16 @@ Search by object name through the catalog tools, or open a known asset directly 
 
 ## Rebuild and verify
 
+The Nov 2 wave generator recreates the original kit and would overwrite later
+source refinements, including this chiller. The checked-in `.kcad.ts` files are
+the current design sources; regenerate derived catalog data and pages from those
+files with the commands below.
+
 ```sh
-python3 -B artifacts/catalog-demos/industrial-plant-wave-20261102/generate_industrial_plant_assets.py
+npx tsx scripts/renderCatalogPreviews.ts centrifugal-chiller
 npx tsx scripts/buildAssetCatalog.ts
-npx eslint catalog/
+npx eslint catalog/kits/industrial-plant/
 npx vitest run tests/integration/catalog/
-npx tsx scripts/renderCatalogPreviews.ts vertical-storage-tank horizontal-pressure-vessel process-reactor-vessel distillation-column packed-scrubber-column shell-and-tube-exchanger plate-heat-exchanger evaporative-cooling-tower flare-stack process-water-silo centrifugal-pump chemical-metering-skid positive-displacement-pump air-compressor vacuum-pump-unit process-blower diesel-generator-set industrial-boiler burner-management-skid steam-header-manifold rooftop-air-handler centrifugal-chiller axial-flow-fan baghouse-dust-collector cartridge-filter-housing cyclone-separator industrial-transformer electrical-control-cabinet motor-control-center plc-control-rack variable-frequency-drive-cabinet cable-tray-bridge belt-conveyor roller-conveyor-line screw-conveyor bucket-elevator vibratory-feeder weigh-hopper bulk-loading-spout palletizer-robot-cell bridge-crane gantry-crane jib-crane electric-chain-hoist forklift-truck electric-pallet-jack scissor-lift-table pallet-rack-bay machine-guard-enclosure pipe-rack-bay grating-walkway-module maintenance-platform industrial-stair-tower vertical-cage-ladder steel-access-gate valve-manifold-station pressure-relief-valve inline-flow-meter compressed-air-receiver mobile-tool-cart
 npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-industrial-plant-pages
 ```
 

@@ -60,3 +60,12 @@ so no updated public-page behavior is claimed.
 These are stylized visualization props. They do not define water quality,
 process performance, flow, pressure, chemical handling, safety, regulatory
 compliance, installation suitability, or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/water-treatment-quality-promotion-20261105/capture_water_treatment_demo.py`
+- video review: `python3 artifacts/catalog-demos/water-treatment-quality-promotion-20261105/inspect_water_treatment_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

@@ -198,6 +198,27 @@ kernelcad export step model.kcad.ts -o model.step
 kernelcad export stl model.kcad.ts -o model.stl
 ```
 
+Ask an installed slicer to open an already-exported STEP or 3MF:
+
+```bash
+kernelcad slicer open model.step
+# or: kernelcad slicer open model.3mf
+```
+
+The CLI detects OrcaSlicer, PrusaSlicer, Bambu Studio, or Cura on `PATH`; set
+`KERNELCAD_SLICER` to a binary path to override detection. It does not create or
+modify the export. A successful exit code means the operating system reported
+that the slicer process started, not that the file is open in the GUI. If no
+slicer is installed, or it cannot start, the command returns a non-zero exit
+code and leaves the file in place.
+
+A script that returns one shape exports as one STEP product named after the
+script file (`model`), with the shape's `.color(...)` when it has one. An
+assembly exports one named body per part, with the part's colour when it has
+one; a part without a colour is written without one. A hex colour is written to STEP
+`COLOUR_RGB` as the same sRGB channels (`#3366cc` is `0.2, 0.4, 0.8`), and
+`import-step` reads a STEP colour back as the same hex value.
+
 Translate an assembly exported from SolidWorks or another CAD application as
 STEP into a KernelCAD project:
 
@@ -211,7 +232,13 @@ product paths, units, placements, colors, and geometry measurements, and exact
 native OCCT BREP assets content-addressed by geometry. Byte-identical product
 definitions share an asset. The original STEP assembly hierarchy is recorded
 in the manifest; the current KernelCAD scene is flattened into independently
-placeable occurrences. Local STEP `DOCUMENT_FILE` dependencies are read
+placeable occurrences. Each part keeps its STEP name; the root product that
+holds every part is the assembly and is not part of the name (`pin_left`, not
+`panel__pin_left`), and a nested part is named by its sub-assembly path
+(`wrist__flange`). A name that is not usable as written (other characters than
+letters, digits, `_` and `-`, or a repeated name) is changed, reported as a
+warning, and listed as `renamedParts` in the `--json` result; `manifest.json`
+records the `partName` of every occurrence. Local STEP `DOCUMENT_FILE` dependencies are read
 recursively, included in the import provenance hashes, and must stay inside the
 input directory. Component colors are preserved; per-face color mapping is not
 part of this import. It does not infer mates, joints, motion, feature history,

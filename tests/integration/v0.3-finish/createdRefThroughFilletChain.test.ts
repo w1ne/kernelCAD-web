@@ -12,7 +12,7 @@ describe('created-ref survives fillet chain (E2E)', () => {
       const block = box(100, 60, 20)
         .hole('top', { u: 0, v: 0, diameter: 6, depth: 'through', name: 'thruHole' });
       return block
-        .fillet(0.3, { face: 'thruHole.entry-rim' })
+        .fillet(0.3, { atZ: 20, ofCurveType: 'CIRCLE' })
         .fillet(1.0, { face: 'top' })
         .fillet(0.2, { face: 'thruHole.wall' });
     `;
@@ -20,7 +20,9 @@ describe('created-ref survives fillet chain (E2E)', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const result = await engine.run(records);
 
-    const errs = result.diagnostics.filter((d) => d.code === 'feature.face-ref.removed');
+    // No error of any kind: a failed fillet must not hide behind a narrower
+    // filter (the first fillet used to name a slot the hole never writes).
+    const errs = result.diagnostics.filter((d) => d.severity === 'error');
     expect(errs).toEqual([]);
     // One warning is acceptable, more than one would be suspicious:
     const warns = result.diagnostics.filter((d) => d.code === 'feature.created-ref.fallback-used');

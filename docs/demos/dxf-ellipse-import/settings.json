@@ -1,0 +1,28 @@
+{
+  "invocation": "npx tsx docs/demos/dxf-ellipse-import/capture-demo.mts",
+  "sourceScript": "examples/interoperability/dxf-ellipse/import-ellipse.kcad.ts",
+  "inputFixture": "examples/interoperability/dxf-ellipse/ellipse-profile.dxf",
+  "renderer": "scripts/lib/glbSoftwareRender.ts using triangles meshed from the lowered OCCT B-rep",
+  "browser": "none; offline SVG + Sharp + FFmpeg capture",
+  "width": 1280,
+  "height": 720,
+  "fps": 20,
+  "durationSeconds": 10,
+  "encoding": {
+    "codec": "libx264",
+    "preset": "medium",
+    "crf": 26,
+    "pixelFormat": "yuv420p",
+    "fastStart": true
+  },
+  "model": {
+    "extrusionMm": 5,
+    "majorRadiusMm": 20,
+    "minorRadiusMm": 10
+  },
+  "validation": [
+    "OCCT B-rep validity",
+    "measured volume against pi * 20 * 10 * 5 mm^3"
+  ],
+  "scope": "Local geometry validation only; no deployment, simulation, or hardware acceptance."
+}

@@ -10,8 +10,10 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { runAndExport } from '../../../src/agent/script-runtime/export';
 import { verifyWatertight } from '../../../src/kernel/backends/occt/meshHeal';
-import { encodeBinaryStl } from '../../../src/kernel/backends/occt/exportStlBinary';
+import { encodeBinaryStl, encodeBinaryStlShells } from '../../../src/kernel/backends/occt/exportStlBinary';
+import * as backendMesh from '../../../src/kernel/backends/occt/backendMesh';
 import { crackSeams, describeCrackSeams } from '../../../src/agent/script-runtime/sceneStlSeams';
+import { meshPartsAsShells, verifyShellsWatertight } from '../../../src/agent/script-runtime/sceneStlFuse';
 import { stlStats } from '../../helpers/stlStats';
 
 const SCENE = `
@@ -89,6 +91,92 @@ describe('multi-part STL: fused seam crack fallback', () => {
     expect(verifyWatertight(weldStl(r.bytes)).ok).toBe(true);
     expect(stlStats(r.bytes).components).toBe(2);
   }, 120_000);
+});
+
+describe('tolerance-refined seam fallback', () => {
+  it('rejects refined shells that lose watertightness', async () => {
+    tearFusedMesh();
+    const meshShapeForExport = backendMesh.meshShapeForExport;
+    let refinedMeshes = 0;
+    vi.spyOn(backendMesh, 'meshShapeForExport').mockImplementation((shape, deflection) => {
+      const mesh = meshShapeForExport(shape, deflection);
+      if (deflection?.relative === false) {
+        refinedMeshes++;
+        mesh.triangles.splice(0, 3);
+      }
+      return mesh;
+    });
+    const result = await runAndExport({
+      code: SCENE.replace('cylinder(20, 8)', 'cylinder(200, 100)'),
+      fileName: 'refined-seam.kcad.ts',
+      format: 'stl',
+      options: { format: 'stl', tolerance: 0.001 },
+    });
+    expect(refinedMeshes).toBeGreaterThan(0);
+    const codes = result.diagnostics.map(diagnostic => diagnostic.code);
+    expect(codes).toContain('export.mesh.not-watertight');
+    expect(codes).not.toContain('export.mesh.fused-seam-fallback');
+  }, 120_000);
+});
+
+// #1585: the fallback held the torn fused STL while it meshed every part
+// again, and built the shells in boxed arrays.
+describe('seam fallback memory (#1585)', () => {
+  it('writes the torn fused STL again when the shells do not close either', async () => {
+    tearFusedMesh();
+    const fusedExports = vi.mocked(OcctBackend.prototype.exportSTLWithReportAsync);
+    const meshShapeForExport = backendMesh.meshShapeForExport;
+    vi.spyOn(backendMesh, 'meshShapeForExport').mockImplementation((shape, deflection) => {
+      const mesh = meshShapeForExport(shape, deflection);
+      mesh.triangles.splice(0, 3);
+      return mesh;
+    });
+    const r = await runAndExport({ code: SCENE, fileName: 'seam.kcad.ts', format: 'stl' });
+    const codes = r.diagnostics.map((d) => d.code);
+    expect(codes).toContain('export.mesh.not-watertight');
+    expect(codes).not.toContain('export.mesh.fused-seam-fallback');
+    // First call: the fused export that came out torn. Second call: the same
+    // export repeated after the shells failed, because its bytes were released.
+    expect(fusedExports).toHaveBeenCalledTimes(2);
+    const first = (await fusedExports.mock.results[0]!.value).bytes;
+    expect(r.bytes.byteLength).toBe(first.byteLength);
+    expect(Buffer.from(r.bytes.subarray(80)).equals(Buffer.from(first.subarray(80)))).toBe(true);
+  }, 120_000);
+
+  it('keeps shells as typed arrays whose STL and report equal the concatenated mesh', () => {
+    const shapes = [
+      OcctBackend.box(30, 20, 10),
+      OcctBackend.sphere(8).translate(60, 0, 0),
+      OcctBackend.cylinder(12, 5).translate(0, 50, 0),
+    ];
+    const parts = shapes.map((shape, i) => ({ name: `p${i}`, shape })) as Parameters<typeof meshPartsAsShells>[0];
+    const concatenated = (drop: number): { vertices: number[]; triangles: number[] } => {
+      const vertices: number[] = [];
+      const triangles: number[] = [];
+      for (const shape of shapes) {
+        const m = backendMesh.meshShapeForExport(shape.getReplicadShape());
+        const offset = vertices.length / 3;
+        for (const v of m.vertices) vertices.push(v);
+        for (const t of m.triangles.slice(drop)) triangles.push(t + offset);
+      }
+      return { vertices, triangles };
+    };
+    const shells = meshPartsAsShells(parts);
+    expect(shells).toHaveLength(3);
+    for (const shell of shells) {
+      expect(shell.vertices).toBeInstanceOf(Float64Array);
+      expect(shell.triangles).toBeInstanceOf(Uint32Array);
+    }
+    expect(verifyShellsWatertight(shells)).toEqual(verifyWatertight(concatenated(0)));
+    expect(verifyShellsWatertight(shells).ok).toBe(true);
+    expect(encodeBinaryStlShells(shells, 'h').equals(encodeBinaryStl(concatenated(0), 'h'))).toBe(true);
+    // Torn shells: the summed report equals the report of the concatenation.
+    const torn = shells.map(shell => ({ vertices: shell.vertices, triangles: shell.triangles.slice(6) }));
+    const tornReport = verifyShellsWatertight(torn);
+    expect(tornReport.ok).toBe(false);
+    expect(tornReport).toEqual(verifyWatertight(concatenated(6)));
+    for (const shape of shapes) shape.dispose();
+  }, 60_000);
 });
 
 describe('sceneStlSeams helpers', () => {

@@ -200,6 +200,27 @@ describe('autoAnnotate edge cases', () => {
     expect(decode(r.bytes)).toContain('>ISO 2768-mK</text>');
   });
 
+  it('draws the same sheet for a disc whether or not it was meshed first', () => {
+    // Datum A is a circular cap. replicad's face box reads the triangulation
+    // once the shape is meshed, which pulled the cap box inside its circle
+    // and moved the datum and flatness callouts to another view.
+    const sheet = (meshFirst: boolean) => {
+      const disc = OcctBackend.cylinder(10, 15);
+      if (meshFirst) disc.getMesh();
+      const r = renderSvgDrawing([{ name: 'disc', shape: disc }], { format: 'svg-drawing', autoAnnotate: true });
+      return { svg: decode(r.bytes), report: r.report };
+    };
+    const plain = sheet(false);
+    const meshed = sheet(true);
+    expect(autoGroups(plain.svg, 'flatness')).toHaveLength(1);
+    // ISO 2768-2 K, 30 mm: 0.1. Before the fix the plain disc read the padded
+    // box (just over 30 mm, ⏥ 0.2) and the meshed one ⏥ 0.1 in the left view.
+    const flat = plain.report!.annotations.find(a => a.id === 'auto:flatness:A');
+    expect(flat).toMatchObject({ text: '⏥ 0.1', view: 'front' });
+    expect(meshed.report).toEqual(plain.report);
+    expect(meshed.svg).toBe(plain.svg);
+  });
+
   it('names a stacked three-step bore with drawing.auto.hole-unclassified instead of dropping it', () => {
     let body = OcctBackend.box(40, 40, 30);
     body = body.subtract(OcctBackend.cylinder(12, 2).translate(20, 20, -1));

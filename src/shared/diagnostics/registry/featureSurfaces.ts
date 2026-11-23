@@ -32,11 +32,19 @@ export const FEATURE_SURFACES_CODES = {
   // Edge-feature partial success (1) — M2
   'feature.edge-feature.short-edges-skipped': {
     hintTemplate:
-      'OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 × radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges.',
+      'The kernel rejected the fillet/chamfer on the full selection, so the edges shorter than 2 × radius (or distance) were skipped and only the longer edges were rounded. Edge length alone does not set the limit. To round the skipped edges too, reduce the radius or distance, scope the fillet/chamfer to a query that matches fewer edges, or change the upstream geometry.',
     nextAction: { kind: 'fix-arg', field: 'radius-or-distance' },
     defaultSeverity: 'error',
     group: 'feature',
     description: 'A fillet/chamfer skipped one or more target edges that were shorter than 2 × radius; sometimes a partial-success warn, sometimes a full-fail error.',
+  },
+  'feature.edge-feature.unblendable-edges-skipped': {
+    hintTemplate:
+      'The default every-edge fillet/chamfer rounded what it could and skipped edges no radius builds on together with the rest (typically where faces meet tangentially or a union left coincident faces). Round the skipped edges with an explicit selection and a smaller radius, or change the geometry where they meet.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'round the skipped edges separately or change the geometry where they meet' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'A fillet/chamfer with no edge selection rounded a valid subset of the edges and skipped the edges listed in details.skippedEdgeIds, because no radius built on all of them together.',
   },
   // NURBS Slice B (5) — Curve3D / nurbsCurve capture-time validation.
   'feature.curve3d.degenerate-controls': {

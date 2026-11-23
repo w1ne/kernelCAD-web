@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-11-10T10:35:29+00:00",
+  "scope": "Generated local static catalog page; public deployment not checked.",
+  "hub": "site-build/catalog/index.html",
+  "hubContainsAsset": true,
+  "asset": "interior/table-lamp",
+  "page": "site-build/catalog/interior/table-lamp/index.html",
+  "pagePreview": "site-build/catalog/interior/table-lamp/preview.png",
+  "pagePreviewBytes": 19892,
+  "sourceSha256MatchesIndex": true,
+  "triangleCount": 144,
+  "triangleBudget": 240,
+  "params": [
+    "baseStyle",
+    "ceramic",
+    "textile",
+    "hardware"
+  ],
+  "presets": [
+    "midCentury",
+    "monochrome",
+    "terracotta"
+  ],
+  "hasStudioLink": true
+}

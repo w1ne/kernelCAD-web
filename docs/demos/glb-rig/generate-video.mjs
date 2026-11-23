@@ -18,11 +18,12 @@ const W = 1280;
 const H = 720;
 const fps = 20;
 const sceneFrames = 120;
-const pivotX = 920;
-const pivotY = 420;
-const scale = 7.5;
-const hingeY = 20;
-const hingeZ = 4;
+const pivotX = 760;
+const pivotY = 404;
+const scale = 5.5;
+// Side view (Y right, Z up) of examples/assemblies/glb-rig-hinge.kcad.ts.
+const hingeY = 3;
+const hingeZ = 12;
 
 function escapeXml(value) {
   return String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
@@ -51,20 +52,14 @@ function panel(title, subtitle, body, badge = 'EXPORT MATH PREVIEW · NOT A THRE
 
 function diagram(angle) {
   const poseAngle = 35 + angle;
+  // Lid section in hinge coordinates: 2 mm behind the axis, 28 mm in front.
   const lidVertices = [
-    [-15, -2], [15, -2], [15, 2], [-15, 2],
-  ].map(([y, z]) => {
-    const worldY = y + 5;
-    const worldZ = z + 6;
+    [28, -2], [28, 2], [-2, 2], [-2, -2],
+  ].map(([u, w]) => {
     const rad = poseAngle * Math.PI / 180;
-    const relativeY = worldY - hingeY;
-    const relativeZ = worldZ - hingeZ;
-    // Local +Z is aligned to the assembly's -X hinge connector.
-    const turnedY = relativeY * Math.cos(rad) + relativeZ * Math.sin(rad);
-    const turnedZ = -relativeY * Math.sin(rad) + relativeZ * Math.cos(rad);
-    return mapPoint(hingeY + turnedY, hingeZ + turnedZ);
+    return mapPoint(hingeY + u * Math.cos(rad) - w * Math.sin(rad), hingeZ + u * Math.sin(rad) + w * Math.cos(rad));
   });
-  const base = [[-20, -4], [20, -4], [20, 4], [-20, 4]].map(([y, z]) => mapPoint(y, z));
+  const base = [[0, 0], [40, 0], [40, 8], [6, 8], [6, 16], [0, 16]].map(([y, z]) => mapPoint(y, z));
   const hinge = mapPoint(hingeY, hingeZ);
   const far = lidVertices[0];
   const content = `
@@ -86,7 +81,7 @@ function diagram(angle) {
     <text x="622" y="520" font-family="Arial,sans-serif" font-size="16" fill="#52657e">Orange dot = exported pivot origin. Blue lid rotates; gray base stays grounded.</text>
     <text x="622" y="555" font-family="Arial,sans-serif" font-size="16" fill="#52657e">GLB SHA-256: ${evidence.glbSha256.slice(0, 28)}…</text>
   `;
-  return panel('Mates become editable GLB pivots', 'Original box + lid assembly → resolved hierarchy → local-axis motion', content);
+  return panel('Mates become editable GLB pivots', 'Original base, hinge ear and lid assembly → resolved hierarchy → local-axis motion', content);
 }
 
 async function saveFrame(index, svg) {
@@ -109,10 +104,10 @@ try {
     await saveFrame(index++, diagram(0));
   }
   for (let i = 0; i < 50; i++) {
-    await saveFrame(index++, diagram((40 * i) / 49));
+    await saveFrame(index++, diagram((75 * i) / 49));
   }
   for (let i = 0; i < 10; i++) {
-    await saveFrame(index++, diagram(90));
+    await saveFrame(index++, diagram(75));
   }
   execFileSync('ffmpeg', [
     '-y', '-hide_banner', '-loglevel', 'error',

@@ -224,3 +224,66 @@ describe('OcctBackend.fromSketchCommands + Slice D NURBS segments', () => {
     expect(threw || v > 0).toBe(true);
   });
 });
+
+describe('OcctBackend.fromSketchCommands — NURBS sketches with holes', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  const quadratic = (points: Array<[number, number]>): SketchCommand => ({
+    kind: 'nurbsSegment',
+    controlPoints: points.map(([x, y]) => ({ x: mm(x), y: mm(y) })),
+    degree: ul(2),
+    knots: [0, 0, 0, 1, 1, 1].map(ul),
+  });
+
+  /** Clockwise square hole from (lo, lo) to (hi, hi). */
+  const squareHole = (lo: number, hi: number): SketchCommand[] => [
+    { kind: 'moveTo', x: mm(lo), y: mm(lo) },
+    { kind: 'lineTo', x: mm(lo), y: mm(hi) },
+    { kind: 'lineTo', x: mm(hi), y: mm(hi) },
+    { kind: 'lineTo', x: mm(hi), y: mm(lo) },
+    { kind: 'close' },
+  ];
+
+  it('extrudes every loop: a hole after a NURBS outer loop is cut', () => {
+    // 20 x 20 square whose top is a parabola through (10, 25): the bump adds
+    // 2/3 of the 20 x 10 control triangle. The 10 x 10 hole removes 100.
+    const commands: SketchCommand[] = [
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'lineTo', x: mm(20), y: mm(0) },
+      { kind: 'lineTo', x: mm(20), y: mm(20) },
+      quadratic([[20, 20], [10, 30], [0, 20]]),
+      { kind: 'close' },
+      ...squareHole(5, 15),
+    ];
+    const solid = OcctBackend.extrudeFromSketch(OcctBackend.fromSketchCommands(commands), 2);
+    expect(solid.volume()).toBeCloseTo((400 + 200 / 3 - 100) * 2, 6);
+  });
+
+  it('revolves every loop: a hole after a NURBS outer loop is cut', () => {
+    // 20 x 20 square (x 10..30) with a straight NURBS top, minus a centred
+    // 10 x 10 hole: by Pappus, 300 mm² about a centroid at radius 20.
+    const commands: SketchCommand[] = [
+      { kind: 'moveTo', x: mm(10), y: mm(0) },
+      { kind: 'lineTo', x: mm(30), y: mm(0) },
+      { kind: 'lineTo', x: mm(30), y: mm(20) },
+      quadratic([[30, 20], [20, 20], [10, 20]]),
+      { kind: 'close' },
+      ...squareHole(15, 25).map(c => (c.kind === 'moveTo' || c.kind === 'lineTo' ? { ...c, y: mm(c.y.evaluated - 10) } : c)),
+    ];
+    const solid = OcctBackend.revolveFromSketch(OcctBackend.fromSketchCommands(commands));
+    expect(solid.volume()).toBeCloseTo(300 * 2 * Math.PI * 20, 4);
+  });
+
+  it('refuses a holed NURBS profile where only one wire can be used', () => {
+    const commands: SketchCommand[] = [
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'lineTo', x: mm(20), y: mm(0) },
+      { kind: 'lineTo', x: mm(20), y: mm(20) },
+      quadratic([[20, 20], [10, 30], [0, 20]]),
+      { kind: 'close' },
+      ...squareHole(5, 15),
+    ];
+    expect(() => OcctBackend.liftSketchToFace(OcctBackend.fromSketchCommands(commands), 'XY'))
+      .toThrow(/2 closed loops/);
+  });
+});

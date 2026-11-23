@@ -64,15 +64,21 @@ export async function listEdgesTool(input: ListEdgesInput): Promise<ListEdgesOut
     return { ok: false, error: 'Shape is not an OcctBackend.' };
   }
 
-  const edges = selectEdges(shape, input.query ?? {});
   const owner = input.feature_id ?? run.records[run.records.length - 1].id;
+  return { ok: true, edges: summarizeOcctEdges(shape, owner, input.query) };
+}
+
+/** Edge rows for one lowered solid. `id` is `e<index>` into `.edges`.
+ *  Shared with STEP inspect views so the listing ref cannot drift. */
+export function summarizeOcctEdges(
+  shape: OcctBackend,
+  owner: string,
+  query?: EdgeQuery,
+): EdgeSummary[] {
+  const edges = selectEdges(shape, query ?? {});
   const kind: TopoKind = 'edge';
-  // F-surface F2: pair each edge with a stable @kc[...] ref. The segment name
-  // is the EdgeSegment's `id` (e.g. `e0`); future slices may upgrade this to a
-  // labeled name once edgeLabels lands as a metadata sibling of faceLabels.
-  const edgesWithRefs: EdgeSummary[] = edges.map((e) => ({
+  return edges.map((e) => ({
     ...e,
     ref: formatTopoRef({ owner, kind, segments: [e.id] }),
   }));
-  return { ok: true, edges: edgesWithRefs };
 }

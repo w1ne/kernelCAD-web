@@ -5,7 +5,7 @@ meta({
   name: "pressure-sand-filter-vessel",
   license: 'CC0-1.0',
   title: "Pressure sand filter vessel",
-  description: "Vertical pressure vessel with domed-look end caps, inspection manway and side pipe nozzles. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+  description: "Vertical pressure vessel with faceted end heads, an inspection manway, and lower inlet / upper outlet pipe stubs that enter the shell through visible stainless flange lips. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
   tags: ['water treatment', 'water utility', 'infrastructure', 'low poly', 'scene prop'],
   kit: 'water-treatment',
   category: 'prop',
@@ -42,13 +42,29 @@ const loftCylinder = (height:number, radius:number, sides:number) => {
 };
 const c=(x:number,y:number,z:number,h:number,r:number,n=10)=>loftCylinder(h,r,n).translate(x,y,z).scale(scale);
 
+// Annular pipe section, revolved around local Z. The radial transform below
+// turns each stub into the vessel wall so the connection visibly enters the
+// shell instead of floating beside it.
+const annularPipe = (length:number, innerRadius:number, outerRadius:number) =>
+  path().moveTo(innerRadius,0)
+    .lineTo(outerRadius,0)
+    .lineTo(outerRadius,length)
+    .lineTo(innerRadius,length)
+    .close()
+    .revolve();
+const radialFront = (shape, y:number, z:number) => shape.rotateX(90).translate(0,y,z).scale(scale);
+
 const p=assembly("pressure-sand-filter-vessel");
 p.part("shell",c(0,0,60,950,310,12).color(coatedSteel));
 p.part("top-head",c(0,0,1010,90,285,12).color(coatedSteel));
 p.part("bottom-head",c(0,0,0,80,285,12).color(coatedSteel));
 p.part("manway",b(0,-305,570,190,45,190).color(coatedSteel));
-p.part("inlet",c(0,-390,280,100,70,10).color(stainlessSteel));
-p.part("outlet",c(0,390,280,100,70,10).color(stainlessSteel));
+// Both connections face the accessible side of the vessel. The inlet is low,
+// the outlet clears the manway above, and each nozzle overlaps the shell wall.
+for (const [name,z] of [["inlet",260], ["outlet",830]] as const) {
+  p.part(`${name}-nozzle`,radialFront(annularPipe(130,32,48),-240,z).color(stainlessSteel));
+  p.part(`${name}-flange`,radialFront(annularPipe(20,32,68),-350,z).color(stainlessSteel));
+}
 p.part("foot--190",b(-190,0,0,100,130,70).color(structuralSteel));
 p.part("foot-190",b(190,0,0,100,130,70).color(structuralSteel));
 

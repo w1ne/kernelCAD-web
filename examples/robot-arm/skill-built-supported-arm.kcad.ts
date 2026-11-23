@@ -35,14 +35,17 @@ const turretShape = box(28, 22, 38, true)
 const turret = arm.part('yaw-turret', turretShape);
 
 // Upper link integrates the shoulder root and elbow yoke into one load path.
+// The shoulder hub spans both pin cheeks and overlaps the beam start. The
+// elbow cheeks run back to a cross bridge that ends at x = 103, outside the
+// 12 mm swing radius of the forearm root, so every member is one solid.
 const upperLen = 115;
 const upperShape = box(upperLen - 18, 14, 10, true)
   .translate((upperLen - 18) / 2 + 6, 0, 0)
+  .union(box(14, 29, 14, true).translate(0, 0, 0))
   .union(box(10, 12, 16, true).translate(0, 0, 0))
-  .union(box(12, 4, 14, true).translate(0, 12.5, 0))
-  .union(box(12, 4, 14, true).translate(0, -12.5, 0))
-  .union(box(12, 7, 20, true).translate(upperLen, 15, 0))
-  .union(box(12, 7, 20, true).translate(upperLen, -15, 0))
+  .union(box(24, 7, 20, true).translate(upperLen - 6, 15, 0))
+  .union(box(24, 7, 20, true).translate(upperLen - 6, -15, 0))
+  .union(box(6, 37, 10, true).translate(upperLen - 15, 0, 0))
   .color('beam');
 const upper = arm.part('upper-link', upperShape);
 
@@ -57,10 +60,12 @@ const foreShape = box(foreLen, 15, 8, true)
 const forearm = arm.part('forearm-link', foreShape);
 
 // Gripper palm: compact one-piece palm with hinge axes kept close to the body.
+// The palm runs 1 mm into the hinge lugs (x = 107-108) so the lugs fuse to
+// it; a curled finger still clears the palm face by 1.75 mm at 30°.
 const palmX = foreLen + 10;
 const hingeX = foreLen + 19;
-const palmShape = box(10, 40, 24, true)
-  .translate(palmX, 0, 0)
+const palmShape = box(11, 40, 24, true)
+  .translate(palmX + 0.5, 0, 0)
   .union(cylinder(2, 4, 24).translate(hingeX, 19, 4))
   .union(cylinder(2, 4, 24).translate(hingeX, 19, -6))
   .union(cylinder(2, 4, 24).translate(hingeX, -19, 4))

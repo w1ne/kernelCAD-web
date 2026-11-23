@@ -1,0 +1,4 @@
+     × makes the spray-water header pipe stainless like the washer tube 2090ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: spray-header should be the stainless washer finish: expected false to be true // Object.is equality
+      Tests  1 failed (1)

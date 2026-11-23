@@ -1,0 +1,10 @@
+{
+  "assets": 2402,
+  "kits": 50,
+  "changedRows": [
+    "industrial-plant/horizontal-pressure-vessel",
+    "standard-components/retaining-ring"
+  ],
+  "sourceShaMismatches": [],
+  "missingPreviewFiles": []
+}

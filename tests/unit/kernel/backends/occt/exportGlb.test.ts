@@ -98,6 +98,98 @@ describe('exportGlbAsync', () => {
     expect(nodes.some((n) => n.getName() === 'cube')).toBe(true);
   });
 
+  it('exports PBR parts at authored physical size in metres by default', async () => {
+    const scene = makeScene([
+      {
+        name: 'base_plate',
+        shape: OcctBackend.box(700, 300, 12),
+        material: { name: 'anodized aluminium', baseColor: '#30343b', metalness: 0.8, roughness: 0.3 },
+      },
+      {
+        name: 'mount_boss',
+        shape: OcctBackend.cylinder(40, 25).translate([80, 80, 12]),
+        material: expandFinish('brass'),
+      },
+    ]);
+    const doc = await new NodeIO().readBinary(
+      await exportGlbAsync(meshAllParts(scene), { format: 'glb' }),
+    );
+    const root = doc.getRoot().listScenes()[0]!.listChildren()[0]!;
+    const scale = root.getScale();
+    const plate = doc.getRoot().listNodes().find((node) => node.getName() === 'base_plate')!;
+    const position = plate.getMesh()!.listPrimitives()[0]!.getAttribute('POSITION')!;
+    const min = position.getMin([]);
+    const max = position.getMax([]);
+    const sizeM = max.map((value, axis) => (value - min[axis]!) * scale[axis]!);
+    const extras = doc.getRoot().getAsset().extras!.kernelcad as { units: string };
+
+    expect(extras.units).toBe('m');
+    expect(scale).toEqual([0.001, 0.001, 0.001]);
+    sizeM.sort((a, b) => a - b).forEach((dimension, index) => {
+      expect(dimension).toBeCloseTo([0.012, 0.3, 0.7][index]!, 9);
+    });
+    expect(doc.getRoot().listNodes().map((node) => node.getName())).toEqual(
+      expect.arrayContaining(['base_plate', 'mount_boss']),
+    );
+    expect(doc.getRoot().listMaterials().map((material) => material.getName())).toEqual(
+      expect.arrayContaining(['anodized aluminium', 'brass']),
+    );
+  });
+
+  it('keeps sharp B-rep edges sharp and curved faces smooth in default pbr normals', async () => {
+    const scene = makeScene([
+      { name: 'cube', shape: OcctBackend.box(10, 10, 10) },
+      { name: 'post', shape: OcctBackend.cylinder(20, 5) },
+    ]);
+    const doc = await new NodeIO().readBinary(
+      await exportGlbAsync(sceneToWorldFrameParts(scene), { format: 'glb', axis: 'z-up' }),
+    );
+    const attributes = (name: string) => {
+      const prim = doc.getRoot().listNodes().find((n) => n.getName() === name)!.getMesh()!.listPrimitives()[0]!;
+      const pos = prim.getAttribute('POSITION')!;
+      const nrm = prim.getAttribute('NORMAL')!;
+      return Array.from({ length: pos.getCount() }, (_, i) => ({ p: pos.getElement(i, []), n: nrm.getElement(i, []) }));
+    };
+
+    // Every cube vertex normal is one face's axis, never a corner average.
+    const cube = attributes('cube');
+    for (const { n } of cube) {
+      expect(Math.max(...n.map(Math.abs))).toBeCloseTo(1, 6);
+    }
+    expect(cube.length).toBe(24); // 8 corners x 3 faces
+
+    // Cylinder: side normals are radial with no z, caps are +-z.
+    for (const { p, n } of attributes('post')) {
+      if (Math.abs(n[2]!) > 0.5) {
+        expect(Math.abs(n[2]!)).toBeCloseTo(1, 6);
+        continue;
+      }
+      const r = Math.hypot(p[0]!, p[1]!);
+      expect(n[2]!).toBeCloseTo(0, 6);
+      expect(n[0]! * p[0]! / r + n[1]! * p[1]! / r).toBeGreaterThan(0.999);
+    }
+  });
+
+  it('keeps explicit millimetre coordinates available for metadata-aware consumers', async () => {
+    const scene = makeScene([{ name: 'plate', shape: OcctBackend.box(700, 300, 12) }]);
+    const doc = await new NodeIO().readBinary(
+      await exportGlbAsync(meshAllParts(scene), { format: 'glb', units: 'mm' }),
+    );
+    const root = doc.getRoot().listScenes()[0]!.listChildren()[0]!;
+    const plate = doc.getRoot().listNodes().find((node) => node.getName() === 'plate')!;
+    const position = plate.getMesh()!.listPrimitives()[0]!.getAttribute('POSITION')!;
+    const min = position.getMin([]);
+    const max = position.getMax([]);
+    const sizeMm = max.map((value, axis) => value - min[axis]!);
+    const extras = doc.getRoot().getAsset().extras!.kernelcad as { units: string };
+
+    expect(extras.units).toBe('mm');
+    expect(root.getScale()).toEqual([1, 1, 1]);
+    sizeMm.sort((a, b) => a - b).forEach((dimension, index) => {
+      expect(dimension).toBeCloseTo([12, 300, 700][index]!, 4);
+    });
+  });
+
   it('preserves PBR fields via MeshPhysicalMaterial (metalness / roughness / anisotropy)', async () => {
     const scene = makeScene([
       {
@@ -289,7 +381,11 @@ describe('exportGlbAsync', () => {
     expect(lid?.matrix).toBeDefined();
     expect(json.asset?.extras?.kernelcad).toMatchObject({
       rig: { lid: { type: 'rotate', axis: 'z', range: [0, 110], node: 'pivot:lid' } },
+      units: 'm',
     });
+    const doc = await new NodeIO().readBinary(bytes);
+    const root = doc.getRoot().listScenes()[0]!.listChildren()[0]!;
+    expect(root.getScale()).toEqual([0.001, 0.001, 0.001]);
   });
 
   it('keeps flat GLB output when hierarchy is explicitly flat', async () => {
@@ -313,7 +409,78 @@ describe('exportGlbAsync', () => {
     expect(json.nodes?.some((node) => node.name === 'pivot:lid')).toBe(false);
     expect(json.asset?.extras?.kernelcad).not.toHaveProperty('rig');
   });
+
+  // #1299: the root scale alone does not prove physical size. A pivot or
+  // part matrix written in the wrong unit under the 0.001 root would move
+  // the child while every root-scale assertion still passed.
+  it.each(['m', 'mm'] as const)('places rig parts at the flat world bounds in %s', async (units) => {
+    const scene = makeScene([
+      { name: 'base', shape: OcctBackend.box(20, 20, 5) },
+      { name: 'lid', shape: OcctBackend.box(20, 30, 5), worldTransform: Transform.translation(10, 0, 5) },
+    ]);
+    const solved: SolvedRigAssembly = {
+      groundedPart: 'base',
+      parts: [
+        { name: 'base', worldTransform: Transform.identity().toMat4() },
+        { name: 'lid', worldTransform: Transform.translation(10, 0, 5).toMat4() },
+      ],
+      mates: [{ name: 'lid', type: 'revolute', a: 'base.hinge', b: 'lid.hinge', limitsDeg: [0, 110] }],
+      connectorsByPartName: {
+        base: [{ name: 'hinge', type: 'axis', origin: [10, 0, 5], axis: [0, 0, 1] }],
+        lid: [{ name: 'hinge', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] }],
+      },
+    };
+    const parts = meshAllParts(scene);
+    const rigBytes = await exportGlbAsync(parts, { format: 'glb', units }, solved);
+    const flatBytes = await exportGlbAsync(parts, { format: 'glb', units, hierarchy: 'flat' }, solved);
+    const rig = await worldBoundsByNode(rigBytes);
+    const flat = await worldBoundsByNode(flatBytes);
+    const unitPerMm = units === 'm' ? 0.001 : 1;
+
+    for (const bytes of [rigBytes, flatBytes]) {
+      const kernelcad = parseGlbJson(bytes).asset?.extras?.kernelcad as { units?: string } | undefined;
+      expect(kernelcad?.units).toBe(units);
+    }
+
+    for (const name of ['base', 'lid']) {
+      rig[name]!.min.forEach((value, axis) => expect(value).toBeCloseTo(flat[name]!.min[axis]!, 9));
+      rig[name]!.max.forEach((value, axis) => expect(value).toBeCloseTo(flat[name]!.max[axis]!, 9));
+    }
+    const lidSize = rig.lid!.max.map((value, axis) => value - rig.lid!.min[axis]!).sort((a, b) => a - b);
+    [5, 20, 30].forEach((mm, index) => expect(lidSize[index]).toBeCloseTo(mm * unitPerMm, 9));
+    const offset = rig.lid!.min.map((value, axis) => Math.abs(value - rig.base!.min[axis]!)).sort((a, b) => a - b);
+    // Y-up: authored +X 10, +Z 5, and the 10 mm longer lid span on -Z.
+    [5, 10, 10].forEach((mm, index) => expect(offset[index]).toBeCloseTo(mm * unitPerMm, 9));
+  });
 });
+
+/** World-space POSITION bounds of each named mesh node, composed through every
+ *  ancestor matrix including the root unit scale. */
+async function worldBoundsByNode(bytes: Uint8Array): Promise<Record<string, { min: number[]; max: number[] }>> {
+  const doc = await new NodeIO().readBinary(bytes);
+  const out: Record<string, { min: number[]; max: number[] }> = {};
+  for (const node of doc.getRoot().listNodes()) {
+    const mesh = node.getMesh();
+    if (!mesh) continue;
+    const m = node.getWorldMatrix();
+    const min = [Infinity, Infinity, Infinity];
+    const max = [-Infinity, -Infinity, -Infinity];
+    const v = [0, 0, 0];
+    for (const primitive of mesh.listPrimitives()) {
+      const position = primitive.getAttribute('POSITION')!;
+      for (let i = 0; i < position.getCount(); i++) {
+        position.getElement(i, v);
+        for (let r = 0; r < 3; r++) {
+          const w = m[r]! * v[0]! + m[4 + r]! * v[1]! + m[8 + r]! * v[2]! + m[12 + r]!;
+          min[r] = Math.min(min[r]!, w);
+          max[r] = Math.max(max[r]!, w);
+        }
+      }
+    }
+    out[node.getName()] = { min, max };
+  }
+  return out;
+}
 
 describe('exportGlbAsync style: lowpoly', () => {
   beforeAll(async () => {
@@ -375,7 +542,7 @@ describe('exportGlbAsync style: lowpoly', () => {
     const lowTris = (low.asset?.extras?.kernelcad as { stats: { triangles: number } }).stats.triangles;
     const pbrTris = (pbr.asset?.extras?.kernelcad as { stats: { triangles: number } }).stats.triangles;
     expect(lowTris * 3).toBeLessThan(pbrTris);
-    expect((pbr.asset?.extras?.kernelcad as { units: string }).units).toBe('mm');
+    expect((pbr.asset?.extras?.kernelcad as { units: string }).units).toBe('m');
   });
 
   it('keeps glass on its own material', async () => {

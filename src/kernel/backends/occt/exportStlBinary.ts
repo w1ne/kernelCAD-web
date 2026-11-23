@@ -21,7 +21,7 @@ const TRIANGLE_RECORD_SIZE = 50; // 12 (normal) + 36 (3 vertices) + 2 (attribute
  *   consecutive indices form one triangle face.
  */
 export interface MeshData {
-  vertices: number[] | Float32Array;
+  vertices: number[] | Float32Array | Float64Array;
   triangles: number[] | Uint32Array;
 }
 
@@ -56,8 +56,18 @@ export function encodeBinaryStl(
   mesh: MeshData,
   header: string = buildDefaultHeader(),
 ): Buffer {
-  const { vertices, triangles } = mesh;
-  const triangleCount = Math.floor(triangles.length / 3);
+  return encodeBinaryStlShells([mesh], header);
+}
+
+/** One binary STL holding every mesh in `shells`, in order: the bytes
+ *  `encodeBinaryStl` gives for the index-offset concatenation of the meshes,
+ *  without building that concatenation. */
+export function encodeBinaryStlShells(
+  shells: readonly MeshData[],
+  header: string = buildDefaultHeader(),
+): Buffer {
+  let triangleCount = 0;
+  for (const shell of shells) triangleCount += Math.floor(shell.triangles.length / 3);
   const totalSize =
     HEADER_SIZE + TRIANGLE_COUNT_SIZE + triangleCount * TRIANGLE_RECORD_SIZE;
   const buf = Buffer.alloc(totalSize, 0);
@@ -84,6 +94,16 @@ export function encodeBinaryStl(
 
   // Per-triangle records starting at byte 84.
   let offset = HEADER_SIZE + TRIANGLE_COUNT_SIZE;
+  for (const shell of shells) offset = writeTriangleRecords(buf, offset, shell);
+  return buf;
+}
+
+/** Write one 50-byte record per triangle of `mesh` at `offset`; returns the
+ *  offset after the last record. */
+function writeTriangleRecords(buf: Buffer, start: number, mesh: MeshData): number {
+  const { vertices, triangles } = mesh;
+  const triangleCount = Math.floor(triangles.length / 3);
+  let offset = start;
   for (let i = 0; i < triangleCount; i++) {
     const i0 = triangles[i * 3];
     const i1 = triangles[i * 3 + 1];
@@ -134,5 +154,36 @@ export function encodeBinaryStl(
     buf.writeUInt16LE(0, offset); offset += 2;
   }
 
-  return buf;
+  return offset;
+}
+
+/** `encodeBinaryStl` as a plain `Uint8Array` over the encoder's own buffer.
+ *  A view, not a copy: the STL of a dense part is tens of megabytes. */
+export function encodeBinaryStlBytes(mesh: MeshData, header?: string): Uint8Array {
+  const buf = encodeBinaryStl(mesh, header);
+  return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+}
+
+/** `encodeBinaryStlShells` as a plain `Uint8Array` view, like `encodeBinaryStlBytes`. */
+export function encodeBinaryStlShellsBytes(shells: readonly MeshData[], header?: string): Uint8Array {
+  const buf = encodeBinaryStlShells(shells, header);
+  return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+}
+
+/** Stamp an agent-requested tolerance into the binary STL header, in place,
+ *  and return the same array. This changes only bytes 0..79; triangle bytes
+ *  and the default export path remain untouched. STL defines this field as an
+ *  80-byte free-form header. */
+export function stampStlMeshTolerance(
+  bytes: Uint8Array,
+  toleranceMm: number,
+): Uint8Array {
+  if (bytes.byteLength < HEADER_SIZE) throw new Error('Cannot stamp an incomplete binary STL header.');
+  bytes.fill(0, 0, HEADER_SIZE);
+  const isoDate = new Date().toISOString().slice(0, 10);
+  const compactAttribution = attributionGenerator().split(' (')[0]!;
+  const header = `${compactAttribution} ${isoDate} requested-mesh-tolerance=${String(toleranceMm)}mm`;
+  const headerBytes = Buffer.from(header.slice(0, HEADER_SIZE), 'ascii');
+  bytes.set(headerBytes, 0);
+  return bytes;
 }

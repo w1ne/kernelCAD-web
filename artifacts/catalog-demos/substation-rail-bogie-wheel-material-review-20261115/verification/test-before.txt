@@ -1,0 +1,25 @@
++ Received
+
+  [
+    "galvanizedSteel",
+-   "wheelSteel",
++   "rubber",
+    "stainlessSteel",
+  ]
+
+ ❯ tests/integration/catalog/railBogieWheelMaterial.test.ts:22:95
+     20| 
+     21|     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+     22|     expect(asset.params.filter((param) => param.type === 'color').map(…
+       |                                                                                               ^
+     23|       'galvanizedSteel', 'wheelSteel', 'stainlessSteel',
+     24|     ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  16:50:27
+   Duration  7.14s (transform 5.33s, setup 127ms, import 6.37s, tests 504ms, environment 0ms)
+

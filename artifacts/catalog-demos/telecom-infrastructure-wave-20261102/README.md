@@ -29,3 +29,12 @@ python3 artifacts/catalog-demos/telecom-infrastructure-wave-20261102/inspect_tel
 The local page builder is checked separately from the deployed website. On 2026-11-02 the public homepage returned HTTP 200 and `https://kernelcad.com/catalog/` returned HTTP 404. This branch was not deployed; live catalog behavior remains unverified.
 
 All assets are original CC0 1.0 kernelCAD geometry. They are stylized scene props and make no claims about RF performance, wind loading, weatherproofing, installation suitability, regulatory compliance or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/telecom-infrastructure-wave-20261102/capture_telecom_demo.py`
+- video review: `python3 artifacts/catalog-demos/telecom-infrastructure-wave-20261102/inspect_telecom_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

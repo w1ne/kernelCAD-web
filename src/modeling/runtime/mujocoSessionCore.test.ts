@@ -2,7 +2,24 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 
 import { describe, expect, it, vi } from 'vitest';
-import { createMujocoSession } from './mujocoSessionCore';
+import { createMujocoSession, inertia6FromPrincipal } from './mujocoSessionCore';
+
+describe('inertia6FromPrincipal', () => {
+  it('leaves an identity quaternion on the principal diagonal', () => {
+    expect(inertia6FromPrincipal([1, 2, 3], [1, 0, 0, 0])).toEqual([1, 0, 0, 2, 0, 3]);
+  });
+
+  it('swaps the first two moments for a +90° rotation about Z', () => {
+    const s = Math.SQRT1_2;
+    const [ixx, ixy, ixz, iyy, iyz, izz] = inertia6FromPrincipal([4, 7, 1], [s, 0, 0, s]);
+    expect(ixx).toBeCloseTo(7, 10);
+    expect(iyy).toBeCloseTo(4, 10);
+    expect(izz).toBeCloseTo(1, 10);
+    expect(ixy).toBeCloseTo(0, 10);
+    expect(ixz).toBeCloseTo(0, 10);
+    expect(iyz).toBeCloseTo(0, 10);
+  });
+});
 
 describe('createMujocoSession', () => {
   it('compiles MJCF through an injected module and disposes the owned handles', async () => {

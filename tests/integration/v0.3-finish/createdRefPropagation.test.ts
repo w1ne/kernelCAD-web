@@ -31,7 +31,7 @@ describe('CreatedRefSpec propagation across boolean-participating lowerers', () 
       op: 'chamfer',
       code: `
         const plate = box(40, 40, 10).hole('top', { u: 0, v: 0, diameter: 6, depth: 3, name: 'pilot' });
-        return plate.chamfer(0.3, { face: 'pilot.entry-rim' });
+        return plate.chamfer(0.3, { face: 'pilot.wall' });
       `,
     },
     {

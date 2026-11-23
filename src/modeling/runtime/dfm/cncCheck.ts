@@ -80,6 +80,8 @@ const SHARP_DIHEDRAL_DEG = 60;
  *  the crease is just its tessellation meeting a tangent neighbour. Creases
  *  above this numeric floor are judged that way, not by a fixed angle. */
 const CREASE_EPS_DEG = 0.05;
+/** Radius allowance used by the CNC minimum-corner-radius check, in mm. */
+export const CNC_CORNER_RADIUS_TOLERANCE_MM = 1e-6;
 /** A crease must exceed this multiple of the curved face's own facet step to
  *  count as a real corner rather than tangent-blend tessellation. */
 const FACET_STEP_FACTOR = 1.5;
@@ -328,7 +330,7 @@ export function findTightFillets(shape: OcctBackend, axes: readonly Vec3[], tool
   const out: CncTightFillet[] = [];
   for (const c of collectConcaveCylinderClusters(shape)) {
     if (c.coverageRad >= MIN_ANGULAR_COVERAGE_RAD) continue; // full bore: drilled
-    if (c.radiusMm >= toolRadiusMm - 1e-6) continue;
+    if (c.radiusMm >= toolRadiusMm - CNC_CORNER_RADIUS_TOLERANCE_MM) continue;
     const axis = axes.find(a => Math.abs(dot(c.dir0, a)) > PARALLEL_COS);
     if (axis === undefined) continue;
     const mid = (c.tMin + c.tMax) / 2;

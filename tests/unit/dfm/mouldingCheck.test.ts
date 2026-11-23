@@ -138,7 +138,7 @@ describe('injection-moulding check', () => {
     expect(m.draft.checkedFaces).toBe(4); // top and bottom are parting faces
     for (const f of m.draft.insufficient) {
       expect(f.draftDeg).toBeCloseTo(0.5, 6);
-      expect(f.faceRef).toMatch(/^@kc\[boolean_1\/face\//);
+      expect(f.faceRef).toBeUndefined();
       expect(f.straddlesParting).toBe(false);
     }
     expect(draft[0].severity).toBe('error');
@@ -174,7 +174,7 @@ describe('injection-moulding check', () => {
     // Tessellated Ø4 × 20 bore wall: 2π·2·20 = 251.3 mm² (chords sit inside).
     expect(m.undercut.areaMm2).toBeGreaterThan(248);
     expect(m.undercut.areaMm2).toBeLessThanOrEqual(2 * Math.PI * 2 * 20 + 1e-6);
-    expect(m.undercut.faces[0].faceRef).toMatch(/^@kc\[boolean_1\/face\//);
+    expect(m.undercut.faces[0].faceRef).toBeUndefined();
     expect(u[0].message).toMatch(/mm² of undercut at .* release along ±\[0, 0, 1\]/);
     expect(m.verdict).toBe('fail');
   }, 60000);

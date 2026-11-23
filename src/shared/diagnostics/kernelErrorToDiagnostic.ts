@@ -33,6 +33,7 @@ export function kernelErrorToDiagnostic(
       severity: 'error',
       message: e instanceof Error ? e.message : String(e),
       hint: e.hint ?? HINT_TEMPLATES[e.code].template,
+      ...(e.nextAction !== undefined ? { nextAction: e.nextAction } : {}),
       ...(e.featureId !== undefined ? { featureId: e.featureId } : {}),
     });
   }

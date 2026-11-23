@@ -4,8 +4,6 @@
 //
 // Physics-grounded loop — P0 slice.
 //
-// Spec:  docs/specs/2026-06-01-physics-grounded-loop-design.md
-// Plan:  docs/plans/2026-06-01-physics-loop-P0-engine-truth.md
 //
 // The four truth criteria from the spec, applied to an Assembly at
 // single-joint-at-a-time sampled poses. The recompute engine calls
@@ -50,6 +48,8 @@ import { jointGraphHasLoops } from '../capture/forwardKinematics';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import type { FeatureId } from '../../shared/intent/types';
+import { appendLoopEvidence, type MechanismLoopMobility } from './mechanismLoopEvidence';
+export type { MechanismLoopMobility } from './mechanismLoopEvidence';
 import { Transform, type Vec3 as Se3Vec3 } from '../../shared/runtime/se3';
 import type { Assembly } from '../capture/assembly';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
@@ -67,12 +67,14 @@ import { resolvedPartAt } from '../mates/partFrame';
 import { expandCoupledPoses } from '../mates/coupledPoses';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { checkOrphanParts } from './mechanismOrphan';
+import { coupledMateSuggestion } from './coupledMateSuggestion';
 import { estimateSweepWork, type SweepWorkEstimate } from './sweepWork';
 import { checkMotionIntent, hasMotionIntent } from './motionIntent';
 import { checkMotionLimits } from './motionLimits';
 import { checkMateClosure, type ClosureSample } from './mateClosure';
 import {
   REST_MATE_CONTACT_TOLERANCE_MM,
+  restFastenedGroups,
   restPoseMateGaps,
   restPosePenetrations,
 } from './restPoseContact';
@@ -124,8 +126,9 @@ export const POSE_SAMPLE_COUNT_PER_MATE = 3;
  * 40 000 lets every measured assembly up to DRAW 01 sweep with 2× margin
  * (≤ ~20 s of booleans at the worst measured rate) and skips the Gearfinity
  * stage, whose rest criteria alone take over a minute. When the estimate
- * exceeds the budget the sweep is SKIPPED and the verdict degrades to
- * `'unverified'` with a `mechanism.unverified-budget-exceeded` diagnostic.
+ * exceeds the budget or the caller forces a skip, the sweep is SKIPPED and
+ * the verdict degrades to `'unverified'` with a
+ * `mechanism.unverified-budget-exceeded` diagnostic.
  * Not counted: criterion 8 (tendon routing), a no-op without tendons.
  */
 export const BREP_SWEEP_BUDGET = 40_000;
@@ -207,6 +210,8 @@ export interface MechanismCoverage {
   /** `solvedModel({ ignore })` declarations, listed for transparency; they
    *  do not suppress collision checks at sampled joint-travel poses. */
   readonly ignoredPairs?: ReadonlyArray<readonly [string, string]>;
+  /** Closed-loop rank and mobility measured by the mate solver per sampled pose. */
+  readonly loopMobility?: readonly MechanismLoopMobility[];
 }
 
 /**
@@ -314,11 +319,10 @@ async function checkRestCriteria(
   // cannot see.
   out.push(...(await checkJointMeshContinuityCriterion(arm, solved, loweredBase)));
 
-  // Criterion 9 (rest-pose contact) — the drawing as it paints must be
-  // physically consistent: no two solids share volume, and the two parts
-  // of every mate touch. Mesh-based and independent of the sweep budget,
-  // so a heavy assembly cannot pass as 'unverified' with links passing
-  // through each other. See `./restPoseContact`.
+  // Criterion 9 (rest-pose contact) — unignored solids must not share
+  // volume, and the two parts of every mate must touch. Mesh-based and
+  // independent of the sweep budget, so a heavy assembly cannot pass as
+  // 'unverified' with links passing through each other. See `./restPoseContact`.
   // Only mechanisms: a mate-less multi-part scene is independent bodies
   // (a display layout, a car body with its glass), not a mechanism.
   if (loweredBase.scene !== undefined && arm.__mates().length > 0) {
@@ -360,8 +364,13 @@ function mechanismVerdict(
   physics: { ran: boolean } | undefined,
 ): 'real' | 'broken' | 'unverified' {
   if (failures.some((d) => d.severity === 'error')) return 'broken';
+  if (failures.some((d) => d.code === 'mechanism.joint-mesh-unverified' || d.code === 'mechanism.ignored-rest-overlap')) return 'unverified';
   if (sweepSkipped || (physics !== undefined && !physics.ran)) return 'unverified';
   return 'real';
+}
+
+function mateClosureFailures(moving: boolean, closure: readonly ClosureSample[]): CompilerDiagnostic[] {
+  return moving ? checkMateClosure(closure) : [];
 }
 
 export async function checkMechanismTruth(
@@ -399,11 +408,14 @@ export async function checkMechanismTruth(
   // criteria 2 + 3 will lazily lower BREP per-sample below.
   const solved: SolvedSample[] = [];
   const closure: ClosureSample[] = [];
+  const loopMobility: MechanismLoopMobility[] = [];
+  const seenLoopDiagnostics = new Set<string>();
   for (const sample of samples) {
     try {
       const r = await solveMates(arm, sample.poses);
       solved.push({ sample, transforms: r.poses });
       closure.push({ name: sample.name, status: r.status, ...(r.loopResiduals ? { loopResiduals: r.loopResiduals } : {}) });
+      appendLoopEvidence(r.loop, arm.name, sample.name, loopMobility, failures, seenLoopDiagnostics);
     } catch {
       // A solver throw at a sampled pose is itself a mechanism failure,
       // but it's already surfaced by the pose-envelope review path. Skip
@@ -415,7 +427,7 @@ export async function checkMechanismTruth(
   // Per-mate satisfaction at every solved pose (loop mates; tree mates are
   // placed by the FK walk). Moving models only: a static rigid loop keeps
   // its existing validator surface.
-  if (moving) failures.push(...checkMateClosure(closure));
+  failures.push(...mateClosureFailures(moving, closure));
 
   const joints = arm.__mates().filter((m) => m.type !== 'fastened').length;
   const fastened = arm.__mates().length - joints;
@@ -452,7 +464,7 @@ export async function checkMechanismTruth(
   // skipped sweep leaves us unable to certify (unverified); otherwise
   // every criterion held (real).
   //
-  // The budget-exceeded diagnostic is a non-fatal carrier (severity 'warn')
+  // The sweep-skipped diagnostic is a non-fatal carrier (severity 'warn')
   // that lives in `failures` so consumers surface it — but it must NOT make
   // the verdict 'broken'. Only an error-severity criterion failure means
   // 'broken'.
@@ -465,6 +477,7 @@ export async function checkMechanismTruth(
       ...scope,
       sweep: !sweepSkipped,
       physics: physics?.ran ?? false,
+      ...(loopMobility.length > 0 ? { loopMobility } : {}),
     }, ignoredPairs),
   };
 }
@@ -808,7 +821,16 @@ async function getOrComputeBboxCorners(
 
 function checkRestPoseContact(arm: Assembly, scene: SceneBackend): CompilerDiagnostic[] {
   const out: CompilerDiagnostic[] = [];
+  const ignoredPairKeys = new Set(arm.__ignoreInterference().map(([a, b]) => pairKey(a, b)));
   for (const p of restPosePenetrations(scene)) {
+    if (ignoredPairKeys.has(pairKey(p.a, p.b))) {
+      out.push(makeFailure(
+        'mechanism.ignored-rest-overlap',
+        `Parts '${p.a}' and '${p.b}' have an ignored rest-pose overlap of ${formatOverlapMm3(p.volumeMm3)} mm³. Their physical compatibility remains unverified.`,
+        'warn',
+      ));
+      continue;
+    }
     const at = p.at.map((v) => v.toFixed(1)).join(', ');
     out.push(makeFailure(
       'mechanism.rest-interpenetration',
@@ -817,16 +839,31 @@ function checkRestPoseContact(arm: Assembly, scene: SceneBackend): CompilerDiagn
       `${p.cellMm > 0 ? `${p.cellMm.toFixed(2)} mm voxels` : 'no voxels'}). Seated parts share faces, not volume.`,
     ));
   }
-  out.push(...restPoseMateGaps(arm, scene).map(mateGapFailure));
+  out.push(...restPoseMateGaps(arm, scene, REST_MATE_CONTACT_TOLERANCE_MM, () => true, restGroupsFor(arm, scene)).map(mateGapFailure));
   return out;
 }
 
 function mateGapFailure(g: RestMateGap): CompilerDiagnostic {
+  const groups = g.groupGapMm === undefined ? '' :
+    ` Counting the parts fastened to each side (a servo on one link, its horn on the other), ` +
+    `the two sides are still ${g.groupGapMm.toFixed(2)} mm apart.`;
   return makeFailure(
     'mechanism.mate-gap',
     `Mate '${g.mateName}': parts '${g.a}' and '${g.b}' are ${g.gapMm.toFixed(2)} mm apart at the rest pose ` +
-    `(tolerance ${REST_MATE_CONTACT_TOLERANCE_MM} mm). The mate is declared but the parts do not touch.`,
+    `(tolerance ${REST_MATE_CONTACT_TOLERANCE_MM} mm). The mate is declared but the parts do not touch.` + groups,
   );
+}
+
+/** Rest-pose rigid groups (touching fastened mates), shared by the joint
+ *  continuity and mate-contact criteria of one rest scene. */
+const REST_GROUPS = new WeakMap<SceneBackend, Map<string, string[]>>();
+function restGroupsFor(arm: Assembly, scene: SceneBackend): Map<string, string[]> {
+  let groups = REST_GROUPS.get(scene);
+  if (groups === undefined) {
+    groups = restFastenedGroups(arm, scene);
+    REST_GROUPS.set(scene, groups);
+  }
+  return groups;
 }
 
 /**
@@ -912,12 +949,17 @@ async function checkInterpenetration(
         `Parts '${pair.a}' and '${pair.b}' interpenetrate by ${describeOverlap(pair)}${describeOverlapLocation(pair)} at pose sample '${s.sample.name}' — ` +
         `they ${relation}. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. ` +
         `Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free. ` +
-        `Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended.`,
+        `Remove this pair from the solvedModel ignore list, or correct the geometry if the overlap was unintended.` +
+        suggestionSuffix(coupledMateSuggestion(arm, s.sample.mateName, pair.a, pair.b)),
       ));
     }
   }
 
   return out;
+}
+
+function suggestionSuffix(text: string | undefined): string {
+  return text === undefined ? '' : ` ${text}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1093,10 +1135,19 @@ async function checkJointMeshContinuityCriterion(
   const results = checkJointMeshContinuity(arm, {
     transforms: rest.transforms,
     scene,
-  });
+  }, restGroupsFor(arm, scene));
 
   const out: CompilerDiagnostic[] = [];
   for (const r of results) {
+    if (r.status === 'unavailable') {
+      const failure = makeFailure(
+        'mechanism.joint-mesh-unverified',
+        `Joint '${r.mateName}' ${r.side} body '${r.partName}': rest-pose continuity could not be measured because ${r.reason}. This joint cannot be certified connected.`,
+        'warn',
+      );
+      out.push({ ...failure, details: { mateName: r.mateName, partName: r.partName, side: r.side } });
+      continue;
+    }
     // Decision #3 reframe: the knuckle SOLID must be present around the
     // pivot, not the pivot POINT inside solid. A drilled clevis knuckle's
     // nearest solid is the bore wall at `clearanceRadiusMm`; accept a gap up
@@ -1112,7 +1163,7 @@ async function checkJointMeshContinuityCriterion(
     // constrained by material away from the axis, not floating.
     if (r.bearingGapMm !== undefined && r.bearingGapMm <= JOINT_MESH_GAP_TOLERANCE_MM) continue;
     const bearingNote = r.bearingGapMm !== undefined
-      ? ` Nearest contact between the two mated bodies is ` +
+      ? ` Nearest contact between the two sides (each mated part plus the parts fastened to it) is ` +
         `${r.bearingGapMm.toFixed(1)}mm — no bearing surface constrains ` +
         `the joint within tolerance either.`
       : '';
@@ -1124,7 +1175,8 @@ async function checkJointMeshContinuityCriterion(
     const failure = makeFailure(
       'mechanism.joint-mesh-gap',
       `Joint '${r.mateName}' ${r.side} body '${r.partName}': nearest solid is ` +
-      `${r.signedDistanceMm.toFixed(1)}mm from the pivot origin (allowed ` +
+      `${r.signedDistanceMm.toFixed(1)}mm from the pivot origin, counting '${r.partName}' and the parts fastened to it` +
+      `${r.supportPartName === undefined ? '' : ` (nearest: '${r.supportPartName}')`} (allowed ` +
       `${allowedGap.toFixed(1)}mm = clearance bore ${r.clearanceRadiusMm.toFixed(1)}mm + ` +
       `${JOINT_MESH_GAP_TOLERANCE_MM.toFixed(1)}mm margin). The link mesh does not ` +
       `reach the joint it pivots on — extend the body geometry so its OCCT ` +
@@ -1194,7 +1246,13 @@ function buildPoseSamples(arm: Assembly): PoseSample[] {
   ];
   const mates = arm.__mates();
   const couplings = arm.__mateCouplings();
+  const coupledDriven = new Set(couplings.map((coupling) => coupling.driven));
   for (const mate of mates) {
+    // A driven mate is a dependent coordinate. Sampling it independently
+    // creates a pose that contradicts coupleMates and can make the physics
+    // gate test a fictitious joint configuration. Drive the source and let
+    // expandCoupledPoses derive each output instead.
+    if (coupledDriven.has(mate.name)) continue;
     const limits = mate.limitsDeg ?? mate.limitsMm;
     if (limits === undefined) continue;
     const [min, max] = limits;
@@ -1290,8 +1348,9 @@ async function lowerAssemblySceneForPose(
 }
 
 /**
- * Build the LOUD non-fatal diagnostic for a skipped (over-budget) BREP
- * pose-sweep. Severity 'warn' so it carries the 'unverified' verdict with
+ * Build the LOUD non-fatal diagnostic for a skipped BREP pose sweep. The
+ * message distinguishes a forced skip from an estimate that exceeded a
+ * positive budget. Severity 'warn' carries the 'unverified' verdict with
  * evidence without flipping the verdict to 'broken' (see precedence in
  * {@link checkMechanismTruth}).
  */
@@ -1301,20 +1360,24 @@ function makeBudgetExceeded(
 ): CompilerDiagnostic {
   const code = 'mechanism.unverified-budget-exceeded';
   const { work, candidates, parts, clusters, lowers } = estimate;
+  const skipReason = sweepBudget <= 0
+    ? `sweepBudget is ${sweepBudget} (forced skip)`
+    : `estimated work ${work} exceeds the budget ${sweepBudget}`;
   return {
     target: 'export-occt',
     code,
     severity: 'warn',
     message:
       `The articulated BREP pose-sweep (collision/dof/tendon criteria) was SKIPPED: ` +
-      `estimated work ${work} exceeds the budget ${sweepBudget} ` +
+      `${skipReason} ` +
       `(${parts} part${parts === 1 ? '' : 's'} in ${clusters} rigid cluster${clusters === 1 ? '' : 's'}, ` +
       `${lowers} pose${lowers === 1 ? '' : 's'}, ${candidates} pair overlap probe${candidates === 1 ? '' : 's'}; ` +
       `work counts exact confirms selected by the proxy pass, as the summed ` +
       `analysis-body face count of those pairs). The mechanism ` +
       `is NOT certified collision-free across its travel. Rest-pose joint-mesh ` +
-      `continuity still ran — a link that does not meet its body is 'broken', ` +
-      `not unverified. Reduce the part/pose count, verify a tractable ` +
+      `continuity still ran: measured gaps remain errors, and unavailable ` +
+      `joint measurements keep the mechanism unverified. Reduce the part/pose ` +
+      `count, verify a tractable ` +
       `sub-assembly, or pass a larger sweepBudget to force the full sweep.`,
     hint: HINT_TEMPLATES[code].template,
     nextAction: HINT_TEMPLATES[code].nextAction,

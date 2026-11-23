@@ -4,13 +4,17 @@
 // Twelve-part gearbox blockout for the assembly sequence planner, plus four
 // M4-style bolts, a tool-clearance rib and a declared press fit. Parts are
 // declared in REMOVAL order (cover first, base last) so the reverse peel is a
-// bottom-up build sequence. The two fastened mate clusters (shaft + its two
-// gears) are real subassembly candidates. The screws declare a helical removal
-// axis and pitch, so P2 plans them as helical steps instead of unknown. The rib
-// sits beside one screw head, close enough to make its tool envelope
-// unreachable; the planner reports `tool-blocked` naming the rib. Gear A's mate
-// declares a press fit, so its step is `requires-force` and is never simulated.
-// This is a geometry fixture, not a functioning transmission.
+// bottom-up build sequence. Every part is mated, so the assembly graph is
+// connected: the posts are fastened to the base, the rib to the cover, each
+// shaft carries its two gears and turns in a base bearing seat, and each bolt
+// clamps the cover and screws into the base. The four fastened mate clusters
+// (base + posts, cover + rib, and each shaft + its two gears) are real
+// subassembly candidates; a bolt never joins a cluster. The screws declare a
+// helical removal axis and pitch, so P2 plans them as helical steps instead of
+// unknown. The rib sits beside one screw head, close enough to make its tool
+// envelope unreachable; the planner reports `tool-blocked` naming the rib.
+// Gear A's mate declares a press fit, so its step is `requires-force` and is
+// never simulated. This is a geometry fixture, not a functioning transmission.
 
 const arm = assembly('gearbox sequence');
 const boltPositions: [number, number][] = [[30, 18], [30, -18], [-30, 18], [-30, -18]];
@@ -41,11 +45,11 @@ const gearBRef = arm.part('gear-b', gearB);
 const gearARef = arm.part('gear-a', gearA);
 const outputShaftRef = arm.part('output-shaft', outputShaft);
 const inputShaftRef = arm.part('input-shaft', inputShaft);
-arm.part('post-d', postD);
-arm.part('post-c', postC);
-arm.part('post-b', postB);
-arm.part('post-a', postA);
-arm.part('base', base);
+const postDRef = arm.part('post-d', postD);
+const postCRef = arm.part('post-c', postC);
+const postBRef = arm.part('post-b', postB);
+const postARef = arm.part('post-a', postA);
+const baseRef = arm.part('base', base);
 
 // A blockout M4-style bolt: 5.5 mm head over a 3 mm shank. The head bearing is
 // at local z=0, so `at` places it on the cover's top face. Catalog fasteners
@@ -67,24 +71,54 @@ for (let index = 0; index < boltPositions.length; index++) {
       tool: { kind: 'cylinder', lengthMm: 30, diameterMm: 9, label: 'hex-key' },
     },
   });
+  // The shank also screws into the base, 38 mm below the head bearing. This
+  // second mate links cover and base through the bolt; the fastener metadata
+  // stays on the head mate only.
+  boltRef.connector('shank', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -38] }, normal: [0, 0, 1] });
+  baseRef.connector(`bolt-${label}-bore`, { type: 'frame', origin: { kind: 'vec3', value: [x, y, 4.1] }, normal: [0, 0, 1] });
+  arm.mate(`bolt-${label}-in-base`, `base.bolt-${label}-bore`, `bolt-${label}.shank`, 'fastened');
 }
 
 // A rib beside bolt A's head: the screw still translates out, but the driver
 // envelope cannot reach the socket. P2 reports tool-blocked { fastener, rib }.
-arm.part('tool-clearance-rib', box(1.5, 4, 10, true).translate(34.75, 18, 47).finish('aluminium-brushed'));
+// The rib stands on the cover's top face and is fastened there.
+const ribRef = arm.part('tool-clearance-rib', box(1.5, 4, 10, true).translate(34.75, 18, 47).finish('aluminium-brushed'));
 
-// Frame connectors are mate metadata, not geometry: the planner groups the
-// cluster and plans its inside; it does not solve the mates in this example.
+// Each shaft and its two gears form their own fastened mate cluster. The
+// solver places the gears from these seats, so each seat and mount sits at the
+// gear centre in the shared modelled frame and the mates keep every part where
+// it is drawn. The planner groups each cluster and plans its inside.
 const seat = (value: [number, number, number]) => ({ type: 'frame' as const, origin: { kind: 'vec3' as const, value } });
-inputShaftRef.connector('gear-a-seat', seat([0, 0, -11])).connector('gear-b-seat', seat([0, 0, 1]));
-outputShaftRef.connector('gear-c-seat', seat([0, 0, -11])).connector('gear-d-seat', seat([0, 0, 1]));
-gearARef.connector('shaft-mount', seat([0, 0, 0]));
-gearBRef.connector('shaft-mount', seat([0, 0, 0]));
-gearCRef.connector('shaft-mount', seat([0, 0, 0]));
-gearDRef.connector('shaft-mount', seat([0, 0, 0]));
+inputShaftRef.connector('gear-a-seat', seat([-18, 0, 10])).connector('gear-b-seat', seat([-18, 0, 22]));
+outputShaftRef.connector('gear-c-seat', seat([18, 0, 10])).connector('gear-d-seat', seat([18, 0, 22]));
+gearARef.connector('shaft-mount', seat([-18, 0, 10]));
+gearBRef.connector('shaft-mount', seat([-18, 0, 22]));
+gearCRef.connector('shaft-mount', seat([18, 0, 10]));
+gearDRef.connector('shaft-mount', seat([18, 0, 22]));
 arm.mate('input-shaft-gear-a', 'input-shaft.gear-a-seat', 'gear-a.shaft-mount', 'fastened', { fit: { kind: 'press', part: 'gear-a', axis: [0, 0, 1] } });
 arm.mate('input-shaft-gear-b', 'input-shaft.gear-b-seat', 'gear-b.shaft-mount', 'fastened');
 arm.mate('output-shaft-gear-c', 'output-shaft.gear-c-seat', 'gear-c.shaft-mount', 'fastened');
 arm.mate('output-shaft-gear-d', 'output-shaft.gear-d-seat', 'gear-d.shaft-mount', 'fastened');
+
+// Each post stands on the base's top face (z = 6) and is fastened there.
+const posts: [typeof postARef, number, number][] = [[postARef, -36, -26], [postBRef, 36, -26], [postCRef, -36, 26], [postDRef, 36, 26]];
+for (const [postRef, x, y] of posts) {
+  baseRef.connector(`${postRef.name}-seat`, seat([x, y, 6]));
+  postRef.connector('foot', seat([x, y, 6]));
+  arm.mate(`base-${postRef.name}`, `base.${postRef.name}-seat`, `${postRef.name}.foot`, 'fastened');
+}
+coverRef.connector('rib-seat', seat([34.75, 18, 42]));
+ribRef.connector('foot', seat([34.75, 18, 42]));
+arm.mate('cover-rib', 'cover.rib-seat', 'tool-clearance-rib.foot', 'fastened');
+
+// Each shaft's lower end face bears on the base's top face and turns about Z.
+// A revolute mate is not a fixed joint, so a shaft cluster stays its own
+// subassembly.
+const bearing = (value: [number, number, number]) => ({ type: 'axis' as const, origin: { kind: 'vec3' as const, value }, axis: [0, 0, 1] as [number, number, number] });
+baseRef.connector('input-bearing', bearing([-18, 0, 6])).connector('output-bearing', bearing([18, 0, 6]));
+inputShaftRef.connector('journal', bearing([-18, 0, 6]));
+outputShaftRef.connector('journal', bearing([18, 0, 6]));
+arm.mate('input-shaft-bearing', 'base.input-bearing', 'input-shaft.journal', 'revolute');
+arm.mate('output-shaft-bearing', 'base.output-bearing', 'output-shaft.journal', 'revolute');
 
 return arm.model();

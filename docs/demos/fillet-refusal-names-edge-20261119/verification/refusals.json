@@ -1,0 +1,181 @@
+[
+  {
+    "label": "clean plate",
+    "exitCode": 0,
+    "errorCodes": []
+  },
+  {
+    "label": "chamfer 20 mm on the four top-perimeter edges",
+    "exitCode": 1,
+    "errorCodes": [
+      "feature.kernel-failed",
+      "recompute.input.missing",
+      "recompute.input.missing"
+    ],
+    "refusal": {
+      "code": "feature.kernel-failed",
+      "featureId": "chamfer_1",
+      "message": "OCCT chamfer failed (distance 20 mm): non-Error C++ exception during Build. The largest distance that builds on these 4 edges is 5.93 mm.",
+      "hint": "Limiting distance on limiting edge set (4 edges) on feature chamfer_1 is 5.93 mm (requested 20 mm; kernel probe). Use distance ≤ 5.93 mm, or split the selection so tighter edges get a smaller distance. If a previous round on an adjacent edge is larger than this limit, reduce that prior radius first. Failing edges (4 of 4), each rejected alone at distance 6.016 mm: @kc[fillet_1/edge/s254a3cdbec0aae67] (LINE, 58 mm long, midpoint (100, 35, 12)); @kc[fillet_1/edge/s15798112b9b2c5ce] (LINE, 58 mm long, midpoint (0, 35, 12)); @kc[fillet_1/edge/sf01fece2b729022e] (LINE, 88 mm long, midpoint (50, 70, 12)); @kc[fillet_1/edge/s97a9d2bfb9f2b39b] (LINE, 88 mm long, midpoint (50, 0, 12)).",
+      "details": {
+        "param": "distance",
+        "requestedValue": 20,
+        "maxFeasibleValue": 5.93,
+        "maxFeasibleDistance": 5.93,
+        "probeAttempts": 9,
+        "minInfeasibleValue": 6.015625,
+        "edgeCount": 4,
+        "failingEdgeStatus": "named",
+        "failingEdgeCount": 4,
+        "failingEdgeProbeValue": 6.015625,
+        "failingEdgeProbeAttempts": 4,
+        "failingEdgeId": "s254a3cdbec0aae67",
+        "failingEdgeLocator": "LINE, 58 mm long, midpoint (100, 35, 12)",
+        "failingEdgeRef": "@kc[fillet_1/edge/s254a3cdbec0aae67]",
+        "failingEdgeIds": "s254a3cdbec0aae67,s15798112b9b2c5ce,sf01fece2b729022e,s97a9d2bfb9f2b39b"
+      }
+    },
+    "refuse": {
+      "code": "feature.kernel-failed",
+      "message": "OCCT chamfer failed (distance 20 mm): non-Error C++ exception during Build. The largest distance that builds on these 4 edges is 5.93 mm.",
+      "location": {
+        "featureId": "chamfer_1",
+        "param": "distance",
+        "edge": "@kc[fillet_1/edge/s254a3cdbec0aae67]"
+      },
+      "try": "Limiting distance on limiting edge set (4 edges) on feature chamfer_1 is 5.93 mm (requested 20 mm; kernel probe). Use distance ≤ 5.93 mm, or split the selection so tighter edges get a smaller distance. If a previous round on an adjacent edge is larger than this limit, reduce that prior radius first. Failing edges (4 of 4), each rejected alone at distance 6.016 mm: @kc[fillet_1/edge/s254a3cdbec0aae67] (LINE, 58 mm long, midpoint (100, 35, 12)); @kc[fillet_1/edge/s15798112b9b2c5ce] (LINE, 58 mm long, midpoint (0, 35, 12)); @kc[fillet_1/edge/sf01fece2b729022e] (LINE, 88 mm long, midpoint (50, 70, 12)); @kc[fillet_1/edge/s97a9d2bfb9f2b39b] (LINE, 88 mm long, midpoint (50, 0, 12))."
+    }
+  },
+  {
+    "label": "chamfer 20 mm on @kc[fillet_1/edge/s254a3cdbec0aae67]",
+    "exitCode": 1,
+    "errorCodes": [
+      "feature.kernel-failed",
+      "recompute.input.missing",
+      "recompute.input.missing"
+    ],
+    "refusal": {
+      "code": "feature.kernel-failed",
+      "featureId": "chamfer_1",
+      "message": "OCCT chamfer failed (distance 20 mm): non-Error C++ exception during Build. The largest distance that builds on this edge is 5.93 mm.",
+      "hint": "Limiting distance on limiting edge on feature chamfer_1 is 5.93 mm (requested 20 mm; kernel probe). Use distance ≤ 5.93 mm, or split the selection so tighter edges get a smaller distance. If a previous round on an adjacent edge is larger than this limit, reduce that prior radius first. Failing edge: @kc[fillet_1/edge/s254a3cdbec0aae67] (LINE, 58 mm long, midpoint (100, 35, 12)).",
+      "details": {
+        "param": "distance",
+        "requestedValue": 20,
+        "maxFeasibleValue": 5.93,
+        "maxFeasibleDistance": 5.93,
+        "probeAttempts": 9,
+        "minInfeasibleValue": 6.015625,
+        "edgeCount": 1,
+        "failingEdgeStatus": "named",
+        "failingEdgeCount": 1,
+        "failingEdgeProbeValue": 6.015625,
+        "failingEdgeProbeAttempts": 0,
+        "failingEdgeId": "s254a3cdbec0aae67",
+        "failingEdgeLocator": "LINE, 58 mm long, midpoint (100, 35, 12)",
+        "failingEdgeRef": "@kc[fillet_1/edge/s254a3cdbec0aae67]",
+        "failingEdgeIds": "s254a3cdbec0aae67"
+      }
+    },
+    "refuse": {
+      "code": "feature.kernel-failed",
+      "message": "OCCT chamfer failed (distance 20 mm): non-Error C++ exception during Build. The largest distance that builds on this edge is 5.93 mm.",
+      "location": {
+        "featureId": "chamfer_1",
+        "param": "distance",
+        "edge": "@kc[fillet_1/edge/s254a3cdbec0aae67]"
+      },
+      "try": "Limiting distance on limiting edge on feature chamfer_1 is 5.93 mm (requested 20 mm; kernel probe). Use distance ≤ 5.93 mm, or split the selection so tighter edges get a smaller distance. If a previous round on an adjacent edge is larger than this limit, reduce that prior radius first. Failing edge: @kc[fillet_1/edge/s254a3cdbec0aae67] (LINE, 58 mm long, midpoint (100, 35, 12))."
+    }
+  },
+  {
+    "label": "retry chamfer 5.93 mm on @kc[fillet_1/edge/s254a3cdbec0aae67]",
+    "exitCode": 0,
+    "errorCodes": []
+  },
+  {
+    "label": "fillet 20 mm on @kc[fillet_1/edge/sf01fece2b729022e]",
+    "exitCode": 1,
+    "errorCodes": [
+      "feature.kernel-failed",
+      "recompute.input.missing",
+      "recompute.input.missing"
+    ],
+    "refusal": {
+      "code": "feature.kernel-failed",
+      "featureId": "fillet_2",
+      "message": "OCCT fillet failed (radius 20 mm): non-Error C++ exception during Build. The largest radius that builds on this edge is 11.9 mm.",
+      "hint": "Limiting radius on limiting edge on feature fillet_2 is 11.9 mm (requested 20 mm; kernel probe). Use radius ≤ 11.9 mm, or split the selection so tighter edges get a smaller radius. If a previous round on an adjacent edge is larger than this limit, reduce that prior radius first. Failing edge: @kc[fillet_1/edge/sf01fece2b729022e] (LINE, 88 mm long, midpoint (50, 70, 12)).",
+      "details": {
+        "param": "radius",
+        "requestedValue": 20,
+        "maxFeasibleValue": 11.9,
+        "maxFeasibleRadius": 11.9,
+        "probeAttempts": 9,
+        "minInfeasibleValue": 12.03125,
+        "edgeCount": 1,
+        "failingEdgeStatus": "named",
+        "failingEdgeCount": 1,
+        "failingEdgeProbeValue": 12.03125,
+        "failingEdgeProbeAttempts": 0,
+        "failingEdgeId": "sf01fece2b729022e",
+        "failingEdgeLocator": "LINE, 88 mm long, midpoint (50, 70, 12)",
+        "failingEdgeRef": "@kc[fillet_1/edge/sf01fece2b729022e]",
+        "failingEdgeIds": "sf01fece2b729022e"
+      }
+    },
+    "refuse": {
+      "code": "feature.kernel-failed",
+      "message": "OCCT fillet failed (radius 20 mm): non-Error C++ exception during Build. The largest radius that builds on this edge is 11.9 mm.",
+      "location": {
+        "featureId": "fillet_2",
+        "param": "radius",
+        "edge": "@kc[fillet_1/edge/sf01fece2b729022e]"
+      },
+      "try": "Limiting radius on limiting edge on feature fillet_2 is 11.9 mm (requested 20 mm; kernel probe). Use radius ≤ 11.9 mm, or split the selection so tighter edges get a smaller radius. If a previous round on an adjacent edge is larger than this limit, reduce that prior radius first. Failing edge: @kc[fillet_1/edge/sf01fece2b729022e] (LINE, 88 mm long, midpoint (50, 70, 12))."
+    }
+  },
+  {
+    "label": "retry fillet 11.9 mm on @kc[fillet_1/edge/sf01fece2b729022e]",
+    "exitCode": 0,
+    "errorCodes": []
+  },
+  {
+    "label": "corner fillet 40 mm on the four vertical edges",
+    "exitCode": 1,
+    "errorCodes": [
+      "feature.edge-feature.short-edges-skipped",
+      "recompute.input.missing",
+      "recompute.input.missing",
+      "recompute.input.missing"
+    ],
+    "refusal": {
+      "code": "feature.edge-feature.short-edges-skipped",
+      "featureId": "fillet_1",
+      "message": "fillet skipped: all 4 target edges are shorter than 2 × radius = 80.00 mm",
+      "hint": "OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 × radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges. The largest radius that builds on these 4 edges is 34.8 mm (kernel probe). No single edge is the limit: each selected edge builds alone at radius 35 mm, so the selected edges limit each other (adjacent blends share a face). Split the selection or reduce radius on neighbouring edges.",
+      "details": {
+        "param": "radius",
+        "requestedValue": 40,
+        "probeAttempts": 9,
+        "minInfeasibleValue": 35,
+        "edgeCount": 4,
+        "maxFeasibleValue": 34.8,
+        "maxFeasibleRadius": 34.8,
+        "failingEdgeStatus": "interaction",
+        "failingEdgeCount": 0,
+        "failingEdgeProbeValue": 35,
+        "failingEdgeProbeAttempts": 4
+      }
+    },
+    "refuse": {
+      "code": "feature.edge-feature.short-edges-skipped",
+      "message": "fillet skipped: all 4 target edges are shorter than 2 × radius = 80.00 mm",
+      "location": {
+        "featureId": "fillet_1",
+        "param": "radius"
+      },
+      "try": "OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 × radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges. The largest radius that builds on these 4 edges is 34.8 mm (kernel probe). No single edge is the limit: each selected edge builds alone at radius 35 mm, so the selected edges limit each other (adjacent blends share a face). Split the selection or reduce radius on neighbouring edges."
+    }
+  }
+]

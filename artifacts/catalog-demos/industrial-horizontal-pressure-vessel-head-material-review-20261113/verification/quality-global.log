@@ -1,0 +1,2 @@
+Command: python3 scripts/checkCatalogQuality.py
+Result after syncing develop at eb3dfd567: 2400/2402 assets pass (99.92%; 49 rich kits, 0 thin kits). The two files in standard-components that fail the structural material-controls gate are beam-coupling and the inherited retaining-ring asset from PR #1373. This color-only vessel correction did not change the structural score; exit code 1 reflects those catalog-wide outliers.

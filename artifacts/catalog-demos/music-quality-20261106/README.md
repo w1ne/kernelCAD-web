@@ -41,9 +41,18 @@ python3 artifacts/catalog-demos/music-quality-20261106/inspect_music_video.py
 - [`preview-render-output.txt`](preview-render-output.txt): all 40 preview renders and triangle counts. [`catalog-build-output.txt`](catalog-build-output.txt): generated-index rebuild. [`index-check-output.txt`](index-check-output.txt): generated-index consistency check.
 - [`catalog-pages-check.json`](catalog-pages-check.json): local static page and preview checks for every music asset. Deployment remains explicitly unverified.
 - [`check-results.json`](check-results.json), [`eslint-output.txt`](eslint-output.txt), [`catalog-integration-output.txt`](catalog-integration-output.txt), and [`kit-quality-output.txt`](kit-quality-output.txt): quality, lint and test status with saved command output.
-- [`demo-settings.json`](demo-settings.json), [`frames/`](frames/) and [`video-inspection.json`](video-inspection.json): video invocation, source frames and decoded MP4 sample metadata. [`video-review/`](video-review/) retains the decoded sample frames, contact sheet and visual review notes.
+- [`demo-settings.json`](demo-settings.json), `frames/` and [`video-inspection.json`](video-inspection.json): video invocation, source frames and decoded MP4 sample metadata. [`video-review/`](video-review/) retains the decoded sample frames, contact sheet and visual review notes.
 - [`before-previews/`](before-previews/) preserves the base-commit images used for visual comparison.
 
 ## Limits
 
 The assets are stylized scene props. Local mesh/index/page checks do not establish real instrument dimensions, sound, manufacturing suitability, certification, deployed behavior or hardware acceptance. The private dated workflow comparison is retained separately in `kernelCAD-private`.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/music-quality-20261106/capture_music_quality_demo.py`
+- video review: `python3 artifacts/catalog-demos/music-quality-20261106/inspect_music_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

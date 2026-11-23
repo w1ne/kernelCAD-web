@@ -1,0 +1,6 @@
+PASS: generated page exists
+PASS: page has rendered preview image
+PASS: page lists nonconductive composite shell
+PASS: page exposes variant presets
+PASS: page canonical URL is correct
+Generated 2,402 catalog pages plus hub, sitemap and robots.txt from catalog/index.json.

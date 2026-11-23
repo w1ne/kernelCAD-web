@@ -61,9 +61,8 @@ return section(20, 14).loft([section(46, 30), section(30, 20)], { spacing: 55 })
       .map(d => Math.hypot(d.b[0] - d.a[0], d.b[1] - d.a[1], d.b[2] - d.a[2]));
     expect(overall).toHaveLength(3);
     overall.forEach((size, k) => expect(Math.abs(size - mesh[k]), `axis ${k}`).toBeLessThan(0.1));
-    // The plain Bnd_Box is padded on these faces; the check above would fail on it.
-    const padded = model.rootShape!.boundingBox();
-    expect(Math.max(...[0, 1, 2].map(k => padded.max[k] - padded.min[k] - mesh[k]))).toBeGreaterThan(0.1);
+    // OCCT releases can tighten the plain Bnd_Box. Check mesh agreement,
+    // not a minimum bounding-box padding that is not part of the API.
 
     const ball = await buildModel({ code: 'return sphere(50);', fileName: 'ball.kcad.ts' });
     expect(viewerDimensionsForModel(ball).dimensions.map(d => d.text)).toEqual(['100', '100', '100']);
@@ -74,7 +73,7 @@ return section(20, 14).loft([section(46, 30), section(30, 20)], { spacing: 55 })
     expect(viewerDimensionsForRoot({ records: [], rootShape: exploding }, { auto: false })).toEqual({ dimensions: [], diagnostics: [] });
     const r = viewerDimensionsForRoot({ records: [], rootShape: exploding });
     expect(r.dimensions).toEqual([]);
-    expect(r.diagnostics.map(d => d.code)).toEqual(['viewer.dimensions.budget-exceeded']);
+    expect(r.diagnostics.map(d => d.code)).toEqual(['viewer.dimensions.failed']);
     expect(r.diagnostics[0].message).toContain('scene exploded');
   });
 

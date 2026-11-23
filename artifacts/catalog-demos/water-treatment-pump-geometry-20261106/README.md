@@ -45,7 +45,7 @@ the kit's `previews/` folder.
 
 - [15-second MP4](water-treatment-pump-geometry.mp4)
 - [Poster](poster.png)
-- [Inspected contact sheet](video-review/contact-sheet.png)
+- Inspected contact sheet (`video-review/contact-sheet.png`, not tracked)
 - [Written preview review](preview-review.md)
 - [Video settings and invocation](demo-settings.json)
 - [Source/index/page/variant verification report](verification.json)
@@ -74,3 +74,12 @@ bash artifacts/catalog-demos/water-treatment-pump-geometry-20261106/run_local_ch
 asset renders, local catalog-page checks, parametric variants, MP4 capture, and
 video decoding/inspection. Dated comparisons of comparable workflows are kept
 in the private `kernelCAD-private` workspace.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/water-treatment-pump-geometry-20261106/capture_water_treatment_demo.py`
+- video review: `python3 artifacts/catalog-demos/water-treatment-pump-geometry-20261106/inspect_water_treatment_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

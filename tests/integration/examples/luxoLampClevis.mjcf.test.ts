@@ -6,8 +6,6 @@
 // (runScript + assemblyToMjcf) than the validate-loop assertions, which
 // live in luxoLampClevis.validate.test.ts.
 //
-// Spec:  docs/specs/2026-06-01-physics-grounded-loop-design.md
-// Plan:  docs/plans/2026-06-01-physics-loop-P5-luxo-geometric-rebuild.md
 
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';

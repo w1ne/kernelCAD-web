@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-19",
+  "scenario": "manufacturing benchmark case 08: SG90 M2 ear-hole depth",
+  "testCommand": "npx vitest run tests/integration/manufacturing/sg90LeverMountBenchmark.test.ts -t 're-imports from STEP|ear hole moved off|stop 0.1 mm' --reporter=dot",
+  "captureCommand": "python3 docs/demos/benchmark-sg90-hole-depth-1227-20261119/capture_demo.py",
+  "inspectionCommand": "python3 docs/demos/benchmark-sg90-hole-depth-1227-20261119/inspect_demo.py",
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "codec": "h264",
+    "pixelFormat": "yuv420p",
+    "frameRate": 24,
+    "durationSeconds": 12,
+    "slideDurationSeconds": 4,
+    "sampleSeconds": [1, 5, 9]
+  },
+  "scope": "Local STEP export/re-import and test-oracle validation; no deployment, physical inspection, fit, or hardware acceptance."
+}

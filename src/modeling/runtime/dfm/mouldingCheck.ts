@@ -62,8 +62,10 @@ import { faceFacetSteps, isTangentBlend, meshEdges, trianglesOf, type MeshEdge, 
 /** Faces this close to perpendicular to the pull axis (normal parallel to
  *  it) are parting / shut-off faces, not draft faces. */
 const PARALLEL_TOL_DEG = 0.01;
-/** Measured draft below minDraftDeg by more than this fails (float noise). */
-const DRAFT_TOL_DEG = 1e-3;
+/** Draft allowance used when classifying faces against the minimum angle. */
+export const MOULDING_DRAFT_TOLERANCE_DEG = 1e-3;
+/** Radius allowance used when classifying tight moulding fillets, in mm. */
+export const MOULDING_CORNER_RADIUS_TOLERANCE_MM = 1e-6;
 /** Curved-face triangles whose facet draft is below minDraftDeg + 2° are
  *  re-measured with the exact surface normal (chord facets understate a
  *  cone's draft slightly). */
@@ -102,7 +104,8 @@ const draftOf = (n: readonly number[], d: readonly number[]): number =>
   deg(Math.asin(Math.min(1, Math.abs(dot(n, d)))));
 
 export interface MouldingDraftFace {
-  faceRef: string;
+  /** Present only when the kernel supplied a stable lineage name. */
+  faceRef?: string;
   /** Smallest measured draft on the face, degrees. */
   draftDeg: number;
   /** Area of the face's non-parting triangles, mm². */
@@ -115,7 +118,8 @@ export interface MouldingDraftFace {
 }
 
 export interface MouldingUndercutFace {
-  faceRef: string;
+  /** Present only when the kernel supplied a stable lineage name. */
+  faceRef?: string;
   areaMm2: number;
   /** Part-local centroid of the face's largest blocked triangle. */
   location: Vec3;
@@ -168,8 +172,8 @@ export interface MouldingPartReport {
   unmeasured: string[];
   /** What the check does not cover, stated so a pass is not over-read. */
   limitations: string[];
-  /** 'fail' when any moulding finding for this part is error severity. */
-  verdict: 'pass' | 'fail';
+  /** 'fail' when any error finding exists; 'not-checked' when required measurements are unavailable. */
+  verdict: 'pass' | 'fail' | 'not-checked';
 }
 
 type ToWorld = (p: Vec3) => readonly [number, number, number];
@@ -244,6 +248,7 @@ export function checkMouldability(shape: OcctBackend, opts: MouldingCheckOptions
   };
   const diagnostics = mouldingDiagnostics(report, opts.part, opts.toWorld ?? (p => p));
   if (diagnostics.some(x => x.severity === 'error')) report.verdict = 'fail';
+  else if (unmeasured.length > 0) report.verdict = 'not-checked';
   return { report, diagnostics };
 }
 
@@ -333,12 +338,12 @@ export function measureDraft(
   tris: readonly Tri[],
   normals: ExactNormals,
   faceOfTri: ArrayLike<number>,
-  faceRefs: readonly string[],
+  faceRefs: readonly (string | undefined)[],
   d: Vec3,
   minDraftDeg: number,
 ): MouldingPartReport['draft'] {
   const parallelCos = Math.cos((PARALLEL_TOL_DEG * Math.PI) / 180);
-  const failAt = minDraftDeg - DRAFT_TOL_DEG;
+  const failAt = minDraftDeg - MOULDING_DRAFT_TOLERANCE_DEG;
   const acc = new Map<number, FaceDraftAcc>();
   tris.forEach((t, i) => {
     if (t.area === 0) return;
@@ -383,7 +388,7 @@ export function measureDraft(
     minAll = Math.min(minAll, e.min);
     if (e.min >= failAt) continue;
     insufficient.push({
-      faceRef: faceRefs[f] ?? `f${f}`,
+      ...(faceRefs[f] !== undefined ? { faceRef: faceRefs[f] } : {}),
       draftDeg: e.min,
       areaMm2: e.area,
       location: [...e.at] as Vec3,
@@ -419,7 +424,7 @@ export function findMouldUndercuts(
   tris: readonly Tri[],
   normals: ExactNormals,
   faceOfTri: ArrayLike<number>,
-  faceRefs: readonly string[],
+  faceRefs: readonly (string | undefined)[],
   bvh: TriangleBvh,
   d: Vec3,
 ): MouldingPartReport['undercut'] {
@@ -442,7 +447,11 @@ export function findMouldUndercuts(
   const faces: MouldingUndercutFace[] = [];
   for (const [f, e] of perFace) {
     if (e.area < MIN_UNDERCUT_AREA_MM2) continue;
-    faces.push({ faceRef: faceRefs[f] ?? `f${f}`, areaMm2: e.area, location: [...e.at] as Vec3 });
+    faces.push({
+      ...(faceRefs[f] !== undefined ? { faceRef: faceRefs[f] } : {}),
+      areaMm2: e.area,
+      location: [...e.at] as Vec3,
+    });
   }
   faces.sort((x, y) => y.areaMm2 - x.areaMm2);
   return { areaMm2: faces.reduce((sum, x) => sum + x.areaMm2, 0), faces };
@@ -548,7 +557,7 @@ function isConcaveCrease(
 export function findConcaveCreases(
   tris: readonly Tri[],
   faceOfTri: ArrayLike<number>,
-  faceRefs: readonly string[],
+  faceRefs: readonly (string | undefined)[],
   normals: ExactNormals,
 ): MouldingSharpCorner[] {
   const edges = meshEdges(tris as Tri[]);
@@ -571,9 +580,13 @@ export function findConcaveCreases(
     const c = byPair.get(key);
     if (c === undefined) {
       const [lo, hi] = f1 < f2 ? [f1, f2] : [f2, f1];
+      const refs = faceRefs[lo] !== undefined && faceRefs[hi] !== undefined
+        ? [faceRefs[lo], faceRefs[hi]] as [string, string]
+        : undefined;
       byPair.set(key, {
         kind: 'crease', radiusMm: 0, location: mid, best: l,
-        faceRefs: [faceRefs[lo] ?? `f${lo}`, faceRefs[hi] ?? `f${hi}`], lengthMm: l, turnDeg: turn,
+        ...(refs !== undefined ? { faceRefs: refs } : {}),
+        lengthMm: l, turnDeg: turn,
       });
       continue;
     }
@@ -587,7 +600,10 @@ export function findConcaveCreases(
   return [...byPair.values()]
     .map(c => {
       const { kind, radiusMm, location, faceRefs: refs, lengthMm, turnDeg } = c;
-      return { kind, radiusMm, location, faceRefs: refs, lengthMm, turnDeg };
+      return {
+        kind, radiusMm, location, lengthMm, turnDeg,
+        ...(refs !== undefined ? { faceRefs: refs } : {}),
+      };
     })
     .sort((a, b) => (b.lengthMm ?? 0) - (a.lengthMm ?? 0));
 }
@@ -597,7 +613,7 @@ export function findTightConcaveFillets(shape: OcctBackend, minRadiusMm: number)
   const out: MouldingSharpCorner[] = [];
   for (const c of collectConcaveCylinderClusters(shape)) {
     if (c.coverageRad >= MIN_ANGULAR_COVERAGE_RAD) continue; // full bore: a hole, not a corner
-    if (c.radiusMm >= minRadiusMm - 1e-6) continue;
+    if (c.radiusMm >= minRadiusMm - MOULDING_CORNER_RADIUS_TOLERANCE_MM) continue;
     const mid = (c.tMin + c.tMax) / 2;
     out.push({
       kind: 'tight-fillet',
@@ -616,9 +632,10 @@ function mouldingDiagnostics(report: MouldingPartReport, part: string, toWorld: 
   const pull = `pull ${vec(s.pullDirection)}`;
 
   for (const u of report.undercut.faces.slice(0, MAX_REPORTED)) {
+    const affected = u.faceRef === undefined ? 'a face' : `face ${u.faceRef}`;
     out.push(emit(
       'dfm.moulding.undercut',
-      `dfm.moulding: part '${part}' face ${u.faceRef} has ${a2(u.areaMm2)} mm² of undercut at ` +
+      `dfm.moulding: part '${part}' ${affected} has ${a2(u.areaMm2)} mm² of undercut at ` +
         `${xyz(toWorld(u.location))} — material blocks its release along ±${vec(s.pullDirection)}.`,
     ));
   }
@@ -627,6 +644,7 @@ function mouldingDiagnostics(report: MouldingPartReport, part: string, toWorld: 
   }
 
   report.draft.insufficient.slice(0, MAX_REPORTED).forEach((f, i) => {
+    const affected = f.faceRef === undefined ? 'a face' : `face ${f.faceRef}`;
     const straddle = f.straddlesParting
       ? ' The face spans both mould halves; split it at the parting line before drafting.'
       : '';
@@ -635,7 +653,7 @@ function mouldingDiagnostics(report: MouldingPartReport, part: string, toWorld: 
       : '';
     out.push(emit(
       'dfm.moulding.draft-insufficient',
-      `dfm.moulding: part '${part}' face ${f.faceRef} has ${a2(f.draftDeg)}° draft (< minDraftDeg ` +
+      `dfm.moulding: part '${part}' ${affected} has ${a2(f.draftDeg)}° draft (< minDraftDeg ` +
         `${s.minDraftDeg}°, ${pull}) at ${xyz(toWorld(f.location))}; ${a1(f.areaMm2)} mm² of face.${more}`,
       straddle,
     ));
@@ -662,11 +680,12 @@ function mouldingDiagnostics(report: MouldingPartReport, part: string, toWorld: 
   }
 
   for (const c of report.sharpCorners.slice(0, MAX_REPORTED)) {
+    const between = c.faceRefs === undefined ? '' : ` between ${c.faceRefs[0]} and ${c.faceRefs[1]}`;
     out.push(emit(
       'dfm.moulding.sharp-corner',
       c.kind === 'crease'
         ? `dfm.moulding: part '${part}' has a sharp internal corner (radius 0, ${a1(c.turnDeg ?? 0)}° turn, ` +
-            `${a1(c.lengthMm ?? 0)} mm long) between ${c.faceRefs![0]} and ${c.faceRefs![1]} at ` +
+            `${a1(c.lengthMm ?? 0)} mm long)${between} at ` +
             `${xyz(toWorld(c.location))} (< minRadiusMm ${s.minRadiusMm} mm).`
         : `dfm.moulding: part '${part}' has an internal fillet of radius ${a2(c.radiusMm)} mm at ` +
             `${xyz(toWorld(c.location))} (< minRadiusMm ${s.minRadiusMm} mm).`,

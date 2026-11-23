@@ -27,28 +27,30 @@
 //   3. **No friction, no gravity.** Only the declared `externalLoads` vector
 //      contributes.
 //   4. **Static only.** No impulse / inertia / dynamic load.
-//   5. **CoM approximation = `part.at`.** Computing real CoM would require
-//      lowering BREP (mass-properties via OCCT's `BRepGProp::VolumeProperties`
-//      / `Mass`), which violates this module's "pure / sync" contract. The
-//      part's authored placement is used as the CoM proxy — this is fine for
-//      a sanity gate (the dominant signal in `r = CoM - jointOrigin` is the
-//      authored offset between joint and part, not the in-part mass
-//      distribution), and is documented in the v0.7.4 CHANGELOG. v0.7.x can
-//      upgrade by adding a sync `Shape.boundingBoxAt(at)` if needed.
+//   5. **CoM approximation = part-frame origin.** Computing real CoM would
+//      require lowering BREP (mass-properties via OCCT's
+//      `BRepGProp::VolumeProperties` / `Mass`), which violates this module's
+//      "pure / sync" contract. The solved part-frame origin is used when the
+//      caller has it; otherwise the authored `part.at` is the proxy. This is
+//      a sanity gate, not an in-part mass-distribution estimate.
 //   6. **Mass = 1 kg uniform.** Per spec §Gate 3; the agent passes force
 //      vectors directly, not (mass, acceleration) pairs.
 //
-// ## Topology origins not supported in v0.7.4
+// ## Unsupported load inputs in v0.7.4
 //
 // Resolving a `topology` connector origin to a numeric Vec3 requires lowering
 // the part shape (`resolveConnectorOrigin` is async). Gate 3 is sync. For
 // `maxLoad`-declared mates whose connectors use topology origins on either
-// side are silently skipped because no comparison can run. This matches spec
-// open-question 5/2 resolution: vec3-origin requirement for v0.7.4, topology
-// support is a v0.7.x followup.
+// side emit `assembly.joint.load-unverified` because no comparison can run.
+// This matches spec open-question 5/2 resolution: vec3-origin requirement for
+// v0.7.4, topology support is a v0.7.x followup.
+// A ball mate's declared torque rating is also unsupported here: the legacy
+// checker compares ball-joint force only. Surface that skipped rating as
+// unverified instead of silently treating the mate's load check as complete.
 
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import type { Vec3 } from '../../shared/intent/types';
+import type { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef, type MateRecord } from './mate';
 import type { MateType } from './mateTypes';
 import type { ValidatorDiagnostic } from './validator';
@@ -80,8 +82,10 @@ const MM_PER_M = 1000;
  *
  * Returns the list of diagnostics — possibly empty. Iterates only mates
  * with `maxLoad` declared AND `type ∈ { prismatic, revolute, cylindrical,
- * ball }`. For each mate emits zero or one `assembly.joint.load-exceeded`
- * (severity `error`) per exceeded kind (force / torque can each trip
+ * ball }`. For each mate emits an `assembly.joint.load-unverified` warning
+ * when either connector cannot be resolved synchronously or a ball mate has
+ * a declared torque rating, or zero or one `assembly.joint.load-exceeded`
+ * error per exceeded supported kind (force / torque can each trip
  * independently on a `cylindrical` mate, so a single mate may emit two
  * diagnostics).
  *
@@ -95,6 +99,7 @@ const MM_PER_M = 1000;
 export function validateJointLoadCapacity(
   arm: Assembly,
   externalLoads?: Readonly<Record<string, { force?: Vec3; torque?: Vec3 }>>,
+  solvedPlacements?: ReadonlyMap<string, Transform>,
 ): ValidatorDiagnostic[] {
   // Step 1 of plan §Phase 5: undefined externalLoads → no work to do.
   // The mate's `maxLoad` declaration is the agent's stated capacity, but a
@@ -111,18 +116,39 @@ export function validateJointLoadCapacity(
     if (mate.maxLoad === undefined) continue;
     if (!GATED_MATE_TYPES.has(mate.type)) continue;
 
-    const aSide = resolveSide(mate.a, partsByName);
-    const bSide = resolveSide(mate.b, partsByName);
+    const aSide = resolveSide(mate.a, partsByName, solvedPlacements);
+    const bSide = resolveSide(mate.b, partsByName, solvedPlacements);
 
     // Topology-origin or missing sides cannot be compared synchronously.
-    // Skip silently rather than emitting a false load-exceeded diagnostic.
-    if (aSide.kind !== 'resolved' || bSide.kind !== 'resolved') continue;
+    // Report the skipped check instead of leaving the load result looking
+    // complete when no force or torque comparison ran for this mate.
+    if (aSide.kind !== 'resolved' || bSide.kind !== 'resolved') {
+      const unresolved = [aSide, bSide].filter(
+        (side): side is DeferredSide | MissingSide => side.kind !== 'resolved',
+      );
+      const reasons = unresolved.map((side) => {
+        const ref = `${side.partName}.${side.connectorName}`;
+        return side.kind === 'deferred'
+          ? `connector '${ref}' uses a topology origin`
+          : `connector '${ref}' could not be resolved`;
+      });
+      out.push({
+        code: 'assembly.joint.load-unverified',
+        severity: 'warning',
+        message:
+          `Joint load capacity for mate '${mate.name}' was not checked because ${reasons.join(' and ')}. ` +
+          'No force or torque comparison ran for this mate.',
+        hint:
+          'Confirm the connector references and use vec3-origin connectors with the legacy synchronous check.',
+        mateName: mate.name,
+      });
+      continue;
+    }
 
-    // Per-mate-type force/torque check. Each branch reads `externalLoads`
+    // Per-mate-type supported load check. Each branch reads `externalLoads`
     // for both parts (a missing entry contributes zero), then compares
-    // against the declared limit and emits one diagnostic per exceeded
-    // kind (force XOR torque on prismatic/revolute/ball; possibly BOTH on
-    // cylindrical).
+    // against the declared limit. Ball-joint torque is not compared because
+    // this legacy checker only supports its force rating.
     const loadA = externalLoads[aSide.partName];
     const loadB = externalLoads[bSide.partName];
 
@@ -142,6 +168,19 @@ export function validateJointLoadCapacity(
         break;
       // No default: GATED_MATE_TYPES filter above bounds the switch space.
     }
+
+    if (mate.type === 'ball' && mate.maxLoad.torque !== undefined) {
+      out.push({
+        code: 'assembly.joint.load-unverified',
+        severity: 'warning',
+        message:
+          `Joint torque capacity for ball mate '${mate.name}' was not checked because the legacy checker does not evaluate torque for ball mates. ` +
+          'No torque comparison ran for this mate.',
+        hint:
+          'The legacy check compares ball-joint force only. Verify any declared torque rating with an analysis that supports that load case.',
+        mateName: mate.name,
+      });
+    }
   }
   return out;
 }
@@ -152,7 +191,7 @@ interface ResolvedSide {
   readonly connectorName: string;
   /** World-space origin of this side's connector (mm). */
   readonly jointOriginWorld: Vec3;
-  /** World-space CoM proxy = part's authored `at` (see §STUB CAVEATS #5). */
+  /** World-space CoM proxy = the part-frame origin (see §STUB CAVEATS #5). */
   readonly partCoMWorld: Vec3;
 }
 
@@ -185,6 +224,7 @@ type SideResolution = ResolvedSide | DeferredSide | MissingSide;
 function resolveSide(
   ref: string,
   partsByName: ReadonlyMap<string, AssemblyPartStored>,
+  solvedPlacements?: ReadonlyMap<string, Transform>,
 ): SideResolution {
   const { partName, connectorName } = parseConnectorRef(ref);
   const part = partsByName.get(partName);
@@ -196,21 +236,21 @@ function resolveSide(
   }
   const partAt = readPartAt(part);
   const localOrigin = connector.origin.value;
-  // World origin = part's authored placement + connector's part-local origin.
-  // Mirrors the resolvePartPlacement helper in assembly.ts: part.at is the
-  // part's translation in the assembly frame; connector.origin.value is
-  // the connector's offset in the part's local frame; sum is the
-  // connector's frame origin in world coordinates.
-  const jointOriginWorld: Vec3 = [
-    partAt[0] + localOrigin[0],
-    partAt[1] + localOrigin[1],
-    partAt[2] + localOrigin[2],
-  ];
-  // CoM proxy = part's authored placement. STUB per §STUB CAVEATS #5; the
-  // real CoM would require BREP mass-properties (async, OCCT call). Good
-  // enough for the sanity gate: the dominant signal in `r = CoM - joint`
-  // is the authored offset, not the in-part distribution.
-  const partCoMWorld: Vec3 = [partAt[0], partAt[1], partAt[2]];
+  const placement = solvedPlacements?.get(partName);
+  const solvedJointOrigin = placement?.point(localOrigin);
+  // `solveMates` returns each part's world placement (not its scene motion),
+  // so transform the connector's part-local origin through the solved frame.
+  // The authored `at` fallback preserves the standalone legacy checker path.
+  const jointOriginWorld: Vec3 = solvedJointOrigin === undefined
+    ? [partAt[0] + localOrigin[0], partAt[1] + localOrigin[1], partAt[2] + localOrigin[2]]
+    : [solvedJointOrigin[0], solvedJointOrigin[1], solvedJointOrigin[2]];
+  const solvedPartOrigin = placement?.point([0, 0, 0]);
+  // CoM proxy = the part frame's world origin: solved placement when
+  // available, otherwise the authored `at`. The real CoM would require BREP
+  // mass-properties (async, OCCT call), outside this gate's sync contract.
+  const partCoMWorld: Vec3 = solvedPartOrigin === undefined
+    ? partAt
+    : [solvedPartOrigin[0], solvedPartOrigin[1], solvedPartOrigin[2]];
   return {
     kind: 'resolved',
     partName,
@@ -220,7 +260,7 @@ function resolveSide(
   };
 }
 
-/** Read `part.at` (`Vec3Param`) as a plain numeric Vec3 via `.evaluated`. */
+/** Read the authored `part.at` fallback (`Vec3Param`) via `.evaluated`. */
 function readPartAt(part: AssemblyPartStored): Vec3 {
   return [part.at.x.evaluated, part.at.y.evaluated, part.at.z.evaluated];
 }

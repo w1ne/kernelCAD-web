@@ -81,3 +81,12 @@ The assets are generic scene props, not building-code, fire-protection,
 ventilation, decontamination, PPE, respiratory or emergency-response
 specifications. Catalog replay and software checks do not establish safety or
 operational acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/fire-station-wave-20261103/capture_fire_station_demo.py`
+- video review: `python3 artifacts/catalog-demos/fire-station-wave-20261103/inspect_fire_station_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

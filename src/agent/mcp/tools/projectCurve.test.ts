@@ -4,6 +4,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import { projectCurveTool } from './projectCurve';
+import { callMcpTool } from '../toolRegistry';
 
 const SQUARE = [
   { kind: 'moveTo' as const, x: -4, y: -4 },
@@ -11,6 +12,10 @@ const SQUARE = [
   { kind: 'lineTo' as const, x: 4, y: 4 },
   { kind: 'lineTo' as const, x: -4, y: 4 },
   { kind: 'close' as const },
+];
+const OPEN_LINE = [
+  { kind: 'moveTo' as const, x: -12, y: 0 },
+  { kind: 'lineTo' as const, x: 12, y: 0 },
 ];
 
 describe('project_curve MCP tool', () => {
@@ -55,15 +60,42 @@ describe('project_curve MCP tool', () => {
     expect(errs).toEqual([]);
   });
 
-  it('rejects asEdge: true (deferred) instead of emitting non-evaluating code', async () => {
+  it('evaluates emitted code for an open Curve3D projection', async () => {
     const out = await projectCurveTool({
-      code: 'return box(10, 10, 10);',
+      code: 'const body = box(30, 10, 30);\nreturn body;',
       target: 'body',
-      commands: SQUARE,
-      face: 'front',
+      commands: OPEN_LINE,
+      face: 'right',
       asEdge: true,
+      sourcePlane: { origin: [50, 5, 15], normal: [0, 1, 0], xAxis: [0, 0, 1] },
+      direction: [-1, 0, 0],
+      bindAs: 'edges',
+    });
+    expect(out.ok).toBe(true);
+    expect(out.new_code).toContain('const edges = await body.projectCurve({');
+    expect((out.diagnostics ?? []).filter((diagnostic) => diagnostic.severity === 'error')).toEqual([]);
+  });
+
+  it('rejects open projection without source_plane and direction', async () => {
+    const out = await projectCurveTool({
+      code: 'return box(10, 10, 10);', target: 'body', commands: OPEN_LINE, face: 'front', asEdge: true,
     });
     expect(out.ok).toBe(false);
-    expect(out.error ?? '').toMatch(/asEdge|deferred/i);
+    expect(out.error ?? '').toMatch(/sourcePlane and direction/i);
+  });
+
+  it('normalizes schema snake_case fields through the public MCP dispatcher', async () => {
+    const out = await callMcpTool('project_curve', {
+      code: 'const body = box(30, 10, 30);\nreturn body;',
+      target: 'body',
+      commands: OPEN_LINE,
+      face: 'right',
+      as_edge: true,
+      source_plane: { origin: [50, 5, 15], normal: [0, 1, 0], x_axis: [0, 0, 1] },
+      direction: [-1, 0, 0],
+      bind_as: 'edges',
+    }) as { ok?: boolean; diagnostics?: Array<{ severity?: string }> };
+    expect(out.ok).toBe(true);
+    expect((out.diagnostics ?? []).filter((diagnostic) => diagnostic.severity === 'error')).toEqual([]);
   });
 });

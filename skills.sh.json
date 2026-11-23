@@ -4,12 +4,14 @@
   "groupings": [
     {
       "title": "kernelCAD",
-      "description": "Manufacturing CAD & Schematics",
+      "description": "Manufacturing CAD & Evidence",
       "skills": [
         "kernelcad-design-loop",
         "kernelcad-cookbooks",
         "kernelcad-studio-paint",
-        "kernelcad-export"
+        "kernelcad-export",
+        "manufacturing-readiness",
+        "design-trade-study"
       ]
     }
   ]

@@ -1,0 +1,317 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/standard-components-pipe-geometry-20261110/render_variants.ts",
+  "renderer": "variantSource + runAndExport(format=\"glb\", style=\"lowpoly\") + scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "assertions": {
+    "reducerRatioChangesRenderedGeometry": true,
+    "reducerPresetChangesAppearance": true,
+    "spacerLengthChangesVerticalEnvelope": true,
+    "spacerLengthChangesRenderedAppearance": true,
+    "spacerPresetChangesAppearance": true,
+    "retainingGapChangesRenderedGeometry": true,
+    "retainingPresetChangesAppearance": true,
+    "everyVariantWithinTriangleBudget": true
+  },
+  "budgets": {
+    "pipe-reducer": 620,
+    "tubular-spacer": 520,
+    "retaining-ring": 420
+  },
+  "sources": {
+    "pipe-reducer": {
+      "file": "catalog/kits/standard-components/pipe-reducer.kcad.ts",
+      "sourceSha256": "241b5b04ad9e7732cf410a9c2db45d31fe5f3380babd56a8ab5f2bab555419b1"
+    },
+    "tubular-spacer": {
+      "file": "catalog/kits/standard-components/tubular-spacer.kcad.ts",
+      "sourceSha256": "50f6c7ac55cd55e32dba9deeed86139029dad80c84423e7fe27ec0d8433e5491"
+    },
+    "retaining-ring": {
+      "file": "catalog/kits/standard-components/retaining-ring.kcad.ts",
+      "sourceSha256": "8b58d8db2cee542638d41680c24e9288fe2538ae81333c1d528efaca22985a15"
+    }
+  },
+  "renders": [
+    {
+      "id": "reducer-default",
+      "asset": "pipe-reducer",
+      "choices": {
+        "size": "standard",
+        "reduction": "0.60"
+      },
+      "stats": {
+        "triangles": 474,
+        "sizeM": [
+          0.044,
+          0.042,
+          0.044
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "b23af4617ff974ae7ea1c75f8a3fe30527cbbd3be7c1a538ab5caff899e42c04",
+      "sourceSha256": "241b5b04ad9e7732cf410a9c2db45d31fe5f3380babd56a8ab5f2bab555419b1"
+    },
+    {
+      "id": "reducer-half",
+      "asset": "pipe-reducer",
+      "choices": {
+        "size": "standard",
+        "reduction": "0.50"
+      },
+      "stats": {
+        "triangles": 474,
+        "sizeM": [
+          0.044,
+          0.042,
+          0.044
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "c1535339676f3a510eb1acbf11cfe6bd0fc1e7a0f3bab0642a2f0af60a435310",
+      "sourceSha256": "241b5b04ad9e7732cf410a9c2db45d31fe5f3380babd56a8ab5f2bab555419b1"
+    },
+    {
+      "id": "reducer-three-quarter",
+      "asset": "pipe-reducer",
+      "choices": {
+        "size": "standard",
+        "reduction": "0.75"
+      },
+      "stats": {
+        "triangles": 474,
+        "sizeM": [
+          0.044,
+          0.042,
+          0.044
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "94d54aeb5528d71b502a21421a283623529def47dc06ad18a748793b348cc74d",
+      "sourceSha256": "241b5b04ad9e7732cf410a9c2db45d31fe5f3380babd56a8ab5f2bab555419b1"
+    },
+    {
+      "id": "reducer-stainless",
+      "asset": "pipe-reducer",
+      "preset": "stainless",
+      "choices": {},
+      "stats": {
+        "triangles": 474,
+        "sizeM": [
+          0.044,
+          0.042,
+          0.044
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "40ddbc2918bc2b0114412fbb4d096ec27a511f1e5bb18f5e07d4466ae72aad83",
+      "sourceSha256": "241b5b04ad9e7732cf410a9c2db45d31fe5f3380babd56a8ab5f2bab555419b1"
+    },
+    {
+      "id": "spacer-short",
+      "asset": "tubular-spacer",
+      "choices": {
+        "size": "standard",
+        "length": "short"
+      },
+      "stats": {
+        "triangles": 432,
+        "sizeM": [
+          0.0307,
+          0.022,
+          0.0307
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "7a6e9f755ebeaeed6089b958f7215762d7a5520d703e73d0d12f91aa2780a6e0",
+      "sourceSha256": "50f6c7ac55cd55e32dba9deeed86139029dad80c84423e7fe27ec0d8433e5491"
+    },
+    {
+      "id": "spacer-long",
+      "asset": "tubular-spacer",
+      "choices": {
+        "size": "standard",
+        "length": "long"
+      },
+      "stats": {
+        "triangles": 432,
+        "sizeM": [
+          0.0307,
+          0.05,
+          0.0307
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "8c11ab4f3c6cfaa6572467c5ad6b65e757b08409d0a59b6480765725df91f8a9",
+      "sourceSha256": "50f6c7ac55cd55e32dba9deeed86139029dad80c84423e7fe27ec0d8433e5491"
+    },
+    {
+      "id": "spacer-insulated",
+      "asset": "tubular-spacer",
+      "preset": "insulated",
+      "choices": {},
+      "stats": {
+        "triangles": 432,
+        "sizeM": [
+          0.0307,
+          0.036,
+          0.0307
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "122f6a0fb0f62d93ac73d6dd0a0ce65099bd13c1764cbf348e342dd524d72749",
+      "sourceSha256": "50f6c7ac55cd55e32dba9deeed86139029dad80c84423e7fe27ec0d8433e5491"
+    },
+    {
+      "id": "spacer-default",
+      "asset": "tubular-spacer",
+      "choices": {
+        "size": "standard",
+        "length": "standard"
+      },
+      "stats": {
+        "triangles": 432,
+        "sizeM": [
+          0.0307,
+          0.036,
+          0.0307
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 4,
+        "parts": 4,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "0b799bfb52d03eeae08a0dd904be69206a86098044d1e0f3f36d905405d1805a",
+      "sourceSha256": "50f6c7ac55cd55e32dba9deeed86139029dad80c84423e7fe27ec0d8433e5491"
+    },
+    {
+      "id": "ring-compact-gap",
+      "asset": "retaining-ring",
+      "choices": {
+        "size": "standard",
+        "gap": "compact"
+      },
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          0.039955,
+          0.003,
+          0.043489
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 3,
+        "parts": 3,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "cc1b66c33f5821ea9889ce001cb736382b1f36f6843ac67785b8254146c04d74",
+      "sourceSha256": "8b58d8db2cee542638d41680c24e9288fe2538ae81333c1d528efaca22985a15"
+    },
+    {
+      "id": "ring-wide-gap",
+      "asset": "retaining-ring",
+      "choices": {
+        "size": "standard",
+        "gap": "wide"
+      },
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          0.03982,
+          0.003,
+          0.043455
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 3,
+        "parts": 3,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "31504c19d62294d5262c29f66b1dd99a2146951da406cf7087a71d09312dab35",
+      "sourceSha256": "8b58d8db2cee542638d41680c24e9288fe2538ae81333c1d528efaca22985a15"
+    },
+    {
+      "id": "ring-default",
+      "asset": "retaining-ring",
+      "choices": {
+        "size": "standard",
+        "gap": "standard"
+      },
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          0.039899,
+          0.003,
+          0.043475
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 3,
+        "parts": 3,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "cc0401ac280ee6e990ed6bfc91c081d9eba4c4ddacc9793f3d8e17d584c48655",
+      "sourceSha256": "8b58d8db2cee542638d41680c24e9288fe2538ae81333c1d528efaca22985a15"
+    },
+    {
+      "id": "ring-blue-phosphate",
+      "asset": "retaining-ring",
+      "preset": "bluePhosphate",
+      "choices": {},
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          0.039899,
+          0.003,
+          0.043475
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 3,
+        "parts": 3,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "3a5cfd3d39b0da66419c5ef91371e7caa044e3b6d91564b6e8c139dc1c7a0c47",
+      "sourceSha256": "8b58d8db2cee542638d41680c24e9288fe2538ae81333c1d528efaca22985a15"
+    }
+  ]
+}

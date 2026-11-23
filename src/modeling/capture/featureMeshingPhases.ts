@@ -370,6 +370,7 @@ function resolveScenePartMesh(
     );
     return undefined;
   }
+  warnOnUntriangulatedPartFaces(featureId, part.name, meshed);
   const faces = meshed.faces;
   const volume = meshed.volume;
   const solidCount = solidCountOf(part.shape);
@@ -393,6 +394,23 @@ function resolveScenePartMesh(
       });
   }
   return { faces, volume, solidCount, edges, link, fromCache: false, partCache: nextCache };
+}
+
+/** A part whose display mesh leaves BREP faces without triangles renders with
+ *  holes. Say so instead of drawing it silently. */
+function warnOnUntriangulatedPartFaces(
+  featureId: FeatureId,
+  partName: string,
+  meshed: { faces: readonly FaceGeometry[]; brepFaceCount?: number },
+): void {
+  if (meshed.brepFaceCount === undefined) return;
+  const covered = new Set<number>();
+  for (const face of meshed.faces) if (face.indices.length > 0) covered.add(face.faceId);
+  const missing = meshed.brepFaceCount - covered.size;
+  if (missing <= 0) return;
+  console.warn(
+    `meshFeaturesPerFeature: assembly '${featureId}' part '${partName}' display mesh is missing ${missing} of ${meshed.brepFaceCount} BREP face(s) (no triangles) — the part will render with holes`,
+  );
 }
 
 function isDisplayMeshBackend(
@@ -448,6 +466,7 @@ function emitScenePartMesh(
     }),
     ...(part.color !== undefined ? { color: part.color } : {}),
     ...(part.material !== undefined ? { material: part.material } : {}),
+    ...(part.materialByFaceIndex !== undefined ? { materialByFaceId: { ...part.materialByFaceIndex } } : {}),
   });
   return { local, worldT };
 }
@@ -1040,7 +1059,8 @@ function attributeShadowingWarning(
       `'${shadower.featureId}' (${shadower.featureKind}) which also has its own ${attribute}. ` +
       `The leaf ${attribute} is visible during the build animation only; the static render ` +
       `(kernelcad render, post-rotate capture-demo) shows the head ${attribute} on the fused silhouette. ` +
-      `To preserve per-leaf ${attribute} in the static render, split the construction so the leaf is not ` +
-      `unioned into a ${attribute}-bearing parent, or author the leaf as a separate assemblyPart.`,
+      `A ${attribute} on the union result covers every face. To keep the leaf ${attribute} on the faces ` +
+      `that came from the leaf, drop the ${attribute} on '${shadower.featureId}': union() keeps each ` +
+      `member's own ${attribute} on its faces, so one rigid body needs no extra assembly part per colour.`,
   };
 }

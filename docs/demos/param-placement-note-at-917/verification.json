@@ -1,0 +1,58 @@
+{
+  "checkedAt": "2026-11-11T23:15:54.842Z",
+  "source": "docs/demos/param-placement-note-at-917/capture-demo.mts",
+  "model": "docs/demos/param-placement-note-at-917/param-placement.kcad.ts",
+  "modelSha256": "a78367ff83a189bbc6490c8463544c78daeb00ccd2257a9467f64601adbdb9db",
+  "invocation": "npx tsx docs/demos/param-placement-note-at-917/capture-demo.mts",
+  "diagnostic": {
+    "code": "assembly.placement-ignored-by-mate-fk",
+    "severity": "info",
+    "featureId": "assemblyPart_2",
+    "message": "assembly.part 'child' has both an authored `at:` placement (275.00, 0.00, 0.00) AND a mate-FK-derived pose; the `at:` is being ignored.",
+    "hint": "Remove the `at:` and let the mate decide the pose, or place the part's local frame so its mate connector sits at the origin (mate FK composes parent_world ∘ trans(parent_conn) ∘ joint ∘ trans(-child_conn))."
+  },
+  "initialDiagnostic": {
+    "code": "assembly.placement-ignored-by-mate-fk",
+    "severity": "info",
+    "message": "assembly.part 'child' has both an authored `at:` placement (125.00, 0.00, 0.00) AND a mate-FK-derived pose; the `at:` is being ignored."
+  },
+  "checks": {
+    "localModelBuild": true,
+    "defaultParameterValueInDiagnostic": true,
+    "editedParameterValueInDiagnostic": true,
+    "physicsIntegration": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  },
+  "video": {
+    "ffmpegArgs": [
+      "-y",
+      "-v",
+      "error",
+      "-f",
+      "concat",
+      "-safe",
+      "0",
+      "-i",
+      "<temporary-slides.txt>",
+      "-t",
+      "7.5",
+      "-vf",
+      "fps=20,format=yuv420p",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "medium",
+      "-crf",
+      "22",
+      "-movflags",
+      "+faststart",
+      "demo.mp4"
+    ],
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "frameRate": "20/1",
+    "durationSeconds": 7.5
+  }
+}

@@ -1,0 +1,9 @@
+Date checked: 2026-11-13 UTC
+Route: https://kernelcad.com/catalog/industrial-plant/electric-chain-hoist/
+Page response: HTTP 200
+Preview route: https://kernelcad.com/catalog/industrial-plant/electric-chain-hoist/preview.png
+Preview response: HTTP 200, 512 x 512 PNG
+Public preview SHA-256: eccae503f32804e875284e5753cb62a07e6c696febcd97e7d646ad7892dd3755
+Local before preview SHA-256: eccae503f32804e875284e5753cb62a07e6c696febcd97e7d646ad7892dd3755
+Result: the public route served the same before image as this branch. The after preview
+is local branch evidence only; no deployment or post-deploy page verification occurred.

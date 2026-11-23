@@ -63,3 +63,11 @@ quality, integration, local-page, preset-render and video commands.
 
 Local behavior is verified on this feature branch; the branch has not been
 deployed, and live behavior remains unverified.
+
+## Untracked generated outputs
+
+`frames/` is not tracked in git; it is regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/telecom-infrastructure-quality-promotion-20261105/capture_telecom_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

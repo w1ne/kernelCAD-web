@@ -20,6 +20,29 @@ const TEE = `
 describe('dfm_fix_recheck', () => {
   beforeAll(async () => { await initOcct(); }, 60_000);
 
+  it('does not label an unmeasured sheet-metal review as passed', async () => {
+    const result = await dfmFixRecheckTool({
+      code: 'return box(20, 20, 10);',
+      processes: ['sheet-metal'],
+    });
+    expect(result.before.verdict).toBe('not-checked');
+    expect(result.remaining).toEqual([
+      expect.objectContaining({ id: 'sheet.not-sheet-metal', status: 'not-checked' }),
+    ]);
+    expect(result.suggestions).toEqual([]);
+    expect(result.refusal).toMatch(/incomplete|not.checked/i);
+    expect(result.refusal).not.toMatch(/review passed/i);
+  }, 120_000);
+
+  it('retains comparison tolerance in open findings', async () => {
+    const result = await dfmFixRecheckTool({
+      code: 'return box(40, 30, 3);',
+      process: 'injection-molding',
+    });
+    const draft = result.before.findings.find(f => f.id === 'mold.draft');
+    expect(draft).toMatchObject({ op: '>=', unit: 'deg', tolerance: 0.001 });
+  }, 120_000);
+
   it('raises a pocket fillet to the end-mill radius and the corner check passes', async () => {
     const result = await dfmFixRecheckTool({
       code: POCKET,
@@ -70,6 +93,8 @@ describe('dfm_fix_recheck', () => {
       after: 0.81,
       namedLimit: 0.8,
     });
+    expect(result.before.findings.find(f => f.id === 'fdm.min-wall')).toMatchObject({ unit: 'mm', op: '>=', limit: 0.8 });
+    expect(result.before.findings.find(f => f.id === 'fdm.min-wall')?.tolerance).toBeUndefined();
     expect(result.new_code).toContain('shell(0.81');
     expect(result.cleared.map(c => c.id)).toContain('fdm.min-wall');
     expect(result.after?.verdict).toBe('fail');

@@ -1,0 +1,72 @@
+{
+  "generatedAt": "2026-11-17T17:53:04.458Z",
+  "replay": "Local CaptureSession + createModelingApi; no browser, geometry solver, simulation, or deployed runtime used.",
+  "baseline": {
+    "baseRevision": "origin/develop 3e52b71d9c14191c2210499a2c4d309b190c6afb",
+    "reproduction": "The focused regression failed because arm.prismatic returned normally for limitsMM; expected error was undefined.",
+    "result": "The misspelled option is not read as limitsMm, so the recorded prismatic joint has no travel limit."
+  },
+  "fixedReplay": {
+    "invalidOptions": {
+      "code": "feature.invalid-args",
+      "path": "opts.limitsMM",
+      "message": "assembly.prismatic(name, parent, child, opts): opts.limitsMM — got an unknown option 'limitsMM'; requires one of axis, origin, limitsMm, actuator. Example: arm.prismatic('slide', base, carriage, { axis: [1, 0, 0], origin: [0, 0, 0], limitsMm: [0, 120] })",
+      "recordedJoint": false
+    },
+    "validJoint": {
+      "name": "slide",
+      "kind": "prismatic",
+      "limitsMm": [
+        0,
+        120
+      ],
+      "actuator": {
+        "forceN": 25
+      }
+    }
+  },
+  "source": {
+    "path": "docs/demos/assembly-prismatic-option-keys-20261117/capture-demo.mts",
+    "sha256": "ff8fe4cc1f5000f6878c2d59374923df46a43c7d6be267e0a71d945f1da4cec0"
+  },
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerSlide": 3,
+    "slides": 3,
+    "encoder": "libx264",
+    "crf": 24,
+    "pixelFormat": "yuv420p"
+  },
+  "video": {
+    "path": "docs/demos/assembly-prismatic-option-keys-20261117/demo.mp4",
+    "sha256": "65481f1222dfaee2b0d55e830a171772f6b92c3e0962040309eb84ccd16b2fdd",
+    "bytes": 81525
+  },
+  "verification": {
+    "focusedTest": {
+      "command": "npx vitest run src/modeling/capture/assemblyPrismaticOptionKeys.test.ts src/modeling/capture/assembly.chaining.test.ts",
+      "result": "2 files passed; 12 tests passed"
+    },
+    "lint": {
+      "command": "npx eslint src/modeling/capture/assemblyJoints.ts src/modeling/capture/assemblyPrismaticOptionKeys.test.ts",
+      "result": "passed"
+    },
+    "typecheck": {
+      "command": "npm run typecheck",
+      "result": "passed"
+    },
+    "diffCheck": {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  },
+  "claimBoundary": {
+    "localCaptureReplay": true,
+    "geometrySolver": false,
+    "simulation": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

@@ -18,11 +18,12 @@ const seamTape = param('seamTape', '#3e88a5', { label: 'Seam tape' });
 const panelAccent = param('panelAccent', '#d3b642', { label: 'Panel accent fabric' });
 presets({ clubColors: { panelFabric: '#3976a0', seamTape: '#efe5d4' } });
 const p = assembly('volleyball');
-p.part('ball', sphere(58).translate(0, 0, 58).scale(scale).color(panelFabric));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add('ball', sphere(58).translate(0, 0, 58).color(panelFabric));
 
 
 // Two soft raised seam rings divide the pale fabric cover into broad panels.
-p.part("panel-channel-a", torus(57.8, 0.65, 12).translate(0, 0, 58).color(seamTape));
-p.part("panel-channel-b", torus(57.8, 0.4, 12).rotateX(90).translate(0, 0, 58.25).color(panelAccent));
+add("panel-channel-a", torus(57.8, 0.65, 12).translate(0, 0, 58).color(seamTape));
+add("panel-channel-b", torus(57.8, 0.4, 12).rotateX(90).translate(0, 0, 58.25).color(panelAccent));
 
 return p.model();

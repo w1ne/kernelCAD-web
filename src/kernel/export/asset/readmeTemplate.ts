@@ -91,7 +91,7 @@ function loadBlock(id: string): string {
     '',
     '### Unity',
     '',
-    `Import \`${glb}\` with glTFast or another glTF importer. The default export is Y-up. Dimensions in the file follow the exporter's millimetre layout for a PBR GLB.`,
+    `Import \`${glb}\` with glTFast or another glTF importer. The bundled GLB uses Y-up and glTF's metre units; kernelCAD's millimetre coordinates are scaled by 0.001 at the scene root.`,
     '',
     '### Blender',
     '',

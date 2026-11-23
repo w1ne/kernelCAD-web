@@ -63,3 +63,12 @@ are in [`video-review/`](video-review/).
 The outputs are local source evaluation and software renders. This branch has
 not been deployed; the models remain stylized generic scene assets, without
 claims of vendor dimensions, manufacturing suitability or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/standard-components-visible-details-20261106/capture_visible_details_demo.py`
+- video review: `python3 artifacts/catalog-demos/standard-components-visible-details-20261106/inspect_visible_details_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

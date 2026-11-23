@@ -7,6 +7,7 @@ import type { Connector, ConnectorOriginInput, ConnectorType, FluidPort } from '
 import type { WrapGeomOptions, WrapGeomRecord } from '../mates/tendon';
 import type { Editable } from '../../shared/runtime/paramRef';
 import type { Shape } from './proxy';
+import type { PartConfigurationIdentity } from './partConfigurationTypes';
 import type { Scene } from '../validation/scene';
 import type { Assembly, SolvedKinematics } from './assembly';
 
@@ -148,6 +149,21 @@ export interface AssemblyJointRef {
   kind: 'revolute' | 'prismatic' | 'fixed' | 'ball';
 }
 
+/** `subAssembly(name, other, opts)` options. */
+export interface SubAssemblyImportOpts {
+  /**
+   * Variant declared on the child with `variant()`. The import copies that
+   * set and does not change which parts the child itself shows.
+   */
+  variant?: string;
+}
+
+/** `variant(name, opts)` options. Omitted `suppress` keeps every part. */
+export interface AssemblyVariantOpts {
+  /** Part names to leave out. A part connected to one of these is left out too. */
+  suppress?: readonly string[];
+}
+
 /**
  * Returned by `Assembly.subAssembly(name, other)`. Lets the caller mate
  * INTO the imported parts without manually re-spelling the namespace
@@ -214,7 +230,7 @@ export interface AssemblyPartOpts {
    *  carries mass AND looks. Both are DEFAULTS: an explicit `density` here wins
    *  for mass, and an explicit `.finish()` / `.color()` / `.material()` already
    *  on the shape wins for appearance. Valid: `steel`, `aluminum` (alias
-   *  `aluminium`), `pla`, `abs`, `pet`. An unknown name throws
+   *  `aluminium`), `pla`, `abs`, `asa`, `pet`. An unknown name throws
    *  `feature.invalid-args` naming the valid materials — never a silent
    *  fallback to water density or a default finish. */
   material?: string;
@@ -440,6 +456,16 @@ export interface AssemblyPartStored extends AssemblyPartRef {
   /** Display-clip / intentional-overlay flag, copied from
    *  `AssemblyPartOpts.overlay`. */
   readonly overlay?: boolean;
+  /** Set when the part was created by `assembly.instance`. */
+  readonly configuration?: PartConfigurationIdentity;
+}
+
+/** `assembly.instance` options. Connectors come from the part file. */
+export interface AssemblyInstanceOpts extends Omit<AssemblyPartOpts, 'connectors' | 'connect'> {
+  /** Part file, relative to this assembly script or absolute. */
+  source: string;
+  /** Name passed to `configurations()` in that file. */
+  configuration: string;
 }
 
 /** SRDF planning group. Either chain-form (base/tip) or enumeration. */

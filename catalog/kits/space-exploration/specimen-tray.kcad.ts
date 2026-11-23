@@ -5,7 +5,7 @@ meta({
   name: "specimen-tray",
   license: 'CC0-1.0',
   title: "Geology specimen tray",
-  description: "Shallow specimen tray divided into six sample cells with reinforced corner blocks. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Shallow specimen tray divided into six sample cells with reinforced corner blocks. Material controls: paint, aluminum, polymer; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#aa9d7d", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const polymer = param('polymer', "#536c76", { label: "Polymer specimen tray" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "polymer": "#7a8279"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "polymer": "#d4a63f"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -34,15 +36,15 @@ const boxShape = (w: number, d: number, h: number) => {
 const b = (x: number,y: number,z: number,w: number,d: number,h: number) => boxShape(w,d,h).translate(x,y,z+h/2).scale(scale);
 
 const p = assembly("specimen-tray");
-p.part("base",b(0,0,30,780,520,60).color(aluminum));
+p.part("base",b(0,0,30,780,520,60).color(polymer));
 p.part("divider-x-0",b(-180,0,100,24,480,80).color(paint));
 p.part("divider-x-1",b(0,0,100,24,480,80).color(paint));
 p.part("divider-x-2",b(180,0,100,24,480,80).color(paint));
 p.part("divider-y-a",b(0,-120,100,760,24,80).color(paint));
 p.part("divider-y-b",b(0,120,100,760,24,80).color(paint));
-p.part("corner-0",b(-360,-230,0,60,60,35).color(paint));
-p.part("corner-1",b(360,-230,0,60,60,35).color(paint));
-p.part("corner-2",b(-360,230,0,60,60,35).color(paint));
-p.part("corner-3",b(360,230,0,60,60,35).color(paint));
+p.part("corner-0",b(-360,-230,0,60,60,35).color(aluminum));
+p.part("corner-1",b(360,-230,0,60,60,35).color(aluminum));
+p.part("corner-2",b(-360,230,0,60,60,35).color(aluminum));
+p.part("corner-3",b(360,230,0,60,60,35).color(aluminum));
 
 return p.model();

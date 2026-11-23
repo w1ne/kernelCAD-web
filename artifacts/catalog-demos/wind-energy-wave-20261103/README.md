@@ -30,3 +30,12 @@ python3 artifacts/catalog-demos/wind-energy-wave-20261103/inspect_wind_video.py
 The local static page builder is checked separately from deployed behavior. On 2026-11-03 the public homepage and `/catalog/` route were checked; the catalog route returned HTTP 404. This branch was not deployed.
 
 All assets are original CC0 1.0 kernelCAD geometry. These are stylized scene props and make no claims about wind performance, structural loading, electrical generation, installation suitability, regulatory compliance or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/wind-energy-wave-20261103/capture_wind_demo.py`
+- video review: `python3 artifacts/catalog-demos/wind-energy-wave-20261103/inspect_wind_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

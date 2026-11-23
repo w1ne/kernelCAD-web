@@ -13,7 +13,7 @@ python3 artifacts/catalog-demos/medical-wave-90612/capture_medical_demo.py
 ffprobe -v error -show_entries format=duration,size -show_entries stream=codec_name,width,height,pix_fmt -of json artifacts/catalog-demos/medical-wave-90612/medical-kit.mp4
 ```
 
-The capture source reads the committed medical `.kcad.ts` files, generated `catalog/index.json`, 40 rendered PNG previews, and the local verification records. Settings are in [settings.json](settings.json). The six decoded frames are retained in [frames/](frames/).
+The capture source reads the committed medical `.kcad.ts` files, generated `catalog/index.json`, 40 rendered PNG previews, and the local verification records. Settings are in [settings.json](settings.json). The six decoded frames are retained in frames/ (`frames/`, not tracked).
 
 ## Verification evidence
 
@@ -30,3 +30,11 @@ The capture source reads the committed medical `.kcad.ts` files, generated `cata
 The branch is not deployed. On 2026-11-02 the live `https://kernelcad.com/catalog/` route returned HTTP 404 before this PR; live-page verification remains pending after a future deployment. This demo shows local source checks, export and generated catalog output only. It does not claim simulation, physical or clinical validation, hardware acceptance, or deployed behavior.
 
 The kit documentation is [catalog/kits/medical/README.md](../../../catalog/kits/medical/README.md). All models are original kernelCAD source under CC0 1.0; external references inform category scope and naming only.
+
+## Untracked generated outputs
+
+`frames/` is not tracked in git; it is regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/medical-wave-90612/capture_medical_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

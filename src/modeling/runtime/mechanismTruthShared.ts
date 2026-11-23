@@ -44,9 +44,12 @@ export function makeFailure(
     | 'mechanism.unstable-under-gravity'
     | 'mechanism.physics-budget-exceeded'
     | 'mechanism.physics-unsupported'
+    | 'mechanism.coupling-residual'
     | 'mechanism.drops-on-release'
     | 'mechanism.joint-mesh-gap'
+    | 'mechanism.joint-mesh-unverified'
     | 'mechanism.tendon-body-intersect'
+    | 'mechanism.ignored-rest-overlap'
     | 'mechanism.rest-interpenetration'
     | 'mechanism.mate-gap',
   message: string,

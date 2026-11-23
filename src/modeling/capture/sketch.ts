@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/sketch.ts
 import type { FeatureId, FeatureRef, Vec3, AxisSpec, Param } from '../../shared/intent/types';
-import { isValidAxisSpec, isValidEditableNumber } from '../../shared/intent/types';
+import { isValidAxisSpec } from '../../shared/intent/types';
 import type { CaptureSession } from './captureSession';
 import { validateFaceLabels } from './faceLabels';
 import { Shape } from './proxy';
@@ -13,14 +13,20 @@ import { helix as sampleHelix, helixOptionsFromSpec, helixRailSpecOf, type Helix
 import type { FaceLabelsMap } from '../../shared/intent/featureRecord';
 import { type Editable } from '../../shared/runtime/paramRef';
 import { paramValue, toParam } from '../../shared/runtime/editableHelpers';
+import { offsetSketchOf, type SketchOffsetOptions } from './sketchOffset';
+import { booleanSketchOf } from './sketchBoolean';
 import type { SketchCommand } from '../../shared/capture/sketchCommand';
 import type { Curve3D } from './curveProxy';
 import { type TangentEntity2D } from '../../shared/capture/tangency';
 import { reflectSketchCommands } from './sketchReflect';
+import { rotateSketchOf, scaleSketchOf, translateSketchOf } from './sketchTransform';
 import { circleCommands } from './pathCircle';
+import { ellipseCommands, ellipseArcCommands, type EllipseOptions, type EllipseArcOptions } from './pathEllipse';
 import { checkSweepSection } from './sweepSection';
+import { symmetricParam } from './symmetricOption';
 import { toNearSpec, validateTangentEntity } from './sketchTangency';
 import {
+  assertNurbsSegmentOptionKeys,
   checkNurbsPenMatch,
   resolveNurbsDegree,
   toNurbsControlPoints,
@@ -28,153 +34,18 @@ import {
   toNurbsWeights,
 } from './nurbsSegmentPhases';
 import {
+  assertSplineOptionKeys,
   checkSplineConsecutiveDistinct,
   checkSplinePenMatch,
   toSplineTangent,
   toSplineWaypoints,
 } from './splinePhases';
+import { smoothSplineTangentOptions, type SmoothSplineOptions } from './smoothSplinePhases';
 
-/**
- * 2D-Hermite endpoint shape — analogue of the 3D `HermiteEndpoint` used by
- * Slice C's `hermiteG2`. All three fields are `[Editable<number>, Editable<number>]`
- * tuples so ParamRef-driven points / tangents / curvatures are supported.
- *
- * `point`     — endpoint in mm.
- * `tangent`   — first derivative of the curve at this endpoint (NOT the
- *               unit tangent: magnitude controls how aggressively the
- *               curve heads out of the endpoint; typical magnitude is in
- *               the order of the chord length between the two endpoints).
- * `curvature` — second derivative at this endpoint. Defaults to [0, 0],
- *               which makes the resulting curve G1-only (still degree 5).
- */
-export interface HermiteEndpoint2D {
-  point: [Editable<number>, Editable<number>];
-  tangent: [Editable<number>, Editable<number>];
-  curvature?: [Editable<number>, Editable<number>];
-}
-
-/**
- * Per-section placement for `Sketch.loft({ planes })`.
- *
- * `plane` / `origin` place the section's sketch plane; `rotationDeg` is an
- * in-plane rotation of this section about the loft's rotation center
- * (default `[0, 0]`, the sketch-local origin in this section's own plane;
- * override with `twistCenter`). When omitted, the section takes the
- * distributed `twistDeg` angle; when present it overrides that angle for
- * this section only.
- */
-export interface LoftPlaneSpec {
-  plane: 'XY' | 'YZ' | 'XZ';
-  origin: [Editable<number>, Editable<number>, Editable<number>];
-  rotationDeg?: Editable<number>;
-}
-
-/** Options accepted by `Sketch.loft`. */
-export interface LoftOptions {
-  spacing?: Editable<number>;
-  planes?: LoftPlaneSpec[];
-  twistDeg?: Editable<number>;
-  twistCenter?: [Editable<number>, Editable<number>];
-  ruled?: boolean;
-  /** With `ruled: true`, matching polyline sections become a triangulated
-   *  frustum (cheap to fuse and tessellate). Default is the NURBS loft. */
-  faceted?: boolean;
-  startPoint?: [Editable<number>, Editable<number>, Editable<number>];
-  endPoint?: [Editable<number>, Editable<number>, Editable<number>];
-  faceLabels?: FaceLabelsMap;
-  rails?: Curve3D[];
-  /** Requested continuity across station joins. Default `'G0'`, which keeps
-   *  the historical single `ThruSections` result. `'G1'`/`'G2'` build one
-   *  multi-span skin so there are no C0 joins to mismatch; `mode` is then
-   *  forced to `'single'` with a warning. */
-  continuity?: 'G0' | 'G1' | 'G2';
-  /** Stations per internal span for the segmented (`mode: 'sewn'`) path.
-   *  Must be an integer >= 2. Ignored by `mode: 'single'`. */
-  spanSize?: Editable<number>;
-  /** `'single'` (default) builds one skin over all stations. `'sewn'` builds
-   *  one solid per span and fuses them — fast, but the joins are C0. */
-  mode?: 'single' | 'sewn';
-}
-
-/** Option keys `Sketch.loft` accepts. Anything else is a likely typo and is
- *  rejected with `feature.invalid-args` instead of being silently dropped. */
-const ALLOWED_LOFT_KEYS = new Set([
-  'spacing', 'planes', 'ruled', 'faceted', 'startPoint', 'endPoint', 'faceLabels',
-  'rails', 'twistDeg', 'twistCenter', 'continuity', 'spanSize', 'mode',
-]);
-
-/** Keys a single `opts.planes[i]` entry accepts. */
-const ALLOWED_LOFT_PLANE_KEYS = new Set(['plane', 'origin', 'rotationDeg']);
-
-/** Option keys `Sketch.extrude` accepts. Anything else is a likely typo and is
- *  rejected with `feature.invalid-args` instead of being silently dropped. */
-const ALLOWED_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle']);
-
-/**
- * Reject unknown keys on a `Sketch` option bag with `feature.invalid-args`.
- * Shared by `extrude`'s opts, `loft`'s opts, and each `loft.planes[i]` entry
- * so the three call sites cannot drift. `unknownMessage` and `accepts` keep
- * every message/hint byte-identical to the hand-rolled guards this replaced.
- */
-function assertKnownKeys(
-  opts: object,
-  allowed: ReadonlySet<string>,
-  featureId: FeatureId,
-  unknownMessage: (key: string) => string,
-  accepts: string,
-): void {
-  for (const key of Object.keys(opts)) {
-    if (!allowed.has(key)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        unknownMessage(key),
-        featureId,
-        `${accepts} accepts ${[...allowed].join(', ')}.`,
-      );
-    }
-  }
-}
-
-/**
- * Reject a present-but-invalid `Editable<number>` option. Same
- * "must be a number or ParamRef" message/hint contract across
- * `extrude.twistAngle`, `loft.twistDeg`, and `loft.planes[i].rotationDeg`.
- */
-function assertEditableNumber(
-  value: unknown,
-  where: string,
-  featureId: FeatureId,
-  hint: string,
-): void {
-  if (value !== undefined && !isValidEditableNumber(value)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${where} must be a number or ParamRef; got ${JSON.stringify(value)}.`,
-      featureId,
-      hint,
-    );
-  }
-}
-
-/** Same contract for `[x, y]` Editable pairs (`loft.twistCenter`). */
-function assertEditablePair(
-  value: unknown,
-  where: string,
-  featureId: FeatureId,
-  hint: string,
-): void {
-  if (
-    value !== undefined &&
-    (!Array.isArray(value) || value.length !== 2 || !value.every(isValidEditableNumber))
-  ) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${where} must be a [x, y] pair of numbers or ParamRefs; got ${JSON.stringify(value)}.`,
-      featureId,
-      hint,
-    );
-  }
-}
+import type { HermiteEndpoint2D, LoftPlaneSpec, LoftOptions } from './sketchOptions';
+import { ALLOWED_LOFT_KEYS, ALLOWED_EXTRUDE_KEYS, ALLOWED_SWEEP_KEYS, ALLOWED_REVOLVE_KEYS } from './sketchOptions';
+import { assertKnownKeys, assertEditableNumber, assertEditablePair, assertLoftPlaneEntry } from './sketchOptionGuards';
+export type { HermiteEndpoint2D, LoftPlaneSpec, LoftOptions } from './sketchOptions';
 
 // Re-export so existing modeling/agent/authoring importers keep working.
 // The canonical definition lives in shared/capture/sketchCommand.ts as a
@@ -219,12 +90,26 @@ export class Sketch {
    *   sweeps, so a profile that does not touch the origin changes its
    *   bounding box. Defaults to 0 (straight extrude). Not supported for
    *   face-bound sketches (throws at lowering time).
+   * @param opts.taperDeg draft angle of the side walls in degrees (number or
+   *   ParamRef), strictly between -90 and 90. The profile stays exact on the
+   *   sketch plane; a positive taper narrows it toward the far end by
+   *   `depth × tan(taperDeg)` per side (the walls lean in), a negative taper
+   *   widens it. Cannot be combined with `twistAngle`.
+   * @param opts.symmetric when `true`, extrude `depth / 2` to each side of the
+   *   sketch plane (a mid-plane extrude: z from `-depth / 2` to `depth / 2`)
+   *   instead of 0..depth along +Z. `depth` stays the total thickness. Cannot
+   *   be combined with `taperDeg`, `twistAngle` or a face-bound sketch.
    *
    * Returns a `Shape` (3D solid).
    */
   extrude(
     depth: Editable<number>,
-    opts?: { faceLabels?: FaceLabelsMap; twistAngle?: Editable<number> } | null,
+    opts?: {
+      faceLabels?: FaceLabelsMap;
+      twistAngle?: Editable<number>;
+      taperDeg?: Editable<number>;
+      symmetric?: boolean;
+    } | null,
   ): Shape {
     // Tolerate an explicit `null` opts: the pre-guard implementation read
     // `opts?.faceLabels`, so JS/agent callers could pass null. Keep that
@@ -243,6 +128,18 @@ export class Sketch {
       this.id,
       'Pass opts.twistAngle as a total twist in degrees — a number or a param() reference.',
     );
+    assertEditableNumber(
+      opts.taperDeg,
+      'Sketch.extrude: opts.taperDeg',
+      this.id,
+      'Pass opts.taperDeg as a draft angle in degrees — a number or a param() reference.',
+    );
+    const symmetric = symmetricParam(opts.symmetric, {
+      api: 'Sketch.extrude(depth, { symmetric })',
+      requires: 'true (extrude depth/2 to each side of the sketch plane) or false',
+      example: 'path()...close().extrude(10, { symmetric: true })',
+      featureId: this.id,
+    });
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
     return this.session.createShape({
       kind: 'extrude',
@@ -258,6 +155,12 @@ export class Sketch {
         // byte-identical to the old literal record for a plain number.
         depth: toParam(depth, 'mm'),
         twistAngle: toParam(opts.twistAngle ?? 0, 'deg'),
+        // Recorded only when given, so untapered records stay byte-identical.
+        ...(opts.taperDeg === undefined || opts.taperDeg === 0
+          ? {}
+          : { taperDeg: toParam(opts.taperDeg, 'deg') }),
+        // Recorded only when true, so one-sided records stay byte-identical.
+        ...symmetric,
       },
       metadata: faceLabels ? { faceLabels } : undefined,
     });
@@ -279,9 +182,37 @@ export class Sketch {
    * angle range) happens at lowering time and surfaces as `feature.revolve.*`
    * diagnostics.
    */
-  revolve(opts?: { angleDeg?: Editable<number>; faceLabels?: FaceLabelsMap }): Shape {
-    const faceLabels = validateFaceLabels(opts?.faceLabels, 'revolve');
-    const angleDeg = opts?.angleDeg ?? 360;
+  revolve(opts?: { angleDeg?: Editable<number>; faceLabels?: FaceLabelsMap; symmetric?: boolean } | null): Shape {
+    // Tolerate an explicit `null`, as extrude does. A positional angle,
+    // `revolve(180)`, used to be read as an empty option bag and built a full
+    // 360° solid; reject it with the option-bag form.
+    opts ??= {};
+    if (typeof opts !== 'object' || Array.isArray(opts)) {
+      invalidArgs({
+        api: 'Sketch.revolve({ angleDeg })',
+        path: 'opts',
+        got: opts,
+        showType: true,
+        requires: 'an option object { angleDeg?, faceLabels?, symmetric? } or no argument (360°); the angle is not positional',
+        example: 'path()...close().revolve({ angleDeg: 180 })',
+        featureId: this.id,
+      });
+    }
+    assertKnownKeys(
+      opts,
+      ALLOWED_REVOLVE_KEYS,
+      this.id,
+      (key) => `Sketch.revolve: unknown option '${key}'.`,
+      'revolve',
+    );
+    const symmetric = symmetricParam(opts.symmetric, {
+      api: 'Sketch.revolve({ angleDeg, symmetric })',
+      requires: 'true (revolve angleDeg/2 to each side of the sketch plane) or false',
+      example: 'path()...close().revolve({ angleDeg: 90, symmetric: true })',
+      featureId: this.id,
+    });
+    const faceLabels = validateFaceLabels(opts.faceLabels, 'revolve');
+    const angleDeg = opts.angleDeg ?? 360;
     return this.session.createShape({
       kind: 'revolve',
       inputs: {
@@ -292,6 +223,8 @@ export class Sketch {
         // A ParamRef angle stays symbolic; the lowerer range-checks the
         // resolved value.
         angleDeg: toParam(angleDeg, 'deg'),
+        // Recorded only when true, so one-sided records stay byte-identical.
+        ...symmetric,
       },
       metadata: faceLabels ? { faceLabels } : undefined,
     });
@@ -367,7 +300,25 @@ export class Sketch {
       faceLabels?: FaceLabelsMap;
     } = {},
   ): Shape {
-    const faceLabels = validateFaceLabels(opts?.faceLabels, 'sweep');
+    if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) {
+      invalidArgs({
+        api: 'Sketch.sweep(rail, opts)',
+        path: 'opts',
+        got: opts,
+        showType: true,
+        requires: 'an options object { spine?, transitionMode?, frenet?, section?, faceLabels? }',
+        example: "sketch.sweep(rail, { spine: 'smooth' })",
+        featureId: this.id,
+      });
+    }
+    assertKnownKeys(
+      opts,
+      ALLOWED_SWEEP_KEYS,
+      this.id,
+      (key) => `Sketch.sweep: unknown option '${key}'.`,
+      'sweep',
+    );
+    const faceLabels = validateFaceLabels(opts.faceLabels, 'sweep');
     const transitionMode = opts.transitionMode ?? 'right';
     const spine = opts.spine ?? 'polyline';
     const section = checkSweepSection(opts.section, spine, this.id);
@@ -518,19 +469,7 @@ export class Sketch {
             `Pass opts.planes[${i}] as { plane, origin, rotationDeg? }.`,
           );
         }
-        assertKnownKeys(
-          p,
-          ALLOWED_LOFT_PLANE_KEYS,
-          this.id,
-          (key) => `Sketch.loft: unknown planes[${i}] option '${key}'.`,
-          'planes entries',
-        );
-        assertEditableNumber(
-          p.rotationDeg,
-          `Sketch.loft: opts.planes[${i}].rotationDeg`,
-          this.id,
-          `Pass planes[${i}].rotationDeg as degrees — a number or a param() reference — or omit it to inherit the distributed twistDeg.`,
-        );
+        assertLoftPlaneEntry(p, i, this.id);
       }
     }
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'loft');
@@ -587,6 +526,117 @@ export class Sketch {
       params: {},
       metadata: { commands: newCommands },
     });
+  }
+
+  /**
+   * Move this sketch by `(dx, dy)` mm, returning a new Sketch. The source is
+   * unchanged, so one profile can be placed several times. ParamRef deltas
+   * and coordinates stay symbolic.
+   *
+   * @example
+   *   const hole = path().circle(0, 0, 3);
+   *   const plate = await outline.subtract([hole.translate(10, 10), hole.translate(30, 10)]);
+   */
+  translate(dx: Editable<number>, dy: Editable<number>): Sketch {
+    return translateSketchOf(this.id, this.session, dx, dy);
+  }
+
+  /**
+   * Turn this sketch counter-clockwise by `angleDeg` about `center` (default
+   * the sketch origin), returning a new Sketch. Arcs stay exact arcs.
+   * `angleDeg` must be a plain number; `center` accepts ParamRefs.
+   *
+   * @example
+   *   const diagonal = slot.rotate(45, [20, 10]);
+   */
+  rotate(angleDeg: number, center?: [Editable<number>, Editable<number>] | null): Sketch {
+    return rotateSketchOf(this.id, this.session, angleDeg, center);
+  }
+
+  /**
+   * Resize this sketch uniformly by `factor` (> 0) about `center` (default
+   * the sketch origin), returning a new Sketch. Every length scales by
+   * `factor`, so arcs stay exact arcs. `factor` and `center` accept ParamRefs.
+   *
+   * @example
+   *   const larger = profile.scale(1.5, [20, 10]);
+   */
+  scale(factor: Editable<number>, center?: [Editable<number>, Editable<number>] | null): Sketch {
+    return scaleSketchOf(this.id, this.session, factor, center);
+  }
+
+  /**
+   * Parallel curve of this closed profile, `distance` mm away. AWAIT THIS —
+   * it returns `Promise<Sketch>`.
+   *
+   * The profile is the region inside the first loop and outside the hole
+   * loops. A positive distance grows that region (the outline moves outward,
+   * holes shrink); a negative distance shrinks it (the outline moves inward,
+   * holes grow). Lines stay lines and arcs stay arcs. The source is unchanged.
+   *
+   * @param distance signed offset in mm, a plain non-zero number.
+   * @param opts.corners `'round'` (default) joins an outward-moving corner
+   *   with an arc of radius `|distance|`; `'sharp'` extends the neighbouring
+   *   segments until they meet.
+   *
+   * Throws `feature.sketch-offset.collapsed` when nothing is left,
+   * `feature.sketch-offset.split` when the result is not one profile (a neck
+   * closes, a hole reaches the boundary), and `feature.invalid-args` for a
+   * spline profile or a param()-driven profile or distance.
+   *
+   * @example
+   *   const wall = (await outline.offset(-2)).extrude(5);
+   */
+  offset(distance: number, opts?: SketchOffsetOptions | null): Promise<Sketch> {
+    return offsetSketchOf(this.id, this.session, distance, opts);
+  }
+
+  /**
+   * 2D union of this closed profile with one or more other profiles, as a new
+   * Sketch. AWAIT THIS — it returns `Promise<Sketch>`.
+   *
+   * A profile is the region inside its first loop and outside its hole loops.
+   * Lines stay lines and arcs stay arcs; a boundary shared by two profiles
+   * disappears. The sources are unchanged.
+   *
+   * Throws `feature.sketch-boolean.split` when the profiles do not overlap
+   * (the result would be several outlines) and `feature.invalid-args` for a
+   * spline profile, a param()-driven profile or a non-Sketch argument.
+   *
+   * @example
+   *   const keyhole = await slot.union(path().circle(0, 12, 6));
+   */
+  union(other: Sketch | readonly Sketch[]): Promise<Sketch> {
+    return booleanSketchOf(this.id, this.session, 'union', other);
+  }
+
+  /**
+   * 2D subtraction: this closed profile minus one or more other profiles, as
+   * a new Sketch. AWAIT THIS — it returns `Promise<Sketch>`. A removed profile
+   * that lies inside the outline becomes a hole.
+   *
+   * Throws `feature.sketch-boolean.empty` when nothing is left and
+   * `feature.sketch-boolean.split` when the result is cut into several pieces
+   * or touches itself at a point.
+   *
+   * @example
+   *   const plate = await outline.subtract([path().circle(10, 10, 3), path().circle(30, 10, 3)]);
+   */
+  subtract(other: Sketch | readonly Sketch[]): Promise<Sketch> {
+    return booleanSketchOf(this.id, this.session, 'subtract', other);
+  }
+
+  /**
+   * 2D intersection: the region this closed profile shares with every other
+   * profile, as a new Sketch. AWAIT THIS — it returns `Promise<Sketch>`.
+   *
+   * Throws `feature.sketch-boolean.empty` when the profiles do not overlap.
+   *
+   * @example
+   *   const lens = await path().circle(0, 0, 10).intersect(path().circle(12, 0, 10));
+   */
+  intersect(other: Sketch | readonly Sketch[]): Promise<Sketch> {
+    return booleanSketchOf(this.id, this.session, 'intersect', other);
   }
 }
 
@@ -754,7 +804,8 @@ export class PathBuilder {
   /**
    * C1-smooth spline segment from current pen position to (x, y). Replicad's
    * `smoothSplineTo` underneath. The start tangent is inherited from the
-   * prior segment (smooth join); the end tangent is auto-chosen.
+   * prior segment (smooth join). The segment arrives along `opts.endTangent`;
+   * without it, along the sketch +X direction.
    *
    * Pick this for organic outlines (eyewear brow, ergonomic grips, sneaker
    * silhouettes) where chained sagittaArcs hit OCCT BlendChain solver
@@ -762,14 +813,19 @@ export class PathBuilder {
    * interpolate through many points; each segment joins the previous one
    * smoothly.
    *
-   * Throws at lowering time if called as the first command — no prior
-   * tangent to inherit.
+   * Directly after `moveTo` there is no prior segment: the segment then
+   * leaves along `opts.startTangent`, or along the sketch +X direction.
    *
    * @param x endpoint X
    * @param y endpoint Y
+   * @param opts.endTangent 2D direction of travel at (x, y); only the
+   *   direction matters
+   * @param opts.startTangent 2D direction of travel at the start; replaces
+   *   the inherited tangent
    */
-  smoothSpline(x: Editable<number>, y: Editable<number>): PathBuilder {
-    this.commands.push({ kind: 'smoothSpline', x: toParam(x, 'mm'), y: toParam(y, 'mm') });
+  smoothSpline(x: Editable<number>, y: Editable<number>, opts?: SmoothSplineOptions): PathBuilder {
+    const tangents = smoothSplineTangentOptions(opts, (p) => this.#now(p));
+    this.commands.push({ kind: 'smoothSpline', x: toParam(x, 'mm'), y: toParam(y, 'mm'), ...tangents });
     return this;
   }
 
@@ -871,6 +927,7 @@ export class PathBuilder {
       endTangent?: [Editable<number>, Editable<number>];
     },
   ): PathBuilder {
+    assertSplineOptionKeys(opts);
     const now = (p: Param): number => this.#now(p);
     const paramPoints = toSplineWaypoints(points, now);
     checkSplineConsecutiveDistinct(paramPoints, now);
@@ -911,6 +968,7 @@ export class PathBuilder {
    * - `weights` length != controlPoints length;
    * - any weight ≤ 0 (zero collapses the basis; negative is undefined);
    * - `knots` length != controlPoints.length + degree + 1 (when provided).
+   * - any unknown option key, reported at capture as `feature.invalid-args`.
    *
    * Knot vector defaults to a clamped uniform vector
    * (`[0,...,0, ..., 1,...,1]` with multiplicity `degree+1` at each end).
@@ -925,6 +983,7 @@ export class PathBuilder {
     controlPoints: Array<[Editable<number>, Editable<number>]>,
     opts?: { degree?: number; weights?: number[]; knots?: number[] },
   ): PathBuilder {
+    assertNurbsSegmentOptionKeys(opts);
     const degree = resolveNurbsDegree(opts?.degree);
     const now = (p: Param): number => this.#now(p);
     const paramControls = toNurbsControlPoints(controlPoints, degree, now);
@@ -1296,6 +1355,60 @@ export class PathBuilder {
       params: {},
       metadata: { commands: this.commands },
     });
+  }
+
+  /**
+   * Author a closed ellipse centred on `(cx, cy)` with semi-axes `rx` (along
+   * sketch +X) and `ry`. `opts.rotationDeg` turns the `rx` axis
+   * counterclockwise. Returns the `Sketch` directly, like `circle`.
+   *
+   * The ellipse is EXACT: four rational quadratic `nurbsSegment` quarter
+   * arcs, not a polyline or a fitted spline, so the area is `π·rx·ry` to
+   * kernel precision. `cx`, `cy`, `rx` and `ry` accept `Editable<number>` and
+   * stay symbolic; `rotationDeg` is a plain number.
+   */
+  ellipse(
+    cx: Editable<number>,
+    cy: Editable<number>,
+    rx: Editable<number>,
+    ry: Editable<number>,
+    opts?: EllipseOptions,
+  ): Sketch {
+    const loop = ellipseCommands(cx, cy, rx, ry, opts, this.session.paramTable);
+    if (this.commands.length > 0) {
+      invalidArgs({
+        api: 'path().ellipse(cx, cy, rx, ry, opts?)',
+        path: 'path',
+        gotText: 'a path that already has other commands',
+        requires: 'a fresh path; use ellipseArc(x, y, rx, ry) for an elliptical segment inside a path',
+        example: 'path().ellipse(0, 0, 20, 10)',
+      });
+    }
+    this.commands.push(...loop, { kind: 'close' });
+    return this.session.createSketch({
+      kind: 'sketch',
+      inputs: {},
+      params: {},
+      metadata: { commands: this.commands },
+    });
+  }
+
+  /**
+   * Exact elliptical arc from the current pen to `(x, y)` on an ellipse with
+   * semi-axes `rx` and `ry` (SVG `A`, with the Y axis pointing up).
+   * `opts.rotationDeg` turns the `rx` axis counterclockwise; `opts.largeArc`
+   * takes the arc longer than 180°; `opts.clockwise` reverses the travel
+   * direction (default counterclockwise). Lowered as one rational quadratic
+   * `nurbsSegment` per 90° of sweep.
+   *
+   * All arguments are plain numbers: the centre is solved at capture time,
+   * so a `param()` value is refused. Radii too small to join the two points
+   * are refused with the smallest pair that fits (SVG would scale them).
+   */
+  ellipseArc(x: number, y: number, rx: number, ry: number, opts?: EllipseArcOptions): PathBuilder {
+    const now = (p: Param): number => this.#now(p);
+    this.commands.push(...ellipseArcCommands(this.#currentPen(), { x, y, rx, ry }, opts, now));
+    return this;
   }
 
   /**

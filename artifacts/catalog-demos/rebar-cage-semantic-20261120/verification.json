@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-20",
+  "asset": "construction-equipment/rebar-cage",
+  "scope": "CC0 scene geometry only, not structural design or manufacturing acceptance",
+  "before": {
+    "unique_longitudinal_bar_centres": 6,
+    "named_longitudinal_bars": 12,
+    "tie_geometry": "8 straight transverse rods",
+    "native_triangles": 916,
+    "public_source_sha256": "b8717c35db49985f06fec4dac90ac2195ed45ea1050b29a8780a439f2fbb58f1",
+    "negative_control": "Original public source fails new native geometry test: expected12uniquecentres; received6."
+  },
+  "after": {
+    "unique_longitudinal_bar_centres": 12,
+    "bar_layer_heights_mm": [
+      180.6,
+      372
+    ],
+    "closed_open_window_ties": 8,
+    "tie_bottom_mm": 146.6,
+    "support_top_mm": 146.6,
+    "native_triangles": 820,
+    "bounds_m_glb_xyz": [
+      1.26,
+      0.406,
+      0.558
+    ],
+    "parameter_scales_verified": [
+      0.7,
+      1,
+      1.3
+    ],
+    "tests_passed": 2
+  },
+  "commands": [
+    "NODE_OPTIONS=--max-old-space-size=2048 node_modules/.bin/vitest run tests/integration/catalog/rebarCageFidelity.test.ts --maxWorkers=1",
+    "node_modules/.bin/eslint tests/integration/catalog/rebarCageFidelity.test.ts"
+  ],
+  "preview": "Production GLB software renderer; exact committed PNG byte parity asserted by the regression test.",
+  "video": "6seconds, static native-render comparison; no simulated behavior or hardware claim",
+  "visual_review": "Before: floating flat grid. After: twelve visible upper/lower longitudinal bars enclosed by eight rectangular ties; ties seat on two saddles."
+}

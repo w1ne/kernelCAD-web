@@ -1,0 +1,143 @@
+{
+  "assetIds": [
+    "air-cooled-chiller",
+    "cooling-tower-cell",
+    "dry-type-transformer",
+    "standby-generator-enclosure",
+    "clean-agent-cylinder-bank"
+  ],
+  "checkedAt": "2026-11-11T20:51:46.858705+00:00",
+  "destinationPR": 1258,
+  "openIssueSearchMatches": {
+    "air-cooled-chiller": [],
+    "clean-agent-cylinder-bank": [],
+    "cooling-tower-cell": [],
+    "dry-type-transformer": [],
+    "standby-generator-enclosure": []
+  },
+  "openPRTitleBodySearchMatches": {
+    "air-cooled-chiller": [],
+    "clean-agent-cylinder-bank": [],
+    "cooling-tower-cell": [],
+    "dry-type-transformer": [],
+    "standby-generator-enclosure": []
+  },
+  "openPRsAtCheck": [
+    {
+      "number": 1337,
+      "title": "fix(physics): preserve root placement in MJCF (#917)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1337"
+    },
+    {
+      "number": 1336,
+      "title": "fix(export): default PBR GLB handoff to metres (#1299)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1336"
+    },
+    {
+      "number": 1334,
+      "title": "Add evidence-aware DFM review outcomes",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1334"
+    },
+    {
+      "number": 1329,
+      "title": "fix(naming): fail safely on replaced edge selections",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1329"
+    },
+    {
+      "number": 1328,
+      "title": "fix(mechanism): clarify skipped sweep guidance",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1328"
+    },
+    {
+      "number": 1327,
+      "title": "test(mechanism): cover real fixed-cover motion (#1262)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1327"
+    },
+    {
+      "number": 1326,
+      "title": "test(mcp): cover clamshell rest overlap issue #1261",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1326"
+    },
+    {
+      "number": 1325,
+      "title": "Add bounded open-centerline rib geometry",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1325"
+    },
+    {
+      "number": 1324,
+      "title": "fix(mechanism): preserve coupled mate physics for issue #1321",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1324"
+    },
+    {
+      "number": 1309,
+      "title": "Rebuild the compact supported arm as a desktop 4-DOF",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1309"
+    },
+    {
+      "number": 1276,
+      "title": "feat(export): add mesh tolerance controls with sampled deviation reporting",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1276"
+    },
+    {
+      "number": 1260,
+      "title": "Resolve ParamRef coordinates in cutout profiles",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1260"
+    },
+    {
+      "number": 1258,
+      "title": "catalog: rebuild 30 box-stack assets as real machines (music, amusement, sports, solar, construction)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1258"
+    },
+    {
+      "number": 1253,
+      "title": "feat(catalog): downloadable GLB + STEP on every asset page (the acquisition loop)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1253"
+    },
+    {
+      "number": 1215,
+      "title": "feat(catalog): industrial-plant wave \u2014 60 assets",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1215"
+    },
+    {
+      "number": 1211,
+      "title": "feat(catalog): sports wave \u2014 40 assets",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1211"
+    },
+    {
+      "number": 1195,
+      "title": "spike(b2b): ECAD-to-enclosure and headless API contract",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1195"
+    },
+    {
+      "number": 1187,
+      "title": "feat(params): plain JS math on params, fast and universal (dependency-aware rebuild)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1187"
+    },
+    {
+      "number": 1094,
+      "title": "perf(gears): ring gear as one holed-profile extrude (HOLD: face IDs change)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1094"
+    }
+  ],
+  "otherOpenPRChangedSourcePathMatches": [],
+  "otherOpenPRFilesChecked": [
+    1337,
+    1336,
+    1334,
+    1329,
+    1328,
+    1327,
+    1326,
+    1325,
+    1324,
+    1309,
+    1276,
+    1260,
+    1253,
+    1215,
+    1211,
+    1195,
+    1187,
+    1094
+  ]
+}

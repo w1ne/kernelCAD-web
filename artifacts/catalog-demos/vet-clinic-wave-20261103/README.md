@@ -11,8 +11,8 @@ grooming.
 work areas, native `.kcad.ts` source and controls, a rendered parameter variant,
 all 50 catalog previews, and local verification results. The video is H.264,
 1280 × 720, 24 fps, `yuv420p`. Its decoded 10-frame contact sheet was visually
-inspected and recorded in [video-inspection.json](video-review/video-inspection.json)
-and [contact-sheet.png](video-review/contact-sheet.png).
+inspected and recorded in video-inspection.json (`video-review/video-inspection.json`, not tracked)
+and contact-sheet.png (`video-review/contact-sheet.png`, not tracked).
 
 ## Results
 
@@ -78,3 +78,12 @@ when checked. Local page generation and replay do not establish deployed
 visibility, clinical suitability, equipment ratings, safety, hygiene,
 calibration, regulatory compliance, or physical acceptance. Public page
 verification remains pending merge and deployment.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/vet-clinic-wave-20261103/capture_vet_clinic_demo.py`
+- video review: `python3 artifacts/catalog-demos/vet-clinic-wave-20261103/inspect_vet_clinic_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

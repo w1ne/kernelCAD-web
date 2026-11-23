@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-10",
+  "scope": "local source, software render, generated static page, and test evidence; no deployment or hardware acceptance",
+  "kit": "beverage-bottling-line",
+  "asset": "cap-elevator",
+  "triangles": 516,
+  "triangleBudget": 2200,
+  "previewsRendered": 50,
+  "kitQuality": "50/50 passing (100.00%)",
+  "catalogQuality": "2,402/2,402 passing (100.00%; 50 rich kits, zero thin kits)",
+  "catalogAssets": 2402,
+  "catalogKits": 50,
+  "sourceSha256": "f97fb1ea21f20f6d7777ed2e5acb473cc577f4c95c412403c47ca63cc475d11e",
+  "previewSha256": "9f0b76c91f910f4cc8226cb2bc5c9449607cf3af960d6e905b37d048e90eab5b",
+  "indexHashesAndPreviews": "all 2,402 source hashes match; all preview paths exist",
+  "localPagesChecked": 1,
+  "variantsRendered": 2,
+  "focusedTest": "1/1 cap-elevator render regression passed",
+  "integration": "5 files / 16 tests passed; command uses --maxWorkers=1",
+  "eslint": "passed for kit sources, focused test, and retained TypeScript variant renderer",
+  "provenance": "Local source replay and catalog GLB software renders; generated local static page. No deployment or physical acceptance is shown."
+}

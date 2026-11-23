@@ -1,0 +1,24 @@
+Local verification record — 2026-11-18
+
+Feature regression command:
+  npx vitest run src/agent/mcp/edits/projectCurve.test.ts src/agent/mcp/tools/projectCurve.test.ts src/agent/mcp/toolRegistry.publicContract.test.ts src/agent/mcp/snakeCaseArgs.test.ts tests/integration/mcp/listApi.driftSentinel.test.ts src/modeling/backends/occt/projectCurveLowerer.test.ts src/modeling/projectCurveOptions.test.ts tests/unit/capture/projectCurve.test.ts tests/unit/intent/projectCurveRecord.test.ts tests/unit/diagnostics/registryProjectionSnapshot.test.ts tests/unit/skill/skillShapeMethodsDrift.test.ts tests/integration/modeling/projectCurveOpen.test.ts --reporter=dot
+Result: 12 test files passed; 116 tests passed.
+
+Typecheck:
+  npm run typecheck
+Result: exit 0 (`tsc -b --noEmit` and CLI TypeScript check).
+
+Targeted lint:
+  npx eslint src/agent/mcp/edits/projectCurve.ts src/agent/mcp/edits/projectCurve.test.ts src/agent/mcp/registry/geometryAuthoringTools.ts src/agent/mcp/tools/projectCurve.test.ts src/agent/mcp/tools/listApi.ts src/kernel/backends/occt/sketchToDrawing.ts src/modeling/backends/occt/projectCurveLowerer.ts src/modeling/backends/occt/projectCurveLowerer.test.ts src/modeling/capture/projectCurveOptions.ts src/modeling/capture/proxy.ts src/modeling/capture/proxyDerivedSketch.ts src/modeling/projectCurveOptions.test.ts src/shared/diagnostics/registry/feature.ts src/shared/intent/projectCurveRecord.ts src/shared/intent/types.ts tests/integration/modeling/projectCurveOpen.test.ts tests/unit/intent/projectCurveRecord.test.ts docs/demos/open-face-projection/demo.ts
+Result: exit 0.
+
+Demo geometry:
+  Two returned Curve3D fragments measured 8.999999999999998 mm and 9 mm.
+  Sampled points remained on the selected z=4 mm face.
+  A returned Curve3D lowered successfully as a variableSweep spine.
+
+Video inspection:
+  H.264, 1280×720, yuv420p, 24 fps, 9 seconds, 70,356 bytes.
+  Extracted and visually inspected a frame at 7 seconds; captions and both measured fragments are legible.
+
+Scope: local OCCT model validation only. No deployed behavior or hardware acceptance is claimed.

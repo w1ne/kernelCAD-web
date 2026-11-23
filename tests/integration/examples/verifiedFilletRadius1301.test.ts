@@ -30,7 +30,9 @@ describe('verified repair radius on the drafting-review mounting plate', () => {
     )).toEqual([]);
 
     const seeded = source.replace('.fillet(6,', '.fillet(40,');
-    expect(seeded).toContain('.fillet(40, { parallel: [0, 0, 1] })');
+    expect(seeded).toContain(
+      ".fillet(40, q.edge(q.createdBy(stock.id)).and(q.withLabel('corner')))"
+    );
     const why = await whyDidThisFailTool({ code: seeded });
     expect(why.ok).toBe(true);
     expect(why.candidates?.[0]?.code).toBe('feature.edge-feature.short-edges-skipped');

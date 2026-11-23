@@ -51,3 +51,11 @@ From the repository root:
 Do not re-run `artifacts/catalog-demos/theatre-production-wave-20261103/generate_theatre_assets.py`. It rewrites every theatre source from the original single-colour wave.
 
 The branch is not deployed. These are stylized scene props. They do not claim vendor dimensions, photometrics, beam angles, or hoist working-load or rigging-safety ratings.
+
+## Untracked generated outputs
+
+`frames/` is not tracked in git; it is regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/theatre-production-silhouette-20261106/capture_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

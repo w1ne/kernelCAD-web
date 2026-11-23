@@ -22,6 +22,7 @@ import {
   type HoleAt,
 } from './holePlacement';
 import type { FaceSelector } from '../capture/proxy';
+import type { CanonicalFace } from '../capture/faceEditCapture';
 import type { Editable } from '../../shared/runtime/paramRef';
 import { currentValue, currentBool } from '../../shared/runtime/editableHelpers';
 import type { ParamTable } from '../../shared/runtime/paramTable';
@@ -52,6 +53,12 @@ export interface EditableHoleCountersink { diameter: Editable<number>; angleDeg?
 export interface HoleCounterbore { diameter: number; depth: number }
 export interface HoleCountersink { diameter: number; angleDeg?: number }
 
+/** End face for `upToFace` on hole, holes and cutout. Every form the entry
+ *  `face` accepts is valid: a FaceRef, a canonical face name, a label or
+ *  created ref string, a FaceQuery (`{ containsPoint: [x, y, z] }`) or a
+ *  Query DSL value. See `buildUpToFaceInputRef`. */
+export type UpToFaceSelector = FaceRef | FaceSelector | CanonicalFace | string;
+
 export interface EditableHoleOpts {
   /** Face-frame position (planar entry faces). Omit both when using `at`. */
   u?: Editable<number>;
@@ -62,7 +69,7 @@ export interface EditableHoleOpts {
   axis?: Vec3;
   diameter: Editable<number>;
   depth?: Editable<number> | 'through';
-  upToFace?: FaceRef;
+  upToFace?: UpToFaceSelector;
   counterbore?: EditableHoleCounterbore;
   countersink?: EditableHoleCountersink;
   /** Internal ISO metric thread; `diameter` becomes the nominal size. */
@@ -83,7 +90,7 @@ export interface HoleOpts {
   axis?: Vec3;
   diameter: number;
   depth?: number | 'through';
-  upToFace?: FaceRef;
+  upToFace?: UpToFaceSelector;
   counterbore?: HoleCounterbore;
   countersink?: HoleCountersink;
   thread?: HoleThread;
@@ -95,7 +102,7 @@ export interface EditableHolesOpts {
   positions: Array<{ u: Editable<number>; v: Editable<number> }>;
   diameter: Editable<number>;
   depth?: Editable<number> | 'through';
-  upToFace?: FaceRef;
+  upToFace?: UpToFaceSelector;
   counterbore?: EditableHoleCounterbore;
   countersink?: EditableHoleCountersink;
   thread?: EditableHoleThread;
@@ -107,7 +114,7 @@ export interface HolesOpts {
   positions: Array<{ u: number; v: number }>;
   diameter: number;
   depth?: number | 'through';
-  upToFace?: FaceRef;
+  upToFace?: UpToFaceSelector;
   counterbore?: HoleCounterbore;
   countersink?: HoleCountersink;
   thread?: HoleThread;
@@ -564,9 +571,10 @@ export function validateHolesOpts(opts: HolesOpts, featureId: FeatureId | undefi
 // evaluated. The serializers here turn HoleOpts / HolesOpts into the flat
 // `Record<string, Param>` shape that FeatureRecord.params expects.
 //
-// The `face` selector and `upToFace` are stored under metadata (not Params) —
-// see serializeHoleParams for the shape. The lowerer in Phase 2 reads these
-// back via the existing FaceSelector resolver.
+// The `face` selector and `upToFace` are stored outside Params. The capture
+// proxy records each as a FeatureRef input so lowering can resolve the
+// selected entry and target faces against the current B-rep. The raw upToFace
+// selector also stays in metadata for round-tripping.
 
 export interface SerializedHoleCapture {
   params: Record<string, Param>;
@@ -594,11 +602,8 @@ function paramUnitless(value: string | number): Param {
   };
 }
 
-// `face` is captured under inputs.face by the proxy via buildFaceInputRef
-// (so pickFace can resolve it the same way shell/fillet/chamfer do); it is
-// intentionally absent from metadata to avoid the two-source-of-truth trap.
-// `upToFace` is only used by the lowerer when 'through' is not the trigger,
-// so it lives under metadata for now.
+// `face` and `upToFace` are captured under FeatureRef inputs by the proxy.
+// Their raw selectors remain in metadata so serialized features round-trip.
 
 export function serializeHoleParams(_face: FaceSelector, opts: EditableHoleOpts): SerializedHoleCapture {
   const params: Record<string, Param> = opts.at !== undefined

@@ -352,6 +352,7 @@ export function buildMateMetadata(state: AssemblyState): import('./captureSessio
     mates: encodedMates,
     couplings: [...state.mateCouplings],
     ...(state.loopModes.length > 0 ? { loopModes: [...state.loopModes] } : {}),
+    ...(state.virtualJoints.length > 0 ? { virtualJoints: [...state.virtualJoints] } : {}),
   };
 }
 
@@ -374,11 +375,12 @@ function scenePartMotion(
  *
  * Per-part data is the assembly's authoring-time view: `name` from
  * `assembly.part(name, ...)`, `shape` from each part's `originalShape`,
- * and `worldTransform` from the v0.6 mate solver when mates are declared
- * (Pattern A FK over `solveMates(arm, poses)`) or identity otherwise.
- * Identity is a no-op fall-back for v0.5 callers and for kinematic-zero
- * `model()` calls — the lowerer-side body-tree FK on `solvedAssembly`
- * still applies for v0.5 `arm.revolute/.fixed/.prismatic/.ball` joints.
+ * and `worldTransform` from the v0.6 mate solver when resolved transforms
+ * are supplied. `solvedModel()` supplies full capture-time FK; `model()`
+ * supplies synchronous FK when every referenced connector origin is a
+ * numeric vector. Identity is the fallback for mate-free and topology-based
+ * `model()` calls, and for parts the mate graph does not place. The lowerer
+ * still resolves topology connectors and v0.5 body-tree joints at recompute.
  *
  * Precedence: when a part has BOTH an authoring `.translate(...)` chain
  * AND lives in a mate graph, the solver-assigned `worldTransform` wins on
@@ -570,7 +572,9 @@ export interface SolvedModelOptions {
    * distance. Only the declared pairs are probed, so the cost scales with
    * the declaration count rather than the full part-pair matrix. Overlap and
    * sub-minimum gaps are `assembly.clearance.violated`; unmeasurable pairs
-   * are `assembly.clearance.unresolved`.
+   * are `assembly.clearance.unresolved`. With `posesGate: 'envelope'` the
+   * same minima are also checked at every envelope sample
+   * (`assembly.pose-envelope.clearance-violated`).
    */
   clearances?: readonly PairClearanceTolerance[];
   /**
@@ -617,15 +621,20 @@ export interface SolvedModelOptions {
    * Known-acceptable interference pairs. Symmetric matching: `[a, b]`
    * silences both `(a, b)` and `(b, a)`. Pairs in `ignore` are still
    * DETECTED by the runtime BREP sweep (so a Studio HUD reading the raw
-   * detection output still surfaces them on the status bar), but FILTERED
-   * out of the validator's `assembly.interference.overlap` diagnostic
-   * stream — they don't throw under `validate: 'error'` and don't appear
-   * in `scene.warnings` under `validate: 'warn'`.
+   * detection output still surfaces them on the status bar), and filtered
+   * out of `assembly.interference.overlap` and rest-pose
+   * `mechanism.rest-interpenetration` diagnostics for that pair. Rest-pose
+   * mate-gap and joint-continuity checks remain active, as do collision
+   * checks at sampled motion poses. A measured ignored rest overlap emits a
+   * warning and leaves the physical mechanism verdict unverified.
+   * Two mates that always move together (a gear pair, mimic fingers) are
+   * not an ignore case: declare `arm.coupleMates(...)` so the sweep moves
+   * them together.
    *
    * This is the granular alternative to `validate: 'off'`. Use it when a
    * specific known-acceptable contact (e.g. a knuckle joint where two arm
-   * parts must touch by design) should not block the validator while
-   * still letting the rest of the validation gate run.
+   * parts must touch by design) should not block rest-pose overlap checks
+   * while mate continuity and sampled motion checks still run.
    */
   ignore?: ReadonlyArray<readonly [string, string]>;
 }
@@ -894,6 +903,7 @@ function gatherSolvedModelGateInputs(
           ...(opts?.samplesPerMate !== undefined ? { samplesPerMate: opts.samplesPerMate } : {}),
           ...(opts?.combinatorial !== undefined ? { combinatorial: opts.combinatorial } : {}),
           ...(opts?.contacts !== undefined ? { contactTolerances: opts.contacts } : {}),
+          ...(opts?.clearances !== undefined ? { declaredClearances: opts.clearances } : {}),
           includeInterference: true,
         })
       : Promise.resolve(undefined);

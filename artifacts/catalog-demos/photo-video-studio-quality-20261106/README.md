@@ -43,9 +43,18 @@ python3 artifacts/catalog-demos/photo-video-studio-quality-20261106/inspect_phot
 - [`preview-render-output.txt`](preview-render-output.txt), [`catalog-build-output.txt`](catalog-build-output.txt), [`catalog-build-settings.json`](catalog-build-settings.json) and [`indexcheck-output.txt`](indexcheck-output.txt): preview renders, generated-index rebuild and stale-index check output.
 - [`check-results.json`](check-results.json), [`eslint-output.txt`](eslint-output.txt), [`integration-output.txt`](integration-output.txt), [`kitquality-output.txt`](kitquality-output.txt), and [`catalogquality-output.txt`](catalogquality-output.txt): quality, lint and test results with saved command output.
 - [`catalog-pages-check.json`](catalog-pages-check.json) and [`catalogpages-output.txt`](catalogpages-output.txt): local static page and preview checks for every photo/video asset. This is local verification, not deployed behavior.
-- [`before-previews/`](before-previews/), [`preset-variants/`](preset-variants/), [`demo-settings.json`](demo-settings.json), [`frames/`](frames/) and [`video-inspection.json`](video-inspection.json): comparison images, actual preset renders, capture settings, video frames and decoded MP4 metadata.
+- [`before-previews/`](before-previews/), [`preset-variants/`](preset-variants/), [`demo-settings.json`](demo-settings.json), `frames/` and [`video-inspection.json`](video-inspection.json): comparison images, actual preset renders, capture settings, video frames and decoded MP4 metadata.
 - [`video-review/`](video-review/) retains sampled decoded frames and the contact sheet used for visual inspection.
 
 ## Limits
 
 The models are stylized scene props. Local model, preview, index and page checks do not establish real camera dimensions, optical performance, light output, manufacturing suitability, certification, deployed behavior or hardware acceptance. The branch remains undeployed.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/photo-video-studio-quality-20261106/capture_photo_video_quality_demo.py`
+- video review: `python3 artifacts/catalog-demos/photo-video-studio-quality-20261106/inspect_photo_video_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

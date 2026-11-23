@@ -9,8 +9,14 @@ import { detectDetachedMaterial } from '../../modeling/validation/booleanIntegri
 import { runScript } from '../../composition/runScript';
 import type { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { lowerScriptRun } from './lowerScriptRun';
-import { meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { meshShapeForExport, OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import {
+  exportMeshDeflection,
+  type ExportMeshToleranceOptions,
+  type MeshDeviationReport,
+} from '../../kernel/backends/occt/backendMesh';
 import { partStlBytes } from '../../kernel/backends/occt/partFileExport';
+import { stampStlMeshTolerance } from '../../kernel/backends/occt/exportStlBinary';
 import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import type { DrawingAnnotation } from '../../kernel/backends/occt/drawingAnnotations';
 import type { DraftingProfile, DraftingProfileId, DrawingAnnotationOverride } from '../../shared/intent/drafting';
@@ -36,7 +42,7 @@ export type {
   DrawingVisualQaReport,
   Iso2768Class,
 } from '../../kernel/backends/occt/exportSvgDrawing';
-import { releaseWorldFrameParts, sceneToWorldFrameParts } from '../../kernel/backends/occt/sceneToWorldFrame';
+import { releaseWorldFrameParts, sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
@@ -69,6 +75,7 @@ import {
 } from './stressInfillExport';
 import type { Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { resolvePrinterProfile } from '../../kernel/export/gcode/printerProfiles';
+import { measureBrepSurfaceDeviationFromBinaryStl } from './meshDeviation';
 import { qualityGateOptionsError, runExportQualityGate, runQualityGateOnBodies, type ExportGeometryQualitySummary, type ExportQualityGateInput } from './exportQualityGate';
 export type { ExportGeometryQualitySummary, ExportQualityGateInput, QualityGateMode } from './exportQualityGate';
 export type { StressInfillExportOptions, StressInfillReport } from './stressInfillExport';
@@ -89,7 +96,7 @@ export const EXPORT_FORMATS: readonly ExportFormat[] = [
 
 /** Per-format option payloads. The union member is selected by `format`. */
 export type ExportOptions =
-  | { format: 'stl'; verify?: boolean }
+  | ({ format: 'stl'; verify?: boolean } & ExportMeshToleranceOptions)
   | { format: 'step'; unit?: 'mm' | 'cm' | 'in'; verify?: boolean }
   | {
       format: 'dxf';
@@ -105,6 +112,8 @@ export type ExportOptions =
     }
   | {
       format: '3mf';
+      tolerance?: number;
+      angularToleranceDeg?: number;
       printUnit?: 'mm' | 'cm' | 'in';
       embedSource?: boolean;
       /** Bed layout: 'none' (default, modelled positions), 'plate' (packed,
@@ -132,11 +141,11 @@ export type ExportOptions =
       /** 'lowpoly': faceted game mesh, palette in COLOR_0 on one shared material. */
       style?: 'pbr' | 'lowpoly';
       lowpoly?: { angularDeg?: number; maxTriangles?: number };
-      /** Default 'mm' for pbr, 'm' for lowpoly. */
+      /** Default 'm' to match the glTF length-unit convention. */
       units?: 'mm' | 'm';
     }
   /** `bytes` is a zip of `model.obj` (with `mtllib` / `usemtl`) and sibling `model.mtl`. */
-  | { format: 'obj' }
+  | ({ format: 'obj' } & ExportMeshToleranceOptions)
   | {
       /** Stanford PLY triangle mesh (mm, Z-up); assemblies merge every part
        *  in world space into one file. */
@@ -151,6 +160,8 @@ export type ExportOptions =
   | { format: 'usd' }
   | (DrawingReviewOptions & {
       format: 'svg-drawing';
+      hiddenLines?: boolean;
+      scale?: number;
       visualQa?: DrawingVisualQaOptions;
       /** Printable review preview with PDF sheet and title-block defaults. */
       pdfSheet?: boolean;
@@ -214,6 +225,8 @@ export type ExportOptions =
  */
 export interface PdfDrawingOptions extends DrawingReviewOptions {
   format: 'pdf-drawing';
+  hiddenLines?: boolean;
+  scale?: number;
   /** Inspect the serialized sheet and generated PDF. With autoRepair enabled,
    *  the export may retry on up to three larger standard sheets. */
   visualQa?: DrawingVisualQaOptions;
@@ -246,9 +259,8 @@ export interface PdfDrawingOptions extends DrawingReviewOptions {
   exploded?: { factor: number; mode?: 'radial' | 'mate-axis' };
   balloons?: boolean;
   partsList?: boolean;
-  /** Automatic datums, hole callouts, positions, overall dims and ISO 2768
-   *  note; default ON unless `annotations` are given. `false` falls back to
-   *  the overall bounding-box dimensions. */
+  /** Defaults to overall dimensions when the sheet has no authored annotations.
+   *  Pass `true` or a selection to request inferred feature annotations or tolerances. */
   autoAnnotate?: boolean | AutoAnnotateOptions;
   /** `'architectural'`: a floor plan (section ~1 m above the base, poché
    *  walls, wall / opening dimensions, room labels with area, scale bar,
@@ -303,6 +315,8 @@ export interface ExportResult {
   bytes: Uint8Array;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
+  /** Sampled one-sided distance from exact B-rep face samples to file triangles. */
+  mesh_deviation?: MeshDeviationReport;
   /** `dxf` of a flat or sheet-metal part: the sheet it is cut from. A shop
    *  needs the thickness, which the DXF itself does not carry. */
   sheet?: { thicknessMm: number; bendCount: number };
@@ -479,6 +493,36 @@ async function exportDirectTarget(
   return undefined;
 }
 
+function refuseMeshPartsForBrepExport(
+  format: ExportInput['format'],
+  lowered: ShapeBackend,
+  targetId: string,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): ExportResult | undefined {
+  if (isSceneBackend(lowered) && (format === 'step' || format === 'dxf' || format === 'pdf-drawing' || format === 'svg-drawing')) {
+    const meshParts = lowered.parts.filter(part => !(part.shape instanceof OcctBackend));
+    if (meshParts.length > 0) {
+      const code = 'export.scene.requires-brep';
+      return {
+        bytes: new Uint8Array(),
+        featureCount,
+        diagnostics: [...diagnostics, {
+          target: 'export-occt',
+          code,
+          featureId: targetId,
+          severity: 'error',
+          message: `'${format}' needs B-rep geometry for every selected part. Unsupported parts: ${meshParts.map(part => JSON.stringify(part.name)).join(', ')}.`,
+          hint: HINT_TEMPLATES[code].template,
+          nextAction: NEXT_ACTIONS[code],
+        }],
+      };
+    }
+  }
+
+  return undefined;
+}
+
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   if (!EXPORT_FORMATS.includes(input.format)) throw new Error(`Unsupported export format: ${String(input.format)}`);
   // Text derived from the tube report, not a solid: no occt recompute needed.
@@ -560,6 +604,9 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
     throw new Error('connector-manifest export requires the Scene source to lower to a SceneBackend.');
   }
 
+  const sceneRefusal = refuseMeshPartsForBrepExport(format, lowered, targetId, r.diagnostics, featureCount);
+  if (sceneRefusal !== undefined) return sceneRefusal;
+
   const gate = runExportQualityGate(format, lowered, targetId, input.qualityGate);
   r.diagnostics.push(...gate.diagnostics);
   if (gate.blocked) {
@@ -611,6 +658,7 @@ export interface PartStlExport {
   bytes: Uint8Array;
   report: WatertightReport;
   triangleCount: number;
+  mesh_deviation?: MeshDeviationReport;
 }
 
 export interface ExportPartsInput {
@@ -622,6 +670,8 @@ export interface ExportPartsInput {
   parts?: string[];
   /** Per-part geometry-quality gate; default mode 'warn'. */
   qualityGate?: ExportQualityGateInput;
+  /** Per-part STL mesh controls. */
+  options?: ExportMeshToleranceOptions;
 }
 
 export interface ExportPartsResult {
@@ -736,22 +786,41 @@ export async function runAndExportParts(input: ExportPartsInput): Promise<Export
     const diagnostics = [...resolved.diagnostics, ...gate.diagnostics];
     const geometryQuality = gate.summary === undefined ? {} : { geometryQuality: gate.summary };
     if (gate.blocked) return { parts: [], featureCount, diagnostics, ...geometryQuality };
-    const parts: PartStlExport[] = [];
-    for (const p of selected) {
-      const mesh = meshShapeForExport(p.shape.getReplicadShape());
-      const report = verifyWatertight(mesh);
-      parts.push({
-        name: p.name,
-        fileSafeName: fileSafePartName(p.name),
-        bytes: partStlBytes(p.shape, mesh),
-        report,
-        triangleCount: mesh.triangles.length / 3,
-      });
-    }
+    const parts = selected.map(part => meshPartWithTolerance(part, input.options));
     return { parts, featureCount, diagnostics, ...geometryQuality };
   } finally {
     releaseWorldFrameParts(worldParts);
   }
 
   });
+}
+
+function meshPartWithTolerance(
+  part: WorldFramePart,
+  options?: ExportMeshToleranceOptions,
+): PartStlExport {
+  const requested = options?.tolerance;
+  const initialDeflection = requested === undefined
+    ? exportMeshDeflection(options)
+    : exportMeshDeflection({ angularToleranceDeg: options?.angularToleranceDeg });
+  let mesh = meshShapeForExport(part.shape.getReplicadShape(), initialDeflection);
+  let bytes = partStlBytes(part.shape, mesh);
+  let mesh_deviation = requested === undefined
+    ? undefined
+    : measureBrepSurfaceDeviationFromBinaryStl([part.shape.getReplicadShape()], bytes, requested);
+  if (mesh_deviation !== undefined && mesh_deviation.measured_max_mm > requested! * 1.05) {
+    mesh = meshShapeForExport(part.shape.getReplicadShape(), exportMeshDeflection(options));
+    bytes = partStlBytes(part.shape, mesh);
+    mesh_deviation = measureBrepSurfaceDeviationFromBinaryStl([part.shape.getReplicadShape()], bytes, requested!);
+  }
+  if (requested !== undefined) bytes = stampStlMeshTolerance(bytes, requested);
+  const report = verifyWatertight(mesh);
+  return {
+    name: part.name,
+    fileSafeName: fileSafePartName(part.name),
+    bytes,
+    report,
+    triangleCount: mesh.triangles.length / 3,
+    ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
+  };
 }

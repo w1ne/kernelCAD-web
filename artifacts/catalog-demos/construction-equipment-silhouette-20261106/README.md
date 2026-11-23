@@ -1,6 +1,6 @@
 # Construction equipment silhouette refinement — 2026-11-06
 
-**Demo:** [21-second source-to-preview workflow](construction-equipment-silhouette-refinement.mp4) · [poster](poster.png) · [video contact sheet](video-review/contact-sheet.png)
+**Demo:** [21-second source-to-preview workflow](construction-equipment-silhouette-refinement.mp4) · [poster](poster.png) · video contact sheet (`video-review/contact-sheet.png`, not tracked)
 
 The current quality gate already passed the whole 60-asset construction-equipment kit. This visual follow-up reviewed its rendered defaults and refined three existing models whose previews still read as a small set of large blocks. It adds no kit or asset IDs and does not count these edits as promotions from thin assets.
 
@@ -30,3 +30,12 @@ The checks script rebuilds all 60 kit previews and the catalog index, evaluates 
 Dated comparable workflow and product-form research is retained privately in kernelCAD-private. Public source and demo copy describe only these native kernelCAD assets, parameters, presets and renders.
 
 The branch is not deployed. The pages checked here are local generated output. These are stylized scene props; no product dimensions, operating simulation, equipment performance, safety, manufacturing suitability, deployed behavior or physical acceptance is established.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/construction-equipment-silhouette-20261106/capture_construction_equipment_demo.py`
+- video review: `python3 artifacts/catalog-demos/construction-equipment-silhouette-20261106/inspect_construction_equipment_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

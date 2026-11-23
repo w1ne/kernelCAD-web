@@ -13,7 +13,7 @@ kernelcad evaluate path/to/script.kcad.ts --json
 
 # Export to a file in the chosen format
 kernelcad export stl  path/to/script.kcad.ts -o /tmp/out.stl
-kernelcad export step path/to/script.kcad.ts -o /tmp/out.step
+kernelcad export step path/to/script.kcad.ts -o /tmp/out.step   # single shape: one STEP product named after the script file (bracket.kcad.ts gives bracket), with the shape colour when it has one; assembly: named bodies, each with its colour when it has one (a part without a colour is written without one, not as red); a part repeated with identical source content (same shape placed N times, or the same call in a loop) is one STEP product with N placed instances; a translate or rotate on the shape before part() is placement, so a project from import-step keeps its instances and its part names (no STEP root prefix); a hex colour is written as the same sRGB channels in STEP COLOUR_RGB (#3366cc is 0.2, 0.4, 0.8) and import-step reads a STEP colour as the same hex value
 kernelcad export dxf  path/to/script.kcad.ts -o /tmp/out.dxf   # flat part / cut list / sheet metal; laser / waterjet / CNC
 kernelcad export dxf  path/to/script.kcad.ts -o /tmp/plan.dxf --options '{"section":{"axis":"z","at":25}}'  # cross-section of any part at z = 25
 kernelcad export 3mf  path/to/script.kcad.ts -o /tmp/out.3mf   # slicer mesh with per-part colors

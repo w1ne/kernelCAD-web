@@ -27,3 +27,11 @@ The script writes six 1600 × 920 still frames and uses FFmpeg to create `garden
 - Replay or simulation: **not part of this asset wave**.
 - Public deployment: **not verified**; the PR is not merged.
 - Hardware build or physical acceptance: **not performed**.
+
+## Untracked generated outputs
+
+`frames/` is not tracked in git; it is regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/garden-wave-20261102/build_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

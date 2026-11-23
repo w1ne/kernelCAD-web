@@ -1,0 +1,9 @@
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/interior-table-lamp-materials-20261110/frames/01-before-after.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/interior-table-lamp-materials-20261110/frames/02-base-choice.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/interior-table-lamp-materials-20261110/frames/03-material-palettes.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/interior-table-lamp-materials-20261110/frames/04-local-verification.png'
+duration 3
+file '/home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/artifacts/catalog-demos/interior-table-lamp-materials-20261110/frames/04-local-verification.png'

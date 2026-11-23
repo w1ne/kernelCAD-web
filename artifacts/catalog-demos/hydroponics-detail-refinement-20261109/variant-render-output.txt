@@ -1,0 +1,6 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' artifacts/catalog-demos/hydroponics-detail-refinement-20261109/render_hydroponics_variants.ts
+(node:596299) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+rendered hydroponics/greenhouse-tunnel-bay from indexed highVisibility preset + {"sideCurtains":"closed"}
+rendered hydroponics/wall-mounted-co2-sensor from indexed weathered preset + {"display":"blind"}

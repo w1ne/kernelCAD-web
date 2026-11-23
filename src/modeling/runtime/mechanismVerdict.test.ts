@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { summarizeMechanism } from './mechanismVerdict';
+import { mergeCoverage, summarizeMechanism } from './mechanismVerdict';
 
 const coverage = { poses: 7, joints: 3, fastened: 2, sweep: true, physics: false, limitsChecked: 2, matesChecked: true, skipped: [] as string[] };
 
@@ -26,6 +26,24 @@ describe('summarizeMechanism', () => {
     expect(s.ignoredPairs).toEqual([['base-frame', 'platform']]);
   });
 
+  it('retains closed-loop mobility evidence in the structured verdict', () => {
+    const loopMobility = [{
+      assembly: 'scissor', pose: 'rest', loops: ['upper_cross'], coordinates: 4,
+      rank: 3, mobility: 1, gruebler: 1, redundantConstraints: 0, drivenDof: 1,
+      independent: ['lift'],
+    }];
+    const summary = summarizeMechanism({ mechanism: 'real', failures: [], coverage: { ...coverage, loopMobility } });
+
+    expect(summary.loopMobility).toEqual(loopMobility);
+    expect(mergeCoverage([
+      { ...coverage, loopMobility },
+      { ...coverage, loopMobility: [{ ...loopMobility[0], pose: 'max' }] },
+    ])?.loopMobility).toEqual([
+      loopMobility[0],
+      { ...loopMobility[0], pose: 'max' },
+    ]);
+  });
+
   it('keeps a real verdict ok but names the joint ranges it could not check', () => {
     const skipped = ["joint 'slide' offset has no limits, range not checked", "joint 'elbow' rotation has no limits, range not checked"];
     const s = summarizeMechanism({ mechanism: 'real', failures: [], coverage: { ...coverage, skipped } });
@@ -43,6 +61,16 @@ describe('summarizeMechanism', () => {
     expect(s.maxLevel).toBe('warning');
     expect(s.statement).toMatch(/^Motion not checked: collision sweep .* work 600 is over the budget 300\. Do not call this mechanism working\.$/);
     expect(s.checked).toEqual([]);
+  });
+
+  it('describes a zero sweep budget as a forced skip', () => {
+    const budget = {
+      target: 'export-occt', code: 'mechanism.unverified-budget-exceeded', severity: 'warn',
+      message: 'The articulated BREP pose-sweep was SKIPPED: sweepBudget is 0 (forced skip) (2 parts ...)', hint: 'h',
+    } as CompilerDiagnostic;
+    const s = summarizeMechanism({ mechanism: 'unverified', failures: [budget], coverage: { ...coverage, sweep: false } });
+    expect(s.skipped).toContain('collision sweep across the joint travel skipped: sweepBudget is 0 (forced skip)');
+    expect(s.statement).toContain('sweepBudget is 0 (forced skip)');
   });
 
   it('names declared ignore pairs when a collision sweep is unverified', () => {
@@ -76,6 +104,20 @@ describe('summarizeMechanism', () => {
     expect(s.failures).toEqual([]);
   });
 
+  it('names unavailable rest-pose continuity in an unverified summary', () => {
+    const unknown = {
+      target: 'export-occt', code: 'mechanism.joint-mesh-unverified', severity: 'warn',
+      message: "Joint 'select' parent body 'parent': rest-pose continuity could not be measured because both measurement paths failed.",
+      hint: 'h', details: { mateName: 'select', partName: 'parent', side: 'parent' },
+    } as CompilerDiagnostic;
+    const s = summarizeMechanism({ mechanism: 'unverified', failures: [unknown], coverage });
+    expect(s.verdict).toBe('unverified');
+    expect(s.maxLevel).toBe('warning');
+    expect(s.skipped).toContain("rest-pose joint continuity could not be measured at 'select' on 'parent'");
+    expect(s.statement).toMatch(/^Motion not checked: rest-pose joint continuity could not be measured at 'select' on 'parent'\. Do not call this mechanism working\.$/);
+    expect(s.failures).toEqual([]);
+  });
+
   it('names the joint of a broken verdict', () => {
     const d = {
       target: 'export-occt', code: 'mechanism.motion-on-fixed-joint', severity: 'error',
@@ -90,5 +132,21 @@ describe('summarizeMechanism', () => {
     expect(s.failures).toEqual([{ code: d.code, reason: d.message, joint: 'shoulder' }]);
     expect(s.maxLevel).toBe('error');
     expect(s.ignoredPairs).toEqual([['base-frame', 'platform']]);
+  });
+
+  it('keeps closed-loop and joint names in a broken verdict failure', () => {
+    const diagnostic = {
+      target: 'export-occt', code: 'kinematic.loop.lockup', severity: 'error',
+      message: 'The loop cannot close at this pose.', hint: 'Limit the driven range.',
+      details: { loop: 'coupler_rocker', joint: 'rocker_ground' },
+    } as CompilerDiagnostic;
+    const summary = summarizeMechanism({ mechanism: 'broken', failures: [diagnostic], coverage });
+
+    expect(summary.failures).toEqual([{
+      code: diagnostic.code,
+      reason: diagnostic.message,
+      joint: 'rocker_ground',
+      loop: 'coupler_rocker',
+    }]);
   });
 });

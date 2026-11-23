@@ -35,7 +35,9 @@ export type DiagnosticGroup =
 
   | 'collab'
 
-  | 'cfd';
+  | 'cfd'
+
+  | 'flight';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 

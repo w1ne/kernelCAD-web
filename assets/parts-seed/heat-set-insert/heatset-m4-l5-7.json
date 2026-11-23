@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "partId": "heatset-m4-l5-7",
+  "family": "heat-set-insert",
+  "connectors": [
+    {
+      "name": "mating-face",
+      "type": "frame",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ]
+    },
+    {
+      "name": "top-face",
+      "type": "frame",
+      "origin": [
+        0,
+        0,
+        5.7
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "inner-bore",
+      "type": "axis",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "license": "MIT",
+  "attribution": null,
+  "generatedAt": "2026-10-25T09:27:16.719Z"
+}

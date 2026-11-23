@@ -17,9 +17,19 @@ export interface SceneBackendPart {
    *  so glass crystals, polished metals, sheen fabrics survive
    *  `assembly.part(name, shape)`. */
   readonly material?: PBRMaterial;
+  /** Finishes of differently finished `union()` members, by face index
+   *  (replicad `shape.faces` order). Faces not listed take `material` /
+   *  `color`. See `memberMaterialsByFace`. */
+  readonly materialByFaceIndex?: Readonly<Record<number, PBRMaterial>>;
   /** Engineering-material name from `arm.part(..., { material })` (e.g.
    *  `pla`). Print exporters (3MF) use it as the named base material. */
   readonly materialName?: string;
+  /** Provenance for repeated parts: `shape` is the source shape `sourceId`
+   *  moved by the rigid `placement`. Parts with the same `sourceId` share
+   *  geometry, so exporters with a product structure (STEP) can write one
+   *  product and one placed instance per part. Absent when the source is
+   *  unknown. */
+  readonly prototype?: { readonly sourceId: string; readonly placement: Transform };
 }
 
 export interface SceneBackend {

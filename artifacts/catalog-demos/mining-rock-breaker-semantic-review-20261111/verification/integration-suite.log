@@ -1,0 +1,7 @@
+Command: npx vitest run tests/integration/catalog/
+Result: exit code 0
+Test files: 14 passed (14)
+Tests: 29 passed (29)
+Catalog freshness test: every catalog source builds and exports within triangle budget; committed index is fresh
+Start: 2026-11-11 02:16:01
+Duration: 512.85s

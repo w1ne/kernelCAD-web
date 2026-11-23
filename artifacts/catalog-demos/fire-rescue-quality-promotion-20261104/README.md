@@ -39,3 +39,12 @@ parameters, presets, mesh budgets, lint, catalog checks and pages do not
 establish apparatus specifications, fireground simulation, PPE certification,
 operator safety, regulatory compliance, physical fabrication or hardware
 acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/fire-rescue-quality-promotion-20261104/capture_fire_rescue_promotion_demo.py`
+- video review: `python3 artifacts/catalog-demos/fire-rescue-quality-promotion-20261104/inspect_fire_rescue_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

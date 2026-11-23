@@ -1,0 +1,53 @@
+{
+  "generatedAtUtc": "2026-11-11T13:06:18.190285+00:00",
+  "scope": "local CAD validation through Vitest and OCCT; no deployment or hardware acceptance",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "tests/integration/examples/mountingPlateEdgePicks.test.ts",
+    "src/kernel/naming/selectionDrift.test.ts",
+    "src/kernel/naming/queryEdgeLineage.test.ts",
+    "src/kernel/backends/occt/edgeIdentity.test.ts",
+    "--reporter=verbose"
+  ],
+  "exitCode": 0,
+  "testFilesPassed": 4,
+  "testsPassed": 19,
+  "vitestDuration": "4.77s (transform 3.51s, setup 355ms, import 3.95s, tests 1.71s, environment 0ms)",
+  "testOutputSha256": "12782002f4d7db52e16901d6fbcc6d0a93445a038ff634b3aafc5c970f7d8d16",
+  "sourceSha256": "851380b6e67c5ce8be9f5e1f955d7b3fcb08493f2d13e57a0a3ddbd1579b1ec6",
+  "integrationTestSha256": "59fffd96a9d3332a1dd68cc4da6a400114e2d275c93c6c197843a9d64a621744",
+  "videoSettings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "codec": "H.264 libx264",
+    "crf": 25,
+    "audio": "none",
+    "sceneSeconds": [
+      3,
+      4,
+      4,
+      3
+    ]
+  },
+  "videoSha256": "3b696f2d5c6a3b904f19d1ce4252f430239d2c02619a03e43e99b67aaf0065fc",
+  "fullDecodeExitCode": 0,
+  "ffprobe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "avg_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "14.000000",
+      "size": "169063"
+    }
+  }
+}

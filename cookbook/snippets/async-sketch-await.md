@@ -9,7 +9,7 @@ keywords:
   - await sectionSketch
   - promise sketch extrude
   - missing await
-when_to_use: You called shape.sectionSketch(...), .faceSketch(...), or .silhouette(...) and chained a Sketch method (.extrude, .revolve, .sweep, .loft, .reflect) directly on the result. All three producers are async and return Promise<Sketch> — chaining without awaiting throws feature.async-result.missing-await instead of silently doing the wrong thing.
+when_to_use: You called shape.sectionSketch(...), .faceSketch(...), or .silhouette(...) and chained a Sketch method (.extrude, .revolve, .sweep, .loft, .reflect) directly on the result. Sketch.offset(...) and the sketch booleans Sketch.union / .subtract / .intersect are async in the same way. These producers are async and return Promise<Sketch> — chaining without awaiting throws feature.async-result.missing-await instead of silently doing the wrong thing.
 ---
 
 ```typescript

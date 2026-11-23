@@ -1,0 +1,574 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-11-20T19:46:56.415423+00:00",
+  "status": "SOURCE_EXPORT_AND_VISUAL_EVIDENCE_COMPLETE_PUBLICATION_CI_NOT_INCLUDED",
+  "asset": {
+    "id": "hydroponic-grow-rack",
+    "kit": "hydroponics",
+    "source": "catalog/kits/hydroponics/hydroponic-grow-rack.kcad.ts",
+    "sourceSha256": "2c24214bccb08bee9912851fd4aa869dfbcc41b1561f0826cb8eb065cc6ab37c",
+    "triangleBudget": 8000,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.7,
+        "max": 1.3,
+        "step": 0.05
+      },
+      {
+        "name": "frame",
+        "type": "color",
+        "default": "#3a6f9e",
+        "label": "Rack frame (powder-coated steel)"
+      },
+      {
+        "name": "gutters",
+        "type": "color",
+        "default": "#f0f0ea",
+        "label": "NFT gutters (PVC)"
+      },
+      {
+        "name": "foliage",
+        "type": "color",
+        "default": "#86bb4c",
+        "label": "Crop foliage"
+      },
+      {
+        "name": "lights",
+        "type": "color",
+        "default": "#f6f2ff",
+        "label": "LED grow lights (diffuser glow)"
+      },
+      {
+        "name": "crop",
+        "type": "choice",
+        "default": "lettuce",
+        "label": "Crop in the gutters",
+        "choices": [
+          "lettuce",
+          "microgreens",
+          "empty"
+        ]
+      }
+    ],
+    "presets": {
+      "lettuce": {
+        "frame": "#3a6f9e",
+        "gutters": "#f0f0ea",
+        "foliage": "#86bb4c",
+        "lights": "#f6f2ff",
+        "crop": "lettuce"
+      },
+      "basil": {
+        "frame": "#3a6f9e",
+        "gutters": "#f0f0ea",
+        "foliage": "#3f8a34",
+        "lights": "#f6f2ff"
+      },
+      "purpleLight": {
+        "frame": "#2e3236",
+        "gutters": "#e8e8e2",
+        "foliage": "#7aa848",
+        "lights": "#d982e0"
+      },
+      "weathered": {
+        "frame": "#5f6e78",
+        "gutters": "#d4d0c2",
+        "foliage": "#93a65a",
+        "lights": "#e8e2d0"
+      }
+    },
+    "defaultStats": {
+      "triangles": 7832,
+      "sizeM": [
+        2.98,
+        2.1,
+        0.88
+      ],
+      "minUpM": 0,
+      "materials": 1
+    }
+  },
+  "changes": [
+    "The gutters have an open U section.",
+    "Each lid uses an extruded planar annulus with a continuous planting slot.",
+    "Shortened knee braces clear the gutters while retaining contact with their frame members.",
+    "Middle uprights are moved outward to clear the crop."
+  ],
+  "publicBaseCommit": "a5f4e00089c4e08e092b393a06ac656194712de5",
+  "acceptedCandidateCommit": "e7f4e3e2da57111bd622a2479b821bdd5f7166b4",
+  "defaultAssetRecord": {
+    "returnedAssetExactExceptExistingPreview": true,
+    "preview": "/assets/hydroponics-hydroponic-grow-rack.png",
+    "catalogRows": 2402,
+    "otherRowsPreserved": 2401,
+    "changedFields": [
+      "description",
+      "sourceSha256",
+      "stats"
+    ],
+    "indexBeforeSha256": "afac9d0da1807d4e89399cf1ca0e8481f7350e354327da7f5636cb0fe4b5a830",
+    "indexAfterSha256": "29ada36d74c1fa8c506dfe4cce7ffbc66f01bec12bab7a471c4e6ae77d9386e8"
+  },
+  "native": {
+    "scope": "One accepted public matrix: exact default source and nine literal-source variants. This is not retained-handle editing or live Studio rendering. The native input is frozen independently of the later public branch union.",
+    "bindingHash": "276b2d1e3e6631d5e624cbadafcdef110029f9fde13daef614ae1454eca471d7",
+    "states": [
+      {
+        "id": "grow-rack.default",
+        "values": {},
+        "status": "clean_pass",
+        "evaluatedSourceSha256": "2c24214bccb08bee9912851fd4aa869dfbcc41b1561f0826cb8eb065cc6ab37c",
+        "glbSha256": "f4d810982b88c6016d203f4f49a05aa68d050f9e5e4bd5f6c04c708a74bf39d8",
+        "glbBytes": 1080304,
+        "parts": 272,
+        "triangles": 7832,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -1360,
+            -440,
+            -9.769962616701378e-14
+          ],
+          "max": [
+            1620,
+            440,
+            2100
+          ]
+        },
+        "pointWitnesses": 864,
+        "headChecks": 108,
+        "colorChecks": 4,
+        "negativeControls": 7,
+        "peakSampledRssMiB": 451,
+        "elapsedMs": 18837
+      },
+      {
+        "id": "grow-rack.lettuce.scale-0.7",
+        "values": {
+          "crop": "lettuce",
+          "scale": 0.7
+        },
+        "status": "clean_pass",
+        "evaluatedSourceSha256": "b11df4770fada1eea437ec0b4c43ce45a03c22f0fd9427e2b684c2c256bfc40a",
+        "glbSha256": "23622316abeedc8f8cf29306ef119656ff578d35a52e717eb1ad2e071c218cff",
+        "glbBytes": 1090348,
+        "parts": 272,
+        "triangles": 7832,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -952.0000000000001,
+            -308,
+            -6.838973831690964e-14
+          ],
+          "max": [
+            1134.0000000000002,
+            308,
+            1470
+          ]
+        },
+        "pointWitnesses": 864,
+        "headChecks": 108,
+        "colorChecks": 4,
+        "negativeControls": 0,
+        "peakSampledRssMiB": 461,
+        "elapsedMs": 23501
+      },
+      {
+        "id": "grow-rack.lettuce.scale-1.3",
+        "values": {
+          "crop": "lettuce",
+          "scale": 1.3
+        },
+        "status": "clean_pass",
+        "evaluatedSourceSha256": "28fb2cf4c6ba11b808e27a0ad15afe4f9e32d999e745cc3437feb2f1ee42a9f0",
+        "glbSha256": "cd44779335f149fab35f65aeeec9605269f88e80c1c9330aa26d9d0a48bb15d3",
+        "glbBytes": 1090764,
+        "parts": 272,
+        "triangles": 7832,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -1768,
+            -572.0000000000001,
+            -1.2700951401711793e-13
+          ],
+          "max": [
+            2106,
+            572.0000000000001,
+            2730
+          ]
+        },
+        "pointWitnesses": 864,
+        "headChecks": 108,
+        "colorChecks": 4,
+        "negativeControls": 0,
+        "peakSampledRssMiB": 447,
+        "elapsedMs": 12495
+      },
+      {
+        "id": "grow-rack.empty.scale-0.7",
+        "values": {
+          "crop": "empty",
+          "scale": 0.7
+        },
+        "status": "clean_pass",
+        "evaluatedSourceSha256": "337768c53e6f6f106fcfd6bff7bf37dd53275377ea12e49f6743211ba8a5097b",
+        "glbSha256": "cfb0d61f074ed6eafef66c3d09a3db72368dbf7fcf5bb5eca19f4e8c851521a9",
+        "glbBytes": 852660,
+        "parts": 272,
+        "triangles": 5672,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -952.0000000000001,
+            -308,
+            -6.838973831690964e-14
+          ],
+          "max": [
+            1134.0000000000002,
+            308,
+            1470
+          ]
+        },
+        "pointWitnesses": 648,
+        "headChecks": 0,
+        "colorChecks": 3,
+        "negativeControls": 0,
+        "peakSampledRssMiB": 393,
+        "elapsedMs": 6463
+      },
+      {
+        "id": "grow-rack.empty.scale-1",
+        "values": {
+          "crop": "empty",
+          "scale": 1
+        },
+        "status": "clean_pass",
+        "evaluatedSourceSha256": "4e953de79eb19b3a9c91e08b0f4be8103c0418863821eb44218f72835abfba93",
+        "glbSha256": "de57c361302bd60b7a8e59786edac13c96a4e0c4ccb3e23066c4b5dc78c6625a",
+        "glbBytes": 840960,
+        "parts": 272,
+        "triangles": 5672,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -1360,
+            -440,
+            -9.769962616701378e-14
+          ],
+          "max": [
+            1620,
+            440,
+            2100
+          ]
+        },
+        "pointWitnesses": 648,
+        "headChecks": 0,
+        "colorChecks": 3,
+        "negativeControls": 0,
+        "peakSampledRssMiB": 416,
+        "elapsedMs": 7124
+      },
+      {
+        "id": "grow-rack.empty.scale-1.3",
+        "values": {
+          "crop": "empty",
+          "scale": 1.3
+        },
+        "status": "clean_pass",
+        "evaluatedSourceSha256": "2da3d0499ef617a06d37daabb31c722efae21658dba80e65b2976553262f8551",
+        "glbSha256": "98eaa96cb217cbeea5f98f69aa15465d8702706257ea0024d91b0a29bf99d49f",
+        "glbBytes": 852892,
+        "parts": 272,
+        "triangles": 5672,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -1768,
+            -572.0000000000001,
+            -1.2700951401711793e-13
+          ],
+          "max": [
+            2106,
+            572.0000000000001,
+            2730
+          ]
+        },
+        "pointWitnesses": 648,
+        "headChecks": 0,
+        "colorChecks": 3,
+        "negativeControls": 0,
+        "peakSampledRssMiB": 419,
+        "elapsedMs": 5132
+      },
+      {
+        "id": "grow-rack.microgreens.scale-0.7",
+        "values": {
+          "crop": "microgreens",
+          "scale": 0.7
+        },
+        "status": "clean_pass",
+        "evaluatedSourceSha256": "6bd9479be066931349a0a62f00c937d0b6e1a2e30d0c9580c4d9d0905d363b79",
+        "glbSha256": "1fcb4660e35da7427c88bb1ee90dae1df65e22841c049ba0568f31484a9577a1",
+        "glbBytes": 553624,
+        "parts": 224,
+        "triangles": 3368,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -952.0000000000001,
+            -308,
+            -6.838973831690964e-14
+          ],
+          "max": [
+            1134.0000000000002,
+            308,
+            1470
+          ]
+        },
+        "pointWitnesses": 648,
+        "headChecks": 0,
+        "colorChecks": 4,
+        "negativeControls": 0,
+        "peakSampledRssMiB": 385,
+        "elapsedMs": 5623
+      },
+      {
+        "id": "grow-rack.microgreens.scale-1",
+        "values": {
+          "crop": "microgreens",
+          "scale": 1
+        },
+        "status": "clean_pass",
+        "evaluatedSourceSha256": "e925bca6177ac50eb7e16574ffbfbc6a040327636a145772d8120a73404fa053",
+        "glbSha256": "66e345d0469788988db37a5fd9765ebf98fad237691d72f126a3fddbd7a97ecb",
+        "glbBytes": 547280,
+        "parts": 224,
+        "triangles": 3368,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -1360,
+            -440,
+            -9.769962616701378e-14
+          ],
+          "max": [
+            1620,
+            440,
+            2100
+          ]
+        },
+        "pointWitnesses": 648,
+        "headChecks": 0,
+        "colorChecks": 4,
+        "negativeControls": 0,
+        "peakSampledRssMiB": 409,
+        "elapsedMs": 4914
+      },
+      {
+        "id": "grow-rack.microgreens.scale-1.3",
+        "values": {
+          "crop": "microgreens",
+          "scale": 1.3
+        },
+        "status": "clean_pass",
+        "evaluatedSourceSha256": "18866f9e013d2173cad7324a0f77ce998ab2446287646487abafc2eebf8a06c9",
+        "glbSha256": "c7505e25a193c4cb8a8f43efeb8e36125d0ed5f66b0f14611528187eacee0577",
+        "glbBytes": 554028,
+        "parts": 224,
+        "triangles": 3368,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -1768,
+            -572.0000000000001,
+            -1.2700951401711793e-13
+          ],
+          "max": [
+            2106,
+            572.0000000000001,
+            2730
+          ]
+        },
+        "pointWitnesses": 648,
+        "headChecks": 0,
+        "colorChecks": 4,
+        "negativeControls": 0,
+        "peakSampledRssMiB": 414,
+        "elapsedMs": 7808
+      },
+      {
+        "id": "grow-rack.four-colors",
+        "values": {
+          "frame": "#a3476f",
+          "gutters": "#4a9fc2",
+          "foliage": "#b7e154",
+          "lights": "#e5742a",
+          "crop": "lettuce",
+          "scale": 1
+        },
+        "status": "clean_pass",
+        "evaluatedSourceSha256": "daeb5fe02b30774bf67ddb045769412a9288139edc389a98b44b12fa64989a58",
+        "glbSha256": "b43df365d4276925c08ab9ec4d2bbd2e983694e1ba7c376b0b63c0d449089aea",
+        "glbBytes": 1080680,
+        "parts": 272,
+        "triangles": 7832,
+        "zeroAreaTriangles": 0,
+        "boundsMm": {
+          "min": [
+            -1360,
+            -440,
+            -9.769962616701378e-14
+          ],
+          "max": [
+            1620,
+            440,
+            2100
+          ]
+        },
+        "pointWitnesses": 864,
+        "headChecks": 108,
+        "colorChecks": 4,
+        "negativeControls": 0,
+        "peakSampledRssMiB": 432,
+        "elapsedMs": 6375
+      }
+    ],
+    "cleanStates": 10,
+    "pointWitnesses": 7344,
+    "headChecks": 432,
+    "colorChecks": 37,
+    "negativeControls": [
+      "missing-head-rejected",
+      "displaced-head-rejected",
+      "zero-area-triangle-rejected",
+      "solid-lid-slot-and-volume-rejected",
+      "solid-gutter-cavity-and-volume-rejected",
+      "detached-brace-both-joints-rejected",
+      "lowered-head-slot-interference-rejected"
+    ],
+    "hardGuardTotals": {
+      "kills.memory": 0,
+      "kills.time": 0,
+      "kills.crash": 0,
+      "kills.oom": 0,
+      "kills.cancelled": 0,
+      "budgetStops.memory": 0,
+      "budgetStops.time": 0,
+      "budgetStops.timeKilled": 0,
+      "budgetStops.retried": 0,
+      "recycles": 0,
+      "idleRecycles": 0
+    },
+    "ordinaryFreshStarts": 9,
+    "retry": false,
+    "guardChanges": false,
+    "postReplyObservationMs": 2000,
+    "recordedProcessCleanup": {
+      "pids": 13,
+      "remaining": 0
+    },
+    "maximumSampledRssMiB": 461
+  },
+  "geometryContract": {
+    "validator": "tests/integration/catalog/hydroponicGrowRackGeometry.ts",
+    "sourceContactTests": "tests/unit/catalog/hydroponicGrowRackContacts.test.ts",
+    "planarLidTests": "tests/unit/catalog/hydroponicGrowRackPlanarLids.test.ts",
+    "pointCoverage": [
+      "Gutter floor, side walls and open cavities.",
+      "Lid material, continuous slot void and all planting stations.",
+      "Knee-brace shared material with both frame members and separation from the gutter/lid.",
+      "Middle-upright and crop bounds."
+    ],
+    "sourceTestsAccepted": 45,
+    "sourceTestScope": "The exact nine source/test blobs passed pure validation before publication; final public-branch CI is a separate gate."
+  },
+  "parameterScope": {
+    "controls": 6,
+    "presets": 4,
+    "testedScale": [
+      0.7,
+      1,
+      1.3
+    ],
+    "testedCrop": [
+      "lettuce",
+      "microgreens",
+      "empty"
+    ],
+    "testedColorControls": [
+      "frame",
+      "gutters",
+      "foliage",
+      "lights"
+    ],
+    "engineeringDimensionControls": "No independent width, tier count or station count controls."
+  },
+  "reviewEvidenceSha256": {
+    "root-source-union-review.json": "de790e0a9fbe728d04f3601ec7de1eef03873e10bc3564397d90ee98adf2fa8d",
+    "root-source-union-v2-review.json": "db50cf01bc78b850ece44afb5d52c2d027073048c933660a19d2dd9d2dc6f3a5",
+    "root-visual-review.json": "ae0cb19a458af8f8c53ec3c9b9c1073cc94bec1a02066ad41f7d85ef1c7fec12",
+    "lane-c/grow-rack-planar-lids/native-v5-02/root-postflight-review.json": "72fb7bea33e054d9fde6843713a55dc54cd9a0c955175ec316cd8f4f461a366e",
+    "lane-c/grow-rack-planar-lids/native-v5-02/final-accounting.json": "2507d1ef5a8c138fbf48007592dbc17a70ab6940b16ab0307b6910276a2af544",
+    "release-review/grow-planar-publication/visuals-default-01/visual-inspection.json": "1e8dd534b43a43340651d4caab2a85e149b94668de873fd8b8a44e19d1452bc4",
+    "lane-c/grow-rack-planar-lids/visual-variants-01/visual-inspection.json": "8eda961a02239d129f72a53a480c5aa3c98631bd4472a891073afbaed96da875"
+  },
+  "artifacts": [
+    {
+      "path": "canonical-preview.png",
+      "sha256": "230070c18ea94fdf585c130d92825c871b969b8de3b3536ea145277cc936f997",
+      "bytes": 142964
+    },
+    {
+      "path": "capture-settings.json",
+      "sha256": "b7a9342313258137557bbbfb364783eb786fe4dbd5d42c9ffc7e76053cfabb9f",
+      "bytes": 5977
+    },
+    {
+      "path": "decoded-orbit.webp",
+      "sha256": "ec5b20ef54729ec52de352ddd9f48655e4e23fc67cad5ac9426ec3b8f9190e31",
+      "bytes": 83760
+    },
+    {
+      "path": "default-views.webp",
+      "sha256": "bc7ad88f58520190cac7ca1adabd308c274eaf277baef89fa48d1f7031fc855b",
+      "bytes": 89904
+    },
+    {
+      "path": "default.glb",
+      "sha256": "f4d810982b88c6016d203f4f49a05aa68d050f9e5e4bd5f6c04c708a74bf39d8",
+      "bytes": 1080304
+    },
+    {
+      "path": "geometry-details.webp",
+      "sha256": "d57157720ed6417ecbc65cec56a1b31feb0bdeb29931e0e622f211194153d84e",
+      "bytes": 88172
+    },
+    {
+      "path": "grow-rack-orbit.mp4",
+      "sha256": "ad9b9d9fa127132ba026c54fc5e3dc46d6bb34777138b096e617fa2c99fc2b8f",
+      "bytes": 710381
+    },
+    {
+      "path": "parameter-states.webp",
+      "sha256": "115ce5f32f37d76a60f6f561d403a62d319a412c3270b24dcac097ce22117c03",
+      "bytes": 191568
+    },
+    {
+      "path": "visual-inspection.json",
+      "sha256": "ef775feca5d0a9ad4f9a7735f20c0671f9fa4811d85d792c3db303da0346e2fb",
+      "bytes": 4102
+    }
+  ],
+  "limits": [
+    "Scene prop. Roots, net-cup interiors and connected fluid passages are omitted.",
+    "Structural capacity, hydraulic performance and manufacturing suitability are not established.",
+    "Existing mechanism diagnostics are not suppressed or treated as an acceptance result.",
+    "Software-rasterized saved GLBs and sampled decoded video frames do not establish live Studio WebGL behavior."
+  ]
+}

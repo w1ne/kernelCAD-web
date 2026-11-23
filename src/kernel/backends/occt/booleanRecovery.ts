@@ -91,6 +91,26 @@ export function volumeOf(oc: ReturnType<typeof getOC>, shape: unknown): number {
   }
 }
 
+/**
+ * Absolute volume integrated adaptively to a relative error of `eps`. The
+ * fixed-order {@link volumeOf} can be several percent off on lofted B-spline
+ * solids (a car-body loft read 8 % high), which is too coarse to compare two
+ * volumes that differ by a fraction of a percent. Slower: use it to confirm a
+ * suspect comparison, not on every boolean. NaN when OCCT cannot integrate it.
+ */
+export function accurateVolumeOf(oc: ReturnType<typeof getOC>, shape: unknown, eps = 1e-6): number {
+  const o = oc as OC;
+  const props = new o.GProp_GProps_1();
+  try {
+    o.BRepGProp.VolumeProperties_2(shape, props, eps, false, false);
+    return Math.abs(props.Mass());
+  } catch {
+    return Number.NaN;
+  } finally {
+    props.delete();
+  }
+}
+
 /** BRepCheck validity (topology + geometry). */
 export function isValidShape(oc: ReturnType<typeof getOC>, shape: unknown): boolean {
   const o = oc as OC;

@@ -68,6 +68,22 @@ prismSideY(points: [number, number][], y0: number, y1: number): Shape; // points
 prismFront(points: [number, number][], x0: number, x1: number): Shape; // points (Y, Z), spans x0..x1
 prismPlan(points: [number, number][], z0: number, z1: number): Shape;  // points (X, Y), spans z0..z1
 
+// Upright rib from an open XY centerline. The centerline is offset by half the
+// thickness on each side, extruded along +Z, then fused with the supplied base.
+// `startZ` is the rib bottom (default 0); make it overlap the base for a valid union.
+// Supports straight or non-self-intersecting open polylines. Sharp bends that
+// require a miter longer than 8 × half-thickness are rejected. Unknown option
+// keys (for example `z` for startZ) throw feature.invalid-args.
+rib(base: Shape, centerline: [number, number][], opts: {
+  thickness: number;
+  height: number;
+  startZ?: number;
+}): Shape;
+// Example: a 2 mm wall rising from a 40 × 30 × 10 plate. The 0.1 mm overlap
+// fuses the rib to the base instead of relying on tangent faces.
+const plate = box(40, 30, 10);
+return rib(plate, [[5, 15], [35, 15]], { thickness: 2, height: 20, startZ: 9.9 });
+
 // Path builder — chain moveTo / lineTo / arcs / .close() to get a Sketch. For
 // revolved geometry (washers, donut bodies, mug profiles, etc.) build a profile
 // via path() and call .revolve() on the resulting Sketch.
@@ -79,10 +95,40 @@ union(...shapes: Shape[]): Shape;
 // Inspectable mechanical assembly intent. Captures parts and joints as records.
 // Call .model() to return one fused/exportable Shape of all placed parts.
 assembly(name?: string): Assembly;
+// `arm.solvedModel(poses, { ignore: [['a', 'b']] })` exempts that symmetric
+// pair from overlap and rest-interpenetration diagnostics at the returned pose.
+// Mate-gap, joint-continuity and sampled joint-travel checks remain active.
+
+// External spur pair. Centre distance defaults to (m1·z1 + m2·z2)/2. `ratio`
+// is ω_driven/ω_driver and must be negative. The driven gear is turned so a
+// tooth space faces the driver. The assembly has revolute mates, a couple at
+// −z1/z2, and a gear-pair transmission. Default teeth are the involute from
+// spurGear. `await pair.toothInterference({ cycleSamples })` reports exact
+// BREP distance and common volume over sampled poses, refines beside the
+// minimum, and measures pitch-circle backlash. interferenceVolumeFloorMm3
+// is 0.001 mm³, a fixed absolute volume for every module and face width.
+// Overlap volume is the transverse area times the face width, and similar
+// teeth grow that area with the square of the module, so the same floor is
+// a larger share of a tooth on a fine module and a smaller share on a coarse
+// module or a wide face. A common volume strictly above that floor sets
+// anyInterference and sets minClearanceMm to 0. A smaller positive volume
+// does not. Zero-volume contact (common volume 0 and distance 0) sets
+// minClearanceMm to 0 while anyInterference stays false. anyInterference
+// and minClearanceMm aggregate those poses only
+// — they do not prove the gaps between samples. Geometry only, not strength. `await pair.withGeneratingCut({
+// samples })` is opt-in: a discrete union of the driver over one tooth,
+// repeated at tooth pitch. Its scallopMm is a chordal sagitta bound, not a
+// continuous generating cut. Example: examples/cookbook-parity/involute-spur-gear-pair.kcad.ts
+spurGearPair({
+  module, teeth, drivenTeeth?, ratio?, drivenModule?, pressureAngle?, faceWidth,
+  backlash?, phase?, centerDistance?, driverBore?, drivenBore?, name?,
+}): SpurGearPair;
 
 // Helix rail for Sketch.sweep. radius / pitch / turns / startAngle accept
 // Editable<number>; the rail remembers them, so a sweep along it follows param
 // changes and sweep(rail, { spine: 'helix' }) can build the exact helix.
+// axis is upper-case 'X' | 'Y' | 'Z'; any other key (there is no handedness
+// option) throws feature.invalid-args.
 helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }): [number, number, number][];
 
 // ISO metric threads (see "Threads" below). isoThread('M6') -> { spec: 'M6x1',
@@ -140,6 +186,46 @@ lib.fromSTL(path: string, opts?: {
   allowOpen?: boolean;    // accept a non-watertight mesh as an open shell
   maxTriangles?: number;  // cost cap (default 200000; import is ~0.45 ms/triangle)
 }): Promise<Shape>;
+
+// Core 3MF triangle mesh objects, including nested component instances made
+// from mesh leaves — imported as separate validated faceted B-rep solids.
+// Applies standard component/build-item transforms and converts the declared
+// model unit to mm. Faces remain planar facets; analytic surfaces and feature
+// history are not present. Required extensions, non-mesh resources,
+// multi-shell objects, open meshes and non-manifold meshes are refused.
+lib.from3MF(path: string, opts?: {
+  tolerance?: number;     // vertex-merge distance, mm (default 1e-6)
+  maxTriangles?: number;  // import cost cap (default 200000)
+}): Promise<Shape>;
+
+// ASCII DXF 2D profiles — returns Sketch[] ordered by descending enclosed
+// area so the caller can choose which regions are outlines, holes or parts.
+// LINE / ARC / CIRCLE / planar ELLIPSE / LWPOLYLINE / POLYLINE and closed,
+// planar DXF HATCH boundaries (polyline paths, or edge paths of line,
+// circular-arc, elliptic-arc and spline edges) are supported. A multi-path
+// HATCH returns each filled area as one sketch with its inner paths as holes.
+// Pattern styling is ignored; elliptic-arc edges that end off the ellipse
+// axes, fit-point-only spline edges, crossing and out-of-plane hatches are
+// refused.
+// Full ellipses use four exact rational NURBS segments; partial elliptical arcs
+// retain exact rational NURBS geometry and can join other profile edges.
+// Continuous, planar XY SPLINE entities retain their control points, knots and
+// rational weights; periodic and unclamped knot vectors are clamped by exact
+// knot insertion. A cubic SPLINE with fit points only is interpolated through
+// its fit points and end tangents (chord-length parameters); a closed one
+// without end tangents becomes a smooth (C2) periodic cubic. Nonplanar
+// ellipses, non-cubic fit-point-only, discontinuous and nonplanar SPLINE, and
+// closed SPLINE whose control net does not wrap, fail with a named diagnostic.
+// INSERT block references (nested, MINSERT grids) are placed with their base
+// point, insertion point, rotation and scale; an arc under a non-uniform
+// block scale becomes an exact rational elliptical arc. External-reference
+// blocks fail with a named diagnostic.
+// ARC, CIRCLE, LWPOLYLINE and POLYLINE with extrusion direction (0, 0, -1) are
+// mirrored from their object coordinates into world X; other directions fail.
+const profiles: Sketch[] = await lib.fromDXF('plate.dxf', { units: 'mm' });
+const [outline, ...holes] = profiles;
+let plate = outline.extrude(3);
+for (const hole of holes) plate = plate.subtract(hole.extrude(3));
 
 // Full-detail, display-only mesh import. This skips BRep sewing and does not simplify.
 // Rigid transforms, assembly placement and finish/color are supported; solid
@@ -230,6 +316,21 @@ animationView(spec: {
   }>;
   fps?: number;          // default 30
 }): AnimationViewHandle;
+//   3. Appearance tracks — a track may name a rendered object instead of a
+//      param and key its colour. Same atMs / ease / hold rules; each 8-bit
+//      sRGB component interpolates through the ease and rounds. Mix freely
+//      with param tracks, or use appearance tracks alone on a static model
+//      (capture then never re-solves the model and loads meshes once).
+//        { target: 'part-a', channel: 'emissive', keys: [
+//            { atMs: 0, value: '#000000' }, { atMs: 150, value: '#2bff88', ease: 'easeOut' } ] }
+//      `target` uses the render --focus/--hide name rules (feature id,
+//      assembly part name, display name; case-insensitive; * ? wildcards).
+//      `channel` is 'color' (base colour) or 'emissive' (self-lit; '#000000'
+//      = off). Values are '#rgb' / '#rrggbb'. A bad channel / colour / empty
+//      target throws `animation.keys.invalid`; two tracks on one target and
+//      channel throw `animation.track.duplicate-param`; a target that matches
+//      no rendered object refuses capture with `animation.target.unknown`.
+//      Example: examples/animation/led-strip-chase.kcad.ts.
 // Virtual record — display only. Every animated param MUST be declared
 // NUMERIC by a prior param() call; undeclared/non-numeric params, two tracks
 // on the same param, and malformed keys (empty tracks/keys, non-finite or
@@ -394,13 +495,11 @@ shape, not a copy.
 //   // Stand a part upright on the build plate:
 //   (await bracket.seatOnFloor());
 
-// Tag this shape with a render-time role color (geometry unchanged). Booleans drop
-// the color so identity lives at leaf parts: a `.color()` call applied to a
-// composed/unioned shape silently has NO effect on the underlying leaf parts —
-// each part must be colored BEFORE it enters a boolean. Coloring the post-union
-// root is a no-op; don't infer from a uniform-grey render that "renderer ignores
-// .color()". Tokens: 'servo' | 'gear' | 'beam' | 'shaft' | 'plate' | 'pin' |
-// 'frame' | 'tool'. Hex escape hatch: any '#rrggbb'.
+// Tag this shape with a render-time role color (geometry unchanged). Through
+// union() each member keeps its own color / finish on the faces it contributed;
+// a color on the union result covers every face; a bore wall or fillet blend
+// takes the color of the faces around it when they agree, else the body color. Tokens: 'servo' | 'gear' | 'beam' |
+// 'shaft' | 'plate' | 'pin' | 'frame' | 'tool'. Hex escape hatch: any '#rrggbb'.
 .color(name: 'servo' | 'gear' | 'beam' | 'shaft' | 'plate' | 'pin' | 'frame' | 'tool' | `#${string}`): Shape
 
 // Booleans (each returns a NEW Shape that captures a 'boolean' feature record):
@@ -411,7 +510,8 @@ shape, not a copy.
 // named intersection (A ∩ B), a_only (A − B) and b_only (B − A). A fragment
 // at or below 1e-6 mm³ is omitted, so disjoint operands return two parts.
 // keep 'intersection' | 'a_only' | 'b_only' returns that one Shape; an empty
-// request fails. subtract / intersect / union are unchanged. Face refs that
+// request fails. Any option key other than keep, or a non-object opts, throws
+// feature.invalid-args. subtract / intersect / union are unchanged. Face refs that
 // the cut splits stay ambiguous (feature.face-ref.ambiguous-after-split).
 // MCP: split_keep_parts.
 .split(other: Shape, opts?: { keep?: 'parts' | 'intersection' | 'a_only' | 'b_only' }): Scene | Shape
@@ -419,14 +519,26 @@ shape, not a copy.
 // Edge features:
 // Simple form — single radius applied to matching edges:
 .fillet(radius: number, edges?: EdgeSelector): Shape
+// No `edges` = every sharp edge. Coplanar seams a union left behind are merged
+// before a retry. Edges no radius builds on together with the rest are skipped,
+// the rest is rounded, and feature.edge-feature.unblendable-edges-skipped (warn)
+// lists them in details.skippedEdgeIds. An explicit selector still fails loudly.
 // Variable-radius form — one group per blend region:
 .fillet([{ edges: EdgeSelector, radius: number }, ...]): Shape
+// Tapered round: radius at each edge's low end (lower coordinate on the axis the
+// edge spans most), endRadius at its high end. Open edges only.
+.fillet(radius, edges, { endRadius: number }): Shape
 // Bevel edges (same selector shape as fillet):
 .chamfer(distance: number, edges?: EdgeSelector): Shape
 .chamfer([{ edges: EdgeSelector, distance: number }, ...]): Shape
+// Asymmetric bevel: `distance` on the reference face, plus distance2 OR angleDeg.
+// `face` defaults to the face that selected the edges; it must border every edge.
+.chamfer(distance, edges, { distance2?: number, angleDeg?: number, face?: FaceSelector }): Shape
 
 // Face features:
 .shell(thickness: number, { face: FaceSelector }): Shape  // face REQUIRED
+// Open several faces in one shell: a sleeve open at both ends.
+.shell(thickness: number, { face: FaceSelector[] }): Shape  // e.g. { face: ['top', 'bottom'] }
 // Direct face edit. Positive distance / an outward vector grows the solid.
 // OCCT only slides a planar face along its normal and rejects anything else
 // by name (`feature.face-edit.rejected`). A FaceQuery is a SET selector:
@@ -444,6 +556,8 @@ shape, not a copy.
 //   box(40, 30, 10).moveFaces(kc.q.face(kc.q.createdBy(plateId)), [0, 0, -1])
 // Draft — taper faces for mold release (Slice E). angleDeg: 0–90.
 // neutralPlane defaults to the selected face; pullDir defaults to face normal.
+// Any key other than face, neutralPlane and pullDir throws feature.invalid-args
+// (e.g. pullDirection is not pullDir).
 .draft(angleDeg: Editable<number>, opts: { face: FaceSelector | string; neutralPlane?: string; pullDir?: [number, number, number] }): Shape
 
 // Lattice infill (TPMS) — LAST step of a body chain; the result is a mesh solid.
@@ -464,6 +578,7 @@ shape, not a copy.
 .reflect(plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset: number }): Shape
 // Boolean union of the source and its reflection — produces a symmetric part:
 .mirror(plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset: number }): Shape
+// mirror and reflect reject any plane-object key other than plane and offset.
 
 // Mechanical patterns:
 .patternLinear({ count, direction, spacing }: { count: number; direction: [number, number, number]; spacing: number }): Shape
@@ -496,9 +611,22 @@ const plate = box(60, 40, 6)
 
 **Loads from motion.** `feaStudy({ loadsFrom: { motion, part } })` takes the worst sampled joint wrench from `kinematic.motionLoad` instead of a hand-typed load. `partLoads` ranks samples by a named proxy (section bending stress, else joint-moment magnitude); the study applies the selected force + moment as a statically equivalent remote load and records the pose in the summary and S2 ledger. `loads` and `loadsFrom` are mutually exclusive; a part with no sampled load throws at capture.
 
+**Rocket flight study.** `arm.flightStudy({ motor, aero, launch, recovery, minStabilityCal })` (or `shape.flightStudy` for a one-solid rocket) declares a model-rocket flight. Mass and CG come from the parts; name the motor stand-in with `motor.part` (its mass is replaced by `totalMassKg`, propellant burns with impulse). Name `aero.nose.part` and `aero.fins: { count, part }` and the Barrowman CP comes from that geometry (root / tip chord, span, sweep, position); otherwise declare the dimensions in mm. `minStabilityCal` fails evaluate with `flight.stability.below-min`. `run_flight` returns apogee, max speed / acceleration, rail-exit speed, descent rate, a t/z/v/a/p_static series and an animationView track. The script must `return arm.model()`.
+
+```typescript
+arm.flightStudy({
+  motor: { thrustCurve: [[0, 0], [0.15, 30], [1.9, 12], [2.12, 0]], totalMassKg: 0.062, propellantKg: 0.03, part: 'motor' },
+  aero: { cd: 0.55, nose: { shape: 'ogive', part: 'nose' }, fins: { count: 3, part: 'fins' } },
+  launch: { railM: 1.5, siteAltitudeM: 120 },
+  recovery: [{ part: 'chute', cd: 1.5, diameterMm: 450, deploy: 'apogee+1', separates: ['nose'] }],
+  minStabilityCal: 1,
+});
+return arm.model();
+```
+
 ### Sketch methods
 
-A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape` (or another `Sketch` for `reflect`).
+A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape` (or another `Sketch` for `reflect`, `translate`, `rotate`, `scale`, `offset` and the 2D booleans).
 
 ```typescript
 // Extrude closed sketch normal to its plane by `depth` (mm; number or ParamRef).
@@ -507,11 +635,27 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // does not touch the origin changes its bounding box. Face-bound extrudes
 // (projectCurve output) reject a non-zero twist with feature.invalid-args,
 // as does any unknown option key.
-.extrude(depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape
+// taperDeg (deg; number or ParamRef, strictly inside -90..90) drafts the side
+// walls about the sketch plane: positive narrows the profile toward the far end
+// by depth*tan(taperDeg) per side, negative widens it. Not with twistAngle or a
+// face-bound sketch; a taper that closes the profile emits
+// feature.extrude.taper-failed. Example: drafted boss
+//   path().moveTo(-10,-10).lineTo(10,-10).lineTo(10,10).lineTo(-10,10).close().extrude(10, { taperDeg: 3 })
+// symmetric: true extrudes depth/2 to each side of the sketch plane (a
+// mid-plane extrude, z = -depth/2..depth/2); depth stays the total thickness.
+// Not with taperDeg, twistAngle or a face-bound sketch (feature.invalid-args).
+// Example: 8 mm link bar centred on z = 0
+//   path()...close().extrude(8, { symmetric: true })
+.extrude(depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number>; taperDeg?: Editable<number>; symmetric?: boolean }): Shape
 
 // Revolve around the Z axis (360 degrees unless angleDeg; number or ParamRef).
-// Profile coords are (radial-X, axial-Z); all x >= 0.
-.revolve(opts?: { angleDeg?: Editable<number> }): Shape
+// Profile coords are (radial-X, axial-Z); all x >= 0. A partial revolve
+// starts on the sketch plane (y = 0) and turns toward +Y. symmetric: true
+// spans angleDeg/2 to each side of the sketch plane (a mid-plane revolve);
+// angleDeg stays the total angle, and a full 360 revolve is unchanged.
+// Example: 90 degree pipe elbow with its end faces at +/-45 degrees
+//   path().circle(30, 0, 8).revolve({ angleDeg: 90, symmetric: true })
+.revolve(opts?: { angleDeg?: Editable<number>; faceLabels?: Record<string, CanonicalFace | FaceQuery>; symmetric?: boolean }): Shape
 
 // Sweep this profile along a 3D rail.
 // spine: 'polyline' (default) keeps real corners — pipe runs, L-bends;
@@ -531,6 +675,8 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // section: 'transverse' (spine 'helix' only): the profile is the cross-section
 //   PERPENDICULAR to the axis, sketch origin on the axis — a twisted extrusion that
 //   turns once per pitch (how threadedRod builds a whole rod without a boolean).
+// Any key other than frenet, transitionMode, spine, section and faceLabels throws
+// feature.invalid-args (e.g. transition: 'round' is not transitionMode).
 .sweep(rail: [number, number, number][], opts?: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round'; spine?: 'polyline' | 'smooth' | 'helix'; section?: 'axial' | 'transverse' }): Shape
 
 // Loft through one or more additional sections to produce a 3D solid.
@@ -539,8 +685,10 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // opts.spacing stacks sections on XY planes at z = 0, spacing, 2*spacing, ...;
 // of the rotation controls only twistDeg/twistCenter apply there (per-plane
 // rotationDeg requires opts.planes). opts.planes overrides with explicit
-// per-section placement and each entry may add rotationDeg. Unknown option
-// keys (top-level or per-plane) throw feature.invalid-args.
+// per-section placement and each entry may add rotationDeg. Every entry
+// needs plane ('XY' | 'YZ' | 'XZ', upper case unlike mirror's 'xy') and an
+// [x, y, z] origin. Unknown option keys (top-level or per-plane), a missing or
+// lower-case plane, and a missing origin throw feature.invalid-args.
 .loft(other: Sketch | Sketch[], opts?: {
   spacing?: Editable<number>;
   planes?: { plane: 'XY' | 'YZ' | 'XZ'; origin: [Editable<number>, Editable<number>, Editable<number>]; rotationDeg?: Editable<number> }[];
@@ -559,7 +707,57 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // symbolic: ParamRef coords (and a ParamRef offset) reflect to ParamRef
 // expressions, so the reflected sketch tracks param edits.
 .reflect(axis: 'x' | 'y' | { axis: 'x' | 'y'; offset: Editable<number> }): Sketch
+
+// Move, turn or uniformly resize this sketch in its own plane, returning a new
+// Sketch. Synchronous (no await). The source is unchanged, so one profile can
+// be placed several times. Every loop is transformed, holes included, and arcs
+// stay exact arcs. Calls chain in order: .rotate(90).translate(20, 0) turns
+// about the origin, then moves. rotate is counter-clockwise; center defaults
+// to the sketch origin [0, 0]. dx, dy, factor, center and ParamRef coordinates
+// stay symbolic. angleDeg must be a plain number (parameter expressions have
+// no sin/cos). factor must be > 0. A sketch.text sketch is refused: use its
+// position / rotation / size options.
+.translate(dx: Editable<number>, dy: Editable<number>): Sketch
+.rotate(angleDeg: number, center?: [Editable<number>, Editable<number>]): Sketch
+.scale(factor: Editable<number>, center?: [Editable<number>, Editable<number>]): Sketch
+
+// Parallel curve of this closed profile, `distance` mm away. ASYNC: await it.
+// The profile is the region inside the first loop and outside the hole loops.
+// distance > 0 grows the region (outline outward, holes smaller); distance < 0
+// shrinks it (outline inward, holes larger). Lines stay lines, arcs stay arcs.
+// corners: 'round' (default) joins an outward-moving corner with an arc of
+// radius |distance|; 'sharp' extends the neighbouring segments until they meet.
+.offset(distance: number, opts?: { corners?: 'round' | 'sharp' }): Promise<Sketch>
+
+// 2D booleans of closed profiles. ASYNC: await them. A profile is the region
+// inside its first loop and outside its hole loops. Lines stay lines, arcs
+// stay arcs, and a boundary shared by two profiles disappears.
+.union(other: Sketch | Sketch[]): Promise<Sketch>      // this plus every other profile
+.subtract(other: Sketch | Sketch[]): Promise<Sketch>   // this minus every other profile
+.intersect(other: Sketch | Sketch[]): Promise<Sketch>  // what this shares with every other profile
 ```
+
+**Offset a profile.** `offset` makes a wall, a clearance pocket or a groove from one outline, without a second hand-written path:
+
+```ts
+const outline = path().moveTo(0, 0).lineTo(60, 0).lineTo(60, 40).lineTo(0, 40).close();
+const cavity = await outline.offset(-2);                       // 2 mm wall all round
+const tray = outline.extrude(20).subtract(cavity.extrude(18).translate(0, 0, 2));
+```
+
+The offset is computed when the script runs. Thus `distance` and every coordinate of the source profile must be a plain number: a `param()` reference throws `feature.invalid-args`, because the result could not follow a later parameter edit. A spline segment also throws `feature.invalid-args`. A result that is not one profile is refused: `feature.sketch-offset.collapsed` when nothing is left (inset of half the narrowest width or more), `feature.sketch-offset.split` when a neck or gap closes, a hole reaches the boundary, or the result touches itself at exactly this distance. Use a smaller distance, or offset each region as its own sketch.
+
+**Combine profiles.** `union`, `subtract` and `intersect` build one outline from simple shapes, so you do not compute where a circle meets a line by hand:
+
+```ts
+const body = path().moveTo(-4, 0).lineTo(4, 0).lineTo(4, 14).lineTo(-4, 14).close();
+const keyhole = await body.union(path().circle(0, 18, 7));     // slot plus round head
+const plate = await path().moveTo(-15, -6).lineTo(15, -6).lineTo(15, 32).lineTo(-15, 32).close()
+  .subtract(keyhole);                                         // keyhole becomes a hole
+return plate.extrude(3);
+```
+
+The result is an ordinary sketch: extrude, revolve, loft, `offset` or combine it again. The boolean is computed when the script runs. Thus every coordinate of every profile must be a plain number: a `param()` reference throws `feature.invalid-args`, because the result could not follow a later parameter edit, and a spline segment also throws `feature.invalid-args`. For those profiles, extrude each sketch and combine the solids. A result that is not one outline with holes is refused: `feature.sketch-boolean.empty` when no area is left, `feature.sketch-boolean.split` when the result is several separate regions (a union of profiles that do not overlap, a subtract that cuts the profile in two) or touches itself at a point.
 
 **Twisted blades / staggered sections.** Two ways to twist a loft. `twistDeg` distributes an even total twist across the sections — first section at 0°, last section at `twistDeg`. A per-plane `planes[].rotationDeg` overrides the distributed angle for that section only (`rotationDeg ?? twistDeg * i / (N - 1)`). Both rotate in section space about `twistCenter` (default `[0, 0]` — the sketch-local origin of each section, NOT the 3D plane `origin` you passed in `planes`), which is how a turbine blade profile is rotated about its stacking axis. In non-rail lofts, sections built from NURBS path segments (`.spline` / `.nurbsSegment` / `.hermiteG2`) honor `plane`, `origin`, and rotation exactly like ordinary sections. The twist option name differs by operation: extrude twists with `twistAngle`, loft with `twistDeg`.
 
@@ -590,11 +788,13 @@ const blade = root.loft(tip, {
 .sagittaArc(x: Editable<number>, y: Editable<number>, sagitta: Editable<number>): PathBuilder  // Arc by chord + perpendicular bulge. Sign chooses side.
 .bulgeArc(x: Editable<number>, y: Editable<number>, bulge: Editable<number>): PathBuilder      // Arc by chord + DXF bulge factor (tan(angle/4)).
 .radiusArc(x: Editable<number>, y: Editable<number>, radius: Editable<number>): PathBuilder    // Arc by chord + explicit radius; sign chooses side.
-.smoothSpline(x: Editable<number>, y: Editable<number>): PathBuilder  // C1-smooth single-segment spline to (x, y); inherits start tangent.
-.spline(points: Array<[Editable<number>, Editable<number>]>, opts?: { tension?: Editable<number> }): PathBuilder    // Include current pen position as points[0]. Verify the resulting bounds: dense sharp turns can overshoot; use bounded piecewise Bezier curves for dimension-controlled silhouettes. See kernelcad-nurbs.
-.nurbsSegment(controlPoints: Array<[Editable<number>, Editable<number>]>, opts?: { degree?: number; weights?: number[]; knots?: number[] }): PathBuilder  // (Slice D) Explicit B-spline control polygon — controlPoints[0] must match current pen. See kernelcad-nurbs.
+.smoothSpline(x: Editable<number>, y: Editable<number>, opts?: { startTangent?: [Editable<number>, Editable<number>]; endTangent?: [Editable<number>, Editable<number>] }): PathBuilder  // C1-smooth single-segment spline to (x, y); inherits start tangent. Arrives along opts.endTangent (an [x, y] direction of travel); default is the sketch +X direction. opts.startTangent replaces the inherited direction. reflect / translate / rotate / scale keep the curve shape. Unknown option keys and zero-length tangents throw feature.invalid-args at capture.
+.spline(points: Array<[Editable<number>, Editable<number>]>, opts?: { tension?: Editable<number>; startTangent?: [Editable<number>, Editable<number>]; endTangent?: [Editable<number>, Editable<number>] }): PathBuilder    // Include current pen position as points[0]. Unknown option keys throw feature.invalid-args at capture. Verify the resulting bounds: dense sharp turns can overshoot; use bounded piecewise Bezier curves for dimension-controlled silhouettes. See kernelcad-nurbs.
+.nurbsSegment(controlPoints: Array<[Editable<number>, Editable<number>]>, opts?: { degree?: number; weights?: number[]; knots?: number[] }): PathBuilder  // (Slice D) Explicit B-spline control polygon — controlPoints[0] must match current pen; unknown option keys throw feature.invalid-args at capture. See kernelcad-nurbs.
 .bezierTo(c1: [Editable<number>, Editable<number>], c2: [Editable<number>, Editable<number>], end: [Editable<number>, Editable<number>]): PathBuilder  // Exact cubic Bezier (SVG C) from the pen.
 .quadraticTo(c: [Editable<number>, Editable<number>], end: [Editable<number>, Editable<number>]): PathBuilder  // Exact quadratic Bezier (SVG Q) from the pen.
+.ellipseArc(x: number, y: number, rx: number, ry: number, opts?: { rotationDeg?: number; largeArc?: boolean; clockwise?: boolean }): PathBuilder  // Exact elliptical arc (SVG A, Y up) from the pen. Default: the arc of 180° or less, counterclockwise. Plain numbers only. 2:1 tank head: path().moveTo(0, 0).lineTo(40, 0).ellipseArc(0, 20, 40, 20).close().revolve()
+.ellipse(cx: Editable<number>, cy: Editable<number>, rx: Editable<number>, ry: Editable<number>, opts?: { rotationDeg?: number }): Sketch  // Exact closed ellipse (area π·rx·ry). Terminal, like circle(). Sketch.offset, sketch booleans and cutout() do not take it; for an elliptical hole subtract path().ellipse(...).extrude(d).
 .hermiteG2(a: HermiteEndpoint2D, b: HermiteEndpoint2D): PathBuilder  // (Slice D) 2D quintic-Hermite G2 transition. See kernelcad-nurbs.
 .tangentCircle(entities: TangentEntity2D[], opts?: { radius?: Editable<number>; near?: [Editable<number>, Editable<number>] }): Sketch  // Circle TANGENT to other geometry. 2 entities + opts.radius = sketch-fillet; 3 entities, no radius = through-three. Terminal, like circle().
 .tangentLine(a: TangentEntity2D, b: TangentEntity2D, opts?: { near?: [Editable<number>, Editable<number>] }): PathBuilder  // Segment along the line tangent to two circles — the belt/pulley move. Both entities must be circles.
@@ -604,7 +804,7 @@ const blade = root.loft(tip, {
 
 `tangentCircle` / `tangentLine` take entities of the form `{ kind: 'line', from: [x,y], to: [x,y] }` (an INFINITE line; `from`->`to` sets direction) or `{ kind: 'circle', center: [x,y], radius }`, each with an optional `side: 'outside'` (default) `| 'enclosed' | 'enclosing' | 'unqualified'`. Points are not supported. These constructions have SEVERAL solutions (a radius-r circle tangent to two perpendicular lines has four, one per quadrant). `side` filters first, `opts.near: [x,y]` then picks the closest solution, and if more than one still survives the build FAILS with `sketch.tangency.ambiguous` listing every candidate rather than guessing. No such construction existing fails with `sketch.tangency.no-solution` naming the geometric reason.
 
-Every PathBuilder coord and scalar accepts `Editable<number>` (`number | ParamRef<number>`), so symbolic params survive into capture and the dispatcher's pre-resolve substitutes them at lower time. That includes `.circle(cx, cy, r, segments?)` (exact arcs by default; with `segments` each polygon vertex is captured as `cx + r·cos θ`, and `segments` stays a plain integer), `tangentCircle` / `tangentLine` entity coordinates and radii, and the `extrude` / `revolve` / `loft` / `reflect` scalars above. Capture-time checks read the param's current value, not a placeholder. Raw `sweep` rail arrays stay numeric; a rail from `helix(...)` is the parametric one. Build derived dimensions with the ParamRef arithmetic methods (`.add`, `.subtract`, `.multiply`, `.divide`, `.negate`, `.min`, `.max`, `.abs`, `.clamp`).
+Every PathBuilder coord and scalar accepts `Editable<number>` (`number | ParamRef<number>`), so symbolic params survive into capture and the dispatcher's pre-resolve substitutes them at lower time. That includes `.circle(cx, cy, r, segments?)` (exact arcs by default; with `segments` each polygon vertex is captured as `cx + r·cos θ`, and `segments` stays a plain integer), `.ellipse(cx, cy, rx, ry)` (its `rotationDeg` stays a plain number), `tangentCircle` / `tangentLine` entity coordinates and radii, and the `extrude` / `revolve` / `loft` / `reflect` scalars above. Capture-time checks read the param's current value, not a placeholder. The exception is `.ellipseArc(...)`: its centre is solved at capture, so it takes plain numbers only. Raw `sweep` rail arrays stay numeric; a rail from `helix(...)` is the parametric one. Build derived dimensions with the ParamRef arithmetic methods (`.add`, `.subtract`, `.multiply`, `.divide`, `.negate`, `.min`, `.max`, `.abs`, `.clamp`).
 
 ### 2D text (sketch.text)
 
@@ -670,7 +870,7 @@ Declare a label on a creating op via the `faceLabels` option. The value map acce
 **Canonical alias** — give a custom name to a canonical face:
 
 ```typescript
-box([10, 10, 5], { faceLabels: { lid: 'top', base: 'bottom' } })
+box(10, 10, 5, false, { faceLabels: { lid: 'top', base: 'bottom' } })
   .fillet(2, { face: 'lid' });
 ```
 

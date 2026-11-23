@@ -1,0 +1,15 @@
+{
+  "invalidCall": "sew([surface], { requireClosd: true })",
+  "error": {
+    "code": "feature.invalid-args",
+    "message": "sew(surfaces, opts): opts.requireClosd \u2014 got an unknown option 'requireClosd'; requires one of tolerance, requireClosed. Example: sew([surfaceA, surfaceB], { requireClosed: true })"
+  },
+  "sewRecordsBefore": 0,
+  "sewRecordsAfter": 0,
+  "correctedCall": "sew([surface], { tolerance: 0.01, requireClosed: true })",
+  "correctedRecord": {
+    "toleranceMm": 0.01,
+    "requireClosed": true
+  },
+  "scope": "local capture validation only; no geometry lowering"
+}

@@ -3,6 +3,7 @@
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { lookupSourceColor, lookupSourceMaterial } from '../../../../kernel/backends/occt/lookupSourceColor';
+import { memberMaterialsByFace } from '../../../../kernel/backends/occt/memberMaterials';
 import type { SceneBackend, SceneBackendPart } from '../../../../kernel/backends/sceneBackend';
 import type { RigConnector, RigMate, SolvedRigAssembly } from '../../../../kernel/export/rigHierarchy';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
@@ -10,6 +11,7 @@ import { KernelError } from '../../../../shared/intent/kernelError';
 import type { FeatureId, Param, Vec3, Vec3Param } from '../../../../shared/intent/types';
 import { Transform } from '../../../../shared/runtime/se3';
 import type { AssemblyJointStored, AssemblyPartStored } from '../../../capture/assembly';
+import type { VirtualJointRecord } from '../../../capture/assemblyTypes';
 import { forwardKinematics, jointGraphHasLoops, type NumericPoses } from '../../../capture/forwardKinematics';
 import { expandCoupledPoses, type MateCouplingRecord } from '../../../mates/coupledPoses';
 import type { Connector } from '../../../mates/connector';
@@ -19,8 +21,10 @@ import { resolvedPartAt } from '../../../mates/partFrame';
 import { mateFk, mateFkWithPlacedParts, type ResolvedMatePart } from '../../../mates/solver';
 import { drivenMateNames } from '../../../mates/loopAdapter';
 import type { LoopPin } from '../../../../shared/kinematics/loopClosure';
+import { propagateConnectedPartMotion, propagateConnectedSolvedPartMotion } from './connectedPartMotion';
 import { resolveTopologyFrameOnBackend } from '../connectorTopology';
 import { finished, noShape, type LowerContext, type LowerOutcome } from './context';
+import { createPartPrototypeResolver } from './partPrototype';
 
 /** Pose value as captured: a single Param, or three for a ball joint. */
 type EncodedPose =
@@ -66,12 +70,16 @@ function readPartEntries(ctx: LowerContext): PartEntry[] {
     .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
 }
 
-/** The part's `at` as `lowerAssemblyPart` applied it: the captured Param
- *  resolved against the engine's param table (`records` holds it as captured,
- *  where a script-parameter reference reads `evaluated: 0`). */
+/** The part's `at` as `lowerAssemblyPart` applied it. Resolve the whole part
+ *  record through the same input path used for other upstream record values;
+ *  use the table only for direct lowerer callers without a record resolver. */
 function loweredPartAt(ctx: LowerContext, partRec: FeatureRecord | undefined): readonly [number, number, number] {
-  const meta = partRec?.metadata as { at?: Vec3Param } | undefined;
-  return resolvedPartAt(meta?.at, ctx.inputs.paramTable);
+  const resolvedPart = partRec && ctx.inputs.resolveRecord
+    ? ctx.inputs.resolveRecord(partRec)
+    : partRec;
+  const meta = resolvedPart?.metadata as { at?: Vec3Param } | undefined;
+  const table = ctx.inputs.resolveRecord === undefined ? ctx.inputs.paramTable : undefined;
+  return resolvedPartAt(meta?.at, table);
 }
 
 /** A vec3 connector declared on the source shape, moved by the part's `at`. */
@@ -152,6 +160,7 @@ function buildSceneRig(
   resolvedParts: readonly ResolvedMatePart[],
   mates: readonly MateRecord[],
   poses: NumericPoses,
+  couplings: readonly MateCouplingRecord[],
 ): SolvedRigAssembly {
   const connectorsByPartName: Record<string, RigConnector[]> = Object.create(null) as Record<string, RigConnector[]>;
   for (const part of resolvedParts) {
@@ -166,15 +175,20 @@ function buildSceneRig(
       }];
     });
   }
-  const rigMates: RigMate[] = mates.map((mate) => ({
-    name: mate.name,
-    type: mate.type,
-    a: mate.a,
-    b: mate.b,
-    ...(typeof poses[mate.name] === 'number' ? { pose: poses[mate.name] as number } : {}),
-    ...(mate.limitsDeg !== undefined ? { limitsDeg: mate.limitsDeg } : {}),
-    ...(mate.limitsMm !== undefined ? { limitsMm: mate.limitsMm } : {}),
-  }));
+  const couplingByDriven = new Map(couplings.map((coupling) => [coupling.driven, coupling]));
+  const rigMates: RigMate[] = mates.map((mate) => {
+    const coupling = couplingByDriven.get(mate.name);
+    return {
+      name: mate.name,
+      type: mate.type,
+      a: mate.a,
+      b: mate.b,
+      ...(typeof poses[mate.name] === 'number' ? { pose: poses[mate.name] as number } : {}),
+      ...(mate.limitsDeg !== undefined ? { limitsDeg: mate.limitsDeg } : {}),
+      ...(mate.limitsMm !== undefined ? { limitsMm: mate.limitsMm } : {}),
+      ...(coupling !== undefined ? { coupling: { source: coupling.source, ratio: coupling.ratio } } : {}),
+    };
+  });
   return {
     groundedPart: resolvedParts[0]?.name ?? sceneParts[0]!.name,
     parts: sceneParts.map((part) => ({ name: part.name, worldTransform: part.worldTransform.toMat4() })),
@@ -286,14 +300,15 @@ export function lowerAssemblyModel(ctx: LowerContext, r: FeatureRecord): LowerOu
 
   const worldT = applyAssemblyModelFk(ctx, r, inputs);
   if (!worldT) return noShape();
+  propagateConnectedPartMotion(worldT, inputs.partIds, inputs.records, inputs.encodedMates);
 
-  const sceneParts = buildAssemblyModelSceneParts(inputs, worldT);
+  const sceneParts = buildAssemblyModelSceneParts(ctx, inputs, worldT);
   const sceneBackend: SceneBackend = {
     target: ctx.target,
     assemblyName: inputs.assemblyName,
     parts: sceneParts,
     ...(inputs.resolvedMateParts !== undefined && inputs.resolvedMates !== undefined
-      ? { rig: buildSceneRig(sceneParts, inputs.resolvedMateParts, inputs.resolvedMates, inputs.resolvedMatePoses ?? {}) }
+      ? { rig: buildSceneRig(sceneParts, inputs.resolvedMateParts, inputs.resolvedMates, inputs.resolvedMatePoses ?? {}, inputs.mateCouplings) }
       : {}),
     _kind: 'scene',
   };
@@ -379,16 +394,31 @@ function applyAssemblyModelFk(
 }
 
 /** Engineering-material name recorded on an `assemblyPart` record, if any. */
+/** Per-face finishes of a part whose source shape fused differently finished
+ *  members (`union(case.finish('abs'), horn.finish('aluminium'))`). */
+function partMemberMaterials(
+  partRec: FeatureRecord | undefined,
+  partShape: ShapeBackend,
+  records: readonly FeatureRecord[],
+): SceneBackendPart['materialByFaceIndex'] {
+  const ref = partRec?.inputs.shape;
+  if (ref === undefined || ref.kind !== 'feature') return undefined;
+  const source = records.find((rec) => rec.id === ref.id);
+  return memberMaterialsByFace(partShape, source, records);
+}
+
 function partMaterialName(partRec: FeatureRecord | undefined): string | undefined {
   const name = (partRec?.metadata as { materialName?: unknown } | undefined)?.materialName;
   return typeof name === 'string' ? name : undefined;
 }
 
 function buildAssemblyModelSceneParts(
+  ctx: LowerContext,
   inputs: AssemblyModelInputs,
   worldT: Map<FeatureId, Transform>,
 ): SceneBackendPart[] {
   const { partEntries, partIds, records } = inputs;
+  const partPrototype = createPartPrototypeResolver(ctx, records);
   return partEntries.map(([, partShape], i) => {
     const partId = partIds[i];
     const partRec = records.find((rec) => rec.id === partId);
@@ -397,13 +427,17 @@ function buildAssemblyModelSceneParts(
     const color = partRec ? lookupSourceColor(partRec, records) : undefined;
     const material = partRec ? lookupSourceMaterial(partRec, records) : undefined;
     const materialName = partMaterialName(partRec);
+    const prototype = partPrototype(partRec, loweredPartAt(ctx, partRec));
+    const materialByFaceIndex = partMemberMaterials(partRec, partShape, records);
     return {
       name: partName,
       shape: partShape,
       worldTransform: worldT.get(partId) ?? Transform.identity(),
       ...(color !== undefined ? { color } : {}),
       ...(material !== undefined ? { material } : {}),
+      ...(materialByFaceIndex !== undefined ? { materialByFaceIndex } : {}),
       ...(materialName !== undefined ? { materialName } : {}),
+      ...(prototype !== undefined ? { prototype } : {}),
     };
   });
 }
@@ -460,11 +494,15 @@ function applyModelMateFk(
   }));
   const expandedMatePoses = expandCoupledPoses(mates, mateCouplings, matePoses);
   args.onResolved?.(resolvedParts, mates, expandedMatePoses);
-  const mateWorldT = mateFk(resolvedParts, mates, expandedMatePoses, { loopModes: readLoopModes(r) });
+  const mateWorldT = mateFk(resolvedParts, mates, expandedMatePoses, { loopModes: readLoopModes(r), virtualJoints: readVirtualJoints(r) });
   for (const [partId, mT] of mateWorldT) {
     if (partId in connectorsByPartId) worldT.set(partId, mT);
   }
   return true;
+}
+
+function readVirtualJoints(r: FeatureRecord): readonly VirtualJointRecord[] {
+  return (r.metadata as { virtualJoints?: readonly VirtualJointRecord[] } | undefined)?.virtualJoints ?? [];
 }
 
 /** `loopMode(...)` pins carried on an assembly record's metadata. */
@@ -570,6 +608,8 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     if (!applied) return noShape();
   }
 
+  propagateConnectedSolvedPartMotion(worldT, partIds, records, encodedMates, joints);
+
   // 5. Build a SceneBackend (no boolean union — each part stays in its
   //    LOCAL frame and the FK-derived worldTransform travels with it).
   //    This preserves per-part identity (color, name, topology) for
@@ -587,6 +627,7 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     });
     return noShape();
   }
+  const partPrototype = createPartPrototypeResolver(ctx, records);
   const sceneParts: SceneBackendPart[] = partEntries.map(([, partShape], i) => {
     const partId = partIds[i];
     const T = worldT.get(partId);
@@ -604,13 +645,17 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     const color = lookupSourceColor(partRec, records);
     const material = lookupSourceMaterial(partRec, records);
     const materialName = partMaterialName(partRec);
+    const prototype = partPrototype(partRec, loweredPartAt(ctx, partRec));
+    const materialByFaceIndex = partMemberMaterials(partRec, partShape, records);
     return {
       name: partName,
       shape: partShape,
       worldTransform: T,
       ...(color !== undefined ? { color } : {}),
       ...(material !== undefined ? { material } : {}),
+      ...(materialByFaceIndex !== undefined ? { materialByFaceIndex } : {}),
       ...(materialName !== undefined ? { materialName } : {}),
+      ...(prototype !== undefined ? { prototype } : {}),
     };
   });
   const assemblyName =
@@ -620,7 +665,7 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     assemblyName,
     parts: sceneParts,
     ...(solvedRigParts !== undefined && solvedRigMates !== undefined
-      ? { rig: buildSceneRig(sceneParts, solvedRigParts, solvedRigMates, solvedRigPoses ?? {}) }
+      ? { rig: buildSceneRig(sceneParts, solvedRigParts, solvedRigMates, solvedRigPoses ?? {}, mateCouplings) }
       : {}),
     _kind: 'scene',
   };
@@ -831,6 +876,7 @@ function applySolvedMateFk(
       driven: drivenMateNames(mates, mateCouplings, numericPoses),
       asBuilt: expandCoupledPoses(mates, mateCouplings, capturePoses),
       loopModes: readLoopModes(r),
+      virtualJoints: readVirtualJoints(r),
     });
   // Merge: mate-derived transforms WIN over joint-derived transforms.
   // Disconnected-from-mates parts retain their joint-FK transform (or
@@ -856,18 +902,10 @@ function applySolvedMateFk(
 }
 
 type PartPlacementMeta = {
-  at?: { x?: { evaluated?: number }; y?: { evaluated?: number }; z?: { evaluated?: number } };
+  at?: Vec3Param;
   placedBy?: unknown;
   partName?: string;
 };
-
-/** Read the authored `at:` vec3; defaults every missing coordinate to 0. */
-function readPartAtVector(partAt: PartPlacementMeta['at']): [number, number, number] {
-  const ax = partAt?.x?.evaluated ?? 0;
-  const ay = partAt?.y?.evaluated ?? 0;
-  const az = partAt?.z?.evaluated ?? 0;
-  return [ax, ay, az];
-}
 
 function emitPlacementIgnoredByMateFk(
   ctx: LowerContext,
@@ -911,7 +949,7 @@ function warnPlacementIgnoredByMateFk(
   // connector pair — that's not a conflict, it's how connect
   // was designed; skip those).
   const partMeta = partRec?.metadata as PartPlacementMeta | undefined;
-  const [ax, ay, az] = readPartAtVector(partMeta?.at);
+  const [ax, ay, az] = loweredPartAt(ctx, partRec);
   const atIsNonTrivial = Math.abs(ax) + Math.abs(ay) + Math.abs(az) > 1e-6;
   const placedByConnect = partMeta?.placedBy !== undefined;
   if (partRec && atIsNonTrivial && !placedByConnect) {

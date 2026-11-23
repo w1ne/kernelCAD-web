@@ -41,3 +41,12 @@ See [`verification.json`](verification.json), [`catalog-quality-output.txt`](cat
 ## Limits
 
 The public homepage already describes a native parts-and-kits library with models opened in Studio. This branch has not been deployed. The asset is generic low-poly scene geometry; local checks establish source, mesh, preview, and catalog-index behavior only.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/standard-components-carriage-quality-20261106/capture_carriage_demo.py`
+- video review: `python3 artifacts/catalog-demos/standard-components-carriage-quality-20261106/inspect_carriage_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

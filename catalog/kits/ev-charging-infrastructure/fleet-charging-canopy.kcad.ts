@@ -37,10 +37,10 @@ p.part("right-column-rear", b(1900, 620, 0, 150, 150, 3600).color(stainlessSteel
 p.part("front-rafter", b(0, -620, 3600, 4100, 1250, 130).color(stainlessSteel));
 p.part("rear-rafter", b(0, 620, 3600, 4100, 1250, 130).color(stainlessSteel));
 p.part("roof-spine", hx(0, 0, 3730, 4300, 82, 8).color(powderCoat));
-p.part("bay-divider-0", b(-1550, 0, 0, 38, 1400, 2400).color(powderCoat));
-p.part("bay-divider-1", b(-520, 0, 0, 38, 1400, 2400).color(powderCoat));
-p.part("bay-divider-2", b(510, 0, 0, 38, 1400, 2400).color(powderCoat));
-p.part("bay-divider-3", b(1540, 0, 0, 38, 1400, 2400).color(powderCoat));
+p.part("bay-divider-0", b(-1550, 0, 0, 38, 1400, 3600).color(powderCoat));
+p.part("bay-divider-1", b(-520, 0, 0, 38, 1400, 3600).color(powderCoat));
+p.part("bay-divider-2", b(510, 0, 0, 38, 1400, 3600).color(powderCoat));
+p.part("bay-divider-3", b(1540, 0, 0, 38, 1400, 3600).color(powderCoat));
 p.part("charger-post-1", b(-1500, 0, 0, 210, 240, 2050).color(stainlessSteel));
 p.part("cable-drop-1", hy(-1335, -170, 1120, 700, 17, 8).color(cableElastomer));
 p.part("charger-post-2", b(-500, 0, 0, 210, 240, 2050).color(stainlessSteel));

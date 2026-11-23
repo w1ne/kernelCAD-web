@@ -48,3 +48,12 @@ The bundle retains the generator, invocation settings, full preview-render log, 
 ## License and scope
 
 All assets are original kernelCAD geometry dedicated under CC0 1.0. They are stylized visualization props; they do not claim parcel throughput, machinery safety, postal compliance, production engineering suitability or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/postal-logistics-wave-20261103/capture_postal_demo.py`
+- video review: `python3 artifacts/catalog-demos/postal-logistics-wave-20261103/inspect_postal_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

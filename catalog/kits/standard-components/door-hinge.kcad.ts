@@ -1,15 +1,16 @@
-// Upright butt-hinge leaves carry alternating knuckle bands around a removable pin; face screws make the mounting pattern visible.
+// Illustrative CC0 butt hinge: bored knuckles are integral with their leaves.
+// This scene prop omits rated motion, threads and manufacturing tolerances.
 meta({
   name: 'door-hinge',
   license: 'CC0-1.0',
   title: 'Door hinge',
-  description: 'Upright butt hinge with alternating barrel knuckles, a brass pivot pin and visible leaf fasteners. Knobs: model size, steel, brass and fasteners.',
+  description: 'Illustrative CC0 butt hinge with two integral bored leaves, a separate brass pivot pin and visible leaf fasteners. Three size presets scale the whole prop; steel, brass and fasteners are colors. No screw threads, motion mates, manufacturing tolerances or load rating.',
   tags: ['door hinge', 'butt hinge', 'cabinet hardware', 'pivot'],
   kit: 'standard-components',
   category: 'attachment',
   origin: 'base',
   compat: ['mechanical', 'industrial', 'workshop', 'assembly'],
-  triangleBudget: 1600,
+  triangleBudget: 1800,
 });
 
 const size = param('size', 'standard', { choices: ['compact', 'standard', 'large'], label: 'Model size' });
@@ -25,13 +26,21 @@ presets({
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
 const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('door-hinge');
-const mountLeaf = (name: 'left' | 'right', x0: number, holeXs: number[]) => {
+const mountLeaf = (name: 'left' | 'right', x0: number, holeXs: number[], knuckles: [number, number][]) => {
   let leaf = block(x0 * s, -2 * s, 0, 28 * s, 4 * s, 40 * s);
   for (const x of holeXs) {
     for (const z of [8, 20, 32]) {
       leaf = leaf.subtract(cylinder(5 * s, 2.1 * s, 10)
         .rotateX(90).translate(x * s, 2.5 * s, z * s));
     }
+  }
+  // Each barrel overlaps its leaf by 1 mm. Fuse first so the leaf and
+  // its knuckles are one connected component, not overlapping loose parts.
+  for (const [z0, z1] of knuckles) {
+    const barrel = cylinder((z1 - z0) * s, 5 * s, 12)
+      .hole('top', { u: 0, v: 0, diameter: 4.2 * s, depth: 'through' })
+      .translate(0, 0, z0 * s);
+    leaf = leaf.union(barrel);
   }
   a.part(`${name}-leaf`, leaf.color(steel));
   for (const [i, x] of holeXs.entries()) {
@@ -42,19 +51,10 @@ const mountLeaf = (name: 'left' | 'right', x0: number, holeXs: number[]) => {
   }
 };
 
-// The leaves stand in the XZ plane, with their barrel edges meeting the pivot axis.
-mountLeaf('left', -32, [-25, -13]);
-mountLeaf('right', 4, [13, 25]);
+// Alternating knuckles retain axial gaps and a continuous Ø4.2 mm bore.
+// The separate Ø3.6 mm pin has 0.3 mm nominal radial clearance at standard size.
+mountLeaf('left', -32, [-25, -13], [[0, 7.7], [16.15, 23.85], [32.3, 40]]);
+mountLeaf('right', 4, [13, 25], [[8.15, 15.85], [24.15, 31.85]]);
 
-const leftKnuckles: [number, number][] = [[0, 7.7], [16.15, 23.85], [32.3, 40]];
-const rightKnuckles: [number, number][] = [[8.15, 15.85], [24.15, 31.85]];
-for (const [i, [z0, z1]] of leftKnuckles.entries()) {
-  a.part(`left-knuckle-${i + 1}`, cylinder((z1 - z0) * s, 5 * s, 12)
-    .translate(0, 0, z0 * s).color(steel));
-}
-for (const [i, [z0, z1]] of rightKnuckles.entries()) {
-  a.part(`right-knuckle-${i + 1}`, cylinder((z1 - z0) * s, 5 * s, 12)
-    .translate(0, 0, z0 * s).color(steel));
-}
 a.part('brass-pivot-pin', cylinder(40 * s, 1.8 * s, 12).translate(0, 0, 0).color(brass));
 return a.model();

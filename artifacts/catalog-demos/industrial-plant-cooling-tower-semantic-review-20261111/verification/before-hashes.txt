@@ -1,0 +1,10 @@
+15756775fb30666864eaca37a084ff0c425ed2546a2ab042a113089ade4d6654  artifacts/catalog-demos/industrial-plant-cooling-tower-semantic-review-20261111/source/reviewed/distillation-column.kcad.ts
+1bd413dfdaf64d7c522cfe270f4602b8afc8836dd797cc68bda083f2639995e9  artifacts/catalog-demos/industrial-plant-cooling-tower-semantic-review-20261111/source/reviewed/evaporative-cooling-tower.kcad.ts
+7c2cdf65d74072ecbd8bf3501a6e08e8c96e1996ec8f569b2aaed8fe43db08ad  artifacts/catalog-demos/industrial-plant-cooling-tower-semantic-review-20261111/source/reviewed/flare-stack.kcad.ts
+2b3513bf26b526d5f017469e6d1cf6013e9f063a60e8b866df502277bc22ebfe  artifacts/catalog-demos/industrial-plant-cooling-tower-semantic-review-20261111/source/reviewed/forklift-truck.kcad.ts
+2b7c9c6510054dc7b00e6fab3baba2074d5c0a3f30faf4aca0952bd51457354d  artifacts/catalog-demos/industrial-plant-cooling-tower-semantic-review-20261111/source/reviewed/industrial-transformer.kcad.ts
+3955729ffc266f97e5de7105cc75dfa5034905ab5286cd56e74ab90e841a52f3  artifacts/catalog-demos/industrial-plant-cooling-tower-semantic-review-20261111/previews/before/distillation-column.png
+f57ae57c4d05d94962d086429da76f4a7afa48b591d91b169798aff514335a30  artifacts/catalog-demos/industrial-plant-cooling-tower-semantic-review-20261111/previews/before/evaporative-cooling-tower.png
+4cf55df7c721df1482b5fb6d4646b315d35af7abc835319634ea79638b13729f  artifacts/catalog-demos/industrial-plant-cooling-tower-semantic-review-20261111/previews/before/flare-stack.png
+a9bec1aa7dfd806d7a521537e3cc4d44f56464408defa02e80cf02eec141dd90  artifacts/catalog-demos/industrial-plant-cooling-tower-semantic-review-20261111/previews/before/forklift-truck.png
+df4a685004c355d6d08514564cc7c5b9d15e281fdc617e42e14dfaad6d0459bd  artifacts/catalog-demos/industrial-plant-cooling-tower-semantic-review-20261111/previews/before/industrial-transformer.png

@@ -1,0 +1,5 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ 'paintedSteel', …(2) ] to deeply equal [ 'beltRubber', 'paintedSteel', …(2) ]
+- Expected
++ Received
+      Tests  1 failed (1)

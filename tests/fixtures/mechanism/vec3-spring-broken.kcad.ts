@@ -17,8 +17,6 @@
 //   CLI/Studio split, this fixture's parity assertion is what fails
 //   in CI.
 //
-// Spec: docs/specs/2026-06-01-physics-grounded-loop-design.md
-// Plan: docs/plans/2026-06-01-physics-loop-P1-surface-convergence.md
 
 const arm = assembly('vec3-spring-broken');
 

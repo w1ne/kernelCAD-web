@@ -5,7 +5,7 @@ meta({
   name: "cargo-airlock-pod",
   license: 'CC0-1.0',
   title: "Cargo airlock pod",
-  description: "Small cargo transfer pod with rounded-looking shell, wide hatch and side grab rails. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Small cargo transfer pod with rounded-looking shell, wide hatch and side grab rails. Material controls: paint, aluminum, composite; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#b5aa8e", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const composite = param('composite', "#71817c", { label: "Composite hatch panel" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "composite": "#9a9484"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "composite": "#d1a847"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -43,7 +45,7 @@ const c = (x: number,y: number,z: number,h: number,r: number,n=8) => cylShape(h,
 const p = assembly("cargo-airlock-pod");
 p.part("pod",c(0,0,0,650,280,10).color(paint));
 p.part("cap",c(0,0,650,65,290,10).color(aluminum));
-p.part("hatch",b(0,-278,130,330,24,350).color(aluminum));
+p.part("hatch",b(0,-278,130,330,24,350).color(composite));
 p.part("rail-left",b(-130,-340,110,28,45,470).color(aluminum));
 p.part("rail-right",b(130,-340,110,28,45,470).color(aluminum));
 

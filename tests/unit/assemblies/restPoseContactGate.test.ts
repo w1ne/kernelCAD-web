@@ -32,6 +32,25 @@ describe('rest-pose contact gate', () => {
     expect(meshOverlapVolume(a, touching).volumeMm3).toBe(0);
   });
 
+  it('keeps the voxel grid under its cell cap for a wide, thin overlap box', async () => {
+    await initOcct();
+    // Two 460 × 1200 mm plates whose faces meet with float noise or a thin
+    // skin between them: the AABB overlap is a slab far thinner than the
+    // 0.25 mm cell floor. The floor used to win, giving 1840 × 4800 columns.
+    const a = worldMesh(OcctBackend.box(460, 1200, 5), Transform.identity())!;
+    for (const sink of [3e-14, 0.2, 0.35, 0.6]) {
+      const b = worldMesh(OcctBackend.box(460, 1200, 5), Transform.translation(0, 0, 5 - sink))!;
+      const r = meshOverlapVolume(a, b);
+      const cells = [460, 1200, sink].reduce((n, e) => n * Math.max(1, Math.ceil(e / r.cellMm)), 1);
+      expect(cells).toBeLessThanOrEqual(96 * 96 * 96);
+      // The slab is thinner than the cell: its one layer of grid points must
+      // still land inside it, and count its real thickness.
+      const exact = 460 * 1200 * sink;
+      expect(Math.abs(r.volumeMm3 - exact)).toBeLessThanOrEqual(0.01 * exact + 1e-6);
+      if (sink > 0.1) expect(r.thicknessMm).toBeCloseTo(sink, 3);
+    }
+  });
+
   it('passes a wide contact sliver thinner than 0.3 mm, fails a 0.6 mm one', async () => {
     for (const [sink, broken] of [[0.2, false], [0.6, true]] as const) {
       const kcad = kcadApi();
@@ -67,18 +86,64 @@ describe('rest-pose contact gate', () => {
     expect(vol).toBeLessThan(4400);
   });
 
-  it('ignores solvedModel({ ignore }) at rest', async () => {
+  it('honors solvedModel({ ignore }) for rest penetration', async () => {
     const kcad = kcadApi();
     const arm = kcad.assembly('ignored-overlap');
     arm.part('a', kcad.box(30, 30, 10))
-      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [15, 15, 5] } });
     arm.part('b', kcad.box(30, 30, 10).translate(10, 10, 5))
-      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [15, 15, 5] } });
     arm.mate('fix', 'a.m', 'b.m', 'fastened');
     await arm.solvedModel({}, { ignore: [['a', 'b']], validate: 'off' });
     expect(arm.__ignoreInterference()).toHaveLength(1);
     const r = await checkMechanismTruth(arm, { sweepBudget: 0 });
-    expect(codes(r)).toContain('mechanism.rest-interpenetration');
+    expect(codes(r)).not.toContain('mechanism.rest-interpenetration');
+  });
+
+  it('does not certify an ignored rest overlap as physically real', async () => {
+    const kcad = kcadApi();
+    const arm = kcad.assembly('ignored-overlap-verdict');
+    arm.part('a', kcad.box(30, 30, 10))
+      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [15, 15, 5] } });
+    arm.part('b', kcad.box(30, 30, 10).translate(10, 10, 5))
+      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [15, 15, 5] } });
+    arm.mate('fix', 'a.m', 'b.m', 'fastened');
+    await arm.solvedModel({}, { ignore: [['a', 'b']], validate: 'off' });
+    const result = await checkMechanismTruth(arm);
+    expect(result.coverage?.sweep).toBe(true);
+    expect(result.mechanism).toBe('unverified');
+    const warning = result.failures.find((f) => f.code === 'mechanism.ignored-rest-overlap');
+    expect(warning?.severity).toBe('warn');
+    expect(warning?.message).toContain('2000.00 mm³');
+  });
+
+  it('does not warn merely because a touching pair is listed in ignore', async () => {
+    const kcad = kcadApi();
+    const arm = kcad.assembly('ignored-touching-faces');
+    arm.part('a', kcad.box(30, 30, 10))
+      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [15, 15, 10] } });
+    arm.part('b', kcad.box(30, 30, 10).translate(0, 0, 10))
+      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [15, 15, 10] } });
+    arm.mate('fix', 'a.m', 'b.m', 'fastened');
+    await arm.solvedModel({}, { ignore: [['a', 'b']], validate: 'off' });
+    const result = await checkMechanismTruth(arm);
+    expect(result.coverage?.sweep).toBe(true);
+    expect(codes(result)).not.toContain('mechanism.ignored-rest-overlap');
+    expect(result.mechanism).toBe('real');
+  });
+
+  it('keeps the mate-gap check active for an ignored pair', async () => {
+    const kcad = kcadApi();
+    const arm = kcad.assembly('ignored-gap');
+    arm.part('plate', kcad.box(40, 40, 5))
+      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.part('bracket', kcad.box(20, 20, 5).translate(10, 10, 12))
+      .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('bolt', 'plate.m', 'bracket.m', 'fastened');
+    await arm.solvedModel({}, { ignore: [['plate', 'bracket']], validate: 'off' });
+
+    const r = await checkMechanismTruth(arm, { sweepBudget: 0 });
+    expect(codes(r)).toContain('mechanism.mate-gap');
   });
 
   it('fails a mate whose parts do not touch, naming the pair and gap', async () => {

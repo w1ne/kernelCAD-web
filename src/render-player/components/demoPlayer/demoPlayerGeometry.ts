@@ -176,6 +176,11 @@ export interface DemoPlayerWindow {
     transforms: Array<{ featureId: string; transform: number[] }>,
     bounds: { min: [number, number, number]; max: [number, number, number] },
   ): { updated: number };
+  /** Set base / emissive colour on loaded feature groups (animationView
+   *  appearance tracks). Render-only; re-apply after every mesh reload. */
+  setFeatureAppearance(
+    overrides: Array<{ featureId: string; color?: string; emissive?: string }>,
+  ): { updated: number };
   /** Show or hide the reference-image overlay group (`__referenceImages`). */
   setReferenceImagesVisible(visible: boolean): void;
   /** Apply (or clear) an HDRI environment. Used by the CLI's
@@ -265,22 +270,7 @@ export function disposeMeshResources(mesh: THREE.Mesh): void {
   disposeMaterialDeep(mesh.material);
 }
 
-export function wildcardMatches(pattern: string, text: string): boolean {
-  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&')
-    .replace(/\*/g, '.*')
-    .replace(/\?/g, '.');
-  return new RegExp(`^${escaped}$`, 'i').test(text);
-}
-
-export function objectMatches(names: readonly string[], patterns: readonly string[]): boolean {
-  return patterns.some((pattern) =>
-    names.some((name) =>
-      pattern.includes('*') || pattern.includes('?')
-        ? wildcardMatches(pattern, name)
-        : name.toLowerCase() === pattern.toLowerCase(),
-    ),
-  );
-}
+export { objectMatches, wildcardMatches } from '../../../shared/render/objectNameMatch';
 
 export function collectFilterNames(group: THREE.Group): string[] {
   const explicitFilterNames = Array.isArray(group.userData.filterNames)

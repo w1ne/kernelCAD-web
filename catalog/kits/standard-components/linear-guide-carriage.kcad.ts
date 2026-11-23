@@ -3,7 +3,7 @@ meta({
   name: 'linear-guide-carriage',
   license: 'CC0-1.0',
   title: 'Linear guide carriage',
-  description: 'Steel guide carriage with a U-shaped underside channel, polymer end wipers, four top fastener wells, and a brass grease fitting. Knobs: model size, steel, polymer, brass.',
+  description: 'Illustrative CC0 guide-carriage prop with an open end-to-end underside rail channel, separate polymer end wipers, four top fastener wells, and a brass grease fitting. Not manufacturer-grade CAD: no recirculating balls, vendor raceways, tolerances or load rating. Knobs change model size and colors only.',
   tags: ['linear guide carriage', 'rail carriage', 'motion block', 'machine'],
   kit: 'standard-components',
   category: 'attachment',
@@ -25,8 +25,9 @@ presets({
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
 const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('linear-guide-carriage');
+// Cut beyond both travel-axis faces; a blind underside pocket blocks the rail.
 const shoe = block(-22*s, -20*s, 0, 44*s, 40*s, 20*s)
-  .subtract(block(-18*s, -8*s, -s, 36*s, 16*s, 13*s));
+  .subtract(block(-23*s, -8*s, -s, 46*s, 16*s, 13*s));
 a.part('steel-body', shoe.color(steel));
 
 let topPad = block(-16*s, -14*s, 20*s, 32*s, 28*s, 5*s);

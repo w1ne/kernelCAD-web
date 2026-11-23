@@ -1,0 +1,3 @@
+Command: npx eslint catalog/kits/water-treatment/ tests/integration/catalog/reverseOsmosisSkidMaterials.test.ts
+Exit status: 0
+Output: no diagnostics

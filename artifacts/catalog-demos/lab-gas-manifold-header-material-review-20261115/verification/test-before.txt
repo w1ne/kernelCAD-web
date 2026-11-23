@@ -1,0 +1,4 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: main-header should be stainless steel: expected false to be true // Object.is equality
+     55|       expect(part.every(matches('#b8c7ca')), `${name} should be stainl…
+      Tests  1 failed (1)

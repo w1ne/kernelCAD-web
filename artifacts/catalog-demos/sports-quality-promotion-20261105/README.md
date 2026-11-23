@@ -4,7 +4,7 @@ This bundle documents the promotion of the existing 40-asset `sports` kit. IDs a
 
 ## Demo
 
-[Watch the 18-second MP4](sports-quality-promotion.mp4) · [poster](poster.png) · [six-frame contact sheet](video-review/contact-sheet.png).
+[Watch the 18-second MP4](sports-quality-promotion.mp4) · [poster](poster.png) · six-frame contact sheet (`video-review/contact-sheet.png`, not tracked).
 
 The storyboard uses the original previews captured from `HEAD`, the refreshed preview PNGs, and six local replay renders built from the declared default and `clubColors` parameter values. [Video settings and invocation](settings.json) · [complete command record](invocations.txt) · [manual video review](video-review.md).
 
@@ -24,3 +24,12 @@ Detailed output is retained in `catalog-quality-after.txt`, `sports-quality-afte
 `promote_sports_quality.py` is the one-time migration source; `promotion-plan.json` records its per-ID plan and SHA-256 results. Before replaying it, restore the original baseline from `artifacts/catalog-demos/sports-wave-20261102/generate_sports_assets.py`. Then follow `invocations.txt` to render previews, regenerate the generated index, replay selected presets, and run local checks.
 
 The scripts `render_sports_presets.ts` and `capture_sports_quality.py` generate the preset images and MP4. The demo captions distinguish local source evaluation and software rendering from deployment, simulation acceptance, and hardware acceptance. This branch is not deployed; no physical sport-performance or hardware acceptance is claimed.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/sports-quality-promotion-20261105/capture_sports_quality.py`
+- video review: `python3 artifacts/catalog-demos/sports-quality-promotion-20261105/inspect_sports_quality_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

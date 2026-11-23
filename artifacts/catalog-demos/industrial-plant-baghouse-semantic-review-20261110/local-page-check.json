@@ -1,0 +1,17 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/industrial-plant-baghouse-semantic-review-20261110/verify_local_pages.py",
+  "scope": "generated local static page only; not deployed behavior",
+  "page": "/tmp/kernelcad-industrial-plant-pages/catalog/industrial-plant/baghouse-dust-collector/index.html",
+  "retainedSnapshot": "local-page/catalog/industrial-plant/baghouse-dust-collector/index.html",
+  "copiedPreviewSha256": "956d0c484d17243faebba04d8590a9e14b75cad46fb7406c755e8f1c5367689f",
+  "expectedPageTokens": [
+    "Baghouse dust collector",
+    "steel",
+    "safetyPaint",
+    "weathered",
+    "highVisibility",
+    "tapered dust hopper",
+    "induced-draft fan"
+  ],
+  "studioLinkPresent": true
+}

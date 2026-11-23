@@ -1,6 +1,6 @@
 # Amusement park kit
 
-Seventy original low-poly props for an amusement-park guest precinct and its supporting operations. Sources use millimetres and Z up. Each prop exposes overall scale, three material-named colour controls, and `festival` / `twilight` presets. Attraction and food-service silhouettes use faceted metalwork, tapered ride cabins and boat hulls, shaped car fairings, and a glazed popcorn warmer. Every asset keeps its 1,800-triangle ceiling. All geometry is dedicated to the public domain under CC0 1.0.
+Seventy original low-poly props for an amusement-park guest precinct and its supporting operations. Sources use millimetres and Z up. Each prop exposes overall scale, three or more material-named colour controls, and `festival` / `twilight` presets. Attraction and food-service silhouettes use faceted metalwork, tapered ride cabins and boat hulls, shaped car fairings, and a glazed popcorn warmer. Most assets keep an 1,800-triangle ceiling; the rebuilt `bumper-car`, `log-flume-boat`, `pirate-ship-ride-car`, `junior-coaster-track-section` and `cotton-candy-cart` are modelled at real size from side profiles, plan outlines and turned parts, with budgets of 4,200 to 5,000 triangles and an extra third preset each. All geometry is dedicated to the public domain under CC0 1.0.
 
 ## Entry and guest services
 

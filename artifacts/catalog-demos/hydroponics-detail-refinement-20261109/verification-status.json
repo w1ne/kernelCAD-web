@@ -1,0 +1,10 @@
+{
+  "indexBuild": "PASS",
+  "previewRender": "52/52 PASS",
+  "eslint": "PASS",
+  "catalogIntegration": "PASS",
+  "catalogIntegrationTestCount": "15/15",
+  "kitQuality": "52/52 PASS",
+  "overallQuality": "2402/2402 PASS",
+  "catalogPages": "PASS"
+}

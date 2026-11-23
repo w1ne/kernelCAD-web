@@ -52,7 +52,7 @@ const b = (name: string, size: [number, number, number], at: [number, number, nu
 };
 
 p.part("end-frame-0", b("end-frame-0", [180, 1340, 1550], [-850, 0, 775]).color(yardPaint));
-p.part("end-frame-1", b("end-frame-1", [180, 1340, 1550], [850, 0, 775]).color(structuralSteel));
+p.part("end-frame-1", b("end-frame-1", [180, 1340, 1550], [850, 0, 775]).color(yardPaint));
 p.part("turnover-axle", b("turnover-axle", [1840, 170, 170], [0, 0, 1130]).color(structuralSteel));
 p.part("saddle-arm-0", b("saddle-arm-0", [220, 220, 1280], [-850, -520, 980]).color(structuralSteel));
 p.part("saddle-arm-1", b("saddle-arm-1", [220, 220, 1280], [-850, 520, 980]).color(structuralSteel));

@@ -1,0 +1,107 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/grid-substation-ground-test-well-20261110/render_variants.ts",
+  "renderer": "variantSource + runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=8000) + scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "geometryChecks": {
+    "verticalAxisInGlbStats": "Y",
+    "wellDepthChoicesProduceStrictlyIncreasingHeight": true,
+    "depthChoiceImagesDistinct": true,
+    "maintenancePresetChangesImage": true,
+    "sourceTriangleBudget": 1800,
+    "maximumMeasuredTriangles": 1128
+  },
+  "source": {
+    "file": "catalog/kits/grid-substation/substation-ground-grid-test-well.kcad.ts",
+    "sourceSha256": "d18233303c57d68a85aad9ea7a8917eb48497f202a40302c2e8c32d61bf37870"
+  },
+  "renders": [
+    {
+      "id": "depth-360",
+      "choices": {
+        "wellDepth": "360"
+      },
+      "stats": {
+        "triangles": 1128,
+        "sizeM": [
+          1.08,
+          0.608,
+          0.77
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 31,
+        "parts": 31,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "2b6568fd495e2da2dd7a5925c2c196ae6c5769e4948cf13ad27d4513911910d2",
+      "sourceSha256": "d18233303c57d68a85aad9ea7a8917eb48497f202a40302c2e8c32d61bf37870"
+    },
+    {
+      "id": "depth-480",
+      "choices": {
+        "wellDepth": "480"
+      },
+      "stats": {
+        "triangles": 1128,
+        "sizeM": [
+          1.08,
+          0.728,
+          0.77
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 31,
+        "parts": 31,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "6049f6bab241e6d80338940e8d93d8ceef0730cec4f8344ad6fc109b0dcf4e55",
+      "sourceSha256": "d18233303c57d68a85aad9ea7a8917eb48497f202a40302c2e8c32d61bf37870"
+    },
+    {
+      "id": "depth-620",
+      "choices": {
+        "wellDepth": "620"
+      },
+      "stats": {
+        "triangles": 1128,
+        "sizeM": [
+          1.08,
+          0.868,
+          0.77
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 31,
+        "parts": 31,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "d8b0f9f87afbaa88f73f202a70eef7bf34e04e492fcb029d116ba338b74f620a",
+      "sourceSha256": "d18233303c57d68a85aad9ea7a8917eb48497f202a40302c2e8c32d61bf37870"
+    },
+    {
+      "id": "depth-480-maintenance",
+      "choices": {
+        "wellDepth": "480"
+      },
+      "preset": "maintenance",
+      "stats": {
+        "triangles": 1128,
+        "sizeM": [
+          1.08,
+          0.728,
+          0.77
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 31,
+        "parts": 31,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "5802801d55092578948852805d9ab2b784b43cfab4b356d34166019c0f0e1def",
+      "sourceSha256": "d18233303c57d68a85aad9ea7a8917eb48497f202a40302c2e8c32d61bf37870"
+    }
+  ]
+}

@@ -8,6 +8,13 @@ import type { SoftWarning } from '../../shared/runtime/softWarning';
 import { resolveColor } from '../../shared/render/palette';
 import type { TextureRef, TextureSet } from '../../shared/intent/textureRef';
 import { isTextureRef, normalizeTextureRef } from '../../shared/intent/textureRef';
+import type { TextureProjection } from '../../shared/intent/textureProjection';
+import { isTextureProjection } from '../../shared/intent/textureProjection';
+import type { TypedParamRef } from '../../shared/runtime/paramRef';
+import { isTypedParamRef } from '../../shared/runtime/paramRef';
+import { normalizeColor } from '../../shared/runtime/paramColor';
+import { expandFinish, isFinishToken, unknownFinishMessage } from '../../shared/render/finishes';
+import { tryResolveMaterial, type MaterialName } from '../properties/materialLibrary';
 import type { CaptureSession } from './captureSession';
 
 type MaterialCallOpts = PBRMaterial & { face?: string };
@@ -29,6 +36,31 @@ const MATERIAL_SCALAR_RANGES: ReadonlyArray<[keyof PBRMaterial, number, number]>
   ['opacity', 0, 1],
   ['anisotropy', 0, 1],
 ];
+
+/** Keys `.material()` reads. `textureProjection` is not here: only
+ *  `.wrapTexture()` writes it, and `.material()` used to drop it silently. */
+const MATERIAL_OPTION_KEYS: ReadonlySet<string> = new Set([
+  'face', 'name', 'baseColor', 'metalness', 'roughness', 'clearcoat', 'clearcoatRoughness', 'ior',
+  'transmission', 'sheen', 'opacity', 'thickness', 'attenuationColor', 'attenuationDistance',
+  'anisotropy', 'anisotropyRotation', 'textures',
+]);
+
+/** A misspelt key (`metalnes`, `colour`) used to be dropped and the default
+ *  rendered with no diagnostic; name the first unknown key instead. */
+export function assertMaterialOptionKeys(opts: MaterialCallOpts, id: string): void {
+  const unknown = Object.keys(opts).find((key) => !MATERIAL_OPTION_KEYS.has(key));
+  if (unknown === undefined) return;
+  invalidArgs({
+    api: 'Shape.material(opts)',
+    path: `opts.${unknown}`,
+    got: (opts as unknown as Record<string, unknown>)[unknown],
+    requires: unknown === 'textureProjection'
+      ? 'no textureProjection key; call .wrapTexture(imageRef, projection) to set the UV projection'
+      : `a known option key; .material() accepts ${[...MATERIAL_OPTION_KEYS].join(', ')}`,
+    example: "shape.material({ baseColor: '#b0b0b0', metalness: 1, roughness: 0.3 })",
+    featureId: id,
+  });
+}
 
 export function validateMaterialBaseColor(opts: MaterialCallOpts, id: string): void {
   if (!opts || typeof opts.baseColor !== 'string' || opts.baseColor.length === 0) {
@@ -268,4 +300,98 @@ export function cleanPbrMaterial(opts: PBRMaterial, owner: string, warnings: Sof
   const textures = cleanMaterialTextures(opts, owner);
   if (textures !== undefined) state.cleaned.textures = textures;
   return state.cleaned;
+}
+
+/**
+ * `.color()` stores any string, but every exporter and the viewer resolve it
+ * with `resolveColor()` (role token or `#hex`); anything else silently
+ * falls back to the default colour. Warn and name the call that does the job.
+ */
+export function unresolvedColorWarning(value: unknown, id: string): SoftWarning | undefined {
+  if (typeof value !== 'string' || resolveColor(value) !== undefined) return undefined;
+  const hex = normalizeColor(value);
+  const material = isFinishToken(value) || tryResolveMaterial(value).ok;
+  const fix = hex !== undefined
+    ? `use '${hex}'`
+    : material
+      ? `use .finish('${value}') for a material look`
+      : 'use a role token (servo, gear, beam, shaft, plate, pin, frame, tool) or a #rrggbb hex';
+  return {
+    code: 'feature.color.unresolved',
+    hint: `Shape.color() takes a role token or a #rrggbb hex; ${fix}.`,
+    message: `Shape.color('${value}') is not a role token or #rrggbb hex, so renders and exports fall back to the default colour; ${fix}.`,
+    recordId: id,
+    phase: 'build',
+  };
+}
+
+/**
+ * Expand a `.finish()` name to PBR. A finish token wins when the name is both
+ * (steel, pla, abs, nylon map to the identically named token anyway).
+ * Otherwise an engineering material name applies its registry default finish,
+ * so one material vocabulary covers mass, FEA and appearance. `expandFinish`
+ * throws `feature.finish.unknown-token` (with this shape's id) for an unknown
+ * name.
+ */
+export function resolveFinishPbr(
+  name: string,
+  color: string | TypedParamRef<string> | undefined,
+  id: string,
+): PBRMaterial {
+  let token = name;
+  if (!isFinishToken(name)) {
+    const resolved = tryResolveMaterial(name);
+    if (resolved.ok) {
+      if (resolved.material.finish === undefined) {
+        throw new KernelError(
+          'feature.finish.unknown-token',
+          unknownFinishMessage(name),
+          id,
+          `'${name}' is a material (${resolved.material.name as MaterialName}) with no default finish. ` +
+            'Pass a finish token such as plastic-glossy, or set the look with .color().',
+        );
+      }
+      token = resolved.material.finish;
+    }
+  }
+  return expandFinish(token, color !== undefined ? { color: isTypedParamRef(color) ? color.value : color } : undefined, id);
+}
+
+export function assertWrapTextureArgs(imageRef: unknown, projection: unknown, id: string): void {
+  if (!isTextureRef(imageRef)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `Shape.wrapTexture: imageRef must be a TextureRef ({ path, ... }) with a non-empty 'path' string; got ${formatScalarForError(imageRef)}.`,
+      id,
+      'Pass { path: "<file-or-url>" } as the first argument.',
+    );
+  }
+  if (!isTextureProjection(projection)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `Shape.wrapTexture: projection must be one of flat({onto?}), cylinder({axis}), sphere(), box(); got ${formatScalarForError(projection)}.`,
+      id,
+      "Pass { type: 'cylinder', axis: [0,0,1] } or one of the other three projection shapes.",
+    );
+  }
+}
+
+/** Existing `metadata.material.baseColor` on a record, so a texture wrap keeps the tint. */
+export function existingMaterialBaseColor(session: CaptureSession, id: string): string | undefined {
+  const record = session.getRecords().find(r => r.id === id);
+  return (record?.metadata as { material?: PBRMaterial } | undefined)?.material?.baseColor;
+}
+
+/** Attach a wrap projection next to the albedo texture `.material()` just wrote. */
+export function attachTextureProjection(session: CaptureSession, id: string, projection: TextureProjection): void {
+  const record = session.getRecords().find(r => r.id === id);
+  if (record === undefined) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `Shape.wrapTexture: feature record '${id}' not found in session.`,
+      id,
+      'Call .wrapTexture() on a Shape produced by the current session.',
+    );
+  }
+  (record.metadata as { material: PBRMaterial }).material.textureProjection = projection;
 }

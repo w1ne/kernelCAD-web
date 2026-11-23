@@ -49,6 +49,30 @@ function multiply(a: readonly number[], b: readonly number[]): number[] {
 }
 
 describe('buildRigTree', () => {
+  it('copies a coupleMates coupling onto the driven pivot rig entry only', () => {
+    const tree = buildRigTree(rigAssembly({
+      parts: [
+        { name: 'base', worldTransform: Transform.identity().toMat4() },
+        { name: 'lid', worldTransform: Transform.translation(10, 0, 0).toMat4() },
+        { name: 'flap', worldTransform: Transform.translation(30, 0, 0).toMat4() },
+      ],
+      mates: [
+        { name: 'lid', type: 'revolute', a: 'base.hinge', b: 'lid.hinge' },
+        { name: 'flap', type: 'revolute', a: 'base.flap', b: 'flap.hinge', coupling: { source: 'lid', ratio: 0.5 } },
+      ],
+      connectorsByPartName: {
+        base: [
+          { name: 'hinge', type: 'axis', origin: [10, 0, 0], axis: [0, 0, 1] },
+          { name: 'flap', type: 'axis', origin: [30, 0, 0], axis: [0, 0, 1] },
+        ],
+        lid: [{ name: 'hinge', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] }],
+        flap: [{ name: 'hinge', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] }],
+      },
+    }));
+    expect(findNode(tree, 'pivot:lid')!.rig?.coupling).toBeUndefined();
+    expect(findNode(tree, 'pivot:flap')!.rig?.coupling).toEqual({ source: 'lid', ratio: 0.5 });
+  });
+
   it('places a revolute lid under its hinge pivot and swings its far corner by 90 degrees', () => {
     const assembly = rigAssembly();
     const tree = buildRigTree(assembly);

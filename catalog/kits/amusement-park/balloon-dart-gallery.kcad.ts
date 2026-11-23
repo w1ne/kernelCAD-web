@@ -1,69 +1,122 @@
-// Balloon dart gallery: Counter-height dart game with a pegged balloon wall, side dividers, and an overhead net frame.
+// SPDX-License-Identifier: CC0-1.0
+// Balloon dart gallery: the midway booth where you throw darts to pop
+// balloons pinned to a cork wall.
+// What makes it a balloon dart game rather than a counter: a cork back wall
+// covered in a grid of inflated balloons, with darts already stuck in the
+// cork between them; a striped throw counter holding a cup of darts; plush
+// prizes hanging along the side walls; and a sloped striped canopy with a
+// pennant valance.
+// Generic visualization geometry at about real size (2.3 m wide, 2.5 m to
+// the canopy), millimetres, Z up, guest face on -Y, standing on z = 0.
 meta({
   name: "balloon-dart-gallery",
   license: "CC0-1.0",
   title: "Balloon dart gallery",
-  description: "Counter-height dart game with a pegged balloon wall, side dividers, and an overhead net frame. Controls: overall scale, paintedTimber, steel, rubber; festival and twilight material presets.",
-  tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "midway games"],
+  description: "Midway balloon dart booth at about real size: a cork back wall covered in a five-by-four grid of balloons with darts stuck in the cork, a striped throw counter with a cup of darts, plush prizes hanging on the side walls, and a sloped striped canopy with a pennant valance. Material controls: painted timber, cork, balloon latex, canvas. Festival, twilight and pastel presets.",
+  tags: ["balloon dart", "dart game", "balloon pop", "carnival booth", "midway game", "prize booth", "amusement park", "theme park", "guest experience", "low poly", "CC0", "midway games"],
   kit: "amusement-park",
   category: "prop",
   origin: "base",
   compat: ["amusement-park", "theme-park", "midway", "visitor-attraction"],
-  triangleBudget: 1800,
+  triangleBudget: 9000,
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const paintedTimber = param("paintedTimber", "#92704e", { label: "Painted timber" });
-const steel = param("steel", "#738087", { label: "Painted steel" });
-const rubber = param("rubber", "#292f33", { label: "Rubber" });
+const timber = param("timber", "#7a3f8f", { label: "Painted timber booth and counter" });
+const cork = param("cork", "#b98a5a", { label: "Cork back wall" });
+const latex = param("latex", "#e23b3b", { label: "Balloon latex, canopy stripe and prizes" });
+const canvas = param("canvas", "#fbf4e2", { label: "Canvas stripe, light balloons and dart flights" });
 
 presets({
-  festival: {
-    "paintedTimber": "#be8a4e",
-    "steel": "#9da3a0",
-    "rubber": "#3c4245"
-},
-  twilight: {
-    "paintedTimber": "#5e7181",
-    "steel": "#4f626c",
-    "rubber": "#20262a"
-},
+  festival: { timber: "#1f7fc4", cork: "#c49a64", latex: "#f2b51c", canvas: "#fffdf4" },
+  twilight: { timber: "#2b2f55", cork: "#8a6a4c", latex: "#d1468c", canvas: "#d9e4f5" },
+  pastel: { timber: "#8fc9c2", cork: "#d6b88f", latex: "#f29bb5", canvas: "#fff7e0" },
 });
-const originOffsetMm = 0;
+
 const p = assembly("balloon-dart-gallery");
+const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
 
-const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
-  if (["backboard", "balloon-0", "balloon-1", "balloon-2", "balloon-3", "balloon-4", "balloon-5", "balloon-6", "balloon-7", "counter", "side-divider-0", "side-divider-1"].includes(name)) p.part(name, positioned.color(paintedTimber));
-  else if (["net-header"].includes(name)) p.part(name, positioned.color(rubber));
-  else if (["net-post-0", "net-post-1", "net-post-2", "net-post-3"].includes(name)) p.part(name, positioned.color(steel));
-  else p.part(name, positioned.color(paintedTimber));
+const rr = (l: number, w: number, r: number) =>
+  filletPolygon([[-l / 2, -w / 2], [l / 2, -w / 2], [l / 2, w / 2], [-l / 2, w / 2]], r, { segments: 6 });
+const plan = (pts, z0: number, h: number) => extrudePolygon(pts, h).translate(0, 0, z0);
+// Outline drawn in (x, z) and extruded t thick toward +Y from y0.
+const face = (pts, t: number, y0: number) => extrudePolygon(pts, t).rotateX(90).translate(0, y0 + t, 0);
+// Outline drawn in (y, z) and extruded t thick along X, centred on x = 0.
+const profileYZ = (pts, t: number) => extrudePolygon(pts, t).rotateX(90).translate(0, t / 2, 0).rotateZ(90);
+const turned = (pts) => {
+  let pb = path().moveTo(pts[0][0], pts[0][1]);
+  for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
+  return pb.close().revolve();
 };
-const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
-  let shape = box(size[0], size[1], size[2], true);
-  if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
-  if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
-  if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  place(name, shape, at);
-};
-const S = (name: string, radius: number, at: [number, number, number]) => place(name, sphere(radius), at);
 
-B("backboard", [1950, 120, 1380], [0, 450, 1090]);
-B("counter", [2100, 780, 170], [0, 0, 820]);
-S("balloon-0", 115, [-700, 360, 700]);
-S("balloon-1", 115, [-350, 360, 920]);
-S("balloon-2", 115, [0, 360, 690]);
-S("balloon-3", 115, [350, 360, 930]);
-S("balloon-4", 115, [700, 360, 710]);
-S("balloon-5", 115, [-525, 360, 1190]);
-S("balloon-6", 115, [175, 360, 1180]);
-S("balloon-7", 115, [560, 360, 1120]);
-B("side-divider-0", [100, 1120, 1500], [-1070, 370, 750]);
-B("side-divider-1", [100, 1120, 1500], [1070, 370, 750]);
-B("net-post-0", [70, 70, 2200], [-1050, 430, 1100]);
-B("net-post-1", [70, 70, 2200], [1050, 430, 1100]);
-B("net-post-2", [70, 70, 2200], [-1050, -500, 1100]);
-B("net-post-3", [70, 70, 2200], [1050, -500, 1100]);
-B("net-header", [2200, 1050, 80], [0, 0, 2220]);
+const W = 2300;
+const BACK = 420;
+const FRONT = -700;
+const EAVE_B = 2500;
+const EAVE_F = 2250;
+
+// Floor plinth, cork back wall and its timber frame.
+add("floor", plan(rr(W, BACK - FRONT + 60, 20), 0, 80).translate(0, (BACK + FRONT) / 2 + 30, 0).color(timber));
+add("back-frame", face([[-W / 2, 80], [W / 2, 80], [W / 2, EAVE_B], [-W / 2, EAVE_B]], 60, BACK + 40).color(timber));
+add("cork-wall", face([[-W / 2 + 80, 700], [W / 2 - 80, 700], [W / 2 - 80, 2200], [-W / 2 + 80, 2200]], 40, BACK).color(cork));
+
+// Five-by-four grid of balloons on the cork, with darts stuck between them.
+for (let c = 0; c < 5; c++)
+  for (let r = 0; r < 4; r++) {
+    const x = -800 + c * 400 + (r % 2 ? 80 : -40);
+    const z = 860 + r * 350;
+    add(`balloon-${c}-${r}`, sphere(120).scale([1, 0.85, 1.2]).translate(x, BACK - 95, z).color((c + r) % 3 === 1 ? canvas : latex));
+    add(`balloon-knot-${c}-${r}`, turned([[0, 0], [24, 0], [6, 40], [0, 40]]).rotateX(180).translate(x, BACK - 60, z - 140).color(latex));
+  }
+[[-600, 1030], [210, 1380], [-180, 1720], [590, 1070]].forEach(([x, z], i) => {
+  add(`stuck-dart-${i}`, cylinder(170, 10, 8).rotateX(90).rotateZ(i * 7 - 10).translate(x, BACK, z).color(timber));
+  add(`stuck-dart-flight-${i}`, box(70, 90, 4, true).rotateZ(i * 7 - 10).translate(x + 12, BACK - 170, z).color(canvas));
+  add(`stuck-dart-flight-v-${i}`, box(4, 90, 70, true).rotateZ(i * 7 - 10).translate(x + 12, BACK - 170, z).color(canvas));
+});
+
+// Side walls with a shaped front edge, carrying hanging plush prizes.
+for (const sx of [-1, 1]) {
+  const s = sx > 0 ? "r" : "l";
+  const wall = profileYZ([[BACK + 100, 80], [FRONT, 80], [FRONT, 1060], [FRONT + 220, 1260], [FRONT + 220, EAVE_F + 40], [BACK + 100, EAVE_B]], 70);
+  add(`side-wall-${s}`, wall.translate(sx * (W / 2 - 35), 0, 0).color(timber));
+  add(`prize-rail-${s}`, cylinder(900, 18, 10).rotateX(90).translate(sx * (W / 2 - 110), BACK - 40, 2150).color(canvas));
+  for (let k = 0; k < 3; k++) {
+    const y = BACK - 180 - k * 280;
+    const z = 1780 - (k % 2) * 90;
+    add(`prize-string-${s}-${k}`, cylinder(2150 - z - 180, 6, 6).translate(sx * (W / 2 - 110), y, z + 180).color(canvas));
+    add(`prize-body-${s}-${k}`, sphere(110).scale([1, 0.85, 1.15]).translate(sx * (W / 2 - 150), y, z).color(k % 2 ? canvas : latex));
+    add(`prize-head-${s}-${k}`, sphere(80).translate(sx * (W / 2 - 150), y, z + 150).color(k % 2 ? latex : canvas));
+    for (const e of [-1, 1]) add(`prize-ear-${s}-${k}-${e}`, sphere(32).translate(sx * (W / 2 - 150), y + e * 55, z + 225).color(k % 2 ? latex : canvas));
+  }
+}
+
+// Throw counter with a striped front and a cup of darts.
+const CT = 1000;
+add("counter-top", plan(rr(W - 60, 340, 24), CT, 50).translate(0, FRONT + 140, 0).color(timber));
+const NS = 7;
+const sw = (W - 200) / NS;
+for (let k = 0; k < NS; k++) {
+  const x0 = -(W - 200) / 2 + k * sw;
+  add(`counter-stripe-${k}`, face([[x0, 80], [x0 + sw, 80], [x0 + sw, CT], [x0, CT]], 30, FRONT).color(k % 2 ? canvas : latex));
+}
+add("dart-cup", turned([[0, 0], [70, 0], [80, 170], [68, 170], [60, 15], [0, 15]]).translate(640, FRONT + 140, CT + 50).color(canvas));
+for (const [i, a] of [-12, 0, 12].entries()) {
+  add(`cup-dart-${i}`, cylinder(240, 9, 8).rotateY(a).translate(640 + i * 18 - 18, FRONT + 140, CT + 70).color(timber));
+  add(`cup-flight-${i}`, box(60, 4, 70, true).rotateY(a).translate(640 + i * 18 - 18 + Math.sin((a * Math.PI) / 180) * 260, FRONT + 140, CT + 70 + 260).color(latex));
+}
+
+// Sloped striped canopy with a pennant valance on the guest side.
+const DEPTH = BACK + 140 - (FRONT - 120);
+const tilt = (Math.atan2(EAVE_B - EAVE_F, DEPTH) * 180) / Math.PI;
+const NC = 8;
+const cw = (W + 160) / NC;
+for (let k = 0; k < NC; k++) {
+  const x = -(W + 160) / 2 + cw * (k + 0.5);
+  add(`canopy-stripe-${k}`, box(cw, DEPTH / Math.cos((tilt * Math.PI) / 180), 30, true).rotateX(tilt).translate(x, (BACK + 140 + FRONT - 120) / 2, (EAVE_B + EAVE_F) / 2 + 40).color(k % 2 ? canvas : latex));
+}
+for (let k = 0; k < NC; k++) {
+  const x = -(W + 160) / 2 + cw * k;
+  add(`pennant-${k}`, face([[x, 0], [x + cw, 0], [x + cw / 2, -200]], 12, FRONT - 135).translate(0, 0, EAVE_F + 30).color(k % 2 ? latex : canvas));
+}
 
 return p.model();

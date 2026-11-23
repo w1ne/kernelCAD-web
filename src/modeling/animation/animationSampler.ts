@@ -13,7 +13,12 @@
 //
 // Pure module: no I/O, no kernel imports.
 
-import type { AnimationEase, NormalizedAnimationTrack } from '../../shared/intent/animationViewRecord';
+import type {
+  AnimationAppearanceChannel,
+  AnimationEase,
+  NormalizedAnimationAppearanceTrack,
+  NormalizedAnimationTrack,
+} from '../../shared/intent/animationViewRecord';
 
 /**
  * Map a linear time-fraction `u` ∈ [0, 1] within a segment to eased progress.
@@ -91,10 +96,57 @@ export function sampleTrackAt(track: NormalizedAnimationTrack, tMs: number): num
   return last.value;
 }
 
+function hexToRgb(hex: string): [number, number, number] {
+  const n = Number.parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff];
+}
+
+function rgbToHex(rgb: readonly [number, number, number]): string {
+  return `#${rgb.map((c) => Math.round(Math.min(255, Math.max(0, c))).toString(16).padStart(2, '0')).join('')}`;
+}
+
+/**
+ * Sample a normalized appearance track at `tMs` → lowercase `#rrggbb`.
+ *
+ * Same timing contract as {@link sampleTrackAt} (hold-clamp, segment-ending
+ * ease). Each 8-bit sRGB component is interpolated independently and rounded:
+ *
+ *   c = round(c[i−1] + (c[i] − c[i−1]) · easeProgress(ease[i], u))
+ */
+export function sampleAppearanceTrackAt(track: NormalizedAnimationAppearanceTrack, tMs: number): string {
+  const keys = track.keys;
+  if (keys.length === 0) {
+    throw new Error(`animationSampler: appearance track '${track.target}' has no keys`);
+  }
+  if (tMs <= keys[0].atMs) return keys[0].value;
+  const last = keys[keys.length - 1];
+  if (tMs >= last.atMs) return last.value;
+  for (let i = 1; i < keys.length; i += 1) {
+    if (tMs <= keys[i].atMs) {
+      const a = keys[i - 1];
+      const b = keys[i];
+      const p = easeProgress(b.ease, (tMs - a.atMs) / (b.atMs - a.atMs));
+      const ca = hexToRgb(a.value);
+      const cb = hexToRgb(b.value);
+      return rgbToHex([0, 1, 2].map((k) => ca[k] + (cb[k] - ca[k]) * p) as [number, number, number]);
+    }
+  }
+  return last.value;
+}
+
+/** One appearance track's sampled colour at a frame. */
+export interface AppearanceSample {
+  target: string;
+  channel: AnimationAppearanceChannel;
+  value: string;
+}
+
 /** One capture frame: timeline position plus every track's sampled value. */
 export interface AnimationFrameSample {
   tMs: number;
   values: Record<string, number>;
+  /** Present only when the timeline has appearance tracks, in track order. */
+  appearance?: AppearanceSample[];
 }
 
 export interface AnimationSampleResult {
@@ -105,7 +157,7 @@ export interface AnimationSampleResult {
 /**
  * Sample every track at a uniform frame schedule.
  *
- *   durationMs = max atMs across all tracks (0 when all keys sit at 0)
+ *   durationMs = max atMs across all param and appearance tracks (0 when all keys sit at 0)
  *   frameCount = max(2, ceil(durationMs / 1000 · fps))
  *   frame i at tMs = durationMs · i / (frameCount − 1)
  *
@@ -117,12 +169,13 @@ export interface AnimationSampleResult {
 export function sampleTracks(
   tracks: readonly NormalizedAnimationTrack[],
   fps: number,
+  appearanceTracks: readonly NormalizedAnimationAppearanceTrack[] = [],
 ): AnimationSampleResult {
   if (!Number.isFinite(fps) || fps <= 0) {
     throw new Error(`animationSampler: fps must be a finite number > 0 (got ${fps})`);
   }
   let durationMs = 0;
-  for (const track of tracks) {
+  for (const track of [...tracks, ...appearanceTracks]) {
     for (const key of track.keys) durationMs = Math.max(durationMs, key.atMs);
   }
   const frameCount = Math.max(2, Math.ceil((durationMs / 1000) * fps));
@@ -131,7 +184,16 @@ export function sampleTracks(
     const tMs = i === frameCount - 1 ? durationMs : (durationMs * i) / (frameCount - 1);
     const values: Record<string, number> = {};
     for (const track of tracks) values[track.param] = sampleTrackAt(track, tMs);
-    frames.push({ tMs, values });
+    if (appearanceTracks.length === 0) {
+      frames.push({ tMs, values });
+      continue;
+    }
+    const appearance = appearanceTracks.map((track) => ({
+      target: track.target,
+      channel: track.channel,
+      value: sampleAppearanceTrackAt(track, tMs),
+    }));
+    frames.push({ tMs, values, appearance });
   }
   return { frames, durationMs };
 }

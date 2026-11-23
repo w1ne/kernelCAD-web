@@ -28,3 +28,12 @@ python3 artifacts/catalog-demos/marine-wave-20261102/inspect_marine_video.py --m
 ## Claims and limits
 
 The evidence covers local source generation, catalog build, lint, integration tests, local page generation and rendered previews. The deployed website has not been verified; deployment is pending merge and review. These models are stylized scene props and do not claim seaworthiness, flotation performance, navigational accuracy or hardware acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/marine-wave-20261102/capture_marine_demo.py`
+- video review: `python3 artifacts/catalog-demos/marine-wave-20261102/inspect_marine_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

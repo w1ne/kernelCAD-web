@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import type { StepInspectReport } from '../../../src/kernel/import/inspectStep';
 import type { CylindricalHole } from '../../../src/kernel/backends/occt/holeDetection';
-import { classifyEditPromotion, parseEditIntent } from './editPromotion';
+import { advisoryLocality, classifyEditPromotion, parseEditIntent } from './editPromotion';
 
 function hole(diameter: number, x = 0, y = 0, z = 0): CylindricalHole {
   return {
@@ -34,6 +34,19 @@ function report(volume: number, faces: number, holes: CylindricalHole[] = [], si
         holeDetection: 'exact',
       },
     ],
+  };
+}
+
+/** The same report with the whole solid and its holes translated. */
+function shifted(source: StepInspectReport, dx: number, dy = 0, dz = 0): StepInspectReport {
+  const move = (p: [number, number, number]): [number, number, number] => [p[0] + dx, p[1] + dy, p[2] + dz];
+  return {
+    ...source,
+    solids: source.solids.map((solid) => ({
+      ...solid,
+      bboxExact: solid.bboxExact && { min: move(solid.bboxExact.min), max: move(solid.bboxExact.max) },
+      holes: solid.holes?.map((h) => ({ ...h, axisOrigin: move(h.axisOrigin) })),
+    })),
   };
 }
 
@@ -165,6 +178,405 @@ describe('classifyEditPromotion', () => {
   });
 });
 
+describe('unintended translation (#1402)', () => {
+  const holes = [hole(10, 20, 20), hole(10, 80, 20), hole(46, 50, 50)];
+
+  it('rejects a chamfer that also moved the whole part', () => {
+    const result = classifyEditPromotion({
+      request: 'Add a 2mm chamfer to the top outer edges.',
+      before: report(1_000_000, 20, holes),
+      after: shifted(report(999_000, 24, holes), 10),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'unintended-move' });
+    expect(result.reason).toContain('10.000');
+  });
+
+  it('rejects a translated part without holes', () => {
+    const result = classifyEditPromotion({
+      request: 'Add a 2mm chamfer to the top outer edges.',
+      before: report(1_000_000, 20),
+      after: shifted(report(999_000, 24), 0, -5, 3),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'unintended-move' });
+  });
+
+  it('rejects a part translated along the axes of all its holes', () => {
+    // Every hole axis line is unchanged by a shift along Z, so the hole match
+    // alone cannot show the move; the bbox shift does.
+    const result = classifyEditPromotion({
+      request: 'Add a 2mm chamfer to the top outer edges.',
+      before: report(1_000_000, 20, holes),
+      after: shifted(report(999_000, 24, holes), 0, 0, 3),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'unintended-move' });
+  });
+
+  it('rejects a translated part whose bore was also resized', () => {
+    const result = classifyEditPromotion({
+      request: 'Increase the diameter of the central bore to 50mm.',
+      before: report(1_000_000, 20, holes),
+      after: shifted(report(998_000, 20, [hole(10, 20, 20), hole(10, 80, 20), hole(50, 50, 50)]), 10),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'unintended-move' });
+  });
+
+  it('still accepts a lengthen that grows the bbox on one side', () => {
+    const before = report(1_000_000, 20, holes);
+    const after = report(1_050_000, 20, holes);
+    after.solids[0].bboxExact = { min: [0, 0, 0], max: [105, 100, 100] };
+    const result = classifyEditPromotion({ request: 'Extend the plate by 5mm in +X.', before, after });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('still accepts a requested move of the whole part', () => {
+    const result = classifyEditPromotion({
+      request: 'Move the part 10mm along X.',
+      before: report(1_000_000, 20, holes),
+      after: shifted(report(1_000_000, 20, holes), 10),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'move-check' });
+  });
+
+  it('does not read one moved hole as a moved part', () => {
+    const result = classifyEditPromotion({
+      request: 'Move the central bore 10mm along X.',
+      before: report(1_000_000, 20, holes),
+      after: report(1_000_000, 20, [hole(10, 20, 20), hole(10, 80, 20), hole(46, 60, 50)]),
+    });
+    // The bbox did not move, so this is a feature edit, not a moved part.
+    expect(result.status).toBe('accepted');
+    expect(result.classification).not.toBe('unintended-move');
+  });
+
+  it('does not read bbox noise below tolerance on every axis as a moved part', () => {
+    // 0.04 mm per axis is inside BBOX_TOL on each axis, but its length is 0.069 mm.
+    const result = classifyEditPromotion({
+      request: 'Add a 2mm chamfer to the top outer edges.',
+      before: report(1_000_000, 20, holes),
+      after: shifted(report(999_000, 24, holes), 0.04, 0.04, 0.04),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+});
+
+describe('extend toward a signed axis (#1402)', () => {
+  const holes = [hole(10, 20, 20), hole(46, 50, 50)];
+  function extended(min: [number, number, number], max: [number, number, number], volume = 1_050_000) {
+    const after = report(volume, 20, holes);
+    after.solids[0].bboxExact = { min, max };
+    return after;
+  }
+
+  it('rejects an extension that grew the part on the opposite side', () => {
+    const result = classifyEditPromotion({
+      request: 'Extend the plate by 5mm in +X.',
+      before: report(1_000_000, 20, holes),
+      after: extended([-5, 0, 0], [100, 100, 100]),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-direction' });
+    expect(result.reason).toContain('-X side');
+  });
+
+  it('rejects an extension that grew the part further than requested', () => {
+    const result = classifyEditPromotion({
+      request: 'Extend the plate by 5mm in +X.',
+      before: report(1_000_000, 20, holes),
+      after: extended([0, 0, 0], [110, 100, 100], 1_100_000),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-magnitude' });
+    expect(result.reason).toContain('10.000');
+  });
+
+  it('accepts the requested extension on the requested side', () => {
+    const result = classifyEditPromotion({
+      request: 'Lengthen the base along -Z by 4 mm.',
+      before: report(1_000_000, 20, holes),
+      after: extended([0, 0, -4], [100, 100, 100], 1_040_000),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('accepts an extended boss that stays inside the part bounds', () => {
+    // The boss face sat below the top, so the bbox grows less than 5 mm.
+    const result = classifyEditPromotion({
+      request: 'Extend the boss by 5mm in +Z.',
+      before: report(1_000_000, 20, holes),
+      after: extended([0, 0, 0], [100, 100, 102], 1_002_000),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('does not check the side when the request names no signed axis', () => {
+    expect(parseEditIntent('Extend the plate by 5mm.').targetExtent).toBeUndefined();
+    expect(parseEditIntent('Extend the rib by 5mm in +X and shorten the tab in -Y.').targetExtent).toBeUndefined();
+    expect(parseEditIntent('Extend the plate by 5mm in +X.').targetExtent).toEqual({ axis: 0, sign: 1, mm: 5 });
+  });
+});
+
+describe('local face move (#1402)', () => {
+  const holes = [hole(10, 20, 20), hole(46, 50, 50)];
+  function grown(min: [number, number, number], max: [number, number, number], volume: number) {
+    const after = report(volume, 20, holes);
+    after.solids[0].bboxExact = { min, max };
+    return after;
+  }
+
+  it('accepts a moved top face that changes the volume', () => {
+    // Before this fix, "move" made the request a rigid feature move, so the
+    // volume change failed it as wrong-topology.
+    const result = classifyEditPromotion({
+      request: 'Move the top face up by 3 mm.',
+      before: report(1_000_000, 20, holes),
+      after: grown([0, 0, 0], [100, 100, 103], 1_030_000),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('accepts a face moved toward a signed axis by the requested distance', () => {
+    const result = classifyEditPromotion({
+      request: 'Move the right face of the base 5mm in +X.',
+      before: report(1_000_000, 20, holes),
+      after: grown([0, 0, 0], [105, 100, 100], 1_050_000),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('rejects a face moved further than requested', () => {
+    const result = classifyEditPromotion({
+      request: 'Move the right face of the base 5mm in +X.',
+      before: report(1_000_000, 20, holes),
+      after: grown([0, 0, 0], [110, 100, 100], 1_100_000),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-magnitude' });
+  });
+
+  it('rejects a face move that grew the opposite side', () => {
+    const result = classifyEditPromotion({
+      request: 'Move the right face of the base 5mm in +X.',
+      before: report(1_000_000, 20, holes),
+      after: grown([-5, 0, 0], [100, 100, 100], 1_050_000),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-direction' });
+  });
+
+  it('rejects a face move that translated the whole part instead', () => {
+    const result = classifyEditPromotion({
+      request: 'Move the top face up by 3 mm.',
+      before: report(1_000_000, 20, holes),
+      after: shifted(report(1_000_000, 20, holes), 0, 0, 3),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'unintended-move' });
+  });
+
+  it('still reads a feature located on a face as a feature move', () => {
+    expect(parseEditIntent('Move the slot on the top face 5 mm in +X.')).toMatchObject({
+      moveOnly: true,
+      offsetsFaces: false,
+    });
+    expect(parseEditIntent('Shift the slot 4 mm toward +Y.')).toMatchObject({ moveOnly: true });
+    expect(parseEditIntent('Offset the top face of the boss by 2 mm.')).toMatchObject({
+      moveOnly: false,
+      offsetsFaces: true,
+    });
+  });
+});
+
+describe('hole move toward a signed axis (#1402)', () => {
+  const request = 'Move the 5 mm hole by 10 mm in -X.';
+  const before = report(1_000_000, 20, [hole(5, 50, 20), hole(12, 80, 80)]);
+  const movedTo = (x: number, y = 20) => report(1_000_000, 20, [hole(5, x, y), hole(12, 80, 80)]);
+
+  it('accepts the hole moved the requested distance on the requested side', () => {
+    const result = classifyEditPromotion({ request, before, after: movedTo(40) });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'move-check' });
+  });
+
+  it('accepts a requested move inside the distance tolerance', () => {
+    const result = classifyEditPromotion({ request, before, after: movedTo(40.04, 20.03) });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'move-check' });
+  });
+
+  it('rejects a hole moved further than requested', () => {
+    const result = classifyEditPromotion({ request, before, after: movedTo(20) });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-magnitude' });
+    expect(result.reason).toContain('30.000');
+  });
+
+  it('rejects a hole moved to the opposite side', () => {
+    const result = classifyEditPromotion({ request, before, after: movedTo(60) });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-direction' });
+    expect(result.reason).toContain('-X');
+  });
+
+  it('rejects a hole that also moved off the requested axis', () => {
+    const result = classifyEditPromotion({ request, before, after: movedTo(40, 30) });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-direction' });
+  });
+
+  it('accepts two holes shifted together by the requested distance', () => {
+    const result = classifyEditPromotion({
+      request: 'Shift the two 6 mm holes 8 mm toward +Y.',
+      before: report(1_000_000, 20, [hole(6, 10, 10), hole(6, 30, 10), hole(12, 50, 50)]),
+      after: report(1_000_000, 20, [hole(6, 10, 18), hole(6, 30, 18), hole(12, 50, 50)]),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'move-check' });
+  });
+
+  it('rejects two holes when one moved a different distance', () => {
+    const result = classifyEditPromotion({
+      request: 'Shift the two 6 mm holes 8 mm toward +Y.',
+      before: report(1_000_000, 20, [hole(6, 10, 10), hole(6, 30, 10), hole(12, 50, 50)]),
+      after: report(1_000_000, 20, [hole(6, 10, 18), hole(6, 30, 26), hole(12, 50, 50)]),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-magnitude' });
+  });
+
+  it('does not check the distance when the request names no signed axis', () => {
+    // "to the left" has no fixed frame in a STEP file.
+    const result = classifyEditPromotion({
+      request: 'Move the 5 mm hole 10 mm to the left.',
+      before,
+      after: movedTo(20),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'move-check' });
+  });
+
+  it('reads the move distance, not the hole size', () => {
+    expect(parseEditIntent('Move the 5 mm hole by 10 mm in -X.').targetMove).toEqual({ axis: 0, sign: -1, mm: 10 });
+    expect(parseEditIntent('Shift the 6 mm slot 8 mm toward +Y.').targetMove).toEqual({ axis: 1, sign: 1, mm: 8 });
+    expect(parseEditIntent('Move the hole to 20 mm from the +X edge.').targetMove).toBeUndefined();
+    expect(parseEditIntent('Add a 5 mm hole 10 mm in +X.').targetMove).toBeUndefined();
+  });
+});
+
+describe('remote hole change (#1402)', () => {
+  const holes = [hole(10, 20, 20), hole(10, 80, 20), hole(46, 50, 50)];
+
+  it('rejects a chamfer edit that also deleted a remote hole', () => {
+    // Filling the 10 mm hole adds ~1571 mm³; the chamfer removes more, so the
+    // net volume still falls in the requested direction.
+    const result = classifyEditPromotion({
+      request: 'Add a 2mm chamfer to the top outer edges.',
+      before: report(1_000_000, 20, holes),
+      after: report(997_000, 23, [hole(10, 20, 20), hole(46, 50, 50)]),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-topology' });
+    expect(result.reason).toContain('did not name');
+  });
+
+  it('rejects a fillet edit that also resized a remote hole', () => {
+    const result = classifyEditPromotion({
+      request: 'Add a 3mm fillet to the vertical outer edges.',
+      before: report(1_000_000, 20, holes),
+      after: report(999_500, 24, [hole(12, 20, 20), hole(10, 80, 20), hole(46, 50, 50)]),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-topology' });
+  });
+
+  it('rejects a pocket edit that moved a remote hole', () => {
+    const result = classifyEditPromotion({
+      request: 'Cut a 5mm deep rectangular pocket in the top face.',
+      before: report(1_000_000, 20, holes),
+      after: report(990_000, 25, [hole(10, 20, 30), hole(10, 80, 20), hole(46, 50, 50)]),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-topology' });
+  });
+
+  it('accepts a chamfer edit that keeps every hole', () => {
+    const result = classifyEditPromotion({
+      request: 'Add a 2mm chamfer to the top outer edges.',
+      before: report(1_000_000, 20, holes),
+      after: report(999_000, 24, holes),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('accepts a pocket that shortens a through hole without moving it', () => {
+    // The pocket floor cuts the top of the hole, so its depth changes; the
+    // axis and diameter stay, so the hole is the same feature.
+    const after = holes.map((h, i) => (i === 0 ? { ...h, depthMm: 15 } : h));
+    const result = classifyEditPromotion({
+      request: 'Cut a 5mm deep rectangular pocket in the top face.',
+      before: report(1_000_000, 20, holes),
+      after: report(990_000, 25, after),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('accepts a slot edit that adds a new round void and keeps the holes', () => {
+    const result = classifyEditPromotion({
+      request: 'Cut a 6mm wide slot through the flange.',
+      before: report(1_000_000, 20, holes),
+      after: report(995_000, 26, [...holes, hole(6, 70, 70)]),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('accepts a healed import whose hole positions differ by tolerance noise', () => {
+    const noisy = [hole(10.02, 20.03, 20), hole(10, 80, 19.97), hole(46.01, 50, 50)];
+    const result = classifyEditPromotion({
+      request: 'Add a 2mm chamfer to the top outer edges.',
+      before: report(1_000_000, 20, holes),
+      after: report(999_000, 24, noisy),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+});
+
+describe('hole enlargement keeps unrelated holes (#1402)', () => {
+  const request = 'Increase the diameter of the central bore to 310mm.';
+  const holes = [hole(188, 50, 50), hole(298, 50, 50), hole(8, 10, 10), hole(8, 90, 10)];
+  const enlarged = (rest: CylindricalHole[]) => [hole(188, 50, 50), hole(310, 50, 50), ...rest];
+
+  it('accepts a bore enlargement that keeps every other hole', () => {
+    const result = classifyEditPromotion({
+      request,
+      before: report(1_000_000, 20, holes),
+      after: report(998_000, 20, enlarged([hole(8, 10, 10), hole(8, 90, 10)])),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('rejects a bore enlargement that also deleted a remote hole', () => {
+    const result = classifyEditPromotion({
+      request,
+      before: report(1_000_000, 20, holes),
+      after: report(998_000, 19, enlarged([hole(8, 10, 10)])),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-topology' });
+    expect(result.reason).toContain('4 → 3');
+  });
+
+  it('rejects a bore enlargement that also resized a remote hole', () => {
+    const result = classifyEditPromotion({
+      request,
+      before: report(1_000_000, 20, holes),
+      after: report(998_000, 20, enlarged([hole(8, 10, 10), hole(12, 90, 10)])),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-topology' });
+    expect(result.reason).toContain('another hole was changed');
+  });
+
+  it('rejects a bore enlargement that also moved a remote hole', () => {
+    const result = classifyEditPromotion({
+      request,
+      before: report(1_000_000, 20, holes),
+      after: report(998_000, 20, enlarged([hole(8, 10, 10), hole(8, 70, 10)])),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-topology' });
+    expect(result.reason).toContain('another hole was changed');
+  });
+
+  it('rejects a bore enlargement that also enlarged the coaxial 188 mm bore', () => {
+    const result = classifyEditPromotion({
+      request,
+      before: report(1_000_000, 20, holes),
+      after: report(998_000, 20, [hole(310, 50, 50), hole(310, 50, 50), hole(8, 10, 10), hole(8, 90, 10)]),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-topology' });
+  });
+});
+
 describe('parseEditIntent', () => {
   it('reads a bore enlargement as material removal', () => {
     expect(parseEditIntent('Increase the diameter of the central bore to 310mm.').direction).toBe('decrease');
@@ -197,6 +609,184 @@ describe('parseEditIntent', () => {
     ).toBe('any');
   });
 
+  // Task 201 pilot, 15 Nov 2026 (#1402): a broad +X/-X offsetFaces passed
+  // validity and was accepted. Measured: volume 2,544,478.1527 → 2,597,484.5516
+  // mm³, faces 435 → 453, holes 28 → 28, same bbox.
+  const WALL_REQUEST =
+    'For each of the four non-circular pockets on the +X side of the central bore, bring their walls (faces with long axis along Y) inward by 6mm.';
+  const holes28 = Array.from({ length: 28 }, (_, i) => hole(6, i * 3));
+
+  it('does not accept a wall offset that added faces (task 201)', () => {
+    const result = classifyEditPromotion({
+      request: WALL_REQUEST,
+      before: report(2_544_478.1527, 435, holes28),
+      after: report(2_597_484.5516, 453, holes28),
+    });
+    expect(result).toMatchObject({ status: 'unknown', classification: 'locality-unverified', faceDelta: 18 });
+    expect(result.reason).toContain('faces +18');
+  });
+
+  it('accepts a wall offset that keeps the face and hole topology', () => {
+    const result = classifyEditPromotion({
+      request: WALL_REQUEST,
+      before: report(2_544_478.1527, 435, holes28),
+      after: report(2_530_000, 435, holes28),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('returns unknown, not failed, when a wall offset changes the hole count (task 201)', () => {
+    const result = classifyEditPromotion({
+      request: WALL_REQUEST,
+      before: report(2_544_478.1527, 435, holes28),
+      after: report(2_597_484.5516, 453, holes28.slice(1)),
+    });
+    expect(result).toMatchObject({ status: 'unknown', classification: 'locality-unverified' });
+    expect(result.reason).toContain('holes 28 → 27');
+  });
+
+  // #1402: "on the +X side of the central bore" only locates the pockets; it
+  // is not a request to edit the bore.
+  it('does not read a hole that only locates the edited feature as a hole edit', () => {
+    expect(parseEditIntent(WALL_REQUEST)).toMatchObject({
+      mentionsHoles: false,
+      mentionsTopology: true,
+      expectsHoleDelta: 'any',
+    });
+    expect(parseEditIntent('Add two ribs beside the central bore.')).toMatchObject({
+      direction: 'increase',
+      mentionsHoles: false,
+      expectsHoleDelta: 'any',
+    });
+    expect(parseEditIntent('Add two ribs beside the central bore.').targetHoleCountDelta).toBeUndefined();
+    expect(parseEditIntent('Remove the two ribs next to the central bore.')).toMatchObject({
+      direction: 'any',
+      expectsHoleDelta: 'any',
+    });
+    expect(parseEditIntent('Move the slot next to the bore 5 mm along +X.')).toMatchObject({
+      moveOnly: true,
+      direction: 'neutral',
+    });
+    expect(parseEditIntent('Increase the horizontal hole near the central bore to 12 mm.')).toMatchObject({
+      mentionsHoles: true,
+      targetHoleDiameterMm: 12,
+      targetHoleSelector: 'horizontal',
+    });
+    // The named bore is still the edited feature.
+    expect(parseEditIntent('Increase the diameter of the central bore to 310 mm.')).toMatchObject({
+      mentionsHoles: true,
+      targetHoleDiameterMm: 310,
+      targetHoleSelector: 'central',
+    });
+    expect(parseEditIntent('Drill four holes around the central bore.')).toMatchObject({
+      expectsHoleDelta: 'more',
+      targetHoleCountDelta: 4,
+    });
+  });
+
+  it('accepts two ribs added beside the bore with the holes unchanged', () => {
+    const result = classifyEditPromotion({
+      request: 'Add two ribs beside the central bore.',
+      before: report(1_000_000, 40, holes28),
+      after: report(1_004_000, 52, holes28),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('keeps added faces acceptable when the request is not a wall offset', () => {
+    expect(parseEditIntent(WALL_REQUEST).offsetsFaces).toBe(true);
+    expect(parseEditIntent('Add a 2mm chamfer to the top edges.').offsetsFaces).toBe(false);
+    const result = classifyEditPromotion({
+      request: 'Add a 2mm chamfer to the top edges.',
+      before: report(1_000_000, 20),
+      after: report(999_000, 24),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  // 100 mm cube, one 5 mm convex fillet on a 100 mm edge: 7 faces. Removing
+  // it adds (1 - pi/4) * 5^2 * 100 = 536.5 mm^3 and leaves 6 faces.
+  const FILLETED = 1_000_000 - 536.5;
+  const withBox = (source: StepInspectReport, min: [number, number, number], max: [number, number, number]) => ({
+    ...source,
+    solids: source.solids.map((solid) => ({ ...solid, bboxExact: { min, max } })),
+  });
+
+  it('accepts a narrow fillet removal that restores the sharp edge', () => {
+    const result = classifyEditPromotion({
+      request: 'Remove the 5mm fillet from the top +X edge.',
+      before: report(FILLETED, 7, [hole(10, 20, 20)]),
+      after: report(1_000_000, 6, [hole(10, 20, 20)]),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited', faceDelta: -1 });
+  });
+
+  it('rejects a broad cutter that removed the adjacent wall (bbox shrank)', () => {
+    // The fillet face is gone, but a 10 mm slab of the +X wall went with it:
+    // 13x the material of the fillet itself.
+    const result = classifyEditPromotion({
+      request: 'Remove the 5mm fillet from the top +X edge.',
+      before: report(FILLETED, 7, [hole(10, 20, 20)]),
+      after: withBox(report(1_000_000 - 7_000, 6, [hole(10, 20, 20)]), [0, 0, 0], [90, 100, 100]),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-topology' });
+    expect(result.reason).toContain('moved inward by 10.000 mm');
+  });
+
+  it('rejects a blend removal that grew the part beyond the blend size', () => {
+    const result = classifyEditPromotion({
+      request: 'Remove the 5mm fillet from the top +X edge.',
+      before: report(FILLETED, 7),
+      after: withBox(report(1_080_000, 6), [0, 0, 0], [108, 100, 100]),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-magnitude' });
+  });
+
+  it('accepts a blend removal that grows a side by no more than the blend size', () => {
+    const result = classifyEditPromotion({
+      request: 'Remove the 5mm fillet from the top +X edge.',
+      before: withBox(report(FILLETED, 7), [0, 0, 0], [95, 100, 100]),
+      after: report(1_000_000, 6),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('bounds a two-leg chamfer removal by its longer leg', () => {
+    // A 3 x 2 mm chamfer cut 3 mm off one face; filling it back grows that
+    // side by 3 mm, which is within the blend, not beyond a "2 mm" size.
+    const result = classifyEditPromotion({
+      request: 'Remove the 3 x 2 mm chamfer from the top +X edge.',
+      before: withBox(report(FILLETED, 7), [0, 0, 0], [97, 100, 100]),
+      after: report(1_000_000, 6),
+    });
+    expect(result).toMatchObject({ status: 'accepted', classification: 'edited' });
+  });
+
+  it('does not accept a blend removal that added faces (annular cutter)', () => {
+    // An annular cutter around the boss leaves a groove floor and two walls.
+    const result = classifyEditPromotion({
+      request: 'Remove the fillet from the outer diameter of the central boss on the +Z side of the part.',
+      before: report(FILLETED, 7),
+      after: report(1_000_000 - 7_000, 9),
+    });
+    expect(result).toMatchObject({ status: 'unknown', classification: 'locality-unverified', faceDelta: 2 });
+  });
+
+  it('reads only a plain blend removal as a blend removal', () => {
+    expect(parseEditIntent('Remove the 5mm fillet from the top +X edge.')).toMatchObject({
+      removesBlend: true,
+      blendSizeMm: 5,
+    });
+    expect(parseEditIntent('Remove the chamfers on the outer edges.')).toMatchObject({ removesBlend: true });
+    expect(parseEditIntent('Remove the 3 x 2 mm chamfer.').blendSizeMm).toBe(3);
+    expect(parseEditIntent('Remove the 2x3mm chamfer.').blendSizeMm).toBe(3);
+    expect(parseEditIntent('Remove the 3 mm × 2 mm chamfer.').blendSizeMm).toBe(3);
+    expect(parseEditIntent('Remove the 2 mm x 45° chamfer.').blendSizeMm).toBe(2);
+    expect(parseEditIntent('Remove the chamfer on the central bore.').removesBlend).toBe(false);
+    expect(parseEditIntent('Remove the fillet and add a 2mm chamfer.').removesBlend).toBe(false);
+    expect(parseEditIntent('Change the chamfers to 3mm fillets.').removesBlend).toBe(false);
+  });
+
   it('leaves the direction open when a fillet is removed from a named feature', () => {
     expect(
       parseEditIntent('Remove the fillet from the outer diameter of the central boss on the +Z side of the part.')
@@ -224,5 +814,35 @@ describe('parseEditIntent', () => {
       targetHoleDiameterMm: 10,
       targetHoleSelector: 'horizontal',
     });
+  });
+});
+
+describe('advisory locality checks (#1402)', () => {
+  const holes = [hole(10, 20, 20), hole(10, 80, 20), hole(46, 50, 50)];
+  const moved = classifyEditPromotion({
+    request: 'Add a 2mm chamfer to the top outer edges.',
+    before: report(1_000_000, 20, holes),
+    after: shifted(report(999_000, 24, holes), 10),
+  });
+
+  it('marks a non-local failure as a locality check', () => {
+    expect(moved).toMatchObject({ status: 'failed', classification: 'unintended-move', localityCheck: true });
+  });
+
+  it('reports a locality failure as unknown and keeps the reason', () => {
+    const advisory = advisoryLocality(moved);
+    expect(advisory).toMatchObject({ status: 'unknown', classification: 'unintended-move', localityCheck: true });
+    expect(advisory.reason).toBe(`not enforced (locality check): ${moved.reason}`);
+  });
+
+  it('does not mark or relax a failure that existed before #1402', () => {
+    const result = classifyEditPromotion({
+      request: 'Add a 5 mm boss on the top face.',
+      before: report(1_000_000, 20),
+      after: report(998_000, 21),
+    });
+    expect(result).toMatchObject({ status: 'failed', classification: 'wrong-direction' });
+    expect(result.localityCheck).toBeUndefined();
+    expect(advisoryLocality(result)).toBe(result);
   });
 });

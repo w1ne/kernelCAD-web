@@ -1,0 +1,5 @@
+{
+  "command": "npx eslint catalog/kits/data-center-infrastructure/ tests/integration/catalog/rearDoorHeatExchangerCopperMaterial.test.ts",
+  "exitCode": 0,
+  "result": "passed with no diagnostics"
+}

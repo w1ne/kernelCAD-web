@@ -5,8 +5,11 @@
 // Snippet 7 — checkStaticHold on a servo-driven shoulder joint, plus the S5
 // motion -> FEA hand-off (no hand-typed load).
 //
-// A 300x20x10 mm steel beam hinged to a wall bracket by a revolute mate,
-// standing in for a 2-link arm's shoulder. First runs with a generous actuator
+// A 300x20x10 mm steel beam hinged to a wall bracket by a revolute joint,
+// standing in for a 2-link arm's shoulder. The beam laps the bracket: the
+// bracket side face touches the beam side face, square to the shoulder axis,
+// and the joint origin lies on that shared face. The beam turns in its own
+// Y slab, so the ±90° travel is clear of the bracket. First runs with a generous actuator
 // torque (10x the analytic requirement) — clean pass. Then re-runs with an
 // undersized actuator (half the requirement) — assembly.joint.static-hold.exceeded
 // fires because the declared servo torque cannot hold the arm horizontal.
@@ -23,22 +26,27 @@ const WIDTH_MM = 20;
 const HEIGHT_MM = 10;
 const STEEL_DENSITY = 7850;
 const G = 9.81;
+const SEAT_Y = WIDTH_MM / 2; // beam side face = bracket side face
+const BRACKET_BACK_X = -40; // bracket face that is fixed to the wall
 
 // tau = m*g*L/2 at the horizontal pose.
 const volumeM3 = (LENGTH_MM * WIDTH_MM * HEIGHT_MM) * 1e-9;
 const expectedTauNm = STEEL_DENSITY * volumeM3 * G * (LENGTH_MM / 2) * 1e-3;
 
+// Bracket beside the beam, from the wall face to 20 mm past the pivot.
+const bracketBlock = () => box(60, 20, 40, true).translate(-10, SEAT_Y + 10, 0);
+// Beam with the pivot at its end, so the gravity arm is LENGTH_MM / 2.
+const beamBar = () => box(LENGTH_MM, WIDTH_MM, HEIGHT_MM, true).translate(LENGTH_MM / 2, 0, 0);
+
 function buildArm(actuatorTorqueNm: number, name: string) {
   const arm = assembly(name);
-  const wall = arm.part('wall', box(40, 40, 40, true));
-  const beam = arm.part(
-    'beam',
-    box(LENGTH_MM, WIDTH_MM, HEIGHT_MM, true).translate(LENGTH_MM / 2, 0, 0),
-    { density: STEEL_DENSITY },
-  );
+  const wall = arm.part('wall', bracketBlock());
+  // revolute() puts the child frame at the joint origin, so the beam is
+  // modelled with that origin (a point on its side face) at its local zero.
+  const beam = arm.part('beam', beamBar().translate(0, -SEAT_Y, 0), { density: STEEL_DENSITY });
   arm.revolute('shoulder', wall, beam, {
     axis: [0, 1, 0],
-    origin: [0, 0, 0],
+    origin: [0, SEAT_Y, 0],
     limitsDeg: [-90, 90],
     actuator: { torqueNm: actuatorTorqueNm },
   });
@@ -60,16 +68,16 @@ if (!exceeded) throw new Error('expected assembly.joint.static-hold.exceeded');
 
 // ---- S5: motion_load -> feaStudy at the worst pose ---------------------
 const motionArm = assembly('cookbook-servo-arm-fea');
-const bracketShape = box(40, 40, 40, true).translate(-20, 0, 0);
+const bracketShape = bracketBlock();
 const bracket = motionArm.part('bracket', bracketShape, { material: 'steel' });
 const link = motionArm.part(
   'link',
-  box(LENGTH_MM, WIDTH_MM, HEIGHT_MM, true).translate(LENGTH_MM / 2, 0, 0),
+  beamBar(),
   { density: STEEL_DENSITY, crossSection: { kind: 'rectangle', widthMm: WIDTH_MM, heightMm: HEIGHT_MM, lengthMm: LENGTH_MM } },
 );
 const pivot = {
   type: 'axis' as const,
-  origin: { kind: 'vec3' as const, value: [0, 0, 0] as [number, number, number] },
+  origin: { kind: 'vec3' as const, value: [0, SEAT_Y, 0] as [number, number, number] },
   axis: [0, 1, 0] as [number, number, number],
 };
 bracket.connector('pivot', pivot);
@@ -94,7 +102,7 @@ if (Math.abs(worst.pose.shoulder) > 1e-6) {
 bracketShape.feaStudy({
   name: 'servo-bracket',
   material: 'mild-steel',
-  fixed: { atX: -40 },
+  fixed: { atX: BRACKET_BACK_X },
   loadsFrom: { motion, part: 'bracket' },
   minSafetyFactor: 1.5,
   meshSize: 5,
@@ -107,4 +115,4 @@ console.log(
     `(proxy ${worst.proxy.kind} ${worst.proxy.value.toFixed(2)} ${worst.proxy.unit})`,
 );
 
-return servoOk.solvedModel({ shoulder: 0 }, { ignore: [['wall', 'beam']] });
+return servoOk.solvedModel({ shoulder: 0 });

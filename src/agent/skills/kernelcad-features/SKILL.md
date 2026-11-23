@@ -34,12 +34,43 @@ plate.fillet(0.2, { face: 'pilotHole.floor' });
 ```
 
 Slots written by `hole`: `wall`, `floor`, `wall-back`, `counterbore-wall`,
-`counterbore-floor`, `countersink-cone`, `entry-rim`, `floor-rim`,
-`wall-back-rim`. Slots written by `cutout`: see `cutoutClassifier`.
+`counterbore-floor`, `countersink-cone`. Slots written by `cutout`: see
+`cutoutClassifier`.
+
+`hole` and `holes` also name the rim edges they create:
+
+- `entry-rim`: where the outermost hole face (bore wall, counterbore wall or
+  countersink cone) meets the entry face.
+- `exit-rim`: where a through bore leaves the body.
+- `floor-rim`: where the bore wall meets a flat blind floor.
+
+```typescript
+plate.hole('top', { u: 0, v: 0, diameter: 6, depth: 'through', name: 'thru' })
+  .chamfer(0.5, { face: 'thru.entry-rim' }); // breaks the top edge only
+```
+
+`kc.q.edge(kc.q.derivedFrom(part.id)).and(kc.q.withLabel('entry-rim'))`
+selects every entry rim on `part`, from all its holes;
+`kc.q.edge(kc.q.withLabel('entry-rim'))` selects them on the whole body.
+Filters inside `q.edge(...)` select edges, so
+`q.edge(q.withFeatureName(id), q.withLabel('corner'))` works too, and so do
+`q.edge(q.closestTo([x, y, z]))` (nearest edge midpoint) and
+`q.edge(q.geometryType('CIRCLE'), q.closestTo(p))` (nearest circular edge).
+`q.face(q.closestTo(p))` and `q.face(q.geometryType('PLANE'))` select faces on
+any body, including plain `box(...)` and `cylinder(...)`. A later `fillet` or
+`chamfer` keeps the labels of the edges it leaves alone, so
+`.chamfer(0.5, { face: 'thru.entry-rim' }).chamfer(0.3, { face: 'thru.exit-rim' })`
+breaks the two rims by different amounts. `cutout`
+has no rim refs yet; select its edges by query, for example
+`{ atZ: 20 }` on a 20 mm plate. A slot the feature never
+wrote (`pilotHole.rim`, a typo) fails with
+`feature.face-ref.not-resolvable`; the hint lists the face and edge refs
+that feature does carry.
 
 When an upstream op rewrites enough topology that the slot-by-name lookup
 loses the face, the resolver falls back to a geometry-snapshot match
-(centroid + normal + area + surfaceType from the create-time fingerprint).
+(centroid + normal + area + surfaceType from the create-time fingerprint of
+that same slot; never the fingerprint of another face of the feature).
 Successful fallback emits `feature.created-ref.fallback-used` (warning,
 not error) — the downstream feature still resolves. Lock the ref against
 future edits by naming the upstream feature with `.name()` and addressing
@@ -94,6 +125,8 @@ const compliance = tempRayBan.embossText({
 | `scaleMode` | `'original' \| 'native' \| 'bounds'` | Default `'original'` (preserves mm size; planar faces only). |
 | `fontFamily` | `string?` | Logical name or `.ttf` path. Default Liberation Sans. |
 
+Any other key throws `feature.invalid-args` (e.g. `font` is not `fontFamily`, `halign` is not `align`).
+
 The emboss feature lowers via `replicad.drawText → drawing.sketchOnFace(face, scaleMode) → sketch.extrude(|depth|) → parent.fuse|.cut`. The fuse / cut runs through history-aware booleans (`fuseWithHistory` / `cutWithHistory`) so the newly-created glyph faces carry created-ref labels on the result `historyMap` and can be targeted downstream:
 
 | `depth` sign | Label on planar glyph face | Label on side walls |
@@ -105,7 +138,7 @@ Use these names to chain further features against the embossed/engraved geometry
 
 ### `Shape.projectCurve({...})`
 
-Wraps a 2D closed curve onto a 3D face along the face normal. Returns a `Sketch` (face-bound) that composes with `.extrude(d)` to land a raised silhouette, or pair with the parent's `.subtract(...)` for an engraved logo:
+Closed mode wraps a 2D closed curve onto a 3D face along the face normal. It returns a face-bound `Sketch` that composes with `.extrude(d)` to land a raised silhouette, or with the parent's `.subtract(...)` for an engraved logo:
 
 ```typescript
 // Bottle body with a brand silhouette projected and raised on the top face.
@@ -126,12 +159,46 @@ const raised = bottle
 const branded = bottle.union(raised);
 ```
 
+Open mode projects one open `sketchCommands` chain from an explicit world-space
+source plane along a world-space direction. Await it; the result is one `Curve3D`
+per projected edge, including all fragments when the path crosses a hole. The
+face selector must resolve to exactly one face. Use a returned curve as a sweep
+spine:
+
+```typescript
+const body = box(30, 10, 30);
+const curves = await body.projectCurve({
+  source: { kind: 'sketchCommands', commands: [
+    { kind: 'moveTo', x: mm(-12), y: mm(0) },
+    { kind: 'lineTo', x: mm(12), y: mm(0) },
+  ] },
+  face: 'right',
+  asEdge: true,
+  sourcePlane: { origin: [50, 5, 15], normal: [0, 1, 0], xAxis: [0, 0, 1] },
+  direction: [-1, 0, 0],
+});
+const rib = variableSweep(curves[0], [
+  { t: 0, profile: path().moveTo(-0.5, -0.5).lineTo(0.5, -0.5).lineTo(0.5, 0.5).lineTo(-0.5, 0.5).close() },
+  { t: 1, profile: path().moveTo(-0.5, -0.5).lineTo(0.5, -0.5).lineTo(0.5, 0.5).lineTo(-0.5, 0.5).close() },
+]);
+```
+
+`sourcePlane.origin` uses millimetres. `normal` and `xAxis` define the source
+frame; `xAxis` is projected into the plane. Open commands need one `moveTo`, at
+least one segment, and no `close` or second `moveTo`. See the [open projection
+demo bundle](../../../docs/demos/open-face-projection/README.md) for the verified
+through-hole case and its measured fragments.
+
 | Field | Type | Notes |
 |---|---|---|
 | `source` | `ProjectCurveSource` | `{ kind: 'sketchCommands', commands }` or `{ kind: 'drawing', drawingJson }` (drawing-JSON branch is a follow-up). |
 | `face` | `FaceSelector \| string` | Canonical / label. |
 | `scaleMode` | `'original' \| 'native' \| 'bounds'` | Same as embossText. |
-| `asEdge` | `boolean?` | **NOT IMPLEMENTED.** When `true`, the lowerer emits `feature.project-curve.no-intersection`. Use closed-curve projection. |
+| `asEdge` | `true` for open mode | Requires `sourcePlane` and `direction`; returns `Promise<Curve3D[]>` rather than a `Sketch`. |
+| `sourcePlane` | `{ origin: Vec3; normal: Vec3; xAxis: Vec3 }` | Open mode only. World-space frame; `origin` is in mm. |
+| `direction` | `Vec3` | Open mode only. Non-zero world-space projection direction. |
+
+Any other key throws `feature.invalid-args` (e.g. `scale` is not `scaleMode`, `curve` is not `source`).
 
 ### Recovery table
 
@@ -141,7 +208,7 @@ const branded = bottle.union(raised);
 | `feature.emboss-text.face-too-small` | Glyph block exceeded the face bounds at wrap time. | Lower `size`, pick a larger face, or set `scaleMode: 'bounds'`. |
 | `feature.emboss-text.boolean-noop` | The emboss/engrave boolean changed nothing — the glyph tool never intersected the body (anchored over a hole, off the face, or the wrong depth sign). | Move the anchor over solid material and check the `depth` sign (positive = emboss out, negative = engrave in). |
 | `feature.project-curve.curve-empty` | `source.commands` had zero entries. | Build the path via `path().moveTo(...).lineTo(...).close().build()` so the wire has at least one segment. |
-| `feature.project-curve.no-intersection` | Closed-curve case: the curve missed the face. Open-wire case (`asEdge:true`): not implemented. | Closed: clamp curve coords into the face bounds. Open: rewrite as a closed projection. |
+| `feature.project-curve.no-intersection` | The source did not intersect the selected face in the requested direction. | Move the source plane or reverse/adjust the direction so the path reaches the face. |
 | `feature.face.invalid-uv-anchor` | `anchorU` / `anchorV` outside `[0, 1]`. | Clamp the anchor to `[0, 1]`. |
 | `sketch.text.empty-content` | `textContent` was empty or whitespace. | Pass a non-empty string with at least one printable glyph. |
 

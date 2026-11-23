@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
-// Adjustable pipe support stand with paired rollers, screw post and tripod feet.
+// Illustrative pipe stand with three splayed legs and two supported, parallel
+// rollers. The height adjuster is an envelope; no load rating or screw mechanism.
 meta({
   name: "pipe-roller-stand",
   license: 'CC0-1.0',
   title: "Pipe roller stand",
-  description: "Adjustable pipe support stand with paired rollers, screw post and tripod feet. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+  description: "Illustrative pipe support stand with three splayed tripod legs, a height-adjuster envelope and paired parallel rollers carried on shafts and bored brackets. No load rating or adjustment mechanism. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
   tags: ['construction equipment', 'roadworks', 'jobsite', 'low poly', 'CC0'],
   kit: 'construction-equipment',
   category: 'prop',
@@ -22,11 +23,25 @@ presets({
 });
 const p = assembly('pipe-roller-stand');
 const add = (name, shape, finish = equipmentPaintColor) => p.part(name, shape.scale(scale).color(finish));
-add('tripod-leg-0', box(42, 42, 660, true).translate(-94.5, -85, 330), equipmentPaintColor);
-add('tripod-leg-1', box(42, 42, 660, true).translate(94.5, -85, 330), equipmentPaintColor);
-add('tripod-leg-2', box(42, 42, 660, true).translate(0, 90, 330), equipmentPaintColor);
-add('upright-post', cylinder(220, 46, 8).translate(0, 0, 598.4), equipmentPaintColor);
-add('roller-left', cylinder(189, 50, 8).rotateX(90).translate(0, -5.5, 836), structuralSteelColor);
-add('roller-right', cylinder(189, 50, 8).rotateX(90).translate(0, 194.5, 836), structuralSteelColor);
+// Three spread ground contacts seat on the hub underside at Z=610.
+for (const [index, angle] of [90, 210, 330].entries()) {
+  add(`tripod-leg-${index}`, prismSideY([[210, 0], [252, 0], [82, 610], [40, 610]], -21, 21).rotateZ(angle));
+}
+add('tripod-hub', cylinder(50, 94, 12).translate(0, 0, 610));
+add('upright-post', cylinder(100, 46, 12).translate(0, 0, 660));
+add('roller-head-plate', box(280, 200, 24).translate(-140, -100, 760));
+
+// The pipe lies along X. Two parallel X-axis rollers at Y=±65 cradle it;
+// each axle runs through two real bracket bores instead of floating in space.
+for (const [side, y] of [['left', -65], ['right', 65]] as const) {
+  const roller = cylinder(220, 30, 16).hole('top', { u: 0, v: 0, diameter: 20, depth: 'through' })
+    .rotateY(90).translate(-110, y, 835);
+  add(`roller-${side}`, roller, structuralSteelColor);
+  add(`roller-${side}-axle`, cylinder(260, 10, 12).rotateY(90).translate(-130, y, 835), structuralSteelColor);
+  for (const [end, x] of [['front', -130], ['rear', 110]] as const) {
+    const bracket = box(20, 50, 80).hole('left', { u: 0, v: 11, diameter: 20, depth: 'through' });
+    add(`roller-${side}-${end}-bracket`, bracket.translate(x, y - 25, 784));
+  }
+}
 
 return p.model();

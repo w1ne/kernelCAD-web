@@ -39,3 +39,11 @@ The demo shows before/after local renders, named material controls, the resolved
 Run the commands listed in `settings.json` from the repository root. The source transformer is `promote_theatre_production.py`; it changes existing IDs only. `capture_baseline_quality.py` reconstructs the source baseline named in `source-revision.txt`.
 
 The all-assets Studio parameter check's timeout was raised from 300 to 600 seconds after the full 2,390-asset evaluation exceeded its original limit; its parameter equality assertion is unchanged. The passing integration output records 15 tests across four files.
+
+## Untracked generated outputs
+
+`frames/` is not tracked in git; it is regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/theatre-production-quality-promotion-20261105/capture_theatre_promotion.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

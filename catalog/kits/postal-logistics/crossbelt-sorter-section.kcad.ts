@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
-// Crossbelt sorter section: Elevated sortation track section with repeated shallow crossbelt carriage trays. Low-poly visualization geometry in millimetres, Z up.
+// Crossbelt sorter section: Elevated sortation track with molded-polymer carriers and visible rubber crossbelts. Low-poly visualization geometry in millimetres, Z up.
 
 meta({
   name: "crossbelt-sorter-section",
   license: 'CC0-1.0',
   title: "Crossbelt sorter section",
-  description: "Elevated sortation track section with repeated shallow crossbelt carriage trays. Scale, painted steel, structural steel, moulded polymer, stainless steel, and weathered or highVisibility finish presets are editable.",
+  description: "Elevated sortation track section with molded-polymer carriers and visible rubber crossbelts. Scale, painted steel, structural steel, moulded polymer, conveyor-belt rubber, stainless steel, and weathered or highVisibility finish presets are editable.",
   tags: ['postal logistics', 'mail', 'parcel', 'package processing', 'low poly', 'scene prop'],
   kit: 'postal-logistics',
   category: 'prop',
@@ -18,10 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paintedSteel = param('paintedSteel', '#56777d', { label: 'Painted steel' });
 const structuralSteel = param('structuralSteel', '#58656c', { label: 'Structural steel' });
 const polymer = param('polymer', '#477c8e', { label: 'Moulded polymer' });
+const beltRubber = param('beltRubber', '#30373b', { label: 'Conveyor-belt rubber' });
 const stainlessSteel = param('stainlessSteel', '#bbc4c4', { label: 'Stainless steel' });
 presets({
-  weathered: { paintedSteel: '#68777a', structuralSteel: '#67675f', polymer: '#6c7c7c', stainlessSteel: '#9ea7a6' },
-  highVisibility: { paintedSteel: '#e36d32', structuralSteel: '#454f54', polymer: '#e0b245', stainlessSteel: '#d9e0de' },
+  weathered: { paintedSteel: '#68777a', structuralSteel: '#67675f', polymer: '#6c7c7c', beltRubber: '#3d3d39', stainlessSteel: '#9ea7a6' },
+  highVisibility: { paintedSteel: '#e36d32', structuralSteel: '#454f54', polymer: '#e0b245', beltRubber: '#252b2e', stainlessSteel: '#d9e0de' },
 });
 const octRect = (w:number,d:number,cut:number) => path()
   .moveTo(-w/2+cut,-d/2).lineTo(w/2-cut,-d/2).lineTo(w/2,-d/2+cut)
@@ -51,10 +52,14 @@ p.part("support-left-front", b(-270,-450,0,55,55,690).color(structuralSteel));
 p.part("support-right-front", b(270,-450,0,55,55,690).color(structuralSteel));
 p.part("support-left-back", b(-270,450,0,55,55,690).color(structuralSteel));
 p.part("support-right-back", b(270,450,0,55,55,690).color(structuralSteel));
-p.part("tray-1", b(0,-390,790,500,150,50).color(polymer));
-p.part("tray-2", b(0,-130,790,500,150,50).color(polymer));
-p.part("tray-3", b(0,130,790,500,150,50).color(polymer));
-p.part("tray-4", b(0,390,790,500,150,50).color(polymer));
+p.part("tray-1", b(0,-390,790,500,150,42).color(polymer));
+p.part("tray-2", b(0,-130,790,500,150,42).color(polymer));
+p.part("tray-3", b(0,130,790,500,150,42).color(polymer));
+p.part("tray-4", b(0,390,790,500,150,42).color(polymer));
+p.part("crossbelt-1", b(0,-390,832,470,130,8).color(beltRubber));
+p.part("crossbelt-2", b(0,-130,832,470,130,8).color(beltRubber));
+p.part("crossbelt-3", b(0,130,832,470,130,8).color(beltRubber));
+p.part("crossbelt-4", b(0,390,832,470,130,8).color(beltRubber));
 p.part("drive-panel", b(390,0,370,80,180,260).color(stainlessSteel));
 
 return p.model();

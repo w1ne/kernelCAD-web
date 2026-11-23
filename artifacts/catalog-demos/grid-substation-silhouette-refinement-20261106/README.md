@@ -61,3 +61,12 @@ source-hash and triangle-budget audit, invocation settings, verification
 results, MP4 source, and decoded video inspection. The
 three `.kcad.ts` files in `catalog/kits/grid-substation/` remain the geometry
 source of truth.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/grid-substation-silhouette-refinement-20261106/capture_demo.py`
+- video review: `python3 artifacts/catalog-demos/grid-substation-silhouette-refinement-20261106/inspect_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

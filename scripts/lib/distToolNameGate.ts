@@ -30,6 +30,7 @@ const CLI_SUBCOMMANDS = new Set<string>([
   'render',
   'sandbox',
   'skill',
+  'slicer',
   'stats',
   'telemetry',
   'validate',
@@ -122,6 +123,9 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   // these are its check-specific params, not tool calls).
   'min_torque_margin_pct',
   'range_samples',
+  // verify({ check: 'clearance-range' }) planned-clearance parameter
+  // (a param of the real verify tool, not a tool call).
+  'min_clearance_mm',
   // Referenced in sdformat prose only to state it does NOT exist as a tool
   // ("There is no separate `validate_sdf` MCP tool") — not a tool call.
   'validate_sdf',

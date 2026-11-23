@@ -28,3 +28,12 @@ python3 artifacts/catalog-demos/railway-wave-20261102/inspect_railway_video.py -
 ## Claims and limits
 
 The evidence covers local source generation, mesh export, lint, integration tests, local page generation and rendered previews. The deployed website has not been verified; deployment is pending review and merge. These stylized railway models do not claim track fit, operational signaling, transport safety or hardware acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/railway-wave-20261102/capture_railway_demo.py`
+- video review: `python3 artifacts/catalog-demos/railway-wave-20261102/inspect_railway_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

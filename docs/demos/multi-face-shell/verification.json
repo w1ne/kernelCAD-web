@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-11-14",
+  "source": "examples/cookbook-parity/open-ended-duct-sleeve.kcad.ts",
+  "kernel": "occt",
+  "localBuild": "passed",
+  "diagnostics": [],
+  "topologicallyValid": true,
+  "volumeMm3": 5280,
+  "expectedVolumeMm3": 5280,
+  "faceCount": 10,
+  "boundsMm": {
+    "min": [
+      0,
+      0,
+      0
+    ],
+    "max": [
+      40,
+      30,
+      20
+    ]
+  },
+  "meshedFeatureCount": 2,
+  "failedFeatureIds": [],
+  "renderer": "Software z-buffered triangle rasterizer using sharp; source triangles from meshFeaturesPerFeature.",
+  "videoProvenance": "Local script replay and OCCT geometry validation. This is not a simulation, deployment check, or hardware acceptance test."
+}

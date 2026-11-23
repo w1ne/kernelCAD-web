@@ -1,0 +1,3 @@
+Command: npx tsx scripts/buildAssetCatalog.ts
+Exit status: 0
+Output: wrote /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000/catalog/index.json

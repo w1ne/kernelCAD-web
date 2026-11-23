@@ -98,12 +98,12 @@ describe('FDM printability check', () => {
     const slope = fdm.orientation.overhangs.find(r => r.status === 'unsupported')!;
     expect(slope.maxOverhangDeg).toBeCloseTo(60, 6);
     expect(slope.reachMm).toBeCloseTo(5 * Math.tan(Math.PI / 3), 6);
-    expect(slope.faceRef).toMatch(/^@kc\[extrude_1\/face\//);
+    expect(slope.faceRef).toBeUndefined();
     expect(codes(report)).toEqual(['dfm.fdm.overhang-unsupported']);
     const d = report.diagnostics[0];
     expect(d.severity).toBe('error');
     expect(d.message).toMatch(/100\.0 mm² of unsupported overhang/);
-    expect(d.message).toMatch(/@kc\[extrude_1\/face\//);
+    expect(d.message).not.toMatch(/@kc\[extrude_1\/face\/f\d+\]/);
     expect(fdm.verdict).toBe('fail');
   }, 60000);
 

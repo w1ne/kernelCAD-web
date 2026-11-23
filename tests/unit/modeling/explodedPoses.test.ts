@@ -33,6 +33,24 @@ arm.mate('mid-top', 'mid.top', 'top.bottom', 'fastened');
 return arm.model();
 `;
 
+// An unmated part declared first (the kernelcad-kinematic 05-clamshell
+// cookbook declares its \`table\` first) must not hide the stack's mates.
+const TABLE_FIRST = `
+const SIZE = 10;
+const arm = assembly('table-first');
+arm.part('table', box(SIZE, SIZE, SIZE), { at: [-40, 0, 0], material: 'aluminum' });
+arm.part('base', box(SIZE, SIZE, SIZE), { material: 'aluminum' })
+  .connector('top', { type: 'frame', origin: { kind: 'vec3', value: [SIZE / 2, SIZE / 2, SIZE] }, normal: [0, 0, 1] });
+arm.part('mid', box(SIZE, SIZE, SIZE), { material: 'pla' })
+  .connector('bottom', { type: 'frame', origin: { kind: 'vec3', value: [SIZE / 2, SIZE / 2, 0] }, normal: [0, 0, 1] })
+  .connector('top', { type: 'frame', origin: { kind: 'vec3', value: [SIZE / 2, SIZE / 2, SIZE] }, normal: [0, 0, 1] });
+arm.part('top', box(SIZE, SIZE, SIZE), { material: 'steel' })
+  .connector('bottom', { type: 'frame', origin: { kind: 'vec3', value: [SIZE / 2, SIZE / 2, 0] }, normal: [0, 0, 1] });
+arm.mate('base-mid', 'base.top', 'mid.bottom', 'fastened');
+arm.mate('mid-top', 'mid.top', 'top.bottom', 'fastened');
+return arm.model();
+`;
+
 const RADIAL = `
 const arm = assembly('radial');
 arm.part('a', box(10, 10, 10), { at: [-30, 0, 0], material: 'aluminum' });
@@ -87,6 +105,22 @@ describe('explodedPoses — mate-axis 3-part stack', () => {
     const exploded = applyExplodedOffsets(scene, result.offsets);
     const inter = detectInterferences(exploded, 0.01, new Set());
     expect(inter.pairs).toEqual([]);
+  }, 60000);
+});
+
+describe('explodedPoses — mate-axis with an unmated first part', () => {
+  it('explodes the mated stack along its mate axis and leaves the unmated part still', async () => {
+    const { arm, scene } = await lower(TABLE_FIRST);
+    const result = await explodedPoses(arm, { factor: 1, mode: 'mate-axis' }, scene);
+
+    expect(offsetOf(result, 'table').distance).toBeCloseTo(0, 5);
+    expect(offsetOf(result, 'base').distance).toBeCloseTo(0, 5);
+    expect(offsetOf(result, 'mid').offset).toEqual([
+      expect.closeTo(0, 5), expect.closeTo(0, 5), expect.closeTo(10, 5),
+    ]);
+    expect(offsetOf(result, 'top').offset).toEqual([
+      expect.closeTo(0, 5), expect.closeTo(0, 5), expect.closeTo(20, 5),
+    ]);
   }, 60000);
 });
 

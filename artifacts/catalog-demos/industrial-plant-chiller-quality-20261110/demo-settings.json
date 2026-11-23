@@ -1,0 +1,16 @@
+{
+  "workflow": "existing .kcad.ts source -> compact/large shell variants and material presets -> refreshed catalog preview and index -> local quality, lint, integration and page checks",
+  "video": "artifacts/catalog-demos/industrial-plant-chiller-quality-20261110/centrifugal-chiller-demo.mp4",
+  "canvas": {
+    "width": 1280,
+    "height": 720
+  },
+  "frames": 5,
+  "durationSeconds": 15,
+  "ffmpeg": "ffmpeg -framerate 1/3 -c:v libx264 -r 24 -pix_fmt yuv420p -crf 24 -movflags +faststart",
+  "invocation": "python3 artifacts/catalog-demos/industrial-plant-chiller-quality-20261110/capture_demo.py",
+  "variantInvocation": "npx tsx artifacts/catalog-demos/industrial-plant-chiller-quality-20261110/render_chiller_variants.ts",
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts centrifugal-chiller",
+  "indexInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "provenance": "Local software renders of checked-in kernelCAD source, indexed shell choice and named color presets. The current branch is not deployed; no engineering performance or physical acceptance is shown."
+}

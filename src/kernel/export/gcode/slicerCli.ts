@@ -20,7 +20,7 @@
 // via `--layer-height 0.2` rather than a JSON blob. `--load-filaments` for
 // material profiles works normally and is used as designed.
 
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -31,6 +31,13 @@ import {
 } from './profiles';
 
 const CANDIDATE_BINARIES = ['orca-slicer', 'prusa-slicer', 'PrusaSlicer'];
+
+/** Slicer binaries that are valid for the "open a STEP/3MF file" action.
+ *  Kept separate from {@link CANDIDATE_BINARIES} so the gcode slicing path
+ *  keeps its Orca/Prusa-specific CLI contract. */
+const OPEN_CANDIDATE_BINARIES = [
+  'orca-slicer', 'prusa-slicer', 'PrusaSlicer', 'bambu-studio', 'BambuStudio', 'cura',
+];
 
 function isExecutableOnPath(bin: string): string | undefined {
   const pathDirs = (process.env.PATH ?? '').split(':').filter(Boolean);
@@ -49,8 +56,11 @@ function isExecutableOnPath(bin: string): string | undefined {
 /**
  * Locate the slicer binary to invoke. Returns `undefined` if none is
  * available (env var unset/invalid and no candidate on PATH).
+ *
+ * @param candidates - Binary names to search on PATH. Defaults to the
+ *   Orca/Prusa candidates used by the gcode slicing path.
  */
-export function detectSlicer(): string | undefined {
+export function detectSlicer(candidates: readonly string[] = CANDIDATE_BINARIES): string | undefined {
   const envSlicer = process.env.KERNELCAD_SLICER;
   if (envSlicer) {
     try {
@@ -61,7 +71,7 @@ export function detectSlicer(): string | undefined {
       if (onPath) return onPath;
     }
   }
-  for (const bin of CANDIDATE_BINARIES) {
+  for (const bin of candidates) {
     const found = isExecutableOnPath(bin);
     if (found) return found;
   }
@@ -166,5 +176,133 @@ export async function withTempStl<T>(bytes: Uint8Array, fn: (path: string) => Pr
     return await fn(path);
   } finally {
     await rm(dir, { recursive: true, force: true }).catch(() => undefined);
+  }
+}
+
+/** Fail-closed error tag for {@link openFileInSlicer}. */
+export type OpenSlicerError = 'no-slicer' | 'spawn-failed';
+
+/** Result of asking a locally installed slicer to open a STEP/3MF file. */
+export interface OpenSlicerResult {
+  ok: boolean;
+  file: string;
+  binary?: string;
+  error?: OpenSlicerError;
+  message?: string;
+}
+
+export interface OpenFileInSlicerOptions {
+  /**
+   * Bounded safety wait for the operating-system spawn notification. The
+   * command fails closed if neither `spawn` nor `error` is reported within
+   * this window. Real systems resolve within a tick or two, but the host may
+   * be heavily loaded, so the default is generous.
+   */
+  launchTimeoutMs?: number;
+}
+
+/**
+ * Ask the locally installed slicer to open an already-exported STEP/3MF file.
+ * Detection prefers `KERNELCAD_SLICER`, then common binaries on PATH.
+ *
+ * The child process is launched detached and unreferenced after the operating
+ * system reports a successful `spawn`. A returned `{ ok: true }` means the
+ * spawn was reported, not that the slicer window is visible or that the file
+ * was loaded. If no slicer is found the result is typed
+ * `{ ok: false, error: 'no-slicer' }` and the file is left untouched.
+ */
+export async function openFileInSlicer(
+  filePath: string,
+  options?: OpenFileInSlicerOptions,
+): Promise<OpenSlicerResult> {
+  const binary = detectSlicer(OPEN_CANDIDATE_BINARIES);
+  if (!binary) {
+    return {
+      ok: false,
+      file: filePath,
+      error: 'no-slicer',
+      message: 'No slicer found. Set KERNELCAD_SLICER or install OrcaSlicer, PrusaSlicer, Bambu Studio, or Cura.',
+    };
+  }
+
+  const launchTimeoutMs = options?.launchTimeoutMs ?? 30_000;
+
+  try {
+    const child = spawn(binary, [filePath], { detached: true, stdio: 'ignore' });
+    const result = await new Promise<OpenSlicerResult>((resolve) => {
+      let settled = false;
+      let timer: NodeJS.Timeout | undefined;
+
+      const cleanup = () => {
+        if (timer !== undefined) {
+          clearTimeout(timer);
+          timer = undefined;
+        }
+      };
+
+      /** Best-effort termination guarded against an already-exited child. */
+      const safeTerminate = () => {
+        if (child.exitCode != null || child.signalCode != null) return;
+        try {
+          child.kill();
+        } catch {
+          // Ignore delivery failures — the child is already gone or the OS
+          // refused the signal; the timeout result is reported regardless.
+        }
+      };
+
+      const done = (value: OpenSlicerResult) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        child.off('spawn', onSpawn);
+        resolve(value);
+      };
+
+      const onSpawn = () => {
+        child.unref();
+        done({ ok: true, file: filePath, binary });
+      };
+
+      const onError = (e: Error) => {
+        if (settled) return;
+        // Do not unref a child that never started; report the async spawn failure.
+        done({
+          ok: false,
+          file: filePath,
+          binary,
+          error: 'spawn-failed',
+          message: e instanceof Error ? e.message : String(e),
+        });
+      };
+
+      child.once('spawn', onSpawn);
+      child.on('error', onError);
+
+      // Defensive bounded wait: in the pathological case where neither
+      // `spawn` nor `error` fires, fail closed rather than hanging or
+      // pretending success. The timer is always cleared once an outcome is
+      // known so it cannot unref a child or resolve twice later. If the
+      // timeout wins, terminate the child so a stalled spawn cannot leak.
+      timer = setTimeout(() => {
+        safeTerminate();
+        done({
+          ok: false,
+          file: filePath,
+          binary,
+          error: 'spawn-failed',
+          message: `Slicer launch timed out after ${launchTimeoutMs} ms without a spawn or error event`,
+        });
+      }, launchTimeoutMs);
+    });
+    return result;
+  } catch (e) {
+    return {
+      ok: false,
+      file: filePath,
+      binary,
+      error: 'spawn-failed',
+      message: e instanceof Error ? e.message : String(e),
+    };
   }
 }

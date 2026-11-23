@@ -7,13 +7,31 @@ export const MANUFACTURING_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   dfm_review: {
     type: 'object',
     properties: {
-      ok: { type: 'boolean' },
-      verdict: { type: 'string', enum: ['pass', 'fail'], description: "'fail' when any check fails; warnings do not fail the review." },
+      ok: { type: 'boolean', description: 'Invocation and model/analysis execution status, not a manufacturing pass indicator. A checked manufacturing failure can return ok: true.' },
+      verdict: { type: 'string', enum: ['pass', 'fail', 'not-checked'], description: "Manufacturing outcome. 'fail' takes precedence over incomplete checks; otherwise 'not-checked' means a requested rule was not evaluated; 'pass' means the review completed with no failing or not-checked rows. Omitted when input or model evaluation fails before a review exists." },
       processes: { type: 'array', items: { type: 'string' } },
       checks: {
         type: 'array',
-        items: { type: 'object', additionalProperties: true },
-        description: "Pass/fail checklist: { id (fdm.overhangs | fdm.bridging | fdm.min-wall | fdm.min-hole | fdm.min-pin | fdm.bed-fit | fdm.bed-contact | cnc.undercuts | cnc.internal-corner-radius | sheet.min-bend-radius | sheet.hole-to-bend | sheet.hole-to-edge | sheet.min-flange | sheet.not-sheet-metal | mold.draft | mold.wall-thickness | mold.undercuts | mold.sharp-internal-corners | mold.unmeasured), process, part, status: 'pass'|'fail'|'warn', summary, value?, limit? }.",
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', description: 'Stable DFM rule key.' },
+            process: { type: 'string', enum: ['fdm', 'cnc', 'sheet-metal', 'injection-molding'] },
+            part: { type: 'string' },
+            source: { type: 'string', enum: ['fdm', 'cnc', 'sheet-metal', 'injection-molding'], description: 'KernelCAD process engine that supplied this row; equals process.' },
+            status: { type: 'string', enum: ['pass', 'fail', 'warn', 'not-checked'] },
+            summary: { type: 'string' },
+            value: { type: 'number' },
+            limit: { type: 'number' },
+            unit: { type: 'string', enum: ['mm', 'mm2', 'deg', 'ratio'], description: 'Present when numeric evidence has a meaningful unit.' },
+            op: { type: 'string', enum: ['>=', '<='], description: 'Passing comparison, only when value and limit have matching units.' },
+            tolerance: { type: 'number', minimum: 0, description: 'Inclusive tolerance in the same unit as value and limit. Absent means zero. For >=, pass when value + tolerance >= limit; for <=, pass when value - tolerance <= limit.' },
+            refs: { type: 'array', items: { type: 'string' }, description: 'Inspectable @kc topology references emitted by the analysis engine.' },
+          },
+          required: ['id', 'process', 'part', 'source', 'status', 'summary'],
+          additionalProperties: true,
+        },
+        description: "Checklist rows keep `id` as the rule key. A `warn` row is an evaluated warning; `not-checked` means required analysis or measurement is unavailable. `unit` and `op` are included only for comparable measured values and limits. `tolerance` is the inclusive allowance used by that comparison, in the same unit; when absent it is zero. For `>=`, pass when value + tolerance >= limit; for `<=`, pass when value - tolerance <= limit. `refs` contains only topology refs already emitted by the DFM engine.",
       },
       fdm: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Per-part FDM engine report (part-local coordinates).' },
       cnc: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Per-part CNC engine report (part-local coordinates).' },
@@ -21,7 +39,7 @@ export const MANUFACTURING_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       injectionMolding: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Per-part injection-molding report (dfmSpec moulding engine): draft.insufficient faces, undercut.faces (@kc refs), walls, thickest section, sharpCorners, unmeasured, limitations (part-local coordinates).' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
     },
-    required: ['ok', 'verdict', 'checks', 'diagnostics'],
+    required: ['ok', 'checks', 'diagnostics'],
     additionalProperties: true,
   },
   dfm_fix_recheck: {
@@ -35,7 +53,7 @@ export const MANUFACTURING_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       before: {
         type: 'object',
         additionalProperties: true,
-        description: "{ verdict: 'pass'|'fail', findings: [{ id, process, part, status: 'fail'|'warn', summary, value?, limit? }] }.",
+        description: "{ verdict?: 'pass'|'fail'|'not-checked', findings: [{ id, process, part, status: 'fail'|'warn'|'not-checked', summary, value?, limit?, unit?, op?, tolerance?, source?, refs? }] }. Tolerance uses the same units as value and limit; absent means zero. For >=, pass when value + tolerance >= limit; for <=, pass when value - tolerance <= limit. Findings retain incomplete checks; input/model errors can have no verdict.",
       },
       after: {
         type: 'object',
@@ -45,12 +63,12 @@ export const MANUFACTURING_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       cleared: {
         type: 'array',
         items: { type: 'object', additionalProperties: true },
-        description: "Findings present before and absent after: { id, part, was: 'fail'|'warn' }.",
+        description: "Findings present before and absent after: { id, part, was: 'fail'|'warn'|'not-checked' }.",
       },
       remaining: {
         type: 'array',
         items: { type: 'object', additionalProperties: true },
-        description: 'Open fail and warn findings after the edit, or the before findings when nothing was applied.',
+        description: 'Open fail, warn and not-checked findings after the edit, or the before findings when nothing was applied.',
       },
       suggestions: {
         type: 'array',

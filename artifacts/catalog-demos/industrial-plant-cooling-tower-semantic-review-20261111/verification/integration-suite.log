@@ -1,0 +1,45 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/shellAndTubeExchangerMaterials.test.ts (1 test) 1081ms
+     ✓ keeps exposed tube sheets, nozzles and supports on a metal palette  510ms
+ ✓ tests/integration/catalog/baghouseDustCollectorFidelity.test.ts (1 test) 1403ms
+     ✓ keeps filter media inside the plenum and tapers the dust hopper to its outlet  833ms
+ ✓ tests/integration/catalog/pressureSandFilterVesselFidelity.test.ts (1 test) 1501ms
+     ✓ exports two stainless side nozzles entering the vessel at separate heights  816ms
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 1485ms
+ ✓ tests/integration/catalog/bucketElevatorSemantic.test.ts (1 test) 1740ms
+     ✓ keeps the bucket loop inside the casing and exposes distinct material controls  1305ms
+ ✓ tests/integration/catalog/maintenancePlatformFidelity.test.ts (1 test) 1781ms
+     ✓ keeps the platform guarded and connects its three-riser stair to the deck  1325ms
+ ✓ tests/integration/catalog/batteryQuarantineDrumMaterials.test.ts (1 test) 1820ms
+     ✓ keeps the vermiculite sack kraft beige and separate from the alarm paint  1315ms
+ ✓ tests/integration/catalog/rockBreakerBoomFidelity.test.ts (1 test) 2001ms
+     ✓ bolts both warning posts onto the top face of the grizzly wall  1476ms
+ ✓ tests/integration/catalog/capElevatorSemantic.test.ts (1 test) 2098ms
+     ✓ keeps its belt flights visible in the generated catalog preview  1581ms
+ ✓ tests/integration/catalog/substationCableLadderFidelity.test.ts (2 tests) 2134ms
+     ✓ preserves every rung and its rail envelope at both supported scale limits  596ms
+ ✓ tests/integration/catalog/sanitaryLobePumpFidelity.test.ts (2 tests) 2214ms
+     ✓ has four actual cap-nut bodies on the visible removable cover  1092ms
+     ✓ keeps all four fasteners on the cover when port orientation changes  632ms
+ ✓ tests/integration/catalog/storageArrayFidelity.test.ts (2 tests) 2874ms
+     ✓ is visibly distinct from the 8-bay compute chassis and includes 24 front carriers  1490ms
+     ✓ keeps the drive and service-module identities at both supported scale limits  909ms
+ ✓ tests/integration/catalog/evaporativeCoolingTowerFidelity.test.ts (1 test) 683ms
+     ✓ exports eight broad, separately named fan blades around the two top-deck hubs  435ms
+ ✓ tests/integration/catalog/beamCouplingFidelity.test.ts (2 tests) 5713ms
+     ✓ builds one valid 18×18×30 mm solid and preserves all three size choices  3717ms
+     ✓ has a material-removing helix and two real radial hub bores  1480ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 354ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 13528ms
+     ✓ nature/pine-tree opens with its five knobs at their defaults  402ms
+     ✓ a kit-representative sample opens with exactly the knobs its index row lists  11207ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  391ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 511154ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  510474ms
+
+ Test Files  17 passed (17)
+      Tests  32 passed (32)
+   Start at  04:58:43
+   Duration  516.34s (transform 51.00s, setup 1.62s, import 76.73s, tests 553.56s, environment 2ms)

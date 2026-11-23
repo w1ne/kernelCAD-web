@@ -1,0 +1,17 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/water-filter-vessel-semantic-review-20261110/verify_local_pages.py",
+  "scope": "generated local static page only; not deployed behavior",
+  "page": "site-build/catalog/water-treatment/pressure-sand-filter-vessel/index.html",
+  "copiedPreviewSha256": "5d9a1483cb625416abd1dece73e33b86d643ecbd3efd30530f3887cd153827f7",
+  "expectedPageTokens": [
+    "Pressure sand filter vessel",
+    "coatedSteel",
+    "structuralSteel",
+    "stainlessSteel",
+    "weathered",
+    "highVisibility",
+    "inspection manway",
+    "flange lips"
+  ],
+  "studioLinkPresent": true
+}

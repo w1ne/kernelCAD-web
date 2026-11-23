@@ -1,0 +1,55 @@
+{
+  "at": "2026-11-20T16:24:55.235055+00:00",
+  "sourceSha256": "c8fa474c0ba0901a07b6a0dd282c4adac8ba35c113eb76c043948f96b4df212d",
+  "nativeResultsSha256": "7a16d9dc2f2f3acac3ef8a13fcbd5ac0c6aee708cb9869651e6e2fe706455b9b",
+  "renderManifestSha256": "35b9cc6b5f26000e763bb29b0dd2bb80da4e4e127df318f14c81678b8827ae4f",
+  "status": "VISUAL_REVIEW_COMPLETE_WITH_MECHANISM_LIMITATIONS",
+  "images": [
+    {
+      "file": "default-views.webp",
+      "sha256": "ba127d13264afd89210cf8d9418c5443c22009c73de5461c44ac7f545af3a048",
+      "observed": "Front, right, top and isometric views retain three frame tiers, twelve gutters and correctly placed crop heads. No high-Z cluster or flipped head is visible. Existing simplified supports remain outside this repair."
+    },
+    {
+      "file": "states-contact.webp",
+      "sha256": "7eae5e0abae84581630dec65653416c9d50e85e9e3794b66896b1e52caa088c1",
+      "observed": "All ten saved native states are visible. Empty crop shows aligned dark cups; microgreens show continuous mats/tufts; four-color state changes frame, gutter, foliage and light zones. Auto-framed images do not prove physical scale; measured bounds do."
+    },
+    {
+      "file": "decoded-orbit-contact.webp",
+      "sha256": "d860d69989234b8655b62950aff06e49f74d51293d09a210b9b77d29bd275195",
+      "observed": "Four frames decoded from the actual four-second MP4 show consistent rack, crop and plumbing geometry through the orbit, without the former shared-handle placement error. This is a saved-GLB orbit, not a live Studio recording."
+    },
+    {
+      "file": "branches-four-views.webp",
+      "sha256": "04434749904c5cded5f896ba761a8d90e97cae0306698c14739bdfcfa2bc99cb",
+      "observed": "Front, right, top and isometric views of empty, microgreens and four-color states retain coherent gutter/frame placement and visible branch/color differences."
+    },
+    {
+      "file": "comparison.webp",
+      "sha256": "dadcbbf70548bbb06b2494b4dbdb93d079df669ff0c70e30f4e3fb085442249d",
+      "observed": "Archived published PNG and new native GLB show the same overall rack layout. New crop heads use regular twelve-sided silhouettes. The caption correctly states different renderer/camera provenance; the old 6266-triangle preview is not the measured 1985052-triangle ordinary display mesh."
+    },
+    {
+      "file": "head-views.webp",
+      "sha256": "7972e57b39eaff8b4775acadfdcaab71ed8c11f5e78e93aeac33110e23b47afb",
+      "observed": "Independent head close-up shows a twelve-sided silhouette, sloped faceted crown and central belt with 48 triangles. This is an intentional low-poly approximation, not exact ellipsoid curvature."
+    }
+  ],
+  "video": {
+    "file": "grow-rack-orbit.mp4",
+    "sha256": "974f53779c13c4a7e235b3ca099a2bf64add506fb37ce790c4ec13d0e0f16cf9",
+    "durationSeconds": 4,
+    "frames": 48,
+    "fps": 12,
+    "width": 768,
+    "height": 768,
+    "inspection": "Four actual decoded frames at 0, 1, 2 and 3 seconds inspected."
+  },
+  "limits": [
+    "No new CAD was evaluated for rendering or this review.",
+    "Local public export evidence and historical b269 sandbox loading are separate scopes.",
+    "Direct hosted build 194d7b1460e1 reported mechanism broken and 402 mechanism.interpenetration diagnostics. This repair does not establish mechanical or manufacturing acceptance.",
+    "Faceted lettuce volume is 2.4*r^3, 4.507034% below the analytic ellipsoid; axis extents and planted centers are preserved."
+  ]
+}

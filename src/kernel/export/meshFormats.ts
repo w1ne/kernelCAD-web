@@ -4,6 +4,10 @@
 import type { PBRMaterial } from '../../shared/intent/material';
 import { zipSync } from 'fflate';
 import { materialTable, uniqueSlots, type MeshMaterialSlot } from './meshMaterialTable';
+import { splitByCrease } from './creaseSplit';
+
+/** USD faces meeting at more than this angle get separate normals; the PLY writer uses the same default. */
+const USD_CREASE_ANGLE_DEG = 30;
 
 /** Indexed triangle mesh consumed by the neutral text mesh writers. */
 export interface IndexedMesh {
@@ -28,14 +32,23 @@ export interface ObjMeshExport {
   readonly mtl: Uint8Array;
 }
 
+export interface ObjMeshExportOptions {
+  /** Optional agent-requested absolute mesh tolerance to stamp as an OBJ comment. */
+  toleranceMm?: number;
+}
+
 export const OBJ_MTL_FILENAME = 'model.mtl';
 export const OBJ_ZIP_ENTRY = 'model.obj';
 
 /** Encode one or more indexed triangle meshes as Wavefront OBJ plus a sibling MTL. */
-export function exportMeshObj(parts: readonly NamedMesh[]): ObjMeshExport {
+export function exportMeshObj(parts: readonly NamedMesh[], options?: ObjMeshExportOptions): ObjMeshExport {
   if (parts.length === 0) throw new Error('OBJ export requires at least one mesh.');
   const slots = materialTable(parts);
-  const lines = ['# kernelCAD OBJ mesh export', `mtllib ${OBJ_MTL_FILENAME}`];
+  const lines = [
+    '# kernelCAD OBJ mesh export',
+    ...(options?.toleranceMm === undefined ? [] : [`# requested mesh tolerance ${String(options.toleranceMm)} mm`]),
+    `mtllib ${OBJ_MTL_FILENAME}`,
+  ];
   let vertexBase = 0;
   parts.forEach((part, index) => {
     vertexBase = writeObjObject(lines, part, slots[index]!.objToken, vertexBase);
@@ -44,8 +57,8 @@ export function exportMeshObj(parts: readonly NamedMesh[]): ObjMeshExport {
 }
 
 /** Zip `model.obj` and `model.mtl` for a caller that can return only one buffer. */
-export function exportMeshObjZip(parts: readonly NamedMesh[]): Uint8Array {
-  const { obj, mtl } = exportMeshObj(parts);
+export function exportMeshObjZip(parts: readonly NamedMesh[], options?: ObjMeshExportOptions): Uint8Array {
+  const { obj, mtl } = exportMeshObj(parts, options);
   return zipSync({ [OBJ_ZIP_ENTRY]: obj, [OBJ_MTL_FILENAME]: mtl });
 }
 
@@ -95,8 +108,12 @@ function usdStage(materials: readonly string[], meshes: readonly string[]): stri
     '    upAxis = "Z"',
     ')',
     '',
-    'def Xform "Model" {',
-    '    def Scope "Materials" {',
+    // Braces on their own lines, as `usdcat` writes them: the three.js USDA
+    // parser finds no prims under `def Xform "Model" {`.
+    'def Xform "Model"',
+    '{',
+    '    def Scope "Materials"',
+    '    {',
     materials.join('\n'),
     '    }',
     meshes.join('\n'),
@@ -131,6 +148,10 @@ function writeUsdMesh(part: NamedMesh, slot: MeshMaterialSlot, used: Set<string>
   if (used.has(primName)) throw new Error(`USD export has duplicate mesh prim name '${primName}'.`);
   used.add(primName);
   const faceCount = triangles.length / 3;
+  // Authored normals: without them three.js (and any reader that computes
+  // smooth normals) averages across the shared vertices, so every sharp CAD
+  // edge shades as a rounded bulge.
+  const normals = usdNormals(part.mesh);
   return [
     `    def Mesh "${primName}" (`,
     '        prepend apiSchemas = ["MaterialBindingAPI"]',
@@ -141,6 +162,12 @@ function writeUsdMesh(part: NamedMesh, slot: MeshMaterialSlot, used: Set<string>
     '        ]',
     `        int[] faceVertexCounts = [${Array.from({ length: faceCount }, () => '3').join(', ')}]`,
     `        int[] faceVertexIndices = [${Array.from(triangles).join(', ')}]`,
+    '        normal3f[] primvars:normals = [',
+    normals.lines.join(',\n'),
+    '        ] (',
+    '            interpolation = "faceVarying"',
+    '        )',
+    `        int[] primvars:normals:indices = [${normals.indices.join(', ')}]`,
     '        uniform token subdivisionScheme = "none"',
     `        rel material:binding = </Model/Materials/${slot.usdPrim}>`,
     '    }',
@@ -149,6 +176,24 @@ function writeUsdMesh(part: NamedMesh, slot: MeshMaterialSlot, used: Set<string>
 
 function pointLines(vertices: IndexedMesh['vertices']): string {
   return triples(vertices).map(([x, y, z]) => `            (${number(x)}, ${number(y)}, ${number(z)})`).join(',\n');
+}
+
+/** Crease-split normals as distinct USDA tuples plus one index per face vertex. */
+function usdNormals(mesh: IndexedMesh): { lines: string[]; indices: number[] } {
+  const split = splitByCrease(mesh, USD_CREASE_ANGLE_DEG);
+  const lines: string[] = [];
+  const lineIndex = new Map<string, number>();
+  const ids = triples(split.normals).map(([x, y, z]) => {
+    const line = `            (${unit(x)}, ${unit(y)}, ${unit(z)})`;
+    let id = lineIndex.get(line);
+    if (id === undefined) { id = lines.length; lineIndex.set(line, id); lines.push(line); }
+    return id;
+  });
+  return { lines, indices: Array.from(split.triangles, index => ids[index]!) };
+}
+
+function unit(value: number): string {
+  return number(Number(value.toFixed(6)));
 }
 
 function encode(lines: readonly string[]): Uint8Array {

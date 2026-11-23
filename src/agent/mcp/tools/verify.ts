@@ -5,6 +5,7 @@ import { validateAssemblyTool } from './validateAssembly';
 import { validateUrdfTool } from './validateUrdf';
 import { dfmCheckTool } from './dfmCheck';
 import { checkSweptCollisionTool } from './checkSweptCollision';
+import { suggestJointRangesTool } from './suggestJointRanges';
 import { checkReachableTool } from './checkReachable';
 import { checkMountingHoleConsistencyTool } from './checkMountingHoleConsistency';
 import { checkLoadCapacityTool } from './checkLoadCapacity';
@@ -15,6 +16,7 @@ import { checkGeometryQualityTool } from './checkGeometryQuality';
 import { checkEdgeRadiusTool } from './checkEdgeRadius';
 import { checkPhysicsTool } from './checkPhysics';
 import { checkRequirementsTool } from './checkRequirements';
+import { checkClearanceRangeTool } from './checkClearanceRange';
 
 /** The verification kind. Each value maps 1:1 to a dedicated verifier. */
 export type VerifyCheck =
@@ -23,6 +25,7 @@ export type VerifyCheck =
   | 'urdf'
   | 'dfm'
   | 'swept-collision'
+  | 'joint-range'
   | 'reachable'
   | 'mounting-holes'
   | 'load-capacity'
@@ -32,6 +35,7 @@ export type VerifyCheck =
   | 'geometry-quality'
   | 'edge-radius'
   | 'physics'
+  | 'clearance-range'
   | 'requirements';
 
 export interface VerifyInput {
@@ -40,7 +44,7 @@ export interface VerifyInput {
   check?: VerifyCheck;
   /**
    * Check-specific params, forwarded verbatim to the selected verifier:
-   * - assembly/swept-collision/reachable/mounting-holes/load-capacity: { file?, code?, assembly?, ... }
+   * - assembly/swept-collision/joint-range/reachable/mounting-holes/load-capacity: { file?, code?, assembly?, ... }
    * - urdf: { urdf_path }
    * - dfm: { file?, code? }
    * Each verifier fails closed on its own missing required params.
@@ -66,6 +70,7 @@ const HANDLERS: Record<VerifyCheck, Handler> = {
   urdf: call(validateUrdfTool),
   dfm: call(dfmCheckTool),
   'swept-collision': call(checkSweptCollisionTool),
+  'joint-range': call(suggestJointRangesTool),
   reachable: call(checkReachableTool),
   'mounting-holes': call(checkMountingHoleConsistencyTool),
   'load-capacity': call(checkLoadCapacityTool),
@@ -74,6 +79,7 @@ const HANDLERS: Record<VerifyCheck, Handler> = {
   'fastener-installation': call(checkFastenerInstallationTool),
   'edge-radius': call(checkEdgeRadiusTool),
   physics: call(checkPhysicsTool),
+  'clearance-range': call(checkClearanceRangeTool),
   requirements: call(checkRequirementsTool),
 };
 
@@ -107,7 +113,7 @@ export function verifyTool(input: VerifyInput): Promise<unknown> {
   return Promise.reject(
     new Error(
       `Unknown verify check: ${String(check)}. Valid: assembly, urdf, dfm, ` +
-        `swept-collision, reachable, mounting-holes, load-capacity, static-hold, motion-load, fastener-installation, geometry-quality, assembly-path, edge-radius, physics, requirements.`,
+        `swept-collision, joint-range, reachable, mounting-holes, load-capacity, static-hold, motion-load, fastener-installation, geometry-quality, assembly-path, edge-radius, physics, clearance-range, requirements.`,
     ),
   );
 }

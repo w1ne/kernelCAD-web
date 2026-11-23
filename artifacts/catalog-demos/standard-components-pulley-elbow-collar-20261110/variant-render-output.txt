@@ -1,0 +1,5 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' artifacts/catalog-demos/standard-components-pulley-elbow-collar-20261110/render_variants.ts
+(node:3153442) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Rendered 9 variants; geometry, palette, and triangle-budget checks passed.

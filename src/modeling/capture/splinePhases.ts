@@ -7,10 +7,39 @@
 // hints, and evaluation order are unchanged.
 import type { Param } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 
 type NowFn = (p: Param) => number;
+
+const SPLINE_OPTION_KEYS = ['tension', 'startTangent', 'endTangent'] as const;
+const SPLINE_OPTION_EXAMPLE = "path().moveTo(0, 0).spline([[0, 0], [10, 10]], { endTangent: [1, 0] })";
+
+/** Reject option typos before they can silently remove a spline constraint. */
+export function assertSplineOptionKeys(opts: unknown): void {
+  // Preserve the existing optional-chaining behavior for an explicit null.
+  if (opts === undefined || opts === null) return;
+  if (typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api: 'path().spline(points, opts)',
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: `an option object with only ${SPLINE_OPTION_KEYS.join(', ')}`,
+      example: SPLINE_OPTION_EXAMPLE,
+    });
+  }
+  const unknownKey = Object.keys(opts).find((key) => !(SPLINE_OPTION_KEYS as readonly string[]).includes(key));
+  if (unknownKey === undefined) return;
+  invalidArgs({
+    api: 'path().spline(points, opts)',
+    path: `opts.${unknownKey}`,
+    gotText: `an unknown option '${unknownKey}'`,
+    requires: `one of ${SPLINE_OPTION_KEYS.join(', ')}`,
+    example: SPLINE_OPTION_EXAMPLE,
+  });
+}
 
 /** Validate the waypoint list and convert every tuple to a Param pair. */
 export function toSplineWaypoints(

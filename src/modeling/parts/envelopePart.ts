@@ -86,6 +86,7 @@ export async function synthesizeEnvelope(
     attributes: {
       thread: part.thread,
       ...(part.lengthMm > 0 ? { lengthMm: part.lengthMm } : {}),
+      ...(part.designation !== undefined ? { designation: part.designation } : {}),
       nominalMm: part.nominalMm,
       ...(part.dims ?? {}),
       ...detailAttributes(part, effective),

@@ -1,0 +1,22 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/beverage-cap-elevator-semantic-review-20261110/render_variants.ts",
+  "renderer": "variantSource + runAndExport(format=\"glb\", style=\"lowpoly\") + catalog software renderer",
+  "budget": 2200,
+  "variants": [
+    {
+      "id": "sanitaryLine",
+      "preset": "sanitaryLine",
+      "triangles": 516,
+      "sourceSha256": "f97fb1ea21f20f6d7777ed2e5acb473cc577f4c95c412403c47ca63cc475d11e",
+      "pngSha256": "d4b7d8a7fca6f86fbcda1edf53f093c61eb8a403bed0d21748f9f5d7601acb55"
+    },
+    {
+      "id": "legacyPlant",
+      "preset": "legacyPlant",
+      "triangles": 516,
+      "sourceSha256": "f97fb1ea21f20f6d7777ed2e5acb473cc577f4c95c412403c47ca63cc475d11e",
+      "pngSha256": "871474549037a6ebf698ff2115ffbe210d6058d35a001b7d4e4d3efa818b706d"
+    }
+  ],
+  "presetsRenderDiffer": true
+}

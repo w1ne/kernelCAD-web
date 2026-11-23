@@ -55,7 +55,7 @@ export function sandboxAgentInstructions(): string {
   if (!s.enabled) return '';
   return [
     'kernelCAD SANDBOX MODE is ON.',
-    `- Files: every path you pass (file, output_path, out_dir, output_dir, frames_dir, ledgerPath, …) and every path a script reads (lib.fromSTEP/fromSTL, fonts, reference images) must resolve inside the workspace ${s.workspaceRoot}. Use workspace-relative paths. Paths that resolve outside it — absolute, \`..\`, \`~\`, or through a symlink — are refused with cli.sandbox-path-denied. Default temp/output dirs are created under ${s.scratch!.tmp}.`,
+    `- Files: every path you pass (file, output_path, out_dir, output_dir, frames_dir, ledgerPath, …) and every path a script reads (lib.fromSTEP/fromSTL/from3MF, fonts, reference images) must resolve inside the workspace ${s.workspaceRoot}. Use workspace-relative paths. Paths that resolve outside it — absolute, \`..\`, \`~\`, or through a symlink — are refused with cli.sandbox-path-denied. Default temp/output dirs are created under ${s.scratch!.tmp}.`,
     `- Network: all outbound network is refused (cli.sandbox-network-denied)${s.network.loopback === 'allowed' ? ' except loopback (KERNELCAD_SANDBOX_ALLOW_LOOPBACK=1)' : ', loopback included'}. Do not call tools in network modes: import_step url/upload, fetch_part/find_part partsBaseUrl or model.url, send_to_printer, trace_from_image with an http(s) image, render_preview base_url, a URL environment, or the Studio selection tools. Use inline code, content_base64 / data inputs, files in the workspace, bundled HDRI presets and the local part catalog instead.`,
     '- Telemetry is forced off. Inline `code` inputs work as usual.',
     `- Details: ${s.docs}`,

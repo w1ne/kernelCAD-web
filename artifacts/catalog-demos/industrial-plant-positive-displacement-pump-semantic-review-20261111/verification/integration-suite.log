@@ -1,0 +1,50 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/pressureSandFilterVesselFidelity.test.ts (1 test) 1435ms
+     ✓ exports two stainless side nozzles entering the vessel at separate heights  870ms
+ ✓ tests/integration/catalog/maintenancePlatformFidelity.test.ts (1 test) 1958ms
+     ✓ keeps the platform guarded and connects its three-riser stair to the deck  1210ms
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 2103ms
+ ✓ tests/integration/catalog/baghouseDustCollectorFidelity.test.ts (1 test) 2460ms
+     ✓ keeps filter media inside the plenum and tapers the dust hopper to its outlet  1291ms
+ ✓ tests/integration/catalog/batteryQuarantineDrumMaterials.test.ts (1 test) 2441ms
+     ✓ keeps the vermiculite sack kraft beige and separate from the alarm paint  1693ms
+ ✓ tests/integration/catalog/rockBreakerBoomFidelity.test.ts (1 test) 2604ms
+     ✓ bolts both warning posts onto the top face of the grizzly wall  1774ms
+ ✓ tests/integration/catalog/sanitaryLobePumpFidelity.test.ts (2 tests) 2691ms
+     ✓ has four actual cap-nut bodies on the visible removable cover  1395ms
+     ✓ keeps all four fasteners on the cover when port orientation changes  629ms
+ ✓ tests/integration/catalog/bucketElevatorSemantic.test.ts (1 test) 2839ms
+     ✓ keeps the bucket loop inside the casing and exposes distinct material controls  1893ms
+ ✓ tests/integration/catalog/reverseOsmosisSkidMaterials.test.ts (1 test) 3055ms
+     ✓ keeps FRP vessel shells distinct from stainless process piping  2435ms
+ ✓ tests/integration/catalog/capElevatorSemantic.test.ts (1 test) 3086ms
+     ✓ keeps its belt flights visible in the generated catalog preview  1863ms
+ ✓ tests/integration/catalog/substationCableLadderFidelity.test.ts (2 tests) 3165ms
+     ✓ preserves every rung and its rail envelope at both supported scale limits  731ms
+ ✓ tests/integration/catalog/storageArrayFidelity.test.ts (2 tests) 4992ms
+     ✓ is visibly distinct from the 8-bay compute chassis and includes 24 front carriers  2532ms
+     ✓ keeps the drive and service-module identities at both supported scale limits  1359ms
+ ✓ tests/integration/catalog/shellAndTubeExchangerMaterials.test.ts (1 test) 1102ms
+     ✓ keeps exposed tube sheets, nozzles and supports on a metal palette  547ms
+ ✓ tests/integration/catalog/evaporativeCoolingTowerFidelity.test.ts (1 test) 1151ms
+     ✓ exports eight broad, separately named fan blades around the two top-deck hubs  617ms
+ ✓ tests/integration/catalog/positiveDisplacementPumpFidelity.test.ts (1 test) 1274ms
+     ✓ exports a recognizable gear-pump package with both ports, service cover and relief bypass  712ms
+ ✓ tests/integration/catalog/beamCouplingFidelity.test.ts (2 tests) 7472ms
+     ✓ builds one valid 18×18×30 mm solid and preserves all three size choices  5102ms
+     ✓ has a material-removing helix and two real radial hub bores  1508ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 356ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 15079ms
+     ✓ nature/pine-tree opens with its five knobs at their defaults  622ms
+     ✓ characters/block-figure opens with its own knobs, not the first asset in the index  338ms
+     ✓ a kit-representative sample opens with exactly the knobs its index row lists  12735ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  387ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 498153ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  497276ms
+
+ Test Files  19 passed (19)
+      Tests  34 passed (34)
+   Start at  06:39:46
+   Duration  504.07s (transform 57.34s, setup 1.69s, import 96.90s, tests 557.41s, environment 2ms)

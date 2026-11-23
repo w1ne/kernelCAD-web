@@ -4,14 +4,14 @@
 //
 // P8 unit tests for the joint-mesh-continuity helper.
 //
-// Spec:  docs/specs/2026-06-02-physics-loop-P8-joint-mesh-continuity-gate.md
-// Plan:  docs/plans/2026-06-02-physics-loop-P8-joint-mesh-continuity-gate.md
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
 import { createModelingApi } from '../api';
 import type { Assembly } from '../capture/assembly';
+import * as brepDistance from './brepDistance';
 import { checkMechanismTruth } from './mechanismTruth';
+import * as restAnalysisMesh from './restAnalysisMesh';
 
 function makeArm(name = 'rig'): { arm: Assembly; kcad: ReturnType<typeof createModelingApi>; session: CaptureSession } {
   const session = new CaptureSession();
@@ -101,6 +101,43 @@ describe('joint-mesh-continuity helper (P8)', () => {
     expect(result.mechanism).toBe('broken');
   }, 90000);
 
+  it('rail on a deck: slide pivot at the rail base, in the plane of the deck top → no parent-side joint-mesh-gap', async () => {
+    // The K-Lift gallery pattern: the platform is one solid, a deck
+    // (z∈[-60,0]) with a rail (z∈[0,1000]) unioned on top. The slide
+    // connector sits at the rail base, [420,0,0]: inside the solid and in
+    // the plane of the deck top. The mesh parity ray runs along y (the
+    // shortest extent) in that plane; it used to count the rail side and
+    // the deck side it only touches as two crossings and report the pivot
+    // 45 mm (half the rail width) outside the platform.
+    const { arm, kcad } = makeArm('rail-on-deck');
+    const platform = arm.part('platform',
+      kcad.box(990, 800, 60, true).translate(495, 0, -30)
+        .union(kcad.box(90, 120, 1000, true).translate(420, 0, 500)));
+    platform.connector('railAxis', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [420, 0, 0] },
+      axis: [0, 0, 1],
+    });
+    // A block around the rail, cut to a 0.5 mm clearance per side. The
+    // connector declares the channel half-width as the clearance bore.
+    const carriage = arm.part('carriage',
+      kcad.box(150, 180, 100, true).subtract(kcad.box(91, 121, 120, true)));
+    carriage.connector('slideAxis', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 0, 1],
+      jointClearanceRadius: 45.5,
+    });
+    arm.mate('slide', 'platform.railAxis', 'carriage.slideAxis', 'prismatic', {
+      pose: 400,
+      limitsMm: [200, 800],
+    });
+
+    const result = await checkMechanismTruth(arm);
+    const gaps = result.failures.filter((f) => f.code === 'mechanism.joint-mesh-gap');
+    expect(gaps.map((g) => g.message)).toEqual([]);
+  }, 90000);
+
   it('annular bearing: pivot in open space but disc seats on a rim away from the axis → no joint-mesh-gap', async () => {
     // The spice-dispenser pattern: the parent is an annular ring (the
     // funnel rim) whose axis region is deliberately open (flow path);
@@ -139,6 +176,51 @@ describe('joint-mesh-continuity helper (P8)', () => {
     expect(gaps).toEqual([]);
   }, 90000);
 
+  it('does not claim rest-pose continuity when a joint distance cannot be measured', async () => {
+    const { arm, kcad } = makeArm('unmeasured-annular-bearing');
+
+    const ringBody = kcad.cylinder(10, 30).subtract(kcad.cylinder(12, 20).translate(0, 0, -1));
+    const parent = arm.part('parent', ringBody);
+    parent.connector('hinge', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 10.2] },
+      axis: [0, 0, 1],
+    });
+    const child = arm.part('child', kcad.cylinder(3, 28));
+    child.connector('hinge', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 0, 1],
+    });
+    arm.mate('select', 'parent.hinge', 'child.hinge', 'revolute', { limitsDeg: [0, 300] });
+
+    // Simulate both available joint-pivot measurement paths failing. The
+    // unrelated rest-contact path remains live, so only joint continuity is
+    // unknown; this must not be reported as a verified mechanism.
+    const meshSpy = vi.spyOn(restAnalysisMesh, 'restMeshBvh').mockReturnValue(undefined);
+    const distanceSpy = vi.spyOn(brepDistance, 'brepExtremaDistance').mockReturnValue(undefined);
+    try {
+      const result = await checkMechanismTruth(arm, { sweepBudget: Infinity });
+      expect(meshSpy).toHaveBeenCalled();
+      expect(distanceSpy).toHaveBeenCalled();
+      expect(result.mechanism).toBe('unverified');
+      const unknown = result.failures.find((failure) => failure.code === 'mechanism.joint-mesh-unverified');
+      expect(unknown?.severity).toBe('warn');
+      expect(unknown?.message).toMatch(/joint 'select'.*parent.*could not be measured/i);
+      expect(unknown?.details).toEqual({ mateName: 'select', partName: 'parent', side: 'parent' });
+      expect(result.coverage?.sweep).toBe(true);
+
+      const overBudget = await checkMechanismTruth(arm, { sweepBudget: 0 });
+      expect(overBudget.mechanism).toBe('unverified');
+      expect(overBudget.coverage?.sweep).toBe(false);
+      expect(overBudget.failures.map((failure) => failure.code)).toContain('mechanism.joint-mesh-unverified');
+      expect(overBudget.failures.map((failure) => failure.code)).toContain('mechanism.unverified-budget-exceeded');
+    } finally {
+      meshSpy.mockRestore();
+      distanceSpy.mockRestore();
+    }
+  }, 90000);
+
   it('floating part: pivot outside both bodies AND no bearing contact anywhere → joint-mesh-gap still fires', async () => {
     // Regression guard for the bearing-contact fallback: a child that
     // hovers 8 mm above the parent (pivot 5 mm outside the parent,
@@ -173,7 +255,7 @@ describe('joint-mesh-continuity helper (P8)', () => {
     expect(gaps.length).toBeGreaterThanOrEqual(1);
     // The fallback ran and reported the true rigid-group clearance in
     // the diagnostic, so the agent sees both distances.
-    const withBearing = gaps.find((g) => g.message.includes('Nearest contact between the two mated bodies'));
+    const withBearing = gaps.find((g) => g.message.includes('Nearest contact between the two sides'));
     expect(withBearing).toBeDefined();
     expect(result.mechanism).toBe('broken');
   }, 90000);

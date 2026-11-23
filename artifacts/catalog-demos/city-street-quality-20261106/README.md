@@ -83,7 +83,7 @@ page evidence.
   [`catalog-quality-output.txt`](catalog-quality-output.txt): local checks.
 - [`local-page-check.json`](local-page-check.json): generated page count and
   four reviewed pages.
-- [`preset-variants/`](preset-variants/), [`frames/`](frames/),
+- [`preset-variants/`](preset-variants/), `frames/`,
   [`video-inspection.json`](video-inspection.json), and
   [`video-review/`](video-review/): exact preset exports, source frames,
   decoded MP4 frames and visual inspection notes.
@@ -93,3 +93,12 @@ page evidence.
 These remain stylized low-poly visualization assets. Catalog, lint and local
 page checks do not establish traffic compliance, product specifications,
 manufacturing suitability, deployed behavior or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/city-street-quality-20261106/capture_city_street_demo.py`
+- video review: `python3 artifacts/catalog-demos/city-street-quality-20261106/inspect_city_street_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

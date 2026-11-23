@@ -51,3 +51,12 @@ recorded.
 The models are generic CC0 scene props. Mesh and catalog checks do not establish
 beekeeping method suitability, biological efficacy, food-contact suitability,
 equipment ratings, regulatory compliance or physical acceptance.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/apiary-wave-20261103/capture_apiary_demo.py`
+- video review: `python3 artifacts/catalog-demos/apiary-wave-20261103/inspect_apiary_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

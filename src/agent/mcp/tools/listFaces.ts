@@ -230,19 +230,30 @@ export async function listFacesTool(input: ListFacesInput): Promise<ListFacesOut
   if (!resolved.ok) return resolved.output;
   const shape = resolved.shape;
 
-  const matchedFaces = resolveFaceQuery(shape, input.query ?? {});
+  return {
+    ok: true,
+    faces: summarizeOcctFaces(shape, run.records, targetId, input.query),
+  };
+}
+
+/** Face rows for one lowered solid. `id` is `f<index>` into `shape.faces`.
+ *  Shared with STEP inspect views so the listing ref cannot drift. */
+export function summarizeOcctFaces(
+  shape: OcctBackend,
+  records: readonly FeatureRecord[],
+  targetId: string,
+  query?: FaceQuery,
+): FaceSummary[] {
+  const matchedFaces = resolveFaceQuery(shape, query ?? {});
   const allFaces = (shape.getReplicadShape() as unknown as { faces: Face[] }).faces;
   // Match faces by computed OCCT hash so the index survives the
   // `getReplicadShape()` getter returning fresh wrappers per call.
   const allHashes = allFaces.map((f) => faceHashOf(f));
-
   const historyMap = shape.historyMap;
-  const owner = input.feature_id ?? run.records[run.records.length - 1].id;
+  const owner = targetId;
   const kind: TopoKind = 'face';
-
-  const canonicalToLabel = buildCanonicalToLabel(run.records, targetId);
-
-  const faces: FaceSummary[] = matchedFaces.map(f => {
+  const canonicalToLabel = buildCanonicalToLabel(records, targetId);
+  return matchedFaces.map(f => {
     const c = f.center;
     const n = faceUnitNormal(f) ?? [0, 0, 0];
     const faceHash = faceHashOf(f);
@@ -253,6 +264,4 @@ export async function listFacesTool(input: ListFacesInput): Promise<ListFacesOut
       : undefined;
     return summarizeFace(f, c, n, idx, lineage, metadataLabel, owner, kind);
   });
-
-  return { ok: true, faces };
 }

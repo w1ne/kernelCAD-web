@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-11-12",
+  "issueSearches": [
+    {"asset": "grid-substation/substation-dead-tank-breaker", "openIssueMatches": []},
+    {"asset": "grid-substation/substation-capacitive-voltage-transformer", "openIssueMatches": []},
+    {"asset": "grid-substation/substation-transformer-cooling-fan", "openIssueMatches": []},
+    {"asset": "grid-substation/substation-station-battery-rack", "openIssueMatches": []},
+    {"asset": "grid-substation/substation-bus-post-insulator", "openIssueMatches": []}
+  ],
+  "pullRequestPathAudit": {
+    "destination": "#1258",
+    "destinationHead": "f9907bdbd76850c9bc0c460c50c19892bc8406c1",
+    "method": "Compared the exact five source paths against the local destination-branch diff from origin/develop; none was changed. The destination PR API diff exceeded GitHub's 300-file limit.",
+    "selectedSourceMatches": [],
+    "otherOpenPullRequests": [
+      {"number": 1215, "scope": "industrial-plant wave", "selectedSourceMatches": []},
+      {"number": 1253, "scope": "asset funnel / city-street mailbox", "selectedSourceMatches": []},
+      {"number": 1211, "scope": "sports wave", "selectedSourceMatches": []},
+      {"number": 1309, "scope": "desktop arm rebuild", "selectedSourceMatches": []},
+      {"number": 1195, "scope": "ECAD-to-enclosure spike", "selectedSourceMatches": []},
+      {"number": 1187, "scope": "parameter math", "selectedSourceMatches": []},
+      {"number": 1094, "scope": "ring gear", "selectedSourceMatches": []}
+    ]
+  }
+}

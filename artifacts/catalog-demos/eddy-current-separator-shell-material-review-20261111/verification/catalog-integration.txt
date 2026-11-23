@@ -1,0 +1,55 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees-legacy-20261109/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/capElevatorSemantic.test.ts (1 test) 2674ms
+     ✓ keeps its belt flights visible in the generated catalog preview  1947ms
+ ✓ tests/integration/catalog/baghouseDustCollectorFidelity.test.ts (1 test) 2861ms
+     ✓ keeps filter media inside the plenum and tapers the dust hopper to its outlet  1884ms
+ ✓ tests/integration/catalog/pressureSandFilterVesselFidelity.test.ts (1 test) 2900ms
+     ✓ exports two stainless side nozzles entering the vessel at separate heights  1841ms
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 3301ms
+ ✓ tests/integration/catalog/bucketElevatorSemantic.test.ts (1 test) 3831ms
+     ✓ keeps the bucket loop inside the casing and exposes distinct material controls  2901ms
+ ✓ tests/integration/catalog/substationCableLadderFidelity.test.ts (2 tests) 3919ms
+     ✓ preserves every rung and its rail envelope at both supported scale limits  1432ms
+ ✓ tests/integration/catalog/batteryQuarantineDrumMaterials.test.ts (1 test) 4344ms
+     ✓ keeps the vermiculite sack kraft beige and separate from the alarm paint  3893ms
+ ✓ tests/integration/catalog/maintenancePlatformFidelity.test.ts (1 test) 4770ms
+     ✓ keeps the platform guarded and connects its three-riser stair to the deck  3074ms
+ ✓ tests/integration/catalog/rockBreakerBoomFidelity.test.ts (1 test) 4878ms
+     ✓ bolts both warning posts onto the top face of the grizzly wall  3836ms
+ ✓ tests/integration/catalog/reverseOsmosisSkidMaterials.test.ts (1 test) 5111ms
+     ✓ keeps FRP vessel shells distinct from stainless process piping  4211ms
+ ✓ tests/integration/catalog/eddyCurrentSeparatorShellMaterials.test.ts (1 test) 5357ms
+     ✓ assigns the nonconductive composite finish to the outer head shell  4257ms
+ ✓ tests/integration/catalog/storageArrayFidelity.test.ts (2 tests) 6489ms
+     ✓ is visibly distinct from the 8-bay compute chassis and includes 24 front carriers  3872ms
+     ✓ keeps the drive and service-module identities at both supported scale limits  1778ms
+ ✓ tests/integration/catalog/evaporativeCoolingTowerFidelity.test.ts (1 test) 1682ms
+     ✓ exports eight broad, separately named fan blades around the two top-deck hubs  1205ms
+ ✓ tests/integration/catalog/compressedAirReceiverMaterials.test.ts (1 test) 1718ms
+     ✓ keeps the vessel heads and nozzle necks on the pressure-shell steel palette  659ms
+ ✓ tests/integration/catalog/positiveDisplacementPumpFidelity.test.ts (1 test) 1355ms
+     ✓ exports a recognizable gear-pump package with both ports, service cover and relief bypass  834ms
+ ✓ tests/integration/catalog/shellAndTubeExchangerMaterials.test.ts (1 test) 834ms
+     ✓ keeps exposed tube sheets, nozzles and supports on a metal palette  411ms
+ ✓ tests/integration/catalog/sanitaryLobePumpFidelity.test.ts (2 tests) 2509ms
+     ✓ has four actual cap-nut bodies on the visible removable cover  1112ms
+     ✓ keeps all four fasteners on the cover when port orientation changes  374ms
+ ✓ tests/integration/catalog/beamCouplingFidelity.test.ts (2 tests) 11268ms
+     ✓ builds one valid 18×18×30 mm solid and preserves all three size choices  7902ms
+     ✓ has a material-removing helix and two real radial hub bores  2309ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 529ms
+     ✓ search_assets finds the pine tree with an ok coverage verdict and a compact row  385ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 22289ms
+     ✓ nature/pine-tree opens with its five knobs at their defaults  1251ms
+     ✓ characters/block-figure opens with its own knobs, not the first asset in the index  766ms
+     ✓ a kit-representative sample opens with exactly the knobs its index row lists  17751ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  450ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 524328ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  523466ms
+
+ Test Files  21 passed (21)
+      Tests  36 passed (36)
+   Start at  08:28:10
+   Duration  536.20s (transform 121.55s, setup 5.00s, import 193.64s, tests 616.95s, environment 10ms)

@@ -1,0 +1,101 @@
+{
+  "catalogAssetCount": 2402,
+  "industrialPlantAssetCount": 60,
+  "qualityBaseline": "2,402/2,402 passing (100.00%; 50 rich kits, 0 thin kits)",
+  "assets": [
+    {
+      "id": "diesel-generator-set",
+      "source": "catalog/kits/industrial-plant/diesel-generator-set.kcad.ts",
+      "sourceSha256": "1c393c6d47dffd38e0acbc29024e542f1747d4b0b01a6010a4ce5aa0b6d57283",
+      "indexSourceSha256": "1c393c6d47dffd38e0acbc29024e542f1747d4b0b01a6010a4ce5aa0b6d57283",
+      "previewUrl": "/assets/industrial-plant-diesel-generator-set.png",
+      "previewFile": "catalog/kits/industrial-plant/previews/diesel-generator-set.png",
+      "previewSha256": "0110d3e71efcb5984a44446043cb1a22d7beea1906444014f80c935b7ac55d0a",
+      "triangles": 564,
+      "triangleBudget": 1800,
+      "params": [
+        "enclosurePaint",
+        "louverCount",
+        "radiatorCore",
+        "rubber",
+        "scale",
+        "steel"
+      ],
+      "presets": [
+        "cleanPlant",
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "belt-conveyor",
+      "source": "catalog/kits/industrial-plant/belt-conveyor.kcad.ts",
+      "sourceSha256": "346071e15bd2b01041454c8aff453cd65ea9e0e638b8ce2dbfe6ab5c7cc3ef90",
+      "indexSourceSha256": "346071e15bd2b01041454c8aff453cd65ea9e0e638b8ce2dbfe6ab5c7cc3ef90",
+      "previewUrl": "/assets/industrial-plant-belt-conveyor.png",
+      "previewFile": "catalog/kits/industrial-plant/previews/belt-conveyor.png",
+      "previewSha256": "8354c91d9032bbe31e6cc3b42f7da45d3b7668f97d897f83caa5d0a4a6fb9074",
+      "triangles": 992,
+      "triangleBudget": 2600,
+      "params": [
+        "beltRubber",
+        "frameSteel",
+        "rollerSteel",
+        "safetyPaint",
+        "scale",
+        "supportStations"
+      ],
+      "presets": [
+        "cleanPlant",
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "industrial-transformer",
+      "source": "catalog/kits/industrial-plant/industrial-transformer.kcad.ts",
+      "sourceSha256": "2b7c9c6510054dc7b00e6fab3baba2074d5c0a3f30faf4aca0952bd51457354d",
+      "indexSourceSha256": "2b7c9c6510054dc7b00e6fab3baba2074d5c0a3f30faf4aca0952bd51457354d",
+      "previewUrl": "/assets/industrial-plant-industrial-transformer.png",
+      "previewFile": "catalog/kits/industrial-plant/previews/industrial-transformer.png",
+      "previewSha256": "df4a685004c355d6d08514564cc7c5b9d15e281fdc617e42e14dfaad6d0459bd",
+      "triangles": 2528,
+      "triangleBudget": 3200,
+      "params": [
+        "copper",
+        "porcelain",
+        "radiatorFins",
+        "scale",
+        "steel",
+        "tankPaint"
+      ],
+      "presets": [
+        "highVisibility",
+        "utilityGreen",
+        "weathered"
+      ]
+    }
+  ],
+  "checks": {
+    "catalogAssetCountUnchanged": true,
+    "industrialPlantKitCountUnchanged": true,
+    "everyKitAssetHasIndexedPreview": true,
+    "everyKitPreviewExists": true,
+    "diesel-generator-setSourceHashMatchesIndex": true,
+    "diesel-generator-setHasExpectedMaterialAndGeometryControls": true,
+    "diesel-generator-setHasAtLeastTwoNamedPresets": true,
+    "diesel-generator-setPreviewWasRefreshed": true,
+    "diesel-generator-setSourceWasChanged": true,
+    "belt-conveyorSourceHashMatchesIndex": true,
+    "belt-conveyorHasExpectedMaterialAndGeometryControls": true,
+    "belt-conveyorHasAtLeastTwoNamedPresets": true,
+    "belt-conveyorPreviewWasRefreshed": true,
+    "belt-conveyorSourceWasChanged": true,
+    "industrial-transformerSourceHashMatchesIndex": true,
+    "industrial-transformerHasExpectedMaterialAndGeometryControls": true,
+    "industrial-transformerHasAtLeastTwoNamedPresets": true,
+    "industrial-transformerPreviewWasRefreshed": true,
+    "industrial-transformerSourceWasChanged": true
+  },
+  "allPassed": true
+}

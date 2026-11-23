@@ -3,7 +3,11 @@
 // Export one static, indexable HTML page per catalog asset for kernelcad.com.
 //   npx tsx scripts/buildCatalogPages.ts [outDir]   (default: site-build/)
 //
-// Writes, from catalog/index.json only:
+// Writes pages and previews from catalog/index.json only. The complete static
+// site build (including source-generated GLB/STEP downloads) is
+// scripts/buildCatalogSite.ts.
+//
+// Writes:
 //   <outDir>/catalog/index.html                     hub listing every kit and asset
 //   <outDir>/catalog/<kit>/<id>/index.html          one page per asset
 //   <outDir>/catalog/<kit>/<id>/preview.png         copied from catalog/kits/<kit>/previews/
@@ -17,6 +21,7 @@ import { join, resolve } from 'node:path';
 
 export const ORIGIN = 'https://kernelcad.com/';
 export const STUDIO = 'https://app.kernelcad.com/studio';
+export const MODEL_VIEWER_CDN = 'https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js';
 const DESCRIPTION_MAX = 160;
 
 export interface CatalogParam {
@@ -81,6 +86,76 @@ export function assetUrl(asset: Pick<CatalogAsset, 'kit' | 'id'>): string {
     return `${ORIGIN}${assetPath(asset)}`;
 }
 
+export function assetGlbPath(asset: Pick<CatalogAsset, 'kit' | 'id'>): string {
+    return `${assetPath(asset)}${asset.id}.glb`;
+}
+
+export function assetStepPath(asset: Pick<CatalogAsset, 'kit' | 'id'>): string {
+    return `${assetPath(asset)}${asset.id}.step`;
+}
+
+export function presetSlug(name: string): string {
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'preset';
+}
+
+export function assetPresetGlbPath(asset: Pick<CatalogAsset, 'kit' | 'id'>, name: string): string {
+    return `${assetPath(asset)}${asset.id}-${presetSlug(name)}.glb`;
+}
+
+export interface CatalogPresetVariant {
+    readonly name: string;
+    readonly values: Readonly<Record<string, unknown>>;
+    readonly summary: string;
+    readonly filename: string;
+}
+
+export function catalogPresetVariantPath(asset: Pick<CatalogAsset, 'kit' | 'id'>, variant: CatalogPresetVariant): string {
+    return `${assetPath(asset)}${variant.filename}`;
+}
+
+/** Default plus authored presets, with a real choice-param state if needed. */
+export function catalogPresetVariants(asset: CatalogAsset): CatalogPresetVariant[] {
+    const variants: CatalogPresetVariant[] = [
+        { name: 'Default', values: {}, summary: 'Default parameter values', filename: `${asset.id}.glb` },
+        ...Object.entries(asset.presets ?? {}).map(([name, values]) => ({
+            name,
+            values,
+            summary: presetSummary(asset, values),
+            filename: `${asset.id}-${presetSlug(name)}.glb`,
+        })),
+    ];
+    const usedSlugs = new Set(variants.slice(1).map((variant) => presetSlug(variant.name)));
+    if (variants.length < 3) {
+        for (const param of asset.params) {
+            const alternative = param.choices?.find((value) => !Object.is(value, param.default)
+                && !Object.values(asset.presets ?? {}).some((preset) => Object.is(preset[param.name], value)));
+            if (alternative === undefined) continue;
+            const label = `Alternate ${param.label ?? param.name}: ${String(alternative)}`;
+            const baseSlug = presetSlug(label);
+            let slug = baseSlug;
+            for (let suffix = 2; usedSlugs.has(slug); suffix++) slug = `${baseSlug}-${suffix}`;
+            usedSlugs.add(slug);
+            variants.push({
+                name: label,
+                values: { [param.name]: alternative },
+                summary: `${param.label ?? param.name}: ${String(alternative)}`,
+                filename: `${asset.id}-${slug}.glb`,
+            });
+            break;
+        }
+    }
+    return variants;
+}
+
+/** Each topical kit is an indexable landing page, not a query/fragment duplicate. */
+export function kitPath(kit: Pick<CatalogKit, 'id'>): string {
+    return `catalog/${kit.id}/`;
+}
+
+export function kitUrl(kit: Pick<CatalogKit, 'id'>): string {
+    return `${ORIGIN}${kitPath(kit)}`;
+}
+
 /** Cut at a word boundary so the snippet stays <= max characters. */
 export function metaDescription(text: string, max = DESCRIPTION_MAX): string {
     const clean = text.replace(/\s+/g, ' ').trim();
@@ -109,7 +184,10 @@ const HEAD_COMMON = `  <meta charset="UTF-8" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/style.css" />`;
+  <link rel="stylesheet" href="/style.css" />
+  <!-- Same anonymous Cloudflare Web Analytics site token as kernelcad.com marketing pages.
+       Catalog detail and kit pages previously had no page-view measurement. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"e5f5f4c6464f456d8f5376411e77f545"}'></script>`;
 
 const NAV = `    <nav class="nav">
       <a class="nav-mark" href="/">
@@ -127,6 +205,14 @@ const NAV = `    <nav class="nav">
     </nav>`;
 
 const STYLE = `  <style>
+    :root { --ink: #242522; --ink-soft: #444640; --ink-faint: #77796f; --card-stage: #f1eee5; --rule: #d8d4c9; --blueprint: #285fbd; --on-blueprint: #fff; }
+    body { margin: 0; color: var(--ink); background: #faf9f6; }
+    .page-wrap { max-width: 1120px; margin: 0 auto; padding: 0 1.25rem; }
+    .nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.1rem 0; border-bottom: 1px solid var(--rule); }
+    .nav-mark, .nav-links a { color: var(--ink-soft); text-decoration: none; }
+    .nav-mark { display: flex; align-items: center; gap: 0.45rem; font-family: 'Inter', sans-serif; }
+    .nav-mark .k { width: 1.8rem; height: 1.8rem; }
+    .nav-links { display: flex; flex-wrap: wrap; gap: 1rem; font: 0.85rem 'JetBrains Mono', monospace; }
     .catalog { max-width: 960px; margin: 0 auto; padding: 1rem 0 4rem; font-family: 'Inter', sans-serif; color: var(--ink-soft); line-height: 1.6; }
     .catalog h1 { font-family: 'Source Serif 4', serif; font-size: 2.2rem; color: var(--ink); margin: 1.5rem 0 0.5rem; }
     .catalog h2 { font-family: 'Source Serif 4', serif; font-size: 1.3rem; color: var(--ink); margin: 2rem 0 0.5rem; }
@@ -134,6 +220,19 @@ const STYLE = `  <style>
     .catalog .crumbs { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink-faint); }
     .catalog .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem; align-items: start; }
     .catalog .hero img { width: 100%; height: auto; background: var(--card-stage); border: 1px solid var(--rule); border-radius: 6px; }
+    .catalog .asset-viewer { min-width: 0; }
+    .catalog .model-stage { position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; background: var(--card-stage); border: 1px solid var(--rule); border-radius: 6px; }
+    .catalog .model-fallback, .catalog model-viewer { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+    .catalog .model-fallback { object-fit: contain; }
+    .catalog model-viewer { background: transparent; }
+    .catalog .variant-list, .catalog .downloads { display: flex; flex-wrap: wrap; gap: 0.55rem; margin: 0.75rem 0; }
+    .catalog .variant-list button, .catalog .downloads a, .catalog .copy-prompt { border: 1px solid var(--rule); border-radius: 5px; padding: 0.45rem 0.7rem; color: var(--ink-soft); background: var(--card-stage); font: inherit; cursor: pointer; }
+    .catalog .variant-list button[aria-pressed="true"], .catalog .downloads a:first-child { color: var(--on-blueprint); background: var(--blueprint); border-color: var(--blueprint); text-decoration: none; }
+    .catalog .downloads a { text-decoration: none; }
+    .catalog .variant-summary, .catalog .fine-print { font-size: 0.86rem; color: var(--ink-faint); }
+    .catalog .mcp-prompt { overflow: auto; padding: 0.8rem; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--card-stage); border: 1px solid var(--rule); border-radius: 5px; }
+    .catalog .copy-prompt { cursor: pointer; }
+    .catalog .copy-prompt:hover, .catalog .variant-list button:hover, .catalog .downloads a:hover { border-color: var(--blueprint); }
     .catalog dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.3rem 1rem; margin: 1rem 0; }
     .catalog dt { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink-faint); }
     .catalog dd { margin: 0; }
@@ -152,6 +251,12 @@ const STYLE = `  <style>
     .catalog .finder .hint { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink-faint); margin-left: 0.6rem; }
     .catalog [hidden] { display: none !important; }
     .catalog .empty { margin: 2rem 0; color: var(--ink-faint); }
+    .catalog .browse-kit { margin: 0.45rem 0 1.2rem; }
+    .catalog #catalog-results { margin-top: 1rem; }
+    .catalog .next-step { margin-top: 2rem; padding: 1.2rem 1.5rem; border: 1px solid var(--rule); border-radius: 6px; background: var(--card-stage); }
+    .catalog .next-step h2 { margin-top: 0; }
+    .catalog .next-step-links { display: flex; gap: 0.75rem 1.25rem; flex-wrap: wrap; align-items: center; }
+    .catalog .next-step-links a { font-weight: 500; }
     @media (max-width: 720px) { .catalog .hero { grid-template-columns: 1fr; } }
   </style>`;
 
@@ -225,7 +330,7 @@ function breadcrumbJsonLd(asset: CatalogAsset, kit: CatalogKit | undefined): Rec
         '@type': 'BreadcrumbList',
         itemListElement: [
             { '@type': 'ListItem', position: 1, name: 'Catalog', item: `${ORIGIN}catalog/` },
-            { '@type': 'ListItem', position: 2, name: kit?.title ?? asset.kit, item: `${ORIGIN}catalog/#kit-${asset.kit}` },
+            { '@type': 'ListItem', position: 2, name: kit?.title ?? asset.kit, item: `${ORIGIN}catalog/${asset.kit}/` },
             { '@type': 'ListItem', position: 3, name: asset.title, item: assetUrl(asset) },
         ],
     };
@@ -269,13 +374,71 @@ ${items.join('\n')}
       </ul>`;
 }
 
+function presetSummary(asset: CatalogAsset, values: Readonly<Record<string, unknown>>): string {
+    const byName = new Map(asset.params.map((param) => [param.name, param]));
+    return Object.entries(values).map(([name, value]) => `${byName.get(name)?.label ?? name}: ${String(value)}`).join('; ');
+}
+
+function modelVariants(asset: CatalogAsset): string {
+    const variants = catalogPresetVariants(asset);
+    const seen = new Set<string>();
+    return variants.map((variant, index) => {
+        if (seen.has(variant.filename)) throw new Error(`${asset.kit}/${asset.id} has preset names that collide after filename normalization: ${variant.name}`);
+        seen.add(variant.filename);
+        return `        <button type="button" data-asset-variant data-src="${escapeHtml(variant.filename)}" data-filename="${escapeHtml(variant.filename)}" data-summary="${escapeHtml(variant.summary)}" aria-pressed="${index === 0 ? 'true' : 'false'}">${escapeHtml(variant.name)}</button>`;
+    }).join('\n');
+}
+
+function assetInteractionScript(): string {
+    return `  <script data-catalog-interactions>
+    (() => {
+      const viewer = document.querySelector('#asset-viewer');
+      const glb = document.querySelector('#download-glb');
+      const summary = document.querySelector('#variant-summary');
+      const fallback = document.querySelector('#model-fallback');
+      for (const button of document.querySelectorAll('[data-asset-variant]')) {
+        button.addEventListener('click', () => {
+          const src = button.getAttribute('data-src');
+          const filename = button.getAttribute('data-filename');
+          if (!src || !filename) return;
+          viewer.setAttribute('src', src);
+          glb.setAttribute('href', src);
+          glb.setAttribute('download', filename);
+          glb.textContent = 'Download GLB · ' + button.textContent.trim();
+          summary.textContent = button.getAttribute('data-summary') || '';
+          for (const choice of document.querySelectorAll('[data-asset-variant]')) {
+            choice.setAttribute('aria-pressed', choice === button ? 'true' : 'false');
+          }
+          if (fallback) fallback.hidden = false;
+        });
+      }
+      viewer?.addEventListener('load', () => { if (fallback) fallback.hidden = true; });
+      document.querySelector('[data-copy-prompt]')?.addEventListener('click', async (event) => {
+        const button = event.currentTarget;
+        const prompt = document.querySelector('#mcp-prompt')?.textContent || '';
+        try {
+          await navigator.clipboard.writeText(prompt);
+          button.textContent = 'Copied';
+        } catch {
+          const range = document.createRange();
+          range.selectNodeContents(document.querySelector('#mcp-prompt'));
+          const selection = window.getSelection();
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+          button.textContent = 'Select and copy the prompt';
+        }
+      });
+    })();
+  </script>`;
+}
+
 function factsList(asset: CatalogAsset, kit: CatalogKit | undefined): string {
     const license = licenseOf(asset);
     const tri = triangles(asset);
     const size = asset.stats?.sizeM;
     const rigJoints = Object.keys(asset.rig ?? {});
     const facts: [string, string][] = [
-        ['Kit', `<a href="/catalog/#kit-${escapeHtml(asset.kit)}">${escapeHtml(kit?.title ?? asset.kit)}</a>`],
+        ['Kit', `<a href="/catalog/${escapeHtml(asset.kit)}/">${escapeHtml(kit?.title ?? asset.kit)}</a>`],
         ['Category', escapeHtml(asset.category)],
         ['Triangles', tri === undefined ? '—' : `${tri.toLocaleString('en-US')}${asset.triangleBudget ? ` (budget ${asset.triangleBudget.toLocaleString('en-US')})` : ''}`],
         ['Licence', license.url ? `<a href="${license.url}" rel="license">${escapeHtml(license.name)}</a>` : escapeHtml(license.name)],
@@ -304,6 +467,23 @@ export function previewAlt(asset: CatalogAsset): string {
     return `${asset.title}: low-poly ${asset.category} 3D model preview`;
 }
 
+/** Explain the product workflow without diluting this model's unique technical content. */
+function productNextStep(asset: CatalogAsset): string {
+    const model = escapeHtml(asset.title);
+    const controls = asset.params.length;
+    const action = controls > 0
+        ? `change its ${controls} published parameter${controls === 1 ? '' : 's'}`
+        : 'inspect the model';
+    return `      <section class="next-step" aria-label="Continue with kernelCAD">
+        <h2>Build your own model with kernelCAD</h2>
+        <p>Start with ${model} in kernelCAD Studio to ${action}. For a new design, kernelCAD also supports code-based CAD and MCP tools for AI assistants.</p>
+        <div class="next-step-links">
+          <a href="/code-cad/">Design with code</a>
+          <a href="/mcp/">Use kernelCAD with an AI assistant</a>
+        </div>
+      </section>`;
+}
+
 export function renderAssetPage(asset: CatalogAsset, kit: CatalogKit | undefined, siblings: readonly CatalogAsset[]): string {
     const url = assetUrl(asset);
     const title = pageTitle(asset);
@@ -311,6 +491,8 @@ export function renderAssetPage(asset: CatalogAsset, kit: CatalogKit | undefined
     const image = `${url}preview.png`;
     const alt = previewAlt(asset);
     const studio = `${STUDIO}?catalog=${encodeURIComponent(asset.kit)}/${encodeURIComponent(asset.id)}`;
+    const studioAbsolute = `${STUDIO}?catalog=${encodeURIComponent(asset.kit)}/${encodeURIComponent(asset.id)}`;
+    const prompt = `Use this free kernelCAD catalog asset: ${url}\n\nThe hosted kernelCAD MCP at https://mcp.kernelcad.com/mcp currently does not expose catalog lookup or fetch tools. Do not guess tool names. Use the page's free GLB or STEP download if you can fetch public URLs, or open the source in kernelCAD Studio: ${studioAbsolute}. Tell me which file or workflow you used.`;
     const head = `  <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}" />
   <link rel="canonical" href="${url}" />
@@ -320,11 +502,28 @@ ${jsonForScript(productJsonLd(asset))}
   </script>
   <script type="application/ld+json">
 ${jsonForScript(breadcrumbJsonLd(asset, kit))}
-  </script>`;
-    const body = `      <p class="crumbs"><a href="/catalog/">Catalog</a> / <a href="/catalog/#kit-${escapeHtml(asset.kit)}">${escapeHtml(kit?.title ?? asset.kit)}</a> / ${escapeHtml(asset.title)}</p>
+  </script>
+  <script type="module" src="${MODEL_VIEWER_CDN}"></script>`;
+    const body = `      <p class="crumbs"><a href="/catalog/">Catalog</a> / <a href="/catalog/${escapeHtml(asset.kit)}/">${escapeHtml(kit?.title ?? asset.kit)}</a> / ${escapeHtml(asset.title)}</p>
       <h1>${escapeHtml(asset.title)}</h1>
       <div class="hero">
-        <img src="preview.png" alt="${escapeHtml(alt)}" width="512" height="512" />
+        <section class="asset-viewer" aria-label="Interactive 3D model and preset viewer">
+          <div class="model-stage">
+            <img id="model-fallback" class="model-fallback" src="preview.png" alt="${escapeHtml(alt)}" width="512" height="512" />
+            <model-viewer id="asset-viewer" src="${escapeHtml(`${asset.id}.glb`)}" poster="preview.png" alt="Interactive 3D preview of ${escapeHtml(asset.title)}" camera-controls auto-rotate touch-action="pan-y" shadow-intensity="0.45" loading="eager"></model-viewer>
+          </div>
+          <p class="fine-print">This static page uses pre-rendered variants of the original kernelCAD source. Switch a preset to change the model; open it in Studio for arbitrary knob values.</p>
+          <div class="variant-list" role="group" aria-label="Choose a pre-rendered parameter preset">
+${modelVariants(asset)}
+          </div>
+          <p id="variant-summary" class="variant-summary">Default parameter values</p>
+          <h2>Download this model</h2>
+          <p class="fine-print">GLB follows the selected preset. STEP contains the default parameter values; use Studio to edit knobs before exporting a custom STEP file.</p>
+          <div class="downloads">
+            <a id="download-glb" href="${escapeHtml(`${asset.id}.glb`)}" download="${escapeHtml(`${asset.id}.glb`)}">Download GLB · Default</a>
+            <a href="${escapeHtml(`${asset.id}.step`)}" download="${escapeHtml(`${asset.id}.step`)}">Download STEP · Default</a>
+          </div>
+        </section>
         <div>
           <p>${escapeHtml(asset.description)}</p>
           <a class="cta" href="${studio}">Open in Studio</a>
@@ -335,12 +534,121 @@ ${factsList(asset, kit)}
       <p>${asset.params.length} parameter${asset.params.length === 1 ? '' : 's'} you can change in Studio before export.</p>
 ${knobTable(asset)}
 ${presetsSection(asset)}
+${productNextStep(asset)}
+      <h2>Use with an agent</h2>
+      <p>The kernelCAD MCP endpoint is live, but its current tool list does not include catalog lookup or fetch tools. This prompt avoids calling a catalog tool that is not available yet.</p>
+      <p><a href="https://mcp.kernelcad.com/mcp">kernelCAD MCP endpoint</a></p>
+      <pre id="mcp-prompt" class="mcp-prompt">${escapeHtml(prompt)}</pre>
+      <button type="button" class="copy-prompt" data-copy-prompt>Copy agent prompt</button>
 ${siblingList(asset, siblings)}
       <p><a href="/catalog/">← Back to the full catalog</a></p>`;
+    return document(head, `${body}\n${assetInteractionScript()}`);
+}
+
+/** A small, topic-specific entry point for searchers looking for a class of parts. */
+export function renderKitPage(kit: CatalogKit, assets: readonly CatalogAsset[]): string {
+    const url = kitUrl(kit);
+    const title = `${kit.title} 3D models — editable CC0 kit | kernelCAD`;
+    const description = metaDescription(`${kit.description} Browse ${assets.length} free 3D models, open a model in kernelCAD Studio, or build parametric CAD using MCP.`);
+    const image = assets[0] ? `${assetUrl(assets[0])}preview.png` : `${ORIGIN}og-image.png`;
+    const graph = {
+        '@context': 'https://schema.org',
+        '@graph': [
+            {
+                '@type': 'CollectionPage',
+                '@id': `${url}#webpage`,
+                url,
+                name: title,
+                description,
+                inLanguage: 'en',
+                mainEntity: {
+                    '@type': 'ItemList',
+                    numberOfItems: assets.length,
+                    itemListElement: assets.map((a, i) => ({ '@type': 'ListItem', position: i + 1, name: a.title, url: assetUrl(a) })),
+                },
+            },
+            {
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                    { '@type': 'ListItem', position: 1, name: 'Home', item: ORIGIN },
+                    { '@type': 'ListItem', position: 2, name: 'Catalog', item: `${ORIGIN}catalog/` },
+                    { '@type': 'ListItem', position: 3, name: kit.title, item: url },
+                ],
+            },
+        ],
+    };
+    const head = `  <title>${escapeHtml(title)}</title>
+  <meta name="description" content="${escapeHtml(description)}" />
+  <link rel="canonical" href="${url}" />
+${socialTags(title, description, url, image, `${kit.title} CAD model previews`)}
+  <script type="application/ld+json">
+${jsonForScript(graph)}
+  </script>`;
+    const cards = assets.map((a) =>
+        `          <li><a href="/${assetPath(a)}"><img src="/${assetPath(a)}preview.png" alt="${escapeHtml(previewAlt(a))}" width="512" height="512" loading="lazy" />${escapeHtml(a.title)}</a></li>`,
+    );
+    const body = `      <p class="crumbs"><a href="/catalog/">Catalog</a> / ${escapeHtml(kit.title)}</p>
+      <h1>${escapeHtml(kit.title)} 3D models</h1>
+      <p>${escapeHtml(kit.description)}</p>
+      <p>Explore ${assets.length} free CC0 models. Open any part in kernelCAD Studio to inspect and edit it. Build new designs with <a href="/code-cad/">code-first CAD</a> or <a href="/mcp/">CAD MCP tools</a>.</p>
+      <ul class="grid">
+${cards.join('\n')}
+      </ul>
+      <p><a href="/catalog/">← Browse all model kits</a></p>`;
     return document(head, body);
 }
 
 export const HUB_TITLE = 'Free low-poly 3D model catalog (CC0) | kernelCAD';
+
+/** Describe the published collection, without asserting reviews, sales or indexing. */
+export function catalogHubJsonLd(index: CatalogIndex): Record<string, unknown> {
+    const url = `${ORIGIN}catalog/`;
+    const description = metaDescription(
+        `${index.assets.length} free CC0 low-poly 3D models in ${index.kits.length} kits: ${index.kits.map((k) => k.title).join(', ')}. Every model has editable knobs.`,
+    );
+    return {
+        '@context': 'https://schema.org',
+        '@graph': [
+            {
+                '@type': 'CollectionPage',
+                '@id': `${url}#webpage`,
+                url,
+                name: HUB_TITLE,
+                description,
+                inLanguage: 'en',
+                isPartOf: { '@id': `${ORIGIN}#website` },
+                mainEntity: {
+                    '@type': 'ItemList',
+                    name: 'Free CC0 3D models',
+                    numberOfItems: index.assets.length,
+                    url,
+                },
+            },
+            {
+                '@type': 'BreadcrumbList',
+                '@id': `${url}#breadcrumb`,
+                itemListElement: [
+                    { '@type': 'ListItem', position: 1, name: 'Home', item: ORIGIN },
+                    { '@type': 'ListItem', position: 2, name: 'Catalog', item: url },
+                ],
+            },
+        ],
+    };
+}
+
+/** Public, minimal search data: only user-visible asset identifiers and text. */
+export function catalogSearchIndex(index: CatalogIndex) {
+    const kitTitles = new Map(index.kits.map((kit) => [kit.id, kit.title]));
+    return index.assets.map((a) => ({
+        title: a.title,
+        url: `/${assetPath(a)}`,
+        preview: `/${assetPath(a)}preview.png`,
+        search: `${searchKey(a)} ${kitTitles.get(a.kit) ?? ''}`.toLowerCase(),
+    }));
+}
+
+/** Show a few real model previews per kit; kit pages expose every detail URL to crawlers. */
+const HUB_FEATURED_PER_KIT = 3;
 
 export function renderHub(index: CatalogIndex): string {
     const byKey = new Map(index.assets.map((a) => [`${a.kit}/${a.id}`, a]));
@@ -353,22 +661,35 @@ export function renderHub(index: CatalogIndex): string {
     const head = `  <title>${escapeHtml(HUB_TITLE)}</title>
   <meta name="description" content="${escapeHtml(description)}" />
   <link rel="canonical" href="${url}" />
-${socialTags(HUB_TITLE, description, url, firstImage, 'kernelCAD low-poly asset catalog')}`;
+${socialTags(HUB_TITLE, description, url, firstImage, 'kernelCAD low-poly asset catalog')}
+  <script type="application/ld+json">
+${jsonForScript(catalogHubJsonLd(index))}
+  </script>`;
     const kits = index.kits.map((kit) => {
-        const cards = kit.assets.map((id) => byKey.get(`${kit.id}/${id}`)).filter((a): a is CatalogAsset => a !== undefined).map((a) =>
+        const cards = kit.assets.slice(0, HUB_FEATURED_PER_KIT).map((id) => byKey.get(`${kit.id}/${id}`)).filter((a): a is CatalogAsset => a !== undefined).map((a) =>
             `          <li data-search="${escapeHtml(searchKey(a))}"><a href="/${assetPath(a)}"><img src="/${assetPath(a)}preview.png" alt="${escapeHtml(previewAlt(a))}" width="512" height="512" loading="lazy" />${escapeHtml(a.title)}</a></li>`,
         );
         return `      <section id="kit-${escapeHtml(kit.id)}" data-kit>
-        <h2>${escapeHtml(kit.title)} <small>(${cards.length})</small></h2>
+        <h2><a href="/${kitPath(kit)}">${escapeHtml(kit.title)}</a> <small>(${kit.assets.length})</small></h2>
         <p>${escapeHtml(kit.description)}</p>
         <ul class="grid">
 ${cards.join('\n')}
         </ul>
+        <p class="browse-kit"><a href="/${kitPath(kit)}">View all ${kit.assets.length} ${escapeHtml(kit.title)} models</a></p>
       </section>`;
     });
     const body = `      <h1>Low-poly 3D model catalog</h1>
       <p>${escapeHtml(description)}</p>
+      <section aria-label="Use models with kernelCAD">
+        <h2>Use these models in kernelCAD</h2>
+        <p>Select a model to open it in Studio and edit its parameters. You can also <a href="/code-cad/">design a model with code</a> or use <a href="/mcp/">kernelCAD MCP tools with an AI assistant</a>.</p>
+      </section>
 ${FINDER}
+      <section id="catalog-search-results" data-total="${total}" aria-label="Matching catalog models" hidden>
+        <h2>Matching models</h2>
+        <ul id="catalog-results" class="grid"></ul>
+        <p id="catalog-refine" hidden>Only the first 100 results are shown. Refine your search to see other models.</p>
+      </section>
 ${kits.join('\n')}
       <p class="empty" id="catalog-empty" hidden>No model matches that. Try a kit name, or <a href="/catalog/">clear the search</a>.</p>`;
     return document(head, body);
@@ -382,35 +703,77 @@ export function searchKey(a: CatalogAsset): string {
 const FINDER = `      <div class="finder">
         <label for="catalog-q" class="crumbs">Search the catalog</label>
         <input id="catalog-q" type="search" autocomplete="off" spellcheck="false" placeholder="e.g. oak, traffic light, medical…" />
-        <p class="count"><span id="catalog-shown">loading</span><span class="hint">kit names work too</span></p>
+        <p class="count" aria-live="polite"><span id="catalog-shown">Browse model kits</span><span class="hint">Search covers all published assets</span></p>
       </div>
       <script>
         (function () {
           function init() {
             var q = document.getElementById('catalog-q');
             if (!q) return;
-            var items = [].slice.call(document.querySelectorAll('[data-kit] li[data-search]'));
             var sections = [].slice.call(document.querySelectorAll('[data-kit]'));
             var shown = document.getElementById('catalog-shown');
             var empty = document.getElementById('catalog-empty');
-            var total = items.length;
+            var wrapper = document.getElementById('catalog-search-results');
+            var results = document.getElementById('catalog-results');
+            var refine = document.getElementById('catalog-refine');
+            var cache;
+            var requestId = 0;
+            function showKits() {
+              sections.forEach(function (s) { s.hidden = false; });
+              wrapper.hidden = true;
+              results.replaceChildren();
+              empty.hidden = true;
+              shown.textContent = wrapper.getAttribute('data-total') + ' models across ' + sections.length + ' kits';
+            }
+            function draw(matches) {
+              var list = document.createDocumentFragment();
+              matches.slice(0, 100).forEach(function (asset) {
+                var item = document.createElement('li');
+                var link = document.createElement('a');
+                var img = document.createElement('img');
+                link.href = asset.url;
+                img.src = asset.preview;
+                img.alt = asset.title + ' 3D model preview';
+                img.loading = 'lazy';
+                img.width = 512;
+                img.height = 512;
+                link.append(img, document.createTextNode(asset.title));
+                item.append(link);
+                list.append(item);
+              });
+              results.replaceChildren(list);
+            }
             function apply() {
-              var t = q.value.trim().toLowerCase();
-              var hits = 0;
-              items.forEach(function (li) {
-                var hit = !t || li.getAttribute('data-search').indexOf(t) !== -1;
-                li.hidden = !hit;
-                if (hit) hits++;
+              var term = q.value.trim().toLowerCase();
+              var thisRequest = ++requestId;
+              if (!term) { showKits(); return; }
+              sections.forEach(function (s) { s.hidden = true; });
+              wrapper.hidden = false;
+              empty.hidden = true;
+              refine.hidden = true;
+              shown.textContent = 'Searching published models…';
+              cache = cache || fetch('/catalog/search-index.json')
+                .then(function (response) {
+                  if (!response.ok) throw new Error('Search index unavailable');
+                  return response.json();
+                });
+              cache.then(function (assets) {
+                if (thisRequest !== requestId) return;
+                var matches = assets.filter(function (a) { return a.search.includes(term); });
+                draw(matches);
+                refine.hidden = matches.length <= 100;
+                empty.hidden = matches.length !== 0;
+                shown.textContent = matches.length + ' matching models';
+              }).catch(function () {
+                if (thisRequest !== requestId) return;
+                sections.forEach(function (s) { s.hidden = false; });
+                wrapper.hidden = true;
+                shown.textContent = 'Search is unavailable; browse models by kit below';
+                cache = null;
               });
-              sections.forEach(function (s) {
-                var any = s.querySelector('li[data-search]:not([hidden])');
-                s.hidden = !any;
-              });
-              shown.textContent = t ? hits + ' of ' + total + ' models' : total + ' models';
-              if (empty) empty.hidden = hits !== 0;
             }
             q.addEventListener('input', apply);
-            apply();
+            showKits();
           }
           if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init, { once: true });
@@ -425,7 +788,13 @@ export function renderCatalogSite(index: CatalogIndex): PageFile[] {
     const kits = new Map(index.kits.map((k) => [k.id, k]));
     const byKit = new Map<string, CatalogAsset[]>();
     for (const a of index.assets) byKit.set(a.kit, [...(byKit.get(a.kit) ?? []), a]);
-    const files: PageFile[] = [{ path: 'catalog/index.html', content: renderHub(index) }];
+    const files: PageFile[] = [
+        { path: 'catalog/index.html', content: renderHub(index) },
+        { path: 'catalog/search-index.json', content: JSON.stringify(catalogSearchIndex(index)) },
+    ];
+    for (const kit of index.kits) {
+        files.push({ path: `${kitPath(kit)}index.html`, content: renderKitPage(kit, byKit.get(kit.id) ?? []) });
+    }
     for (const a of index.assets) {
         files.push({ path: `${assetPath(a)}index.html`, content: renderAssetPage(a, kits.get(a.kit), byKit.get(a.kit) ?? []) });
     }
@@ -435,7 +804,7 @@ export function renderCatalogSite(index: CatalogIndex): PageFile[] {
 /** Catalog URLs for the SITE's sitemap. The site owns sitemap.xml and robots.txt —
  *  the catalog only contributes its own pages, it must never write those files. */
 export function catalogUrls(index: CatalogIndex): string[] {
-    return [`${ORIGIN}catalog/`, ...index.assets.map(assetUrl)];
+    return [`${ORIGIN}catalog/`, ...index.kits.map(kitUrl), ...index.assets.map(assetUrl)];
 }
 
 export function writeCatalogSite(repoRoot: string, outDir: string): number {
@@ -456,5 +825,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const repoRoot = resolve(import.meta.dirname, '..');
     const outDir = resolve(process.argv[2] ?? join(repoRoot, 'site-build'));
     const count = writeCatalogSite(repoRoot, outDir);
-    console.log(`wrote ${count} asset page(s) + hub, sitemap.xml and robots.txt to ${outDir}`);
+    console.log(`wrote ${count} asset page(s), kit landing pages, and hub to ${outDir}`);
 }

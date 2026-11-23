@@ -1,0 +1,12 @@
+Validation: recursive JSON parsing of all bundle .json files
+Result: passed
+Validation: regenerated catalog/index.json compared with HEAD
+Result: exactly one asset row changed: recycling-facility/glass-crusher
+Validation: catalog source SHA-256 compared with generated index row
+Result: 396a4b46f08054ce67748545eb3fb7ea8d112ade309157ca57f7219e82273596 matches
+Validation: generated preview path
+Result: /assets/recycling-facility-glass-crusher.png is present
+Validation: git diff --check
+Result: clean
+Bundle scan: no __pycache__ directories or .pyc files
+Result: clean

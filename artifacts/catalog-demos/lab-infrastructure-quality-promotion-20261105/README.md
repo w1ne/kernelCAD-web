@@ -33,3 +33,11 @@ npx tsx artifacts/catalog-demos/lab-infrastructure-quality-promotion-20261105/ch
 ## Claim boundaries
 
 The evidence covers authored kernelCAD source, deterministic local catalog builds, software-rendered previews, generated local pages, lint and integration tests. The feature branch was not deployed, so live behavior for these changes is not verified. These visual props are not lab engineering or safety specifications; no simulation, equipment performance or hardware acceptance is claimed.
+
+## Untracked generated outputs
+
+`frames/` is not tracked in git; it is regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/lab-infrastructure-quality-promotion-20261105/capture_lab_demo.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

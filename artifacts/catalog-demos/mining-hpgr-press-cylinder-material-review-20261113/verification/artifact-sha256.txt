@@ -1,0 +1,5 @@
+9cdca2c2e9ced86230c1a8af8f76f45ff959ccf21ec3012af4871c7bc3757756  source/after/high-pressure-grinding-rolls.kcad.ts
+519e8922063b73ec208e1ea0ef20ecbca56c69df2ef90c065647512a72f5f5fd  source/before/high-pressure-grinding-rolls.kcad.ts
+db46f8c42abcd11c5b6fc883cd5dc563617764881831719d4c706205f45f109a  previews/after/high-pressure-grinding-rolls.png
+a833264747c207bdbb9f9b61dffb53b6394dfc86f4b8be2729ce707d43a85bda  previews/before/high-pressure-grinding-rolls.png
+e7fbd12cf0c888fb2f04c84d475735f62a88cfb222eaf77e19a347827d3fec3b  mining-hpgr-press-cylinder-material-review.mp4

@@ -1,0 +1,66 @@
+{
+  "reviewedAt": "2026-11-11",
+  "scope": "Five existing postal-logistics industrial sorting previews; rendered low-poly scene assets, not production equipment specifications.",
+  "assets": [
+    {
+      "id": "automated-label-applicator",
+      "dimensionsM": [0.825, 1.605, 1],
+      "triangles": 844,
+      "triangleBudget": 1800,
+      "sourceSha256": "aa5eb0ea7539e61f5bd0db4061168d7a207ffe1c3c22a6bb91cdf93bcb3fa402",
+      "previewSha256": "1cc0ee1b096f17ffa6371b12ccfe9a1f977078b7a3edb7839d8f53ad5cf37097",
+      "observation": "Gantry, paper roll, applicator head, and three conveyor rollers are visible. No specific material mismatch established.",
+      "result": "No change"
+    },
+    {
+      "id": "crossbelt-sorter-section",
+      "dimensionsM": [0.775, 0.84, 1.18],
+      "triangles": 720,
+      "triangleBudget": 1800,
+      "sourceSha256": "9988f43e145afc7ba8b887a7e5590b8b0248df32a44db664f6166c3b53127e80",
+      "previewSha256": "07f5469e17f51fc9dfcba5f98ab89aa3f27d88ca06882603d8cf9f173e108351",
+      "observation": "Elevated track and four molded-polymer trays are visible, but the crossbelt faces are absent as distinct surfaces and material zones.",
+      "result": "Material/feature mismatch corrected: added four thin rubber crossbelt surfaces; retained polymer carrier bodies and existing overall envelope.",
+      "after": {
+        "triangles": 960,
+        "triangleBudget": 1800,
+        "dimensionsM": [0.775, 0.84, 1.18],
+        "sourceSha256": "168e3077a650e57b4a40218933be3f8826d4c04040d5c25d090bc69c8704e974",
+        "previewSha256": "f2d0d6887c1629e100f42c6873908cd442d267a99bfe61c102feff3fd348e860",
+        "beltMaterialControl": "beltRubber",
+        "rubberParts": ["crossbelt-1", "crossbelt-2", "crossbelt-3", "crossbelt-4"],
+        "carrierPartsRemainPolymer": ["tray-1", "tray-2", "tray-3", "tray-4"]
+      }
+    },
+    {
+      "id": "parcel-singulator",
+      "dimensionsM": [0.72, 0.795, 1.1],
+      "triangles": 720,
+      "triangleBudget": 1800,
+      "sourceSha256": "82353c969625d84dbdc35eb5dc440d81a2a24a7f16c6d928bea79ed29fe9112d",
+      "previewSha256": "210b4b1753e2cc518e8975f5e11571a7b673df28ec84fc88d2804b0b3df0145f",
+      "observation": "Infeed deck, side guides, separator bars, and support frame are visible. No definite material assignment error established from this view.",
+      "result": "No change"
+    },
+    {
+      "id": "sliding-shoe-sorter-section",
+      "dimensionsM": [0.954, 0.862, 1.2],
+      "triangles": 780,
+      "triangleBudget": 1800,
+      "sourceSha256": "83b2475d4aae0e8d6ea4eddf40e6dc926d88423235aa76f02bf216ae321f0f5e",
+      "previewSha256": "44dcadcaf50d4cecb64896c907b5ec31e40fff286b96358f6b907cfface19ede",
+      "observation": "Sorter deck, lateral discharge lane, shoes, and support legs are recognizable. No specific material mismatch established.",
+      "result": "No change"
+    },
+    {
+      "id": "telescopic-parcel-conveyor",
+      "dimensionsM": [0.815, 1.030747, 1.341203],
+      "triangles": 600,
+      "triangleBudget": 1800,
+      "sourceSha256": "1891b5add2f6ea7cbbf9fa852088ddbb0ebc5a251bbe9d4df81024d9d620eb2e",
+      "previewSha256": "2fdcceca5186107ab3f7d38fa136b5100399f875f6335df87ada66d6efbbd587",
+      "observation": "Nested boom sections and support frame are visible. No definite material mapping error established from this view.",
+      "result": "No change"
+    }
+  ]
+}

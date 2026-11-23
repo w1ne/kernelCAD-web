@@ -3,13 +3,13 @@ meta({
   name: 'knurled-knob',
   license: 'CC0-1.0',
   title: 'Knurled knob',
-  description: 'Compact control knob with a broad grip body, raised crown and center stem Knobs: model size, steel, aluminum, engineering polymer.',
+  description: 'Compact control knob with a broad grip body, raised crown, center stem and visible radial grip flutes. Knobs: model size, steel, aluminum, engineering polymer.',
   tags: ['knob', 'control knob', 'machine control', 'handwheel'],
   kit: 'standard-components',
   category: 'attachment',
   origin: 'base',
   compat: ['mechanical', 'industrial', 'workshop', 'assembly'],
-  triangleBudget: 300,
+  triangleBudget: 480,
 });
 
 const size = param('size', 'standard', { choices: ['compact', 'standard', 'large'], label: 'Model size' });
@@ -27,5 +27,8 @@ const a = assembly('knurled-knob');
 a.part('stem',cylinder(10*s,6*s,10).translate(0,0,0).color(steel));
 a.part('grip',cylinder(18*s,18*s,12).translate(0,0,10*s).color(polymer));
 a.part('crown',cylinder(5*s,15*s,12).translate(0,0,28*s).color(aluminum));
-for (const angle of [0,45,90,135,180,225,270,315]) a.part(`grip-rib-${angle}`,box(2*s,4*s,12*s,true).translate(0,16*s,19*s).rotateZ(angle).color(steel));
+for (let i=0;i<16;i++) {
+  const angle=i*22.5;
+  a.part(`raised-grip-flute-${i}`,box(1.5*s,3*s,13*s,true).translate(0,18.5*s,19*s).rotateZ(angle).color(aluminum));
+}
 return a.model();

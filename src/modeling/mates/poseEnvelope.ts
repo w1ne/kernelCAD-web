@@ -13,8 +13,8 @@ import type { Editable } from '../../shared/runtime/paramRef';
 import { detectInterferences, type InterferencePair, pairKey } from '../runtime/detectInterferences';
 import { checkClearance, type ClearancePairReport } from '../runtime/dfm/clearance';
 import { describeOverlap, describeOverlapLocation, isActionableOverlap } from '../runtime/jointContactCap';
-import { contactAccepts, contactMap, type PairContactTolerance } from '../runtime/pairTolerances';
-import { expandCoupledPoses } from './coupledPoses';
+import { contactAccepts, contactMap, measureDeclaredClearances, type PairClearanceTolerance, type PairContactTolerance } from '../runtime/pairTolerances';
+import { expandCoupledPoses, type MateCouplingRecord } from './coupledPoses';
 import { reposedLoweredAssemblyScene } from './loweredAssemblyScene';
 import { parseConnectorRef, type MatePose, type MateRecord } from './mate';
 import { solveMates } from './solver';
@@ -97,6 +97,10 @@ export interface PoseEnvelopeReviewOptions extends PoseEnvelopeSamplingOptions {
   /** Per-pair intended-contact budgets. A sample's overlap is accepted only
    *  while it stays inside the declared budget for that pair. */
   readonly contactTolerances?: readonly PairContactTolerance[];
+  /** Per-pair declared minimum clearances (`solvedModel({ clearances })`),
+   *  checked at every non-rest sample. The rest pose stays with the
+   *  solvedModel clearance gate. */
+  readonly declaredClearances?: readonly PairClearanceTolerance[];
   /**
    * A fully lowered scene from the same evaluated assembly. When its part set
    * matches, pose review reuses each LOCAL-frame BREP and replaces only the
@@ -155,14 +159,31 @@ function appendMateLimitSamples(
   samples: PoseEnvelopeSample[],
   samplesPerMate: number,
 ): void {
-  for (const mate of arm.__mates()) {
+  const mates = arm.__mates();
+  const couplings = arm.__mateCouplings();
+  const limitedNames = new Set(mates.filter((m) => (m.limitsDeg ?? m.limitsMm) !== undefined).map((m) => m.name));
+  const couplingByDriven = new Map(couplings.map((c) => [c.driven, c]));
+  for (const mate of mates) {
     const limits = mate.limitsDeg ?? mate.limitsMm;
     if (limits === undefined) continue;
+    // A driven mate follows its coupleMates source, so its own limit alone is
+    // a pose the mechanism cannot reach. A limited chain root already sweeps
+    // it, and validateMatePoseLimits checks its limits at every sample. An
+    // unbounded root has no samples of its own, so sweep the driven range
+    // through the root instead.
+    let toPoses = (value: number): NumericPoses => ({ [mate.name]: value });
+    const coupling = couplingByDriven.get(mate.name);
+    if (coupling !== undefined) {
+      const root = couplingRoot(coupling, couplingByDriven);
+      if (root === undefined || root.ratio === 0 || limitedNames.has(root.mate)) continue;
+      toPoses = (value) => ({ [root.mate]: (value - root.offset) / root.ratio });
+    }
     const [min, max] = limits;
+    const via = coupling === undefined ? '' : ' (driven through its coupling source)';
     samples.push({
       name: `${mate.name}:min`,
-      poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), { [mate.name]: min }),
-      reason: `${mate.name} lower limit`,
+      poses: expandCoupledPoses(mates, couplings, toPoses(min)),
+      reason: `${mate.name} lower limit${via}`,
     });
     if (max !== min) {
       if (samplesPerMate >= 3) {
@@ -172,24 +193,51 @@ function appendMateLimitSamples(
           const value = min + (max - min) * t;
           samples.push({
             name: `${mate.name}:interior-${i}`,
-            poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), { [mate.name]: value }),
-            reason: `${mate.name} interior sample ${i}/${interiorCount}`,
+            poses: expandCoupledPoses(mates, couplings, toPoses(value)),
+            reason: `${mate.name} interior sample ${i}/${interiorCount}${via}`,
           });
         }
       }
       samples.push({
         name: `${mate.name}:max`,
-        poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), { [mate.name]: max }),
-        reason: `${mate.name} upper limit`,
+        poses: expandCoupledPoses(mates, couplings, toPoses(max)),
+        reason: `${mate.name} upper limit${via}`,
       });
     }
   }
 }
 
-/** Enumerate the 2^N min/max corner combinations over mates with declared
- *  limits (capped at 8). */
+/** Compose a coupling chain (output <- idler <- input) down to its uncoupled
+ *  root: driven = ratio * root + offset, in the driven mate's authored units.
+ *  Returns undefined for a coupling cycle, which has no root. */
+function couplingRoot(
+  coupling: MateCouplingRecord,
+  couplingByDriven: ReadonlyMap<string, MateCouplingRecord>,
+): { mate: string; ratio: number; offset: number } | undefined {
+  let mate = coupling.source;
+  let ratio = coupling.ratio;
+  let offset = coupling.offset ?? 0;
+  const seen = new Set([coupling.driven]);
+  for (let up = couplingByDriven.get(mate); up !== undefined; up = couplingByDriven.get(mate)) {
+    if (seen.has(up.driven)) return undefined;
+    seen.add(up.driven);
+    offset += ratio * (up.offset ?? 0);
+    ratio *= up.ratio;
+    mate = up.source;
+  }
+  return { mate, ratio, offset };
+}
+
+/** Names of the mates that coupleMates drives from another mate. */
+function coupledDrivenMates(arm: Assembly): ReadonlySet<string> {
+  return new Set(arm.__mateCouplings().map((coupling) => coupling.driven));
+}
+
+/** Enumerate the 2^N min/max corner combinations over independent mates with
+ *  declared limits (capped at 8). */
 function appendCombinatorialSamples(arm: Assembly, samples: PoseEnvelopeSample[]): void {
-  const limited = arm.__mates().filter((m) => (m.limitsDeg ?? m.limitsMm) !== undefined);
+  const driven = coupledDrivenMates(arm);
+  const limited = arm.__mates().filter((m) => !driven.has(m.name) && (m.limitsDeg ?? m.limitsMm) !== undefined);
   if (limited.length > 8) {
     throw new Error(
       `combinatorial sampling capped at 8 mates with declared limits; got ${limited.length}. Use samplesPerMate for higher-DOF mechanisms.`,
@@ -226,27 +274,87 @@ export function validateMatePoseLimits(
   sampleName = 'current',
 ): PoseEnvelopeDiagnostic[] {
   const diagnostics: PoseEnvelopeDiagnostic[] = [];
-  for (const mate of arm.__mates()) {
+  const mates = arm.__mates();
+  const couplings = arm.__mateCouplings();
+  const couplingByDriven = new Map(couplings.map((c) => [c.driven, c]));
+  // Check a driven mate where the solver puts it (ratio × source + offset),
+  // not at its own uncoupled default, so the 'current' sample agrees with
+  // the geometry it solves.
+  const coupledPoses = expandCoupledPoses(mates, couplings, poses ?? {}, {
+    resolveSourcePose: (mate, current) => resolveMatePose(mate, arm, current),
+  });
+  for (const mate of mates) {
     const limits = mate.limitsDeg ?? mate.limitsMm;
     if (limits === undefined) continue;
-    const pose = resolveMatePose(mate, arm, poses);
+    const pose = resolveMatePose(mate, arm, coupledPoses);
     if (pose === undefined || Array.isArray(pose)) continue;
-    const [min, max] = limits;
-    if (pose < min || pose > max) {
-      diagnostics.push({
-        code: 'assembly.pose.out-of-limits',
-        severity: 'error',
-        sampleName,
-        sampleStrategy: classifySampleStrategy(sampleName),
-        mateName: mate.name,
-        pose,
-        limits,
-        message: `Mate '${mate.name}' pose ${pose} is outside its declared limits [${min}, ${max}].`,
-        hint: `invalid-args.assembly.pose-out-of-limits — clamp '${mate.name}' to [${min}, ${max}] or widen the mate limits if the mechanism is intended to travel that far.`,
-      });
-    }
+    if (pose >= limits[0] && pose <= limits[1]) continue;
+    diagnostics.push(outOfLimitsDiagnostic(mate.name, pose, limits, sampleName, mates, couplingByDriven.get(mate.name)));
   }
   return diagnostics;
+}
+
+function outOfLimitsDiagnostic(
+  mateName: string,
+  pose: number,
+  limits: readonly [number, number],
+  sampleName: string,
+  mates: readonly MateRecord[],
+  coupling: MateCouplingRecord | undefined,
+): PoseEnvelopeDiagnostic {
+  const [min, max] = limits;
+  const base = {
+    code: 'assembly.pose.out-of-limits' as const,
+    severity: 'error' as const,
+    sampleName,
+    sampleStrategy: classifySampleStrategy(sampleName),
+    mateName,
+    pose,
+    limits,
+  };
+  const message = `Mate '${mateName}' pose ${pose} is outside its declared limits [${min}, ${max}].`;
+  if (coupling === undefined) {
+    return {
+      ...base,
+      message,
+      hint: `invalid-args.assembly.pose-out-of-limits — clamp '${mateName}' to [${min}, ${max}] or widen the mate limits if the mechanism is intended to travel that far.`,
+    };
+  }
+  const source = mates.find((m) => m.name === coupling.source);
+  return {
+    ...base,
+    message: `${message} It follows '${coupling.source}' through coupleMates (ratio ${Number(coupling.ratio.toPrecision(6))}, offset ${coupling.offset ?? 0}).`,
+    hint: coupledOutOfLimitsHint(mateName, limits, coupling, source?.limitsDeg ?? source?.limitsMm),
+  };
+}
+
+/** A coupled mate cannot be clamped on its own: its pose is ratio × source +
+ *  offset. Name the source range that keeps it inside its limits instead. */
+function coupledOutOfLimitsHint(
+  driven: string,
+  limits: readonly [number, number],
+  coupling: MateCouplingRecord,
+  sourceLimits: readonly [number, number] | undefined,
+): string {
+  const [min, max] = limits;
+  const prefix = `invalid-args.assembly.pose-out-of-limits — '${driven}' follows '${coupling.source}', so it cannot be clamped on its own;`;
+  const tail = `or widen the limits of '${driven}' if the mechanism is intended to travel that far.`;
+  const offset = coupling.offset ?? 0;
+  if (coupling.ratio === 0) {
+    return `${prefix} change the coupleMates offset to a value inside [${min}, ${max}], ${tail}`;
+  }
+  const a = (min - offset) / coupling.ratio;
+  const b = (max - offset) / coupling.ratio;
+  let lo = Math.min(a, b);
+  let hi = Math.max(a, b);
+  if (sourceLimits !== undefined) {
+    lo = Math.max(lo, sourceLimits[0]);
+    hi = Math.min(hi, sourceLimits[1]);
+  }
+  if (lo > hi) {
+    return `${prefix} no pose inside the limits of '${coupling.source}' keeps it inside [${min}, ${max}]; change the coupleMates ratio or offset, ${tail}`;
+  }
+  return `${prefix} narrow the limits of '${coupling.source}' to [${Math.ceil(lo * 1000 - 1e-6) / 1000}, ${Math.floor(hi * 1000 + 1e-6) / 1000}], change the coupleMates ratio or offset, ${tail}`;
 }
 
 export async function reviewPoseEnvelope(
@@ -294,6 +402,10 @@ export async function reviewPoseEnvelope(
         diagnostics,
         reportInterference,
       );
+    }
+
+    if (opts.declaredClearances !== undefined && opts.declaredClearances.length > 0 && sample.name !== REST_SAMPLE) {
+      await reviewPoseEnvelopeSampleDeclaredClearance(arm, sample, opts.declaredClearances, opts.loweredScene, solvedPoses, diagnostics);
     }
 
     if (!includeInterference) continue;
@@ -404,6 +516,49 @@ async function solvePoseEnvelopeSample(
     });
   }
   return solvedPoses;
+}
+
+const REST_SAMPLE = 'current';
+
+/** Declared per-pair minimum clearances at one sample: a sub-minimum gap or
+ *  overlap is an error; an unmeasured pair is a warning, never a pass. */
+async function reviewPoseEnvelopeSampleDeclaredClearance(
+  arm: Assembly,
+  sample: PoseEnvelopeSample,
+  declared: readonly PairClearanceTolerance[],
+  loweredScene: SceneBackend | undefined,
+  solvedPoses: ReadonlyMap<string, import('../../shared/runtime/se3').Transform> | undefined,
+  diagnostics: PoseEnvelopeDiagnostic[],
+): Promise<void> {
+  const scene = await posedSceneAt(arm, sample.poses, loweredScene, solvedPoses);
+  const results = scene === undefined
+    ? declared.map((d) => ({ a: d.parts[0], b: d.parts[1], minMm: d.minMm, distanceMm: Number.NaN, status: 'unknown' as const }))
+    : measureDeclaredClearances(scene, declared);
+  for (const r of results) {
+    if (r.status === 'ok') continue;
+    const base = {
+      sampleName: sample.name,
+      sampleStrategy: classifySampleStrategy(sample.name),
+      partA: r.a,
+      partB: r.b,
+      minClearanceMm: r.minMm,
+    };
+    diagnostics.push(r.status === 'violated'
+      ? {
+          ...base,
+          code: 'assembly.pose-envelope.clearance-violated',
+          severity: 'error',
+          message: `Pose-envelope sample '${sample.name}' leaves ${r.distanceMm.toFixed(3)} mm between parts '${r.a}' and '${r.b}', below their declared ${r.minMm} mm minimum clearance.`,
+          hint: `invalid-args.assembly.pose-envelope-clearance-violated — increase clearance between '${r.a}' and '${r.b}', reduce mate travel, or lower the declared clearances[].minMm only if the planned clearance was wrong.`,
+        }
+      : {
+          ...base,
+          code: 'assembly.pose-envelope.clearance-unresolved',
+          severity: 'warning',
+          message: `Pose-envelope sample '${sample.name}' could not measure the declared ${r.minMm} mm clearance between parts '${r.a}' and '${r.b}'.`,
+          hint: `invalid-args.assembly.pose-envelope-clearance-unresolved — repair degenerate geometry or the lowering path, then re-run the envelope gate.`,
+        });
+  }
 }
 
 async function reviewPoseEnvelopeSampleClearance(
@@ -635,17 +790,27 @@ async function checkClearanceAtPose(
   loweredScene: SceneBackend | undefined,
   solvedPoses: ReadonlyMap<string, import('../../shared/runtime/se3').Transform> | undefined,
 ): Promise<ClearancePairReport[]> {
+  const scene = await posedSceneAt(arm, poses, loweredScene, solvedPoses);
+  if (scene === undefined) return unresolvedClearancePairs(arm, ignoredPairs, matedPairs);
+  try {
+    return checkClearance(scene, minClearanceMm, ignoredPairs, matedPairs, [], { forceExact: true });
+  } catch {
+    return unresolvedClearancePairs(arm, ignoredPairs, matedPairs);
+  }
+}
+
+/** The assembly placed at one sample: the cached lowered scene re-posed when
+ *  possible, else a full solve and lower at those poses. */
+async function posedSceneAt(
+  arm: Assembly,
+  poses: NumericPoses,
+  loweredScene: SceneBackend | undefined,
+  solvedPoses: ReadonlyMap<string, import('../../shared/runtime/se3').Transform> | undefined,
+): Promise<SceneBackend | undefined> {
   const reposedScene = solvedPoses === undefined
     ? undefined
     : reposedLoweredAssemblyScene(arm, loweredScene, solvedPoses);
-  if (reposedScene !== undefined) {
-    try {
-      return checkClearance(reposedScene, minClearanceMm, ignoredPairs, matedPairs, [], { forceExact: true });
-    } catch {
-      return unresolvedClearancePairs(arm, ignoredPairs, matedPairs);
-    }
-  }
-
+  if (reposedScene !== undefined) return reposedScene;
   try {
     await initOcct();
     const scene = await arm.solvedModel(poses, { validate: 'off' });
@@ -656,10 +821,9 @@ async function checkClearanceAtPose(
     });
     const sourceId = scene.__sourceFeatureId();
     const lowered = sourceId === undefined ? undefined : result.shapes.get(sourceId);
-    if (!isSceneBackend(lowered)) return unresolvedClearancePairs(arm, ignoredPairs, matedPairs);
-    return checkClearance(lowered, minClearanceMm, ignoredPairs, matedPairs, [], { forceExact: true });
+    return isSceneBackend(lowered) ? lowered : undefined;
   } catch {
-    return unresolvedClearancePairs(arm, ignoredPairs, matedPairs);
+    return undefined;
   }
 }
 

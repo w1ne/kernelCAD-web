@@ -1,0 +1,20 @@
+{
+  "video": "demo.mp4",
+  "sha256": "6c02ebe489bade0e1812bd41849644543e8514ba0969fbebfe67442979838630",
+  "bytes": 88841,
+  "codec": "h264",
+  "size": [
+    1280,
+    720
+  ],
+  "frameRate": "24/1",
+  "pixelFormat": "yuv420p",
+  "durationSeconds": 12.0,
+  "framesVisuallySampledAtSeconds": [
+    1,
+    5,
+    9
+  ],
+  "contactSheet": "verification/video-contact-sheet.png",
+  "result": "pass"
+}

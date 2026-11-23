@@ -1,0 +1,3 @@
+(node:1553239) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+water-treatment/reverse-osmosis-skid: 2660 tris

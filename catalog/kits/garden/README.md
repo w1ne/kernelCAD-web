@@ -10,7 +10,7 @@ Original low-poly garden structures and props for backyard, greenhouse, patio an
 | `birdhouse-post` | Birdhouse on post | Small pitched-roof birdhouse mounted on a garden post, with a round entrance and landing peg. | House body, Roof, Post, Entrance shadow | 148 |
 | `coiled-garden-hose` | Coiled garden hose | Compact polygonal coil of garden hose with a loose end and connector. | Coil diameter (mm), Hose, Connector | 200 |
 | `cold-frame` | Cold frame | Low timber cold frame with a raised planting box and sloped glazed lid. | Width (mm), Timber frame, Glazed lid, Soil | 108 |
-| `compost-bin` | Slatted compost bin | Open-front slatted garden compost bin with corner posts and removable front boards. | Bin width (mm), Timber, Compost | 348 |
+| `compost-bin` | Slatted compost bin | Ventilated timber bin with side and rear slats, a visible compost mound, and open, lower-access, or closed removable-slat front. | Bin width (mm), Front access, Treated timber, Compost | 296 |
 | `compost-tumbler` | Compost tumbler | Rotating barrel composter on an A-frame stand with an axle and reinforcing bands. | Drum length (mm), Frame, Drum, Axle | 296 |
 | `drip-irrigation-row` | Drip irrigation row | Garden drip irrigation line with a main hose, repeated emitters and two ground stakes. | Row length (mm), Hose, Emitters | 224 |
 | `garden-arbor` | Garden arbor | Freestanding timber garden arbor with cross rails and roof slats. | Arch span (mm), Timber, Hardware | 132 |
@@ -46,6 +46,11 @@ Original low-poly garden structures and props for backyard, greenhouse, patio an
 | `worm-composter` | Worm composter | Stacked worm composting trays with tapered bases, an upper lid and a lower drain tap. | Tray width (mm), Trays, Stand, Drain tap | 152 |
 
 ## Demo and local evidence
+
+The [2026-11-09 compost-bin refinement handoff](../../../artifacts/catalog-demos/garden-compost-bin-quality-20261109/README.md)
+shows the source-driven front-access variants, material presets, refreshed
+preview and regenerated catalog index. This remains local branch evidence, not
+a deployment or physical-acceptance claim.
 
 The [24-second garden preview reel and its source/settings/verification bundle](../../../artifacts/catalog-demos/garden-wave-20261102/README.md) show generated catalog previews from these assets. The video distinguishes local validation from deployment and physical acceptance.
 

@@ -1,32 +1,31 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as replicad from 'replicad';
-import { optimalBoundsOf } from './backendBounds';
+import { geometryBox, optimalBoundsOf } from './backendBounds';
+import { curvedFaceBounds, withSplineFaceBounds } from './splineFaceBounds';
 import { getOC } from 'replicad';
 import type { ShapeBackend, BackendTarget } from '../backend';
-import type { SceneBackend } from '../sceneBackend';
 import type { Vec3, PlaneSpec, CardinalPlane } from '../../../shared/intent/types';
 import type { RuntimeMesh } from '../runtimeMesh';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { isSameEdge } from './edgeQueries';
-import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
+import { buildNurbsProfileOnPlane, buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { resolveTangency } from './tangencySolver';
 import { sweepProfileAlongHelix, type HelicalSweepSpec } from './helicalSweep';
 import { drawingFromCommands } from './sketchToDrawing';
-import { encodeBinaryStl } from './exportStlBinary';
+import { encodeBinaryStlBytes } from './exportStlBinary';
 import { verifyWatertight, type WatertightReport } from './meshHeal';
 import { isOcctInitialized } from './backendInit';
-import { meshShapeForExport } from './backendMesh';
+import { meshShapeForExport, type ExportMeshDeflection } from './backendMesh';
 import { sharedAnalysisMesh } from './analysisMeshScope';
 import { completeLoftFromLifted } from './polyhedralRuledLoft';
 import { cachedCollisionVertices } from './collisionVerticesCache';
 import { locateShape } from './occtPlacement';
 import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases';
-import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
-import { releaseWorldFrameParts, sceneToWorldFrameParts } from './sceneToWorldFrame';
-import { reproducibleOcctStep, writeStepAssembly } from './stepAssemblyExport';
+import { reproducibleOcctStep } from './stepAssemblyExport';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
+import { integrateArea, integrateVolume } from './volumeIntegration';
 import { memoBox, memoMass, memoVolume } from './analysisMemo';
 import { disposeOcctHandles } from './occtDispose';
 import { KernelError } from '../../../shared/intent/kernelError';
@@ -74,6 +73,12 @@ export class OcctBackend implements ShapeBackend {
   readonly historyMap?: import('../../naming/evolutionRecord').HistoryMap;
   /** Edge ancestry. Populated for primitives and for operations that record it. */
   edgeHistoryMap?: import('../../naming/evolutionRecord').EdgeHistoryMap;
+  /** Face hash -> the records the face came from through booleans, oldest
+   *  first (`[operand, ..., boolean]`). Written by every boolean from the OCCT
+   *  boolean history whether or not the operands carry face lineage, so a
+   *  sketch extrude or extruded text member is traceable too. Appearance only:
+   *  `memberMaterialsByFace` reads it to keep each union member's finish. */
+  memberOrigin?: ReadonlyMap<string, readonly string[]>;
   private _drawing: replicad.Drawing | null = null;
   private _commands: SketchCommand[] | null = null;
   // When `_commands` contains at least one Slice D NURBS segment (`spline`,
@@ -127,6 +132,7 @@ export class OcctBackend implements ShapeBackend {
   clone(): OcctBackend {
     const out = new OcctBackend(this.shape.clone() as ReplicadShape3D, this.kind, this.historyMap);
     if (this.edgeHistoryMap) out.edgeHistoryMap = this.edgeHistoryMap;
+    if (this.memberOrigin) out.memberOrigin = remapMemberOriginByIndex(this.memberOrigin, this.faceHashes(), out.faceHashes());
     if (this.analysisBody !== undefined) out.analysisBody = this.analysisBody.clone();
     return out;
   }
@@ -374,7 +380,8 @@ export class OcctBackend implements ShapeBackend {
     if (sketch._hasNurbs && sketch._commands) {
       // NURBS path — build a fresh `replicad.Sketch` on XY from the captured
       // SketchCommand[], composing pen-run edges with direct-OCCT NURBS edges.
-      const built = buildNurbsSketchOnPlane(sketch._commands, 'XY');
+      // Later `moveTo … close` loops are holes.
+      const built = buildNurbsProfileOnPlane(sketch._commands, 'XY');
       return new OcctBackend(extrudeLiftedShape(built, depth, angle));
     }
     const lifted = sketch._drawing!.sketchOnPlane('XY');
@@ -407,7 +414,7 @@ export class OcctBackend implements ShapeBackend {
     if (sketch._hasNurbs && sketch._commands) {
       // NURBS path — build the wire on XZ (so path-y becomes world-z) and
       // revolve around world Z, matching the Drawing-side behaviour.
-      const built = buildNurbsSketchOnPlane(sketch._commands, 'XZ');
+      const built = buildNurbsProfileOnPlane(sketch._commands, 'XZ');
       const revolvable = built as unknown as {
         revolve: (
           axis?: [number, number, number],
@@ -455,9 +462,9 @@ export class OcctBackend implements ShapeBackend {
     }
     if (sketch._hasNurbs && sketch._commands) {
       const built = buildNurbsSketchOnPlane(sketch._commands, plane);
-      // The NURBS path always produces a single closed `replicad.Sketch`
-      // (assembleWire either returns one wire or throws); the multi-face
-      // guard below is therefore a no-op here, but we keep the same shape
+      // The NURBS path produces a single closed `replicad.Sketch` (a holed
+      // profile throws); the multi-face guard below is therefore a no-op
+      // here, but we keep the same shape
       // of the returned object so callers (`sweepFromSketch`,
       // `variableSweepLowerer`) don't branch.
       const liftedSketch = built as unknown as { face: () => { outerWire: () => replicad.Wire } };
@@ -1055,7 +1062,7 @@ export class OcctBackend implements ShapeBackend {
    * The area gives the shared region's mean thickness (2·V/A), which tells
    * coincident-face contact apart from a real overlap of any volume.
    */
-  intersectionMetrics(other: OcctBackend): {
+  intersectionMetrics(other: OcctBackend, includeSurfaceContact = false): {
     volumeMm3: number;
     areaMm2: number;
     /** World-frame bounds of the common solid, when OCCT can compute them. */
@@ -1083,7 +1090,7 @@ export class OcctBackend implements ShapeBackend {
         const props = new oc.GProp_GProps_1();
         oc.BRepGProp.VolumeProperties_1(shape, props, false, false, false);
         const volumeMm3 = Math.abs(props.Mass());
-        props.delete(); if (!(volumeMm3 > 0)) return { volumeMm3, areaMm2: 0 };
+        props.delete(); if (!includeSurfaceContact && !(volumeMm3 > 0)) return { volumeMm3, areaMm2: 0 };
         const surface = new oc.GProp_GProps_1();
         oc.BRepGProp.SurfaceProperties_1(shape, surface, false, false);
         const areaMm2 = Math.abs(surface.Mass());
@@ -1115,19 +1122,13 @@ export class OcctBackend implements ShapeBackend {
       if (tight) return tight;
       // Empty / unmeshable shape — fall through to Bnd_Box.
     }
-    const bb = this.shape.boundingBox;
-    const [minP, maxP] = bb.bounds;
-    // OCCT's Bnd_Box inflates bounds by a tolerance gap; remove it so that
-    // exact-axis-aligned primitives report integral coordinates. NOTE: even
-    // gap-corrected, Bnd_Box stays padded on curved B-spline faces (control-
-    // point hull); pass { exact: true } for a tessellation-tight box.
-    const wrapped = (bb as unknown as { wrapped?: { GetGap?: () => number } }).wrapped;
-    const gap =
-      wrapped && typeof wrapped.GetGap === 'function' ? wrapped.GetGap() : 0;
-    return {
-      min: [minP[0] + gap, minP[1] + gap, minP[2] + gap] as Vec3,
-      max: [maxP[0] - gap, maxP[1] - gap, maxP[2] - gap] as Vec3,
-    };
+    const curved = curvedFaceBounds(this.shape.wrapped);
+    if (curved) return curved;
+    // NOTE: even gap-corrected, Bnd_Box follows the control-point hull of
+    // B-spline faces; strongly rational faces are measured exactly above,
+    // and other B-spline faces are refined to 1e-3 mm below. Pass
+    // { exact: true } for a tessellation-tight box.
+    return withSplineFaceBounds(this.shape.wrapped, geometryBox(this.shape.wrapped));
   }
 
   /** Fold the standard-mesher vertex AABB. Returns undefined when the
@@ -1172,11 +1173,13 @@ export class OcctBackend implements ShapeBackend {
   }
 
   volume(): number {
-    return memoVolume(this, () => Math.abs(replicad.measureVolume(this.shape)));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return memoVolume(this, () => Math.abs(integrateVolume((this.shape as any).wrapped)));
   }
 
   surfaceArea(): number {
-    return replicad.measureArea(this.shape);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return integrateArea((this.shape as any).wrapped);
   }
 
   isEmpty(): boolean {
@@ -1263,17 +1266,18 @@ export class OcctBackend implements ShapeBackend {
    * pipeline (relative-deflection whole-shape mesh, per-face absolute
    * fallback, position-key weld, crack stitch — see meshShapeForExport),
    * then runs the O(n) edge-adjacency verify on the exact mesh that is
-   * encoded, so the report describes the bytes written.
+   * encoded, so the report describes the bytes written. `watertightOnly`
+   * leaves `bytes` empty for a torn mesh the caller will not ship.
    */
-  async exportSTLWithReportAsync(): Promise<{
+  async exportSTLWithReportAsync(deflection?: ExportMeshDeflection, watertightOnly = false): Promise<{
     bytes: Uint8Array;
     report: WatertightReport;
     triangleCount: number;
   }> {
-    const mesh = meshShapeForExport(this.shape);
+    const mesh = meshShapeForExport(this.shape, deflection);
     const report = verifyWatertight(mesh);
-    const buf = encodeBinaryStl({ vertices: mesh.vertices, triangles: mesh.triangles });
-    return { bytes: Uint8Array.from(buf), report, triangleCount: mesh.triangles.length / 3 };
+    const bytes = watertightOnly && !report.ok ? new Uint8Array() : encodeBinaryStlBytes(mesh);
+    return { bytes, report, triangleCount: mesh.triangles.length / 3 };
   }
 
   exportSTEP(): Uint8Array {
@@ -1445,46 +1449,6 @@ export class OcctBackend implements ShapeBackend {
 }
 
 /**
- * Scene-aware STEP export. Builds a `replicad.ShapeConfig[]` from the
- * `SceneBackend`'s parts (apply each part's `worldTransform` to a fresh
- * clone of its local-frame OCCT shape), then routes through replicad's
- * XCAF STEP writer (`writeStepAssembly`) so the resulting STEP file ships a
- * separate named body per part with its role color attached via XCAFDoc /
- * STEP layers. (`replicad.exportSTEP` is not used: its GC finalizers
- * double-free the STEP work session and corrupt the wasm heap; see
- * stepAssemblyExport.ts.)
- *
- * Why a free function instead of a `Scene.exportSTEP()` method: the agent-
- * facing Scene surface stays lean (per the kernelCAD product strategy —
- * generic tools, not convenience methods). `runAndExport` calls this
- * directly when the script returns a Scene. Callers outside the runtime
- * (CLI, MCP, future Studio export panel) can import this free function.
- *
- * Lifecycle: clones every part shape before `applyTransform` because
- * replicad's translate/rotate mutate-and-destroy the source OCCT handle
- * (cf. commit 1d597dd). Color tokens (e.g. 'plate', 'gear') are resolved
- * to `#rrggbb` via the role palette before being passed to the writer.
- */
-export async function exportSceneToSTEPAsync(
-  sceneBackend: SceneBackend,
-): Promise<Uint8Array> {
-  // `sceneToWorldFrameParts` enforces the non-empty-scene invariant and
-  // owns the clone-before-transform contract for every multi-body exporter.
-  const worldParts = sceneToWorldFrameParts(sceneBackend);
-  try {
-    return await writeStepAssembly(
-      worldParts.map((p) => ({
-        shape: p.shape.getReplicadShape().wrapped,
-        name: p.name,
-        color: resolveColor(p.color),
-      })),
-    );
-  } finally {
-    releaseWorldFrameParts(worldParts);
-  }
-}
-
-/**
  * Build a PBR record from FeatureRecord.metadata. Priority:
  *   1. metadata.material (full PBR) — used directly.
  *   2. metadata.color (legacy flat color) — promoted to { baseColor }.
@@ -1505,4 +1469,22 @@ export function pbrFromMetadata(metadata: Record<string, unknown> | undefined): 
  *  nominal analysis stand-in when it carries one, else the shape itself. */
 export function analysisBodyOf<T>(shape: T): T | OcctBackend {
   return shape instanceof OcctBackend && shape.analysisBody !== undefined ? shape.analysisBody : shape;
+}
+
+/** Carry a `memberOrigin` map across a topology-preserving copy or rigid
+ *  transform: OCCT keeps face explorer order, so face i maps to face i (the
+ *  invariant `propagateTransformHistory` relies on). A face-count mismatch
+ *  drops the map. */
+export function remapMemberOriginByIndex(
+  origin: ReadonlyMap<string, readonly string[]>,
+  inputHashes: readonly string[],
+  outputHashes: readonly string[],
+): ReadonlyMap<string, readonly string[]> | undefined {
+  if (inputHashes.length !== outputHashes.length) return undefined;
+  const out = new Map<string, readonly string[]>();
+  inputHashes.forEach((h, i) => {
+    const chain = origin.get(h);
+    if (chain !== undefined) out.set(outputHashes[i]!, chain);
+  });
+  return out.size > 0 ? out : undefined;
 }

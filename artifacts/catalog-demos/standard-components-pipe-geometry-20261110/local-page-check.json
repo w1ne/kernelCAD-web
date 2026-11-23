@@ -1,0 +1,41 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/standard-components-pipe-geometry-20261110/verify_local_pages.py",
+  "scope": "local static page build only; not deployed behavior",
+  "assets": {
+    "pipe-reducer": {
+      "page": "site-build/catalog/standard-components/pipe-reducer/index.html",
+      "previewSha256": "3671e281fec7466e8a8914c7e3d8dc99dee14bcf8d786c0a1e2b7c47dbcc55d8",
+      "controlsAndPresetTokens": [
+        "reduction",
+        "barrel",
+        "collars",
+        "gasket",
+        "stainless"
+      ],
+      "localStudioLink": true
+    },
+    "retaining-ring": {
+      "page": "site-build/catalog/standard-components/retaining-ring/index.html",
+      "previewSha256": "476ba8f59bfd5513006aa2140bc1e9ef16257d8e2a48711fb907a905a07bcdbb",
+      "controlsAndPresetTokens": [
+        "gap",
+        "springSteel",
+        "stainless",
+        "bluePhosphate"
+      ],
+      "localStudioLink": true
+    },
+    "tubular-spacer": {
+      "page": "site-build/catalog/standard-components/tubular-spacer/index.html",
+      "previewSha256": "35aa559c2261af787d4f902074fccb6428b48e66bf913d531a4868c13b4c06a4",
+      "controlsAndPresetTokens": [
+        "length",
+        "steel",
+        "polymer",
+        "endRims",
+        "insulated"
+      ],
+      "localStudioLink": true
+    }
+  }
+}

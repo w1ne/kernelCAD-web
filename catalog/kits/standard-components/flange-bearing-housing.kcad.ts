@@ -1,9 +1,10 @@
-// Distinctive geometry: Square two-hole bearing mount with a raised round boss and a centered shaft opening
+// Illustrative CC0 cast flange housing with an unobstructed shaft bore,
+// two clear fastener holes, and a separate plain bronze sleeve bearing.
 meta({
   name: 'flange-bearing-housing',
   license: 'CC0-1.0',
   title: 'Flange bearing housing',
-  description: 'Square two-hole bearing mount with a raised round boss and a centered shaft opening Knobs: model size, cast iron, bronze.',
+  description: 'Illustrative CC0 flange bearing housing: one-piece cast housing with a raised circular seat, two usable through-holes, and a separate plain bronze sleeve bearing with an open shaft bore. Not a ball bearing, vendor drawing, rated part, or fit specification. Knobs: model size and display colors.',
   tags: ['bearing housing', 'flange bearing', 'shaft support', 'mount'],
   kit: 'standard-components',
   category: 'attachment',
@@ -22,12 +23,23 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
+// Nominal illustrative dimensions at 1x: 56 x 36 x 20 mm overall.
+// The 15 mm-radius boss clears both Ø7 mounting bores at X=±21 mm.
+// Cast housing, replaceable bronze bushing and the shaft passage are
+// distinct functional structures rather than decorative surface colors.
 const a = assembly('flange-bearing-housing');
-let plate=block(-28*s,-18*s,0,56*s,36*s,8*s);
-for (const x of [-19,19]) plate=plate.subtract(cylinder(10*s,3*s,10).translate(x*s,0,-s));
-a.part('plate',plate.color(castIron));
-let boss=cylinder(12*s,20*s,16).translate(0,0,8*s);
-boss=boss.subtract(cylinder(14*s,10*s,12).translate(0,0,7*s));
-a.part('boss',boss.color(bronze));
+const plate = box(56*s, 36*s, 8*s).translate(-28*s, -18*s, 0);
+const boss = cylinder(12.1*s, 15*s, 24).translate(0, 0, 7.9*s);
+let casting = plate.union(boss);
+// Ø23 through-seat, open from the underside to the upper crown.
+casting = casting.subtract(cylinder(22*s, 11.5*s, 24).translate(0, 0, -s));
+for (const x of [-21, 21]) {
+  casting = casting.subtract(cylinder(10*s, 3.5*s, 20).translate(x*s, 0, -s));
+}
+a.part('one-piece-cast-iron-housing', casting.color(castIron));
+// Replaceable plain bearing: separate solid with nominal 0.2 mm radial
+// clearance to the cast seat, not an invented ball race or rolling element.
+const sleeve = cylinder(20*s, 11.3*s, 24)
+  .subtract(cylinder(22*s, 8.5*s, 24).translate(0, 0, -s));
+a.part('plain-bronze-sleeve-bearing', sleeve.color(bronze));
 return a.model();

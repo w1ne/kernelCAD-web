@@ -1,0 +1,108 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/water-treatment-vertical-turbine-pump-quality-20261110/render_variants.ts",
+  "renderer": "variantSource + runAndExport(format=\"glb\", style=\"lowpoly\") + scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "geometryChecks": {
+    "frontAndRightImagesDistinct": true,
+    "frontAndRightEnvelopeSwapsAxes": true,
+    "weatheredAndHighVisibilityImagesDiffer": true,
+    "allVariantsHaveSameTriangleCount": true,
+    "sourceTriangleBudget": 2800,
+    "maximumMeasuredTriangles": 2276
+  },
+  "source": {
+    "file": "catalog/kits/water-treatment/vertical-turbine-pump.kcad.ts",
+    "sourceSha256": "cd6b62238fa8ec4d91dac4df74b6818606759b34a4a13217b31b35249d37243c"
+  },
+  "renders": [
+    {
+      "id": "front-default",
+      "choices": {
+        "outletOrientation": "front"
+      },
+      "stats": {
+        "triangles": 2276,
+        "sizeM": [
+          0.65,
+          1.444,
+          0.769
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 35,
+        "parts": 35,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "eaee0ce44b604b62c5d78e7d530e1ed5f9f5037ffc3b4e9bd8013f9be1b36760",
+      "sourceSha256": "cd6b62238fa8ec4d91dac4df74b6818606759b34a4a13217b31b35249d37243c"
+    },
+    {
+      "id": "right-discharge",
+      "choices": {
+        "outletOrientation": "right"
+      },
+      "stats": {
+        "triangles": 2276,
+        "sizeM": [
+          0.769,
+          1.444,
+          0.65
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 35,
+        "parts": 35,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "1f79e8c83085800859c346b90999a24e2b253a7847fa3ea9e009fb62be1b925a",
+      "sourceSha256": "cd6b62238fa8ec4d91dac4df74b6818606759b34a4a13217b31b35249d37243c"
+    },
+    {
+      "id": "weathered-front",
+      "choices": {
+        "outletOrientation": "front"
+      },
+      "preset": "weathered",
+      "stats": {
+        "triangles": 2276,
+        "sizeM": [
+          0.65,
+          1.444,
+          0.769
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 35,
+        "parts": 35,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "05ecc2f3116c8dc45a594f69e7ce198bc5471d71240eff61aa3572bdaf8cc676",
+      "sourceSha256": "cd6b62238fa8ec4d91dac4df74b6818606759b34a4a13217b31b35249d37243c"
+    },
+    {
+      "id": "high-visibility-front",
+      "choices": {
+        "outletOrientation": "front"
+      },
+      "preset": "highVisibility",
+      "stats": {
+        "triangles": 2276,
+        "sizeM": [
+          0.65,
+          1.444,
+          0.769
+        ],
+        "minUpM": 0,
+        "materials": 1,
+        "drawCalls": 35,
+        "parts": 35,
+        "hasRig": false,
+        "hasIk": false
+      },
+      "pngSha256": "82be57386dd5ceaa8c64cfedb46e92e525b63e5f3abecce8ff1a85c1151eb888",
+      "sourceSha256": "cd6b62238fa8ec4d91dac4df74b6818606759b34a4a13217b31b35249d37243c"
+    }
+  ]
+}

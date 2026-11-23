@@ -1,0 +1,11 @@
+PR #1258 checks were green before this audit (see pr-checks-before.txt);
+`gh pr view` reported zero submitted reviews and `mergeStateStatus: CLEAN`.
+
+The airfield kit is added by #1258. No other open PR changes an airfield asset:
+open PRs touching catalog sources are #1215 (industrial-plant), #1211 (sports)
+and one city-street file. Open issue searches for `airfield` and `pushback tug`
+returned no results.
+
+Previously merged fixes #1298, #1305, #1307 and #1308 cover the substation cable
+ladder, sanitary lobe pump, storage-array chassis and split shaft collar. None
+overlaps this review.

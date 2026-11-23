@@ -88,7 +88,7 @@ export interface RunScriptInBrowserInput {
  * builtins) and return the captured FeatureRecords, ParamTable and return
  * value — the same `RunScriptResult` the node `runScript` produces.
  *
- * Features that need a filesystem (`lib.fromSTEP`, `lib.fromSTL`,
+ * Features that need a filesystem (`lib.fromSTEP`, `lib.fromSTL`, `lib.from3MF`,
  * `lib.fetchPart`, `lib.standard.*`, `referenceImage`, custom TTF fonts) are
  * NOT silently skipped: each throws or reports a `cli.host-fs-unavailable`
  * diagnostic naming the call and why it cannot run here.

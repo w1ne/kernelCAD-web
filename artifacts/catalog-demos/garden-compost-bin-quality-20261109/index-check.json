@@ -1,0 +1,37 @@
+{
+  "indexAssetCount": 2402,
+  "indexKitCount": 50,
+  "gardenAssetCount": 40,
+  "staleSources": [],
+  "missingPreviews": [],
+  "compostBin": {
+    "source": "catalog/kits/garden/compost-bin.kcad.ts",
+    "sourceSha256": "9f9b290df27b423ebba5e6e712ed673169c8605a34e1a60ef48cc444ae0a3ed9",
+    "preview": "/assets/garden-compost-bin.png",
+    "triangles": 296,
+    "triangleBudget": 420,
+    "params": [
+      "width",
+      "frontAccess",
+      "timber",
+      "compost"
+    ],
+    "presets": [
+      "mature",
+      "painted",
+      "recycled"
+    ]
+  },
+  "checks": {
+    "assetCount": true,
+    "kitCount": true,
+    "gardenCount": true,
+    "allSourceHashesMatch": true,
+    "allRowsHavePreviewPathsAndFiles": true,
+    "compostBinIndexSourceHashMatches": true,
+    "compostBinPreviewPathIndexed": true,
+    "compostBinStatsMatch": true,
+    "compostBinControlsAndPresetsIndexed": true
+  },
+  "allPassed": true
+}

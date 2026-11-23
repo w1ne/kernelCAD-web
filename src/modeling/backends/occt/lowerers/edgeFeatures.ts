@@ -15,6 +15,7 @@ import {
   discardOcctShape,
   filletWithHistory,
   mergeEdgeFeatureHistory,
+  type ChamferLegs,
   type EdgeFeatureHistoryResult,
   type EdgeRefForFilleting,
 } from '../../../../kernel/backends/occt/historyAwareEdgeFeatures';
@@ -28,6 +29,10 @@ import type { FeatureId, FeatureRef } from '../../../../shared/intent/types';
 import { built, finished, type LowerContext, type LowerOutcome } from './context';
 import { drainResolvedWarnings, filterEdgesByMinLength } from './helpers';
 import { probeMaxFeasible } from './feasibilityProbe';
+import { limitingEdgeReport, withLimitingEdges } from './limitingEdges';
+import { isEveryEdgeSelection, roundBlendableSubset, skippedEdgesDiagnostic } from './partialEdgeFeature';
+import { unifySameDomainForEdgeFeature } from '../../../../kernel/backends/occt/unifySameDomain';
+import { resolveChamferLegs, type ChamferLegOp } from './asymmetricChamfer';
 
 // ---------------------------------------------------------------------------
 // Shared helper: variable-radius fillet / variable-distance chamfer
@@ -453,6 +458,17 @@ interface EdgeOp {
   kind: 'fillet' | 'chamfer';
   value: number;
   continuity: 'G1' | 'G2';
+  /** Tapered fillet only: `endRadius / radius`. A ratio, so the feasibility
+   *  probe scales both ends of the taper together. */
+  endRatio?: number;
+  /** Asymmetric chamfer only: the reference face and the second leg. */
+  legs?: ChamferLegOp;
+}
+
+function chamferLegsOf(op: EdgeOp): ChamferLegs | undefined {
+  if (!op.legs) return undefined;
+  const { face, distance2Ratio, angleDeg } = op.legs;
+  return distance2Ratio !== undefined ? { face, distance2: distance2Ratio * op.value } : { face, angleDeg };
 }
 
 function attemptEdgeFeature(base: OcctBackend, edges: Edge[], op: EdgeOp): EdgeAttempt {
@@ -460,8 +476,9 @@ function attemptEdgeFeature(base: OcctBackend, edges: Edge[], op: EdgeOp): EdgeA
   let result: EdgeFeatureHistoryResult;
   try {
     result = op.kind === 'fillet'
-      ? filletWithHistory(base, refs, op.value, op.continuity)
-      : chamferWithHistory(base, refs, op.value);
+      ? filletWithHistory(base, refs, op.value, op.continuity,
+        op.endRatio === undefined ? undefined : op.endRatio * op.value)
+      : chamferWithHistory(base, refs, op.value, chamferLegsOf(op));
   } catch (e) {
     // A raw WASM exception pointer (a bare integer) is meaningless — never echo it.
     return e instanceof Error
@@ -530,20 +547,30 @@ function builtFromAttempt(base: OcctBackend, result: EdgeFeatureHistoryResult, f
 function applyConstantEdgeFeature(
   ctx: LowerContext,
   r: FeatureRecord,
-  base: OcctBackend,
-  edges: Edge[],
+  input: OcctBackend,
+  inputEdges: Edge[],
   op: EdgeOp,
 ): LowerOutcome {
-  const full = attemptEdgeFeature(base, edges, op);
-  if (full.ok) return builtFromAttempt(base, full.result, r.id);
-  const filter = filterEdgesByMinLength(edges, 2 * op.value, {
+  const full = attemptEdgeFeature(input, inputEdges, op);
+  if (full.ok) return builtFromAttempt(input, full.result, r.id);
+  // Booleans keep coplanar seams (historyAwareBooleans skips SimplifyResult),
+  // and the blend solver cannot pass a vertex where a seam meets the selected
+  // edges. Retry on the same solid with same-domain faces merged; everything
+  // after this works on the merged solid. The input stays the failure result.
+  const { base, edges } = mergedSeamsBase(input, inputEdges, op);
+  if (base !== input) {
+    const retry = attemptEdgeFeature(base, edges, op);
+    if (retry.ok) return builtFromAttempt(base, retry.result, r.id);
+  }
+  const filter = filterEdgesByMinLength(edges, 2 * op.value * Math.max(1, op.endRatio ?? 1), {
     op: op.kind, paramName: op.kind === 'fillet' ? 'radius' : 'distance', featureId: r.id,
   });
+  const inputEdgeSet = (input.getReplicadShape() as unknown as { edges: Edge[] }).edges;
   if (filter.diagnostic?.severity === 'error') {
     // The length screen explains the refusal. It is not a feasible radius.
     // The same probe used for kernel-failed measures one on these edges.
-    ctx.diagnostics.push(withVerifiedEdgeFeasible(filter.diagnostic, base, edges, op));
-    return built(base);
+    ctx.diagnostics.push(nameLimitingEdges(withVerifiedEdgeFeasible(filter.diagnostic, base, edges, op), r, base, edges, op, inputEdgeSet));
+    return built(input);
   }
   if (filter.diagnostic && filter.kept.length > 0) {
     const subset = attemptEdgeFeature(base, filter.kept, op);
@@ -552,8 +579,74 @@ function applyConstantEdgeFeature(
       return builtFromAttempt(base, subset.result, r.id);
     }
   }
-  ctx.diagnostics.push(edgeFailureDiagnostic(r, base, edges, op, full));
-  return finished(base);
+  return refuseOrRoundPartial(ctx, r, { input, inputEdgeSet, base, edges }, op, full);
+}
+
+/**
+ * The refusal, except for the default every-edge form on a selection no size
+ * builds on: that rounds the edges that build together and reports the rest.
+ * An explicit selection, or one a smaller size would build, is refused.
+ */
+function refuseOrRoundPartial(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  on: { input: OcctBackend; inputEdgeSet: Edge[]; base: OcctBackend; edges: Edge[] },
+  op: EdgeOp,
+  full: { message: string },
+): LowerOutcome {
+  const { base, edges } = on;
+  const failure = edgeFailureDiagnostic(r, base, edges, op, full);
+  if (isEveryEdgeSelection(r) && failure.code === 'feature.kernel-failed' && failure.details?.maxFeasibleValue === 0) {
+    const partial = roundBlendableSubset(
+      edges,
+      (subset) => {
+        const a = attemptEdgeFeature(base, subset, op);
+        return a.ok ? a.result : undefined;
+      },
+      (result) => discardOcctShape(result.shape),
+    );
+    if (partial) {
+      ctx.diagnostics.push(skippedEdgesDiagnostic(r, op, edges.length, partial, on.inputEdgeSet));
+      return builtFromAttempt(base, partial.result, r.id);
+    }
+  }
+  ctx.diagnostics.push(nameLimitingEdges(failure, r, base, edges, op, on.inputEdgeSet));
+  return finished(on.input);
+}
+
+/** The merged-seam solid and the requested edges on it, or the input
+ *  unchanged when it has no same-domain seams. An asymmetric chamfer names
+ *  its reference face by hash, which a merge may replace, so it is left as is. */
+function mergedSeamsBase(base: OcctBackend, edges: Edge[], op: EdgeOp): { base: OcctBackend; edges: Edge[] } {
+  if (op.legs) return { base, edges };
+  const merged = unifySameDomainForEdgeFeature(base, edges);
+  if (!merged || merged.edges.length === 0) return { base, edges };
+  return { base: merged.base, edges: merged.edges };
+}
+
+/** Name the edges that stop a larger value, tried alone at the smallest
+ *  value the feasibility probe saw fail. A refusal without a probe (the G2
+ *  continuity case) is returned unchanged. `describeOn` is the edge set of the
+ *  feature's input, so a selector is only offered for an edge that exists there. */
+function nameLimitingEdges(
+  diagnostic: CompilerDiagnostic,
+  r: FeatureRecord,
+  base: OcctBackend,
+  edges: Edge[],
+  op: EdgeOp,
+  describeOn: readonly Edge[],
+): CompilerDiagnostic {
+  const probeValue = diagnostic.details?.minInfeasibleValue;
+  if (typeof probeValue !== 'number') return diagnostic;
+  const baseRef = r.inputs.base;
+  const report = limitingEdgeReport(
+    edges,
+    describeOn,
+    baseRef?.kind === 'feature' ? baseRef.id : undefined,
+    probeValue,
+    (edge, value) => edgeFeatureBuilds(base, [edge], { ...op, value }),
+  );
+  return withLimitingEdges(diagnostic, report, op.kind === 'fillet' ? 'radius' : 'distance', edges.length);
 }
 
 function edgeFailureDiagnostic(
@@ -602,6 +695,7 @@ export function lowerFillet(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
   // BRepFilletAPI_MakeFillet.SetContinuity(GeomAbs_G2, 1e-4)).
   const filletContinuity = meta?.continuity ?? 'G1';
   const radius = requireFilletRadius(ctx, r);
+  const endRadius = r.params.endRadius?.evaluated;
   const edgesResult = pickEdges(r, base, ctx.allRecords);
   if ('error' in edgesResult) {
     ctx.diagnostics.push(edgesResult.error);
@@ -612,7 +706,45 @@ export function lowerFillet(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
   if (edgesForFillet === null) {
     return built(base);
   }
-  return applyConstantEdgeFeature(ctx, r, base, edgesForFillet, { kind: 'fillet', value: radius, continuity: filletContinuity });
+  if (endRadius !== undefined && !(Number.isFinite(endRadius) && endRadius > 0)) {
+    ctx.diagnostics.push(taperDiagnostic(r.id, {
+      path: 'opts.endRadius', got: endRadius,
+      requires: "a finite number > 0 — the round's radius at each edge's high end",
+    }));
+    return finished(base);
+  }
+  if (endRadius !== undefined && edgesForFillet.some((e) => e.isClosed)) {
+    ctx.diagnostics.push(taperDiagnostic(r.id, {
+      path: 'edges',
+      gotText: 'a closed edge (a full circle or loop), which has no start and end for the taper',
+      requires: 'open edges only — select the straight or open edges to taper, or drop endRadius for a constant round',
+    }));
+    return finished(base);
+  }
+  return applyConstantEdgeFeature(ctx, r, base, edgesForFillet, {
+    kind: 'fillet', value: radius, continuity: filletContinuity,
+    ...(endRadius !== undefined ? { endRatio: endRadius / radius } : {}),
+  });
+}
+
+/** A tapered fillet runs from `radius` at one end of each edge to
+ *  `endRadius` at the other; a closed edge (a circle) has no ends. */
+function taperDiagnostic(
+  featureId: FeatureId,
+  spec: { path: string; got?: unknown; gotText?: string; requires: string },
+): CompilerDiagnostic {
+  return {
+    target: 'export-occt',
+    code: 'feature.invalid-args',
+    featureId,
+    severity: 'error',
+    ...invalidArgsText({
+      api: 'fillet(radius, edges, { endRadius })',
+      unit: 'mm',
+      example: "box(40, 20, 10).fillet(1, { parallel: 'X' }, { endRadius: 4 })",
+      ...spec,
+    }),
+  };
 }
 
 /** `chamfer` — constant-distance, or the variable form via
@@ -673,7 +805,10 @@ export function lowerChamfer(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
     return finished(base);
   }
   drainResolvedWarnings(r, ctx.diagnostics);
-  return applyConstantEdgeFeature(ctx, r, base, edgesResult as Edge[], { kind: 'chamfer', value: distance, continuity: 'G1' });
+  const edges = edgesResult as Edge[];
+  const legs = resolveChamferLegs(ctx, r, base, toFilletEdgeRefs(edges), distance);
+  if (legs === 'refused') return finished(base);
+  return applyConstantEdgeFeature(ctx, r, base, edges, { kind: 'chamfer', value: distance, continuity: 'G1', legs });
 }
 
 // ---------------------------------------------------------------------------
@@ -713,7 +848,7 @@ function withVerifiedEdgeFeasible(
   op: EdgeOp,
 ): CompilerDiagnostic {
   const param = op.kind === 'fillet' ? 'radius' : 'distance';
-  const { maxFeasible, attempts } = probeMaxFeasible(
+  const { maxFeasible, attempts, minInfeasible } = probeMaxFeasible(
     op.value,
     (value) => edgeFeatureBuilds(base, edges, { ...op, value }),
     PROBE_ITERATIONS,
@@ -729,6 +864,7 @@ function withVerifiedEdgeFeasible(
       param,
       requestedValue: op.value,
       probeAttempts: attempts,
+      minInfeasibleValue: minInfeasible,
       edgeCount: edges.length,
       ...(verified === undefined ? {} : { maxFeasibleValue: verified, [key]: verified }),
     },
@@ -742,7 +878,7 @@ function withVerifiedEdgeFeasible(
  */
 export function edgeFeatureFailureDiagnostic(f: EdgeFeatureFailure): CompilerDiagnostic {
   const param = f.kind === 'fillet' ? 'radius' : 'distance';
-  const { maxFeasible, attempts } = probeMaxFeasible(f.requested, f.tryValue, PROBE_ITERATIONS);
+  const { maxFeasible, attempts, minInfeasible } = probeMaxFeasible(f.requested, f.tryValue, PROBE_ITERATIONS);
   const edgesText = `${f.edgeCount === 1 ? 'this edge' : `these ${f.edgeCount} edges`}`;
   const featureLabel = `feature ${f.featureId}`;
   // Name the limiting edge selection + feature so refuse.try can steer agents
@@ -771,6 +907,7 @@ export function edgeFeatureFailureDiagnostic(f: EdgeFeatureFailure): CompilerDia
         param,
         requestedValue: f.requested,
         probeAttempts: attempts,
+        minInfeasibleValue: minInfeasible,
         maxFeasibleValue: 0,
         edgeCount: f.edgeCount,
       },
@@ -788,6 +925,7 @@ export function edgeFeatureFailureDiagnostic(f: EdgeFeatureFailure): CompilerDia
       maxFeasibleValue: maxFeasible,
       [key]: maxFeasible,
       probeAttempts: attempts,
+      minInfeasibleValue: minInfeasible,
       edgeCount: f.edgeCount,
     },
   };

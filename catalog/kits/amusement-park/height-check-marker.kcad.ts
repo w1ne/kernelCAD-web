@@ -1,10 +1,20 @@
-// Rider height check marker: Queue entry height guide with two graduated side posts, an overhead bar, and a free-standing base.
+// SPDX-License-Identifier: CC0-1.0
+// Rider height check marker: the "you must be this tall" gate at the head of
+// a ride queue, where a host checks each child against the minimum height.
+// What makes it a height check rather than a door frame: two printed ruler
+// boards with round tops standing on weighted round bases; alternating
+// graduation bands every 100 mm with a heavier band every 500 mm; a
+// cantilevered height arm with a star pointer clamped at the ride's minimum
+// height; and an arched header sign carrying a big star medallion so a child
+// can see the target from the queue.
+// Generic visualization geometry at about real size (about 1.2 m wide,
+// 2.4 m tall), millimetres, Z up, measuring face toward -Y, standing on z = 0.
 meta({
   name: "height-check-marker",
   license: "CC0-1.0",
   title: "Rider height check marker",
-  description: "Queue entry height guide with two graduated side posts, an overhead bar, and a free-standing base. Controls: overall scale, powderCoat, steel, acrylic; festival and twilight material presets.",
-  tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "attractions and queues"],
+  description: "Ride-queue minimum height gate at about real size: two round-topped printed ruler boards on weighted round bases with graduation bands every 100 mm, a cantilevered height arm with a star pointer set by a minHeight control, and an arched header sign with a star medallion. Material controls: powder-coated frame, ruler board, accent bands and star, steel bases. Festival, twilight and jungle presets.",
+  tags: ["height check", "height marker", "ride height", "queue", "sign", "amusement park", "theme park", "guest experience", "low poly", "CC0", "attractions and queues"],
   kit: "amusement-park",
   category: "prop",
   origin: "base",
@@ -13,55 +23,82 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const powderCoat = param("powderCoat", "#477985", { label: "Powder-coated steel" });
-const steel = param("steel", "#738087", { label: "Painted steel" });
-const acrylic = param("acrylic", "#63aab8", { label: "Tinted acrylic" });
+const minHeight = param("minHeight", 1220, { label: "Minimum rider height (mm)", min: 900, max: 1400, step: 20 });
+const powderCoat = param("powderCoat", "#2f5f8f", { label: "Powder-coated frame and header" });
+const board = param("board", "#f4efe2", { label: "Printed ruler board" });
+const accent = param("accent", "#e8a628", { label: "Graduation bands, arm and star" });
+const steel = param("steel", "#5c666b", { label: "Weighted steel bases" });
 
 presets({
-  festival: {
-    "powderCoat": "#d47452",
-    "steel": "#9da3a0",
-    "acrylic": "#79c8d2"
-},
-  twilight: {
-    "powderCoat": "#35576f",
-    "steel": "#4f626c",
-    "acrylic": "#41768b"
-},
+  festival: { powderCoat: "#d0473a", board: "#fff8e0", accent: "#2f7fb8", steel: "#9da3a0" },
+  twilight: { powderCoat: "#35576f", board: "#d9d4e8", accent: "#c79bf2", steel: "#4f626c" },
+  jungle: { powderCoat: "#3f6b3a", board: "#efe3c2", accent: "#e57a2e", steel: "#5a4632" },
 });
-const originOffsetMm = 0;
+
 const p = assembly("height-check-marker");
+const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
 
-const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
-  if (["graduation-0", "graduation-1", "graduation-2", "graduation-3", "graduation-4", "graduation-5", "graduation-6", "graduation-7", "graduation-8", "graduation-9"].includes(name)) p.part(name, positioned.color(powderCoat));
-  else if (["marker-cap"].includes(name)) p.part(name, positioned.color(acrylic));
-  else if (["left-foot", "left-post", "right-foot", "right-post", "top-bar"].includes(name)) p.part(name, positioned.color(steel));
-  else p.part(name, positioned.color(powderCoat));
+// Profile drawn in (x, z), given thickness t along Y starting at y0.
+const front = (pts, t: number, y0: number) => extrudePolygon(pts, t).rotateX(90).translate(0, y0 + t, 0);
+// Five-point star in (x, z) around (cx, cz).
+const star = (cx: number, cz: number, r: number) => {
+  const pts: [number, number][] = [];
+  for (let i = 0; i < 10; i++) {
+    const a = Math.PI / 2 + (Math.PI * i) / 5;
+    const rr = i % 2 ? r * 0.45 : r;
+    pts.push([cx + rr * Math.cos(a), cz + rr * Math.sin(a)]);
+  }
+  return pts;
 };
-const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
-  let shape = box(size[0], size[1], size[2], true);
-  if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
-  if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
-  if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  place(name, shape, at);
+// Round-topped board outline of width w from z0 up to z1.
+const roundTop = (cx: number, w: number, z0: number, z1: number) => {
+  const pts: [number, number][] = [[cx - w / 2, z0], [cx + w / 2, z0]];
+  for (let i = 0; i <= 8; i++) {
+    const a = (Math.PI * i) / 8;
+    pts.push([cx + (w / 2) * Math.cos(a), z1 - w / 2 + (w / 2) * Math.sin(a)]);
+  }
+  return pts;
 };
 
-B("left-foot", [350, 460, 100], [-450, 0, 50]);
-B("right-foot", [350, 460, 100], [450, 0, 50]);
-B("left-post", [100, 110, 2050], [-450, 0, 1125]);
-B("right-post", [100, 110, 2050], [450, 0, 1125]);
-B("top-bar", [1000, 150, 130], [0, 0, 2170]);
-B("graduation-0", [230, 40, 38], [-315, -64, 450]);
-B("graduation-1", [230, 40, 38], [-315, -64, 590]);
-B("graduation-2", [230, 40, 38], [-315, -64, 730]);
-B("graduation-3", [230, 40, 38], [-315, -64, 870]);
-B("graduation-4", [230, 40, 38], [-315, -64, 1010]);
-B("graduation-5", [230, 40, 38], [-315, -64, 1150]);
-B("graduation-6", [230, 40, 38], [-315, -64, 1290]);
-B("graduation-7", [230, 40, 38], [-315, -64, 1430]);
-B("graduation-8", [230, 40, 38], [-315, -64, 1570]);
-B("graduation-9", [230, 40, 38], [-315, -64, 1710]);
-B("marker-cap", [420, 60, 175], [-450, -80, 2210]);
+const X = 520;
+const TOP = 2050;
+const W = 200;
+
+for (const sx of [-1, 1]) {
+  const side = sx > 0 ? "r" : "l";
+  const cx = sx * X;
+  add(`base-${side}`, cylinder(70, 230, 16).translate(cx, 0, 0).color(steel));
+  add(`base-cap-${side}`, cylinder(30, 150, 16).translate(cx, 0, 70).color(powderCoat));
+  add(`frame-${side}`, front(roundTop(cx, W + 50, 100, TOP + 25), 70, -35).color(powderCoat));
+  add(`board-${side}`, front(roundTop(cx, W, 140, TOP), 10, -45).color(board));
+  // Graduation bands every 100 mm, heavier every 500 mm.
+  for (let z = 200; z <= 1900; z += 100) {
+    const major = z % 500 === 0;
+    add(`band-${side}-${z}`, box(major ? W : W * 0.55, 6, major ? 34 : 16, true).translate(cx + (major ? 0 : -sx * W * 0.22), -48, z).color(accent));
+  }
+}
+
+// Arched header between the boards with a star medallion.
+const arch: [number, number][] = [];
+const archIn: [number, number][] = [];
+for (let i = 0; i <= 12; i++) {
+  const t = i / 12;
+  const x = -X + 2 * X * t;
+  const lift = 180 * Math.sin(Math.PI * t);
+  arch.push([x, TOP - 60 + lift + 140]);
+  archIn.push([x, TOP - 60 + lift]);
+}
+add("header", front([...archIn, ...arch.slice().reverse()], 60, -30).color(powderCoat));
+add("header-face", front([...archIn.map(([x, z]) => [x, z + 25]), ...arch.slice().reverse().map(([x, z]) => [x, z - 25])].slice(1, -1), 8, -38).color(board));
+add("star-disc", cylinder(20, 190, 20).rotateX(-90).translate(0, -40, TOP + 300).color(powderCoat));
+add("star", front(star(0, TOP + 300, 160), 14, -54).color(accent));
+
+// Cantilevered height arm clamped at the minimum height on the left board
+// (built about z = 0, then lifted by the minHeight control).
+const atHeight = (s: Shape) => s.translate(0, 0, minHeight);
+add("arm-clamp", atHeight(box(W + 90, 110, 120, true).translate(-X, 0, 0)).color(steel));
+add("height-arm", atHeight(box(560, 80, 50, true).translate(-X + 350, -10, 0)).color(accent));
+add("arm-star", atHeight(front(star(-X + 690, 0, 110), 30, -40)).color(accent));
+add("arm-edge", atHeight(box(560, 90, 8, true).translate(-X + 350, -10, -29)).color(powderCoat));
 
 return p.model();

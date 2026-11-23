@@ -33,7 +33,12 @@ import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { loadMcpScriptSource } from '../runMcpScript';
 import type { GcodeStats } from '../../../kernel/export/gcode/gcodeHeaderParser';
 import type { StressInfillReport } from '../../script-runtime/stressInfillExport';
+import type { MeshDeviationReport } from '../../../kernel/backends/occt/backendMesh';
 import { infillOutput, withInfillOutDir, type StressInfillImages } from './stressInfillRenders';
+
+type ModelExportOptions<T = ExportOptions> = T extends ExportOptions
+  ? Omit<T, 'format'> & { format?: T['format'] }
+  : never;
 
 export interface ExportModelInput {
   file?: string;
@@ -41,8 +46,8 @@ export interface ExportModelInput {
   output_path: string;
   format: ExportFormat;
   feature_id?: string;
-  /** Per-format options bag; discriminator `options.format` must match `format`. */
-  options?: ExportOptions;
+  /** Per-format options. An optional discriminator must match the outer format. */
+  options?: ModelExportOptions;
   /** Skip the default STL/STEP validity and watertightness gates. */
   no_verify?: boolean;
   /** Geometry-quality gate for stl/step/3mf/obj/ply/gcode: 'warn' (default), 'block' or 'off'. */
@@ -82,6 +87,8 @@ export interface ExportModelOutput {
   gcode_stats?: GcodeStats;
   /** Export-time tiny-face / short-edge screen (gated formats, qualityGate not 'off'). */
   geometryQuality?: ExportGeometryQualitySummary;
+  /** Sampled one-sided B-rep surface distance to the triangles in the exported mesh file. */
+  mesh_deviation?: MeshDeviationReport;
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -115,7 +122,8 @@ async function writeExportPayload(
       return undefined;
     }
     await mkdir(dirname(finalPath), { recursive: true });
-    await writeFile(finalPath, Buffer.from(result.bytes));
+    // The bytes are written as they are: a copy doubles a large STL in memory.
+    await writeFile(finalPath, result.bytes);
     // Robot-description exports (URDF / SDF) reference per-link mesh files
     // by relative path — write them next to the output file so the
     // document is consumable as-is.
@@ -156,11 +164,12 @@ function exportMetadataFields(
   format: ExportFormat,
   result: ExportResult,
   hasErrors: boolean,
-): Pick<ExportModelOutput, 'drawing_report' | 'sheet' | 'gcode_stats'> {
+): Pick<ExportModelOutput, 'drawing_report' | 'sheet' | 'gcode_stats' | 'mesh_deviation'> {
   return {
     ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
     ...(result.sheet === undefined ? {} : { sheet: { thickness_mm: result.sheet.thicknessMm, bend_count: result.sheet.bendCount } }),
     ...(format === 'gcode' && !hasErrors && result.gcodeStats !== undefined && Object.keys(result.gcodeStats).length > 0 ? { gcode_stats: result.gcodeStats } : {}),
+    ...(result.mesh_deviation === undefined ? {} : { mesh_deviation: result.mesh_deviation }),
   };
 }
 
@@ -171,6 +180,13 @@ export function qualityGateInput(input: Pick<ExportModelInput, 'qualityGate' | '
     ...(input.tiny_face_area_mm2 === undefined ? {} : { tiny_face_area_mm2: input.tiny_face_area_mm2 }),
     ...(input.short_edge_length_mm === undefined ? {} : { short_edge_length_mm: input.short_edge_length_mm }),
   };
+}
+
+function modelExportOptions({ format, options, no_verify }: ExportModelInput): ExportOptions | undefined {
+  // The runtime owns the format mismatch diagnostic for an explicit discriminator.
+  const skipVerification = (format === 'stl' || format === 'step') && no_verify;
+  if (!options && !skipVerification) return undefined;
+  return { ...options, format: options?.format ?? format, ...(skipVerification ? { verify: false } : {}) } as ExportOptions;
 }
 
 /**
@@ -191,7 +207,7 @@ export function qualityGateInput(input: Pick<ExportModelInput, 'qualityGate' | '
  * Returns `{ ok, output_path, byte_count, feature_count, format, diagnostics }`.
  */
 export async function exportModelTool(input: ExportModelInput): Promise<ExportModelOutput> {
-  const { output_path, format, feature_id, options } = input;
+  const { output_path, format, feature_id } = input;
 
   const inputError = validateExportModelInput(input);
   if (inputError !== undefined) {
@@ -203,12 +219,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
 
   await initOcct();
 
-  // `no_verify` mirrors export_part: plumb `verify: false` into the STL/STEP
-  // options bag (the runtime gate is default-on for both formats).
-  let effectiveOptions: ExportOptions | undefined = (format === 'stl' || format === 'step') && input.no_verify
-    ? { ...(options ?? {}), format, verify: false } as ExportOptions
-    : options;
-  effectiveOptions = withInfillOutDir(format, effectiveOptions, output_path);
+  const effectiveOptions = withInfillOutDir(format, modelExportOptions(input), output_path);
 
   let result;
   let sceneSummary = unavailableSceneSummary();
@@ -259,7 +270,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
   }
 
   const diagnostics = [...result.diagnostics];
-  const infill = await infillOutput(result.infillReport, options, diagnostics);
+  const infill = await infillOutput(result.infillReport, input.options, diagnostics);
 
   return {
     ok: errorDiagnostics.length === 0,

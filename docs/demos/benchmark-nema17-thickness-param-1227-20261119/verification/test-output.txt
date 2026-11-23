@@ -1,0 +1,39 @@
+
+ RUN  v4.1.12 /data/worktrees/hermes-kernelcad-web-qa-20261110
+
+--stdout | tests/integration/manufacturing/nema17BracketBenchmark.test.ts > manufacturing benchmark 02: NEMA 17 CNC L-bracket (#1227) > a Thickness edit keeps the motor and mounting holes through the thicker plates
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 0                      ******
+
+** WorkSession : Sending all data
+
+ Step File Name : blob.step(1404 ents)  Write  Done
+
+
+stdout | tests/integration/manufacturing/nema17BracketBenchmark.test.ts > manufacturing benchmark 02: NEMA 17 CNC L-bracket (#1227) > catches upright holes that keep their old cutter length after a Thickness edit
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 0                      ******
+
+** WorkSession : Sending all data
+
+ Step File Name : blob.step(1434 ents)  Write  Done
+
+
+··-----
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 7 skipped (9)
+   Start at  04:13:01
+   Duration  12.23s (transform 8.07s, setup 167ms, import 9.70s, tests 1.52s, environment 0ms)

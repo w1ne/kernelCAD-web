@@ -63,7 +63,7 @@ uses an amber body, tinted-glass neck, brass lid, and paper label. See the
   [package audit](package-boundary-audit.json), and [verification summary](verification.json)
 - [Demo capture source](capture_apiary_quality.py), [inspection source](inspect_apiary_quality_video.py),
   [capture output](demo-capture-output.txt), and [video inspection output](video-inspection-output.txt)
-- [MP4 inspection](video-inspection.json), [decoded contact sheet](video-review/contact-sheet.png),
+- [MP4 inspection](video-inspection.json), decoded contact sheet (`video-review/contact-sheet.png`, not tracked),
   and [poster](poster.png)
 - [Index build output](catalog-build-output.txt), [before quality snapshot](catalog-quality-before.txt),
   and [kit quality before promotion](apiary-quality-before.txt)
@@ -103,3 +103,12 @@ has not been deployed, so no post-deployment public-page behavior is claimed.
 Beekeeping suitability, equipment performance, food-contact suitability,
 operator safety, regulatory compliance, physical simulation, and hardware
 acceptance were not evaluated.
+
+## Untracked generated outputs
+
+`frames/` and the decoded images and contact sheets in `video-review/` are not tracked in git; they are regenerated from the files in this bundle:
+
+- frames and MP4: `python3 artifacts/catalog-demos/apiary-quality-promotion-20261105/capture_apiary_quality.py`
+- video review: `python3 artifacts/catalog-demos/apiary-quality-promotion-20261105/inspect_apiary_quality_video.py`
+
+Run from the repository root; each script header lists the inputs it needs. Regenerated files are git-ignored. Rerunning the capture script also re-encodes the MP4.

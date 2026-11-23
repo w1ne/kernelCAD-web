@@ -1,0 +1,118 @@
+{
+  "scenario": "hosted static render samples from immutable RC buggy revision 1",
+  "generatedAt": "2026-11-13T00:36:09.621Z",
+  "invocation": "npx tsx docs/demos/issue-1321-coupled-gear/capture-original-rc-animation.ts",
+  "source": {
+    "slug": "nMQXpIBa",
+    "version": 1,
+    "file": "original-rc-buggy-v1.kcad.ts",
+    "bytes": 6088,
+    "sha256": "7f020f2826d82ed4e35e2193f8644705772997d9800179cdda9fe86e2072b9a3",
+    "privacy": "public_unlisted"
+  },
+  "serverBuild": "0.1.0+a450870ad106@2026-11-12T23:27:09.813Z",
+  "localVideo": true,
+  "localStaticRenderSamples": true,
+  "hostedViewerPlaybackCaptured": false,
+  "deployedBehaviorVerified": false,
+  "hardwareAcceptanceVerified": false,
+  "hostedAnimationVerification": {
+    "verified": true,
+    "verifyEvery": 1,
+    "collisions": [],
+    "durationMs": 4000,
+    "fps": 24,
+    "encodedFrameCount": 0,
+    "encodingFailure": "ffmpeg was not found on the kernelCAD server PATH."
+  },
+  "hostedPhysicsVerification": {
+    "ok": true,
+    "mechanism": "real",
+    "failures": [],
+    "poses": 10,
+    "joints": 6,
+    "fastened": 6,
+    "limitsChecked": 3,
+    "matesChecked": true,
+    "sweep": true,
+    "physics": true,
+    "skipped": [
+      "joint 'front-wheel-right-spin' rotation has no limits, range not checked",
+      "joint 'front-wheel-left-spin' rotation has no limits, range not checked"
+    ]
+  },
+  "renderPreviewSettings": {
+    "renderSource": "static-player",
+    "views": [
+      "front"
+    ],
+    "focus": [
+      "motor-rotor",
+      "rear-live-axle"
+    ],
+    "preset": "publish",
+    "background": "#10151d",
+    "shadow": true,
+    "width": 640,
+    "height": 360,
+    "autosave": false,
+    "parameterOverride": "const motorDeg=param('motorDeg',<sample>,...)"
+  },
+  "geometrySummary": {
+    "valid": true,
+    "volumeMm3": 720591.2138600089,
+    "faceCount": 525
+  },
+  "signedRatio": -0.25,
+  "displayedSamples": [
+    {
+      "motorDeg": 0,
+      "sourceTimelineSeconds": 0,
+      "axleContractDegrees": 0,
+      "sourceFrame": "original-frame-0000.png"
+    },
+    {
+      "motorDeg": 45,
+      "sourceTimelineSeconds": 0.25,
+      "axleContractDegrees": -11.25,
+      "sourceFrame": "original-frame-0045.png"
+    },
+    {
+      "motorDeg": 90,
+      "sourceTimelineSeconds": 0.5,
+      "axleContractDegrees": -22.5,
+      "sourceFrame": "original-frame-0090.png"
+    },
+    {
+      "motorDeg": 135,
+      "sourceTimelineSeconds": 0.75,
+      "axleContractDegrees": -33.75,
+      "sourceFrame": "original-frame-0135.png"
+    },
+    {
+      "motorDeg": 180,
+      "sourceTimelineSeconds": 1,
+      "axleContractDegrees": -45,
+      "sourceFrame": "original-frame-0180.png"
+    },
+    {
+      "motorDeg": 270,
+      "sourceTimelineSeconds": 1.5,
+      "axleContractDegrees": -67.5,
+      "sourceFrame": "original-frame-0270.png"
+    },
+    {
+      "motorDeg": 360,
+      "sourceTimelineSeconds": 2,
+      "axleContractDegrees": -90,
+      "sourceFrame": "original-frame-0360.png"
+    },
+    {
+      "motorDeg": 720,
+      "sourceTimelineSeconds": 4,
+      "axleContractDegrees": -180,
+      "sourceFrame": "original-frame-0720.png"
+    }
+  ],
+  "visualNote": "The MP4 assembles current server static renders at sampled motorDeg values. It is not a capture of the hosted viewer playback."
+}

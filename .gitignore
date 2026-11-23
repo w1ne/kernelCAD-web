@@ -125,3 +125,10 @@ site-build/
 # Python bytecode from the demo capture scripts (never source)
 __pycache__/
 *.pyc
+
+# Regenerable demo-bundle outputs: each bundle's capture_*/make_* script writes
+# frames/ and encodes the MP4; its inspect_* script decodes the MP4 into video-review/.
+artifacts/catalog-demos/*/frames/
+artifacts/catalog-demos/*/video-review/**/*.png
+artifacts/catalog-demos/*/video-review/video-inspection.json
+artifacts/catalog-demos/*/video-review/review.json

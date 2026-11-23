@@ -22,11 +22,11 @@ export function drainResolvedWarnings(
   }
 }
 
-/** Pre-filter edges below `minLength` (2 × radius for fillet, 2 × distance for
- *  chamfer). OCCT's BlendChain solver rejects radii larger than half the target
- *  edge length, so historically a single sub-2×r edge would fail the whole
- *  operation. Filtering pre-call lets long edges proceed and surfaces a clean
- *  info diagnostic naming the skipped count. Used by both fillet and chamfer. */
+/** Screen out edges below `minLength` (2 × radius for fillet, 2 × distance for
+ *  chamfer) after the kernel rejected the full selection. The long edges get a
+ *  retry, and the diagnostic names the skipped count. Edge length alone does
+ *  not set the limit: a 12 mm corner edge takes a 34.8 mm fillet. Used by both
+ *  fillet and chamfer. */
 export function filterEdgesByMinLength(
   edges: readonly Edge[],
   minLength: number,
@@ -53,6 +53,9 @@ export function filterEdgesByMinLength(
   const minLenStr = minLength.toFixed(2);
   const hint = HINT_TEMPLATES['feature.edge-feature.short-edges-skipped'].template;
   if (kept.length === 0) {
+    // Called only after the kernel rejected the whole selection. Nothing was
+    // rounded, and edge length is not the limit: a 12 mm corner edge takes a
+    // 34.8 mm fillet. The partial-success template says otherwise.
     return {
       kept,
       diagnostic: {
@@ -60,8 +63,8 @@ export function filterEdgesByMinLength(
         code: 'feature.edge-feature.short-edges-skipped',
         featureId: ctx.featureId,
         severity: 'error',
-        message: `${ctx.op} skipped: all ${skipped} target edges are shorter than 2 × ${ctx.paramName} = ${minLenStr} mm`,
-        hint,
+        message: `${ctx.op} refused: the kernel rejected the ${ctx.paramName} on the selection, and all ${skipped} target edges are shorter than 2 × ${ctx.paramName} = ${minLenStr} mm`,
+        hint: `No edge was ${ctx.op === 'fillet' ? 'filleted' : 'chamfered'}. Edge length alone does not set the limit: reduce the ${ctx.paramName}, scope the ${ctx.op} to fewer edges, or change the upstream geometry.`,
       },
     };
   }

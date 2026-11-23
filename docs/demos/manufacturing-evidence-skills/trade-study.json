@@ -1,0 +1,202 @@
+{
+  "schema": "kernelcad.design-trade-study.v1",
+  "decisionScope": "Three thickness variants under declared illustrative weights; not a manufacturing release.",
+  "hardConstraints": [
+    "full geometry build",
+    "FDM DFM pass",
+    "CNC DFM pass"
+  ],
+  "allHardConstraintsMet": true,
+  "structuralEvidenceState": "WARN",
+  "raw": {
+    "t4": {
+      "massKg": 0.07002712879179707,
+      "minSafetyFactorEstimate": 5.021229293978981,
+      "maxDisplacementMm": 1.3831037263222714
+    },
+    "t8": {
+      "massKg": 0.14005425758359413,
+      "minSafetyFactorEstimate": 20.079872209953663,
+      "maxDisplacementMm": 0.175996943034247
+    },
+    "t12": {
+      "massKg": 0.21008138637539128,
+      "minSafetyFactorEstimate": 44.50115349423149,
+      "maxDisplacementMm": 0.05311957103627468
+    }
+  },
+  "normalization": {
+    "massKg": {
+      "t4": 1.0,
+      "t8": 0.5000000000000003,
+      "t12": 0.0
+    },
+    "minSafetyFactorEstimate": {
+      "t4": 0.0,
+      "t8": 0.3814253249219352,
+      "t12": 1.0
+    },
+    "maxDisplacementMm": {
+      "t4": 0.0,
+      "t8": 0.907609897825024,
+      "t12": 1.0
+    }
+  },
+  "weights": {
+    "massKg": 0.35,
+    "minSafetyFactorEstimate": 0.4,
+    "maxDisplacementMm": 0.25
+  },
+  "scores": {
+    "t4": 0.35,
+    "t8": 0.5544726044250302,
+    "t12": 0.65
+  },
+  "ranking": [
+    "t12",
+    "t8",
+    "t4"
+  ],
+  "recommendation": {
+    "candidate": "t12",
+    "statement": "12 mm ranks first under the declared illustrative weights. This is a recommendation within the tested set, not an optimum or release approval.",
+    "marginOverSecond": 0.09552739557496981
+  },
+  "sensitivity": [
+    {
+      "metric": "massKg",
+      "factor": 0.8,
+      "weights": {
+        "massKg": 0.3010752688172043,
+        "minSafetyFactorEstimate": 0.4301075268817205,
+        "maxDisplacementMm": 0.2688172043010753
+      },
+      "ranking": [
+        "t12",
+        "t8",
+        "t4"
+      ],
+      "winner": "t12",
+      "winnerChanged": false,
+      "winnerMargin": 0.14035203825265574,
+      "scores": {
+        "t4": 0.3010752688172043,
+        "t8": 0.55857269293014,
+        "t12": 0.6989247311827957
+      }
+    },
+    {
+      "metric": "massKg",
+      "factor": 1.2,
+      "weights": {
+        "massKg": 0.3925233644859813,
+        "minSafetyFactorEstimate": 0.37383177570093457,
+        "maxDisplacementMm": 0.2336448598130841
+      },
+      "ranking": [
+        "t12",
+        "t8",
+        "t4"
+      ],
+      "winner": "t12",
+      "winnerChanged": false,
+      "winnerMargin": 0.056567659415859506,
+      "scores": {
+        "t4": 0.3925233644859813,
+        "t8": 0.5509089760981591,
+        "t12": 0.6074766355140186
+      }
+    },
+    {
+      "metric": "minSafetyFactorEstimate",
+      "factor": 0.8,
+      "weights": {
+        "massKg": 0.3804347826086956,
+        "minSafetyFactorEstimate": 0.3478260869565218,
+        "maxDisplacementMm": 0.2717391304347826
+      },
+      "ranking": [
+        "t12",
+        "t8",
+        "t4"
+      ],
+      "winner": "t12",
+      "winnerChanged": false,
+      "winnerMargin": 0.05004502344426598,
+      "scores": {
+        "t4": 0.3804347826086956,
+        "t8": 0.5695201939470385,
+        "t12": 0.6195652173913044
+      }
+    },
+    {
+      "metric": "minSafetyFactorEstimate",
+      "factor": 1.2,
+      "weights": {
+        "massKg": 0.324074074074074,
+        "minSafetyFactorEstimate": 0.4444444444444444,
+        "maxDisplacementMm": 0.23148148148148145
+      },
+      "ranking": [
+        "t12",
+        "t8",
+        "t4"
+      ],
+      "winner": "t12",
+      "winnerChanged": false,
+      "winnerMargin": 0.1342716385011249,
+      "scores": {
+        "t4": 0.324074074074074,
+        "t8": 0.5416542874248009,
+        "t12": 0.6759259259259258
+      }
+    },
+    {
+      "metric": "maxDisplacementMm",
+      "factor": 0.8,
+      "weights": {
+        "massKg": 0.3684210526315789,
+        "minSafetyFactorEstimate": 0.4210526315789474,
+        "maxDisplacementMm": 0.2105263157894737
+      },
+      "ranking": [
+        "t12",
+        "t8",
+        "t4"
+      ],
+      "winner": "t12",
+      "winnerChanged": false,
+      "winnerMargin": 0.09569251628023268,
+      "scores": {
+        "t4": 0.3684210526315789,
+        "t8": 0.5358864310881885,
+        "t12": 0.6315789473684211
+      }
+    },
+    {
+      "metric": "maxDisplacementMm",
+      "factor": 1.2,
+      "weights": {
+        "massKg": 0.3333333333333333,
+        "minSafetyFactorEstimate": 0.38095238095238093,
+        "maxDisplacementMm": 0.2857142857142857
+      },
+      "ranking": [
+        "t12",
+        "t8",
+        "t4"
+      ],
+      "winner": "t12",
+      "winnerChanged": false,
+      "winnerMargin": 0.09537800065116053,
+      "scores": {
+        "t4": 0.3333333333333333,
+        "t8": 0.5712886660155061,
+        "t12": 0.6666666666666666
+      }
+    }
+  ],
+  "winnerStableToTestedWeightChanges": true,
+  "cheapestDiscriminatingTest": "Re-run the 8 mm and 12 mm variants with CalculiX + gmsh, or at minimum halve mesh size and compare convergence. If 8 mm retains the required margin and 0.176 mm displacement is acceptable, it saves 33.3% mass versus 12 mm.",
+  "approvalGate": "No project overwrite, export, supplier quote, print, order, or external transfer occurred."
+}

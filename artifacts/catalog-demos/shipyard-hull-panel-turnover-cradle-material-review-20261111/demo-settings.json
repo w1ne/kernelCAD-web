@@ -1,0 +1,16 @@
+{
+  "captureScript": "capture_demo.py",
+  "inspectionScript": "inspect_video.py",
+  "video": "shipyard-hull-panel-turnover-cradle-material-review.mp4",
+  "resolution": "1280x720",
+  "fps": 30,
+  "encoding": "H.264, yuv420p, CRF 20",
+  "slideDurationsSeconds": [4, 5, 5],
+  "finalFrameHoldSeconds": 5,
+  "actualDurationSeconds": 19,
+  "inputs": [
+    "before/hull-panel-turnover-cradle.png",
+    "after/hull-panel-turnover-cradle.png"
+  ],
+  "claims": "Local source renders, local catalog page and checks only; no deployed behavior, simulation, or equipment acceptance."
+}

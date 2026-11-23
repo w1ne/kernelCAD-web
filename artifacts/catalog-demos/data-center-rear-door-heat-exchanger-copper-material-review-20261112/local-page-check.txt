@@ -1,0 +1,4 @@
+local page: /tmp/kernelcad-rear-door-copper-pages/catalog/data-center-infrastructure/rear-door-heat-exchanger/index.html
+color controls: steel, polymer, copper
+presets: facilityStandard, highVisibility
+preview sha256: 20424898acfbf3f7a5ab0c52f449c55d4dec19f427e36602eb49b0c80eebff1e

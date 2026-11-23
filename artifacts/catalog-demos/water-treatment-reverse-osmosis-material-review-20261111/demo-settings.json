@@ -1,0 +1,22 @@
+{
+  "capture": "local software-rendered catalog preview comparison",
+  "asset": "water-treatment/reverse-osmosis-skid",
+  "inputs": {
+    "before": "previews/before/reverse-osmosis-skid.png",
+    "after": "previews/after.png"
+  },
+  "output": "demo.mp4",
+  "resolution": "512x512",
+  "frameRate": 30,
+  "segmentsSeconds": {
+    "before": 5,
+    "after": 6
+  },
+  "captions": [
+    "Before: membrane shells shared the stainless finish",
+    "After: FRP shells separate from stainless piping",
+    "Local source preview; not deployed behavior"
+  ],
+  "renderer": "scripts/renderCatalogPreviews.ts + scripts/lib/glbSoftwareRender.ts",
+  "videoEncoder": "ffmpeg libx264, yuv420p"
+}

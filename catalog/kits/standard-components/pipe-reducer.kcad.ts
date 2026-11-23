@@ -1,15 +1,15 @@
-// Distinctive geometry: Stepped hollow reducer joining a larger pipe end to a smaller pipe end
+// Distinctive geometry: Tapered hollow pipe fitting connecting larger and smaller nominal bores
 meta({
   name: 'pipe-reducer',
   license: 'CC0-1.0',
   title: 'Pipe reducer',
-  description: 'Stepped hollow reducer joining a larger pipe end to a smaller pipe end Knobs: model size, steel, bronze.',
+  description: 'Tapered hollow pipe fitting connecting larger and smaller nominal bores Knobs: model size, steel, bronze.',
   tags: ['pipe reducer', 'reducer fitting', 'pipe adapter', 'plumbing'],
   kit: 'standard-components',
   category: 'attachment',
   origin: 'base',
   compat: ['mechanical', 'industrial', 'workshop', 'assembly'],
-  triangleBudget: 340,
+  triangleBudget: 520,
 });
 
 const size = param('size', 'standard', { choices: ['compact', 'standard', 'large'], label: 'Model size' });
@@ -24,6 +24,10 @@ presets({
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
 const a = assembly('pipe-reducer');
 a.part('large-end',cylinder(10*s,22*s,14).subtract(cylinder(12*s,16*s,12).translate(0,0,-s)).color(steel));
-a.part('transition',cylinder(24*s,16*s,12).subtract(cylinder(26*s,11*s,12).translate(0,0,-s)).translate(0,0,10*s).color(bronze));
+// Revolve a genuine annular reducer profile, with a smooth continuous outer
+// taper and opening. A stack of different diameter cylinders is not a reducer.
+const transition = path().moveTo(16*s,10*s).lineTo(22*s,10*s)
+  .lineTo(13*s,34*s).lineTo(10*s,34*s).close().revolve();
+a.part('continuous-taper',transition.color(bronze));
 a.part('small-end',cylinder(12*s,13*s,12).subtract(cylinder(14*s,10*s,12).translate(0,0,-s)).translate(0,0,34*s).color(steel));
 return a.model();

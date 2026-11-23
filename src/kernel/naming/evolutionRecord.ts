@@ -59,6 +59,10 @@ export interface EdgeLineage {
   rootHash: EdgeHash;
   /** Originating primitive feature ID. */
   rootFeatureId: string;
+  /** Position in the originating feature's edge enumeration. Unlike rootHash,
+   *  this survives rebuilding a parameterized primitive whose OCCT handles
+   *  receive new hashes. Descendants keep the same ordinal through history. */
+  rootOrdinal?: number;
   /** If the edge comes from a labeled sketch segment. */
   labelName?: string;
   // --- Slice Q (Query DSL) parity additions; mirror FaceLineage slots ---
@@ -73,6 +77,9 @@ export interface EdgeLineage {
    *  enables `kc.q.edge(kc.q.geometryType('LINE'))` when combined with
    *  surface-type heuristics. */
   featureKind?: import('../../shared/intent/types').FeatureKind;
+  /** 1-based ordinal among unnamed features of the same kind. Mirrors
+   *  `FaceLineage.featureOrdinal`; enables `hole1.entry-rim`. */
+  featureOrdinal?: number;
   /** Feature ids whose output geometry this edge descends from, earliest first. */
   descendsFrom?: readonly string[];
 }

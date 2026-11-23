@@ -147,6 +147,8 @@ export type FeatureKind =
   | 'mirror'
   // imports (v0.3+)
   | 'importedMesh' | 'importedStep' | 'importedBrep' | 'importedStl'
+  // Driven tooth spaces cut by discrete poses of the mating spur. Parked solid, not an import.
+  | 'spurGearCut'
   // sketch (v0.2+)
   | 'sketch' | 'constrainedSketch'
   // assembly (v0.6+)
@@ -183,6 +185,9 @@ export type FeatureKind =
   // Capture-only steady CFD study declaration (shape.cfdStudy), no OCCT
   // output. Report-only: run by run_cfd, never by evaluate.
   | 'cfdStudy'
+  // Capture-only rocket flight study (shape/arm.flightStudy), no OCCT output.
+  // Run by run_flight; minStabilityCal makes it an evaluate-time gate.
+  | 'flightStudy'
   // Capture-only GD&T declarations (shape.datum / shape.tolerance), no OCCT
   // output. Read by the svg-drawing exporter.
   | 'drawingDatum'
@@ -202,10 +207,9 @@ export type FeatureKind =
   | 'surfaceFromBoundary'
   | 'hermiteG2'
   // W3 — face authoring: emboss text onto a target face (raise or recess
-  // via signed depth) and project a 2D closed curve onto a 3D face for
-  // engraved logos / brand silhouettes. Open-wire projection (`asEdge:true`)
-  // is captured but deferred at lower time pending OCCT binding for
-  // `BRepProj_Projection`.
+  // via signed depth) and wrap a closed 2D curve onto a 3D face. Open-wire
+  // projection runs as an async capture-time geometry query and returns
+  // virtual Curve3D records, rather than a projectCurve Shape feature.
   | 'embossText'
   | 'projectCurve'
   // NURBS Slice E (2) — sew N surfaces into a solid Shell/Solid via

@@ -25,13 +25,11 @@ const p = assembly("rescue-tripod");
 const groundOffset = 0;
 const add = (name, shape, finish = toolCoatingColor) => p.part(name, shape.translate(0, 0, groundOffset).scale(scale).color(finish));
 add("top-head", box(190, 190, 110, true).translate(0, 0, 1207), safetyMarkingColor);
-add("leg-0", box(60, 60, 1126.4, true).rotate([1.0, 0.0, 0], 17).translate(310, 0, 1100.8), toolCoatingColor);
-add("foot-0", box(170, 120, 36, true).rotateZ(0).translate(390, 0, 36), safetyMarkingColor);
-add("leg-1", box(60, 60, 1126.4, true).rotate([-0.4999999999999998, 0.8660254037844387, 0], 17).translate(-155, 268.468, 1100.8), toolCoatingColor);
-add("foot-1", box(170, 120, 36, true).rotateZ(120).translate(-195, 337.75, 36), safetyMarkingColor);
-add("leg-2", box(60, 60, 1126.4, true).rotate([-0.5000000000000004, -0.8660254037844384, 0], 17).translate(-155, -268.468, 1100.8), toolCoatingColor);
-add("foot-2", box(170, 120, 36, true).rotateZ(240).translate(-195, -337.75, 36), safetyMarkingColor);
-add("pulley", cylinder(160, 55, 8).rotateX(90).translate(0, 0, 1250.4), steelColor);
-add("hook", cylinder(120, 20, 8).translate(0, 0, 0), steelColor);
+for (const [i, a] of [[0, 0], [1, 120], [2, 240]] as const) {
+  add(`leg-${i}`, box(60, 60, 1190, true).rotateY(-17).translate(224, 0, 581).rotateZ(a), toolCoatingColor);
+  add(`foot-${i}`, box(170, 120, 36, true).translate(398, 0, 18).rotateZ(a), safetyMarkingColor);
+}
+add("pulley", cylinder(160, 55, 8).rotateX(90).translate(0, 80, 1250.4), steelColor);
+add("hook", cylinder(120, 20, 8).translate(0, 0, 1032), steelColor);
 
 return p.model();

@@ -19,7 +19,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
       'also returns a parts summary { count, names } AND runs the mechanism-truth gate by ' +
       'default: the `mechanism` field reports real/broken/unverified and a broken mechanism ' +
       '(disconnected components / mechanism.orphan-part, self-collision, fastened drift, ' +
-      'dof-mismatch) makes ok:false with the failures in diagnostics. A mate connector more than 6 mm outside its part bounding box (assembly.mechanical.connector-not-in-solid, the same error review_cad reports) also makes mechanism `broken` and ok:false, preserving the diagnostic — a mechanism (any mate or ' +
+      'dof-mismatch) makes ok:false with the failures in diagnostics. A mate connector more than 6 mm outside the bounding box of its part and of every part fastened to it (assembly.mechanical.connector-not-in-solid, the same error review_cad reports) also makes mechanism `broken` and ok:false, preserving the diagnostic — a mechanism (any mate or ' +
       'joint) needs every part linked by connectors + mates/joints ' +
       '(axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or ' +
       'arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, ' +
@@ -102,7 +102,7 @@ const diffScriptsToolEntry: ToolRegistryEntry = {
       'agent-readable JSON: per-part added/removed/renamed/changed (volume mm³ + exact bbox ' +
       "deltas, numbers matching inspect({ of: 'part-stats' })), total interference-volume delta with " +
       'per-pair detail, mate-graph changes (added/removed/changed mates incl. type, ' +
-      'connectors, pose, limits), and param changes (value/min/max). Single-shape scripts ' +
+      'connectors, pose, limits, coupleMates coupling), and param changes (value/min/max). Single-shape scripts ' +
       'diff as one "(root)" pseudo-part; a `return [a, b]` multi-body script diffs per body as "body[0]", "body[1]". ' +
       'An error that still leaves geometry (e.g. a skipped fillet) is listed under base/revised.errors beside the diff. ' +
       'Use after editing a script to verify exactly what changed physically before re-rendering. ' +

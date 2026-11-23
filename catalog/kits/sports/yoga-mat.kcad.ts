@@ -18,14 +18,15 @@ const carryWebbing = param('carryWebbing', '#c2b49a', { label: 'Carry webbing' }
 const edgeBinding = param('edgeBinding', '#3d534b', { label: 'Edge binding' });
 presets({ clubColors: { foamRubber: '#587ca0', carryWebbing: '#d7c154' } });
 const p = assembly('yoga-mat');
-p.part('mat', box(300, 210, 8, true).translate(0, 0, 4).scale(scale).color(foamRubber));
-p.part('rolled-edge', cylinder(210, 28, 12).rotate([1, 0, 0], 90).translate(0, 105, 28).scale(scale).color(edgeBinding));
+const add = (name, shape) => p.part(name, shape.scale(scale));
+add('mat', box(300, 210, 8, true).translate(0, 0, 4).color(foamRubber));
+add('rolled-edge', cylinder(210, 28, 12).rotate([1, 0, 0], 90).translate(0, 105, 28).color(edgeBinding));
 
 
 // Webbing straps cross the rolled mat, with binding along the two long edges.
-p.part("carry-strap-left", box(8, 205, 2, true).translate(-55, 0, 9).color(carryWebbing));
-p.part("carry-strap-right", box(8, 205, 2, true).translate(55, 0, 9).color(carryWebbing));
-p.part("edge-binding-front", box(296, 3, 1.5, true).translate(0, -102, 9).color(edgeBinding));
-p.part("edge-binding-back", box(296, 3, 1.5, true).translate(0, 102, 9).color(edgeBinding));
+add("carry-strap-left", box(8, 205, 2, true).translate(-55, 0, 9).color(carryWebbing));
+add("carry-strap-right", box(8, 205, 2, true).translate(55, 0, 9).color(carryWebbing));
+add("edge-binding-front", box(296, 3, 1.5, true).translate(0, -102, 9).color(edgeBinding));
+add("edge-binding-back", box(296, 3, 1.5, true).translate(0, 102, 9).color(edgeBinding));
 
 return p.model();

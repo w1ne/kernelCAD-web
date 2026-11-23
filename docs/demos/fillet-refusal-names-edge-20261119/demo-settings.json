@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-19",
+  "scenario": "Fillet and chamfer refusals name the failing edge on the drafting-review mounting plate",
+  "testCommand": "npx vitest run tests/integration/examples/filletRefusalNamesEdge1588.test.ts src/modeling/backends/occt/lowerers/limitingEdges.test.ts --reporter=dot",
+  "captureCommand": "python3 docs/demos/fillet-refusal-names-edge-20261119/capture_demo.py",
+  "inspectionCommand": "python3 docs/demos/fillet-refusal-names-edge-20261119/inspect_demo.py",
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "codec": "h264",
+    "pixelFormat": "yuv420p",
+    "frameRate": 24,
+    "durationSeconds": 15,
+    "slideDurationSeconds": 5,
+    "sampleSeconds": [2, 7, 12]
+  },
+  "scope": "Local OCCT evaluation and regression tests; no deployed runtime."
+}

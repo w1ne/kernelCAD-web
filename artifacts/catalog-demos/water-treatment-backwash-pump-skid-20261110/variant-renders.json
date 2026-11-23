@@ -1,0 +1,44 @@
+{
+  "command": "npx tsx artifacts/catalog-demos/water-treatment-backwash-pump-skid-20261110/render_backwash_variants.ts",
+  "exporter": "exportLowPolyAsset(variantSource(source, indexedPresetAndChoice), sourceFileName)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "variants": [
+    {
+      "asset": "water-treatment/backwash-pump-skid",
+      "variant": "single",
+      "values": {
+        "pumpArrangement": "single"
+      },
+      "sourceSha256": "afc48c6618f766e15ca0a13903a1b8302cbdb821b418933a66546fcbd258b2a5",
+      "triangles": 1640,
+      "triangleBudget": 3600,
+      "png": "variants/backwash-pump-skid-single.png"
+    },
+    {
+      "asset": "water-treatment/backwash-pump-skid",
+      "variant": "duplex",
+      "values": {
+        "pumpArrangement": "duplex"
+      },
+      "sourceSha256": "afc48c6618f766e15ca0a13903a1b8302cbdb821b418933a66546fcbd258b2a5",
+      "triangles": 2648,
+      "triangleBudget": 3600,
+      "png": "variants/backwash-pump-skid-duplex.png"
+    },
+    {
+      "asset": "water-treatment/backwash-pump-skid",
+      "variant": "duplex-high-visibility",
+      "values": {
+        "coatedSteel": "#e5682d",
+        "structuralSteel": "#505b60",
+        "stainlessSteel": "#e1ddd0",
+        "rubber": "#272c2e",
+        "pumpArrangement": "duplex"
+      },
+      "sourceSha256": "afc48c6618f766e15ca0a13903a1b8302cbdb821b418933a66546fcbd258b2a5",
+      "triangles": 2648,
+      "triangleBudget": 3600,
+      "png": "variants/backwash-pump-skid-duplex-high-visibility.png"
+    }
+  ]
+}

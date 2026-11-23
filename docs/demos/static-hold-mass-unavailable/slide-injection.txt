@@ -1,0 +1,6 @@
+Local fault injection
+
+RecomputeEngine.run returns an empty shape map.
+No scene is available to measure part mass.
+
+Injected fault; not a geometry or physics simulation.

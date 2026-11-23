@@ -1,0 +1,17 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' artifacts/catalog-demos/standard-components-pipe-geometry-20261110/render_variants.ts
+(node:2030653) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+reducer-default: 474 triangles; 44.0 × 42.0 × 44.0 mm
+reducer-half: 474 triangles; 44.0 × 42.0 × 44.0 mm
+reducer-three-quarter: 474 triangles; 44.0 × 42.0 × 44.0 mm
+reducer-stainless: 474 triangles; 44.0 × 42.0 × 44.0 mm
+spacer-short: 432 triangles; 30.7 × 22.0 × 30.7 mm
+spacer-long: 432 triangles; 30.7 × 50.0 × 30.7 mm
+spacer-insulated: 432 triangles; 30.7 × 36.0 × 30.7 mm
+spacer-default: 432 triangles; 30.7 × 36.0 × 30.7 mm
+ring-compact-gap: 228 triangles; 40.0 × 3.0 × 43.5 mm
+ring-wide-gap: 228 triangles; 39.8 × 3.0 × 43.5 mm
+ring-default: 228 triangles; 39.9 × 3.0 × 43.5 mm
+ring-blue-phosphate: 228 triangles; 39.9 × 3.0 × 43.5 mm
+Rendered 12 source variants; geometry, palette, and triangle-budget checks passed.

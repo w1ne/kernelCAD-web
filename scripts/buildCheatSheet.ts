@@ -39,6 +39,9 @@ const HEADER = [
   'A boolean that must keep the scrap is `shape.split(other)`.',
   "Default keep `parts` returns a Scene of `intersection`, `a_only` and `b_only`.",
   'The MCP tool is `split_keep_parts`.',
+  'Labeled views of one STEP import are `inspect_step_views`. Face edits on that',
+  'import use `faces[i].ref` (`{ near: centroid }` when the listing id is positional).',
+  'Those selectors do not survive a later edit.',
   '',
 ];
 
@@ -109,6 +112,13 @@ function appendGlbRigNotes(lines: string[]): void {
   lines.push(
     '### GLB assembly rigs',
     '',
+    'GLB linear distances are metres by default, matching the glTF specification.',
+    'The writer scales kernelCAD millimetre geometry at the scene root, including',
+    'rig transforms, so a standard glTF viewer displays the authored physical size.',
+    'Set `units: \'mm\'` only when the receiving tool reads',
+    '`asset.extras.kernelcad.units`; ordinary glTF viewers treat those raw values',
+    'as metres. `units: \'m\'` is also available explicitly.',
+    '',
     'When a returned assembly scene has mates, GLB export defaults to a strict node',
     'hierarchy. Revolute, prismatic, and cylindrical mates create `pivot:<mateName>`',
     'nodes at the resolved connector frame; moving part meshes are offset beneath',
@@ -122,7 +132,10 @@ function appendGlbRigNotes(lines: string[]): void {
     'rest pose (for example, limits `[0, 110]` at pose `35` become `[-35, 75]`).',
     'Cylindrical entries identify both degrees of freedom with',
     '`degreesOfFreedom: [\'rotate\', \'slide\']`; the current solver poses its',
-    'secondary axial degree of freedom at zero. Loop-closing mates have',
+    'secondary axial degree of freedom at zero. A mate driven by `coupleMates`',
+    'carries `coupling: { source, ratio }`, where `source` is the driving mate\'s rig',
+    'key; relative to the rest pose, its motion is `ratio` times the source motion,',
+    'so do not animate it independently. Loop-closing mates have',
     '`closed: true`, are not nested, and generate a warning. Ball, planar, and',
     'pin-slot mates are held fixed with a warning; GLB animation clips and IK are',
     'not emitted. When a solved assembly is active, `asset_manifest` includes the',
@@ -133,7 +146,8 @@ function appendGlbRigNotes(lines: string[]): void {
     'knob JSON remains unchanged).',
     '',
     'Set the GLB export option `hierarchy: \'flat\'` to keep the historical flat',
-    'node list. See the original [hinge assembly example](../examples/assemblies/glb-rig-hinge.kcad.ts).',
+    'node list. See the [metre-scale handoff example](../examples/exports/glb-meter-handoff.kcad.ts)',
+    'and the original [hinge assembly example](../examples/assemblies/glb-rig-hinge.kcad.ts).',
     '',
   );
 }

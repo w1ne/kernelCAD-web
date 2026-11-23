@@ -47,10 +47,12 @@ import { getOC } from 'replicad';
 import nurbsJs from 'verb-nurbs';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { rotateSketchCommands } from '../../../shared/capture/rotateSketchCommands';
+import { smoothSplineConfig } from '../../../shared/capture/smoothSplineTangents';
 import { solveHermiteG2 } from '../../geometry/hermiteG2';
 import type { Vec3 } from '../../../shared/intent/types';
 import { clampedUniformKnots, decomposeKnots } from './nurbsKnots';
 import { fromVerb } from '../verb/curveBridge';
+import { splitSketchLoops } from './sketchToDrawing';
 
 /**
  * Plane identifier — matches the planes accepted by `Drawing.sketchOnPlane`.
@@ -381,7 +383,7 @@ function applySimplePenCommand(state: PenRunState, c: SimplePenCommand): void {
   } else if (c.kind === 'bulgeArc') {
     state.pen = p.bulgeArcTo([c.x.evaluated, c.y.evaluated], c.bulge.evaluated) as replicad.DrawingPen;
   } else {
-    state.pen = p.smoothSplineTo([c.x.evaluated, c.y.evaluated]) as replicad.DrawingPen;
+    state.pen = p.smoothSplineTo([c.x.evaluated, c.y.evaluated], smoothSplineConfig(c)) as replicad.DrawingPen;
   }
   state.currentX = c.x.evaluated;
   state.currentY = c.y.evaluated;
@@ -512,7 +514,32 @@ export function buildNurbsSketchOnPlane(
   plane: PlaneName,
   opts?: { origin?: Vec3; rotationDeg?: number; rotationCenter?: [number, number] },
 ): replicad.Sketch {
-  const cmds = prepareRotatedCommands(commands, opts);
+  const loops = splitSketchLoops(prepareRotatedCommands(commands, opts));
+  if (loops.length > 1) {
+    // Loft, sweep and surface consumers take one wire: building only the
+    // first loop would silently drop the holes.
+    throw new Error(
+      `buildNurbsSketchOnPlane: this operation takes one closed loop, but the profile has ${loops.length} closed loops ` +
+        '(an outer boundary and holes). Extrude or revolve the holed profile, or pass the outer loop alone.',
+    );
+  }
+  return buildLoopOnPlane(loops[0], plane, opts?.origin);
+}
+
+/**
+ * Lower a NURBS-bearing `SketchCommand[]` with any number of `moveTo … close`
+ * loops for extrude and revolve. The first loop is the outer boundary and
+ * every later loop is a hole, as for the pen-built `drawingFromCommands`.
+ */
+export function buildNurbsProfileOnPlane(
+  commands: SketchCommand[],
+  plane: PlaneName,
+): replicad.Sketch | replicad.CompoundSketch {
+  const loops = splitSketchLoops(commands).map(loop => buildLoopOnPlane(loop, plane));
+  return loops.length === 1 ? loops[0] : new replicad.CompoundSketch(loops);
+}
+
+function buildLoopOnPlane(cmds: SketchCommand[], plane: PlaneName, origin?: Vec3): replicad.Sketch {
   const { closeIdx, startX, startY } = resolveSketchStart(cmds);
   const state: PenRunState = {
     currentX: startX,
@@ -544,16 +571,16 @@ export function buildNurbsSketchOnPlane(
     );
   }
 
-  // Wrap as a `replicad.Sketch` on the target plane. `opts.origin` places
+  // Wrap as a `replicad.Sketch` on the target plane. `origin` places
   // the wire at the plane's world position (the edge builders above lift
   // relative to the plane origin). Set `defaultDirection` to the plane
   // normal so `Sketch.extrude(depth)` produces an axis-aligned solid;
   // `revolve(axis)` already passes its axis explicitly so the default
   // direction is informational there.
   const planeNormal: Vec3 = plane === 'XY' ? [0, 0, 1] : plane === 'XZ' ? [0, 1, 0] : [1, 0, 0];
-  const placed = opts?.origin ? wire.translate(opts.origin as never) : wire;
+  const placed = origin ? wire.translate(origin as never) : wire;
   return new replicad.Sketch(placed, {
-    defaultOrigin: opts?.origin ?? [0, 0, 0],
+    defaultOrigin: origin ?? [0, 0, 0],
     defaultDirection: planeNormal,
   });
 }

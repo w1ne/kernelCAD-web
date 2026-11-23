@@ -53,3 +53,10 @@ older version (for example 0.15.0) so `npx kernelcad` lacks `.finish`.
 
 The MIT license covers the code only. Use of the kernelCAD name and logo is
 governed by [TRADEMARKS.md](TRADEMARKS.md).
+
+## Implementation documentation
+
+Use GitHub issues for unfinished implementation work and PRs/tests for shipped
+behavior. Do not add one-off `docs/plans/`, `docs/specs/`, `docs/superpowers/`
+plans, or dated design Markdown. Update existing user-facing guides, API contracts,
+and runnable examples when behavior changes. Retired designs remain in Git history.

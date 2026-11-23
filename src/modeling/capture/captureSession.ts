@@ -19,7 +19,7 @@ import type { DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord'
 import { Curve3DProxy } from './curveProxy';
 import { lazyEvalCurve } from '../backends/occt/curve3dEval';
 import { Shape } from './proxy';
-import { ShapeVersions, type VersionedOp } from './shapeVersions';
+import { ShapeVersions, appendTransformInPlace, type VersionedOp } from './shapeVersions';
 export type { VersionedOp } from './shapeVersions';
 import { Sketch } from './sketch';
 import { SurfaceProxy } from './surfaceProxy';
@@ -191,6 +191,10 @@ export class CaptureSession {
   private records: FeatureRecord[] = [];
   /** Slice-3: session-owned param table populated by `kcad.param()`/`kcad.params()`. */
   readonly paramTable: ParamTable = new ParamTable();
+  /** Params the script used as plain numbers (`w + 4`, `Math.sin(a)`). Their
+   *  value is baked into the captured records, so an edit to one re-runs the
+   *  script (`updateModelParams`) instead of re-lowering records in place. */
+  readonly coercedParams: Set<string> = new Set();
   private assetMetadataStore: AssetMetadata | undefined;
   private assetPresetsStore: AssetPresets = {};
   private assetPresetsDeclared = false;
@@ -809,7 +813,7 @@ export class CaptureSession {
     // O(n) lookup is deliberate v0.1 simplicity; revisit if profiling shows it.
     const r = this.records.find(x => x.id === id);
     if (!r) throw new Error(`Feature '${id}' not registered`);
-    r.transforms.push(t);
+    appendTransformInPlace(r, t, [this.cachedShapes, this.cachedFeatureMeshes]);
     // Slice-5: Param-typed translate/rotateAxis transforms can carry ParamRefs.
     // Merge any new refs into metadata.paramRefs so `params.update`'s
     // first-affected scan invalidates this record when the named param edits.
@@ -1023,7 +1027,7 @@ export class CaptureSession {
     valueParamName: 'radius' | 'distance' | 'thickness',
     value: Editable<number>,
     selector?: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
-    opts?: { continuity?: import('../../shared/intent/filletContinuityRecord').FilletContinuity },
+    opts?: import('./shapeOperationFeatureRecords').ScalarEdgeFeatureOpts,
   ): Shape {
     return this.createShape(createScalarEdgeFeatureCaptureSpec(
       this.records,
@@ -1129,6 +1133,15 @@ export class CaptureSession {
   getRecords(): readonly FeatureRecord[] {
     return this.records;
   }
+
+  /** Remove the probe scene record `id` that an in-script query
+   *  (`kinematic.checkSweptCollision`, `suggestJointRanges`, ...) appended
+   *  with `solvedModel(poses, { validate: 'off' })` and has already lowered.
+   *  Left in the record list, the probe scene is meshed and exported as a
+   *  second copy of every part, fixed at the probe pose. Only a trailing
+   *  record is removed, so no later record can reference it; the id is not
+   *  reused. */
+  discardProbeRecord(id: FeatureId | undefined): void { if (id !== undefined && this.records.at(-1)?.id === id) this.records.pop(); }
 
   exportSession(): SerializedSession & { schemaVersion: 3; params: SerializedParamTable } {
     return {

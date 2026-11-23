@@ -25,6 +25,15 @@ the leaderboard is a separate, manual decision.
 | generation | drawing PNG(s) + prompt → LLM writes `.kcad.ts` → STEP export → validity pre-check |
 | editing | `input.step` + `inspect({ of: 'step' })` summary + renders + change request → LLM writes `.kcad.ts` that calls `lib.fromSTEP('./input.step')` → STEP export → validity pre-check |
 
+- Optional bounded visual correction: the existing --visual-review flag still
+  runs one review. --visual-review-rounds 2 (or 3) tests successive revisions,
+  starting each round from the last accepted STEP. Invalid, unclear, unchanged,
+  or worse revisions stop the loop; every accepted candidate passes the same
+  STEP gate and matched-view A/B review before it replaces the checkpoint.
+  Individual review/response/comparison files and checkpoints are numbered
+  from the second round. Max three rounds; no new solver or MCP tools.
+  The effect on held-out CAD Score has not yet been measured. The default
+  remains zero visual rounds, to avoid extra model calls and false confidence.
 - The closed loop (`src/agent/loop/closedLoop.ts`) repairs failures. An
   export error or a failed validity check (open shell, non-manifold mesh,
   BRepCheck error) becomes a typed verdict in the repair prompt.
@@ -107,6 +116,7 @@ npx tsx eval/benchmarks/cadgenbench/run.ts --scripts-from path/to/scripts --task
 | `--model` | default `$EVAL_MODEL` or the eval default model; it must accept images |
 | `--edit-fallback passthrough` | an editing task without a valid edit submits the unchanged input. The benchmark scores a no-op edit at no more than 0.4. An invalid candidate scores 0. |
 | `--edit-promotion off` | submit the best valid editing candidate even when promotion says the edit is a no-op, wrong direction, wrong size or wrong topology. Default `auto` keeps promotion as a blocker. |
+| `--edit-promotion strict` | also block on the non-local checks from #1402: a hole moved to the wrong position, a part translated by an edit, an unnamed hole changed, an extension on the wrong side or too long, and a blend removal that cut or overgrew the bounds. In `auto` these are recorded as `unknown` with a `not enforced (locality check)` reason, until a held-out evaluation shows a quality gain. |
 | `--retry-failed` | also rerun tasks that ended `invalid` or `failed` (by default, resume skips them) |
 | `--visual-review` | opt in to a model review of a valid generation candidate, with browser-free front/right/top/isometric STEP previews; requires a vision-capable LLM. A valid revision is promoted only if a second model comparison explicitly prefers it; the previous valid script and STEP are retained as a checkpoint. This self-comparison is unscored and does not prove improved similarity. |
 | `--revision <sha>` | pin a dataset revision (default `main`, resolved to a sha and recorded in `run.json`) |

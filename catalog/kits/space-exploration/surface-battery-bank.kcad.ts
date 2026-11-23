@@ -5,7 +5,7 @@ meta({
   name: "surface-battery-bank",
   license: 'CC0-1.0',
   title: "Surface battery bank",
-  description: "Four-cell battery bank on a skid frame with vent caps and lifting rails. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
+  description: "Four-cell battery bank on a skid frame with vent caps and lifting rails. Material controls: paint, aluminum, polymer; named lunarDust and highVisibility presets.",
   tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],
   kit: 'space-exploration',
   category: 'prop',
@@ -18,9 +18,11 @@ const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overal
 const paint = param('paint', "#777c76", { label: "Painted shell" });
 const aluminum = param('aluminum', "#b6bdbe", { label: "Bare aluminum" });
 
+const polymer = param('polymer', "#536c76", { label: "Polymer terminal caps" });
+
 presets({
-  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3"},
-  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255"},
+  lunarDust: {"paint": "#c9c3b5", "aluminum": "#c3c5c3", "polymer": "#7a8279"},
+  highVisibility: {"paint": "#d86e35", "aluminum": "#d8b255", "polymer": "#d4a63f"},
 });
 
 const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();
@@ -47,9 +49,9 @@ p.part("cell-0",b(-390,0,75,230,420,560).color(paint));
 p.part("cell-1",b(-130,0,75,230,420,560).color(paint));
 p.part("cell-2",b(130,0,75,230,420,560).color(paint));
 p.part("cell-3",b(390,0,75,230,420,560).color(paint));
-p.part("cap-0",c(-390,0,635,36,38,8).color(aluminum));
-p.part("cap-1",c(-130,0,635,36,38,8).color(aluminum));
-p.part("cap-2",c(130,0,635,36,38,8).color(aluminum));
-p.part("cap-3",c(390,0,635,36,38,8).color(aluminum));
+p.part("cap-0",c(-390,0,635,36,38,8).color(polymer));
+p.part("cap-1",c(-130,0,635,36,38,8).color(polymer));
+p.part("cap-2",c(130,0,635,36,38,8).color(polymer));
+p.part("cap-3",c(390,0,635,36,38,8).color(polymer));
 
 return p.model();

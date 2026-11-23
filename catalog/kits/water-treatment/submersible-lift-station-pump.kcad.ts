@@ -5,7 +5,7 @@ meta({
   name: "submersible-lift-station-pump",
   license: 'CC0-1.0',
   title: "Submersible lift station pump",
-  description: "Vertical submersible pump with lifting handle, motor body, screened intake and cable tail. Parameters: overall scale and coated equipment steel, structural steel; weathered and highVisibility presets.",
+  description: "Vertical submersible pump with lifting handle, motor body, screened intake and cable tail. Parameters: overall scale and coated equipment steel, structural steel, rubber cable jacket; weathered and highVisibility presets.",
   tags: ['water treatment', 'water utility', 'infrastructure', 'low poly', 'scene prop'],
   kit: 'water-treatment',
   category: 'prop',
@@ -17,9 +17,11 @@ meta({
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
 const coatedSteel = param('coatedSteel', '#3d8589', { label: 'Coated equipment steel' });
 const structuralSteel = param('structuralSteel', '#68777b', { label: 'Structural steel' });
+// The tail above the pump head is the submersible power cable, which has a black rubber jacket, not coated steel.
+const cableJacket = param('cableJacket', '#23282b', { label: 'Rubber cable jacket' });
 presets({
-  weathered: { coatedSteel: '#687b78', structuralSteel: '#6e6b63' },
-  highVisibility: { coatedSteel: '#e5682d', structuralSteel: '#505b60' },
+  weathered: { coatedSteel: '#687b78', structuralSteel: '#6e6b63', cableJacket: '#33383a' },
+  highVisibility: { coatedSteel: '#e5682d', structuralSteel: '#505b60', cableJacket: '#1d2124' },
 });
 const b=(x:number,y:number,z:number,w:number,d:number,h:number)=>box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
 const section = (radius:number, sides:number) => {
@@ -53,6 +55,6 @@ p.part("intake-slot-4",b(48,-155,15,16,25,85).color(coatedSteel));
 p.part("intake-slot-5",b(80,-155,15,16,25,85).color(coatedSteel));
 p.part("handle-left",b(-75,0,520,32,35,140).color(coatedSteel));
 p.part("handle-right",b(75,0,520,32,35,140).color(coatedSteel));
-p.part("cable",b(100,0,540,28,28,300).color(coatedSteel));
+p.part("cable",b(100,0,540,28,28,300).color(cableJacket));
 
 return p.model();

@@ -29,10 +29,9 @@
 //      point sampling and by an exact manifold boolean). The mesh integral
 //      is the same for analytic BREP and for imported meshes.
 //
-//      `solvedModel({ ignore })` is NOT honoured here. That list silences
-//      the per-pose BREP sweep and the validator; at rest the drawing must
-//      be physically consistent, and a blanket ignore of every parent and
-//      child pair is exactly how a colliding arm used to pass.
+//      A pair declared in `solvedModel({ ignore })` is exempt from this
+//      penetration diagnostic. Mate-gap and joint-continuity checks remain
+//      active, and the motion sweep still checks ignored pairs at moved poses.
 //
 //   2. Contact. The two parts of every mate must meet: their minimum
 //      distance at rest must be within `REST_MATE_CONTACT_TOLERANCE_MM`.
@@ -78,6 +77,9 @@ export interface RestMateGap {
   readonly a: string;
   readonly b: string;
   readonly gapMm: number;
+  /** Set for a moving mate: the smallest gap between the rigid groups on
+   *  its two sides (each mated part plus the parts fastened to it). */
+  readonly groupGapMm?: number;
 }
 
 /** Voxel edge bounds (mm) and the grid size cap per pair. */
@@ -109,8 +111,18 @@ function cellRange(lo: number, hi: number, origin: number, jitter: number, cell:
   ];
 }
 
-// Records where the axis-k rays through the grid columns cross one triangle.
-function rasterTriangle(g: RayGrid, P: Float64Array, a: number, b: number, c: number, hits: number[][]): void {
+// Finds where the axis-k rays through the grid columns cross one triangle.
+// Without `depth` it counts the crossings of each column in `cursor`; with
+// `depth` it stores each crossing at its column's `cursor` and advances it.
+function rasterTriangle(
+  g: RayGrid,
+  P: Float64Array,
+  a: number,
+  b: number,
+  c: number,
+  cursor: Uint32Array,
+  depth?: Float64Array,
+): void {
   const { u, v, k } = g;
   const au = P[a + u], av = P[a + v], ak = P[a + k];
   const bu = P[b + u], bv = P[b + v], bk = P[b + k];
@@ -128,15 +140,35 @@ function rasterTriangle(g: RayGrid, P: Float64Array, a: number, b: number, c: nu
       const w2 = ((cu - pu) * (av - pv) - (au - pu) * (cv - pv)) / det;
       const w3 = 1 - w1 - w2;
       if (w1 < 0 || w2 < 0 || w3 < 0) continue;
-      (hits[i * g.nv + j] ??= []).push(w1 * ak + w2 * bk + w3 * ck);
+      const column = i * g.nv + j;
+      if (depth === undefined) cursor[column]++;
+      else depth[cursor[column]++] = w1 * ak + w2 * bk + w3 * ck;
     }
   }
 }
 
-// Walks one sorted ray: every cell centre after an odd number of crossings
-// is inside; it gets a vote and, when asked, its inside-interval bounds.
+// Sorts depth[from..to) ascending in place. A ray has a few crossings, so
+// most ranges take the insertion sort and allocate nothing.
+function sortRange(depth: Float64Array, from: number, to: number): void {
+  if (to - from > 24) {
+    depth.subarray(from, to).sort();
+    return;
+  }
+  for (let i = from + 1; i < to; i++) {
+    const x = depth[i];
+    let j = i - 1;
+    for (; j >= from && depth[j] > x; j--) depth[j + 1] = depth[j];
+    depth[j + 1] = x;
+  }
+}
+
+// Walks one ray, crossings depth[from..to): every cell centre after an odd
+// number of crossings is inside; it gets a vote and, when asked, its
+// inside-interval bounds.
 function voteColumn(
-  list: number[],
+  depth: Float64Array,
+  from: number,
+  to: number,
   base: number,
   strideK: number,
   nk: number,
@@ -145,17 +177,17 @@ function voteColumn(
   votes: Uint8Array,
   bounds?: { lo: Float32Array; hi: Float32Array },
 ): void {
-  list.sort((x, y) => x - y);
-  let h = 0;
+  sortRange(depth, from, to);
+  let h = from;
   for (let s = 0; s < nk; s++) {
     const pk = originK + (s + 0.5) * cell;
-    while (h < list.length && list[h] < pk) h++;
-    if ((h & 1) === 0) continue;
+    while (h < to && depth[h] < pk) h++;
+    if (((h - from) & 1) === 0) continue;
     const idx = base + s * strideK;
     votes[idx]++;
     if (bounds !== undefined) {
-      bounds.lo[idx] = list[h - 1];
-      bounds.hi[idx] = h < list.length ? list[h] : Infinity;
+      bounds.lo[idx] = depth[h - 1];
+      bounds.hi[idx] = h < to ? depth[h] : Infinity;
     }
   }
 }
@@ -172,17 +204,28 @@ function castAxis(
   const u = ((k + 1) % 3) as 0 | 1 | 2;
   const v = ((k + 2) % 3) as 0 | 1 | 2;
   const g: RayGrid = { u, v, k, nu: dims[u], nv: dims[v], origin, cell, ju: cell * 0.00137, jv: cell * 0.00211 };
-  const hits: number[][] = new Array(g.nu * g.nv);
+  const columns = g.nu * g.nv;
   const I = mesh.indices;
+  // Two passes over the triangles: count the crossings of each column, then
+  // store them in one flat array, column c at depth[start[c]..start[c + 1]).
+  // A list per column costs about 200 bytes each on a wide grid.
+  const cursor = new Uint32Array(columns);
   for (let t = 0; t < I.length; t += 3) {
-    rasterTriangle(g, mesh.positions, 3 * I[t], 3 * I[t + 1], 3 * I[t + 2], hits);
+    rasterTriangle(g, mesh.positions, 3 * I[t], 3 * I[t + 1], 3 * I[t + 2], cursor);
+  }
+  const start = new Uint32Array(columns + 1);
+  for (let c = 0; c < columns; c++) start[c + 1] = start[c] + cursor[c];
+  cursor.set(start.subarray(0, columns));
+  const depth = new Float64Array(start[columns]);
+  for (let t = 0; t < I.length; t += 3) {
+    rasterTriangle(g, mesh.positions, 3 * I[t], 3 * I[t + 1], 3 * I[t + 2], cursor, depth);
   }
   const stride: [number, number, number] = [dims[1] * dims[2], dims[2], 1];
   for (let i = 0; i < g.nu; i++) {
     for (let j = 0; j < g.nv; j++) {
-      const list = hits[i * g.nv + j];
-      if (list === undefined) continue;
-      voteColumn(list, i * stride[u] + j * stride[v], stride[k], dims[k], origin[k], cell, votes, bounds);
+      const c = i * g.nv + j;
+      if (start[c] === start[c + 1]) continue;
+      voteColumn(depth, start[c], start[c + 1], i * stride[u] + j * stride[v], stride[k], dims[k], origin[k], cell, votes, bounds);
     }
   }
 }
@@ -247,6 +290,20 @@ function tallyShared(
   return { count, depth, at };
 }
 
+// Cubic cell and grid size for an AABB overlap. An axis thinner than the
+// cell still takes one cell, so on a slab (two wide faces in contact) the
+// volume-based cell leaves far more columns than the cap; grow the cell
+// until the grid fits.
+function overlapGrid(ext: [number, number, number]): { cell: number; dims: [number, number, number] } {
+  let cell = Math.max(MIN_CELL_MM, Math.cbrt((ext[0] * ext[1] * ext[2]) / MAX_CELLS_PER_PAIR));
+  for (;;) {
+    const dims = ext.map((e) => Math.max(1, Math.ceil(e / cell))) as [number, number, number];
+    const total = dims[0] * dims[1] * dims[2];
+    if (total <= MAX_CELLS_PER_PAIR) return { cell, dims };
+    cell *= Math.max(1.01, Math.cbrt(total / MAX_CELLS_PER_PAIR));
+  }
+}
+
 export function meshOverlapVolume(
   a: WorldMesh,
   b: WorldMesh,
@@ -258,14 +315,19 @@ export function meshOverlapVolume(
     ext[k] = Math.min(a.max[k], b.max[k]) - lo[k];
     if (ext[k] <= 0) return { volumeMm3: 0, thicknessMm: 0, at: lo, cellMm: 0 };
   }
-  const cell = Math.max(MIN_CELL_MM, Math.cbrt((ext[0] * ext[1] * ext[2]) / MAX_CELLS_PER_PAIR));
-  const dims = ext.map((e) => Math.max(1, Math.ceil(e / cell))) as [number, number, number];
+  const { cell, dims } = overlapGrid(ext);
+  // An axis thinner than the cell has one layer of grid points: put it on
+  // the mid-plane of the overlap (half a cell in can be outside it) and
+  // count the real extent, not a full cell, towards the volume.
+  const thin = dims.map((n, k) => n === 1 && ext[k] < cell);
+  const origin = lo.map((v, k) => (thin[k] ? v + (ext[k] - cell) / 2 : v)) as [number, number, number];
+  const pointVolume = ext.reduce((v, e, k) => v * (thin[k] ? e : cell), 1);
   const total = dims[0] * dims[1] * dims[2];
   const votesA = new Uint8Array(total);
   const votesB = new Uint8Array(total);
-  const thick = sharedThickness(a, b, lo, cell, dims, votesA, votesB);
-  const { count, depth, at } = tallyShared(votesA, votesB, thick, dims, lo, cell);
-  return { volumeMm3: count * cell * cell * cell, thicknessMm: depth, at, cellMm: cell };
+  const thick = sharedThickness(a, b, origin, cell, dims, votesA, votesB);
+  const { count, depth, at } = tallyShared(votesA, votesB, thick, dims, origin, cell);
+  return { volumeMm3: count * pointVolume, thicknessMm: depth, at, cellMm: cell };
 }
 
 function boxesOverlap(a: WorldMesh, b: WorldMesh): boolean {
@@ -335,27 +397,19 @@ export function restPosePenetrations(scene: SceneBackend): RestPenetration[] {
   return out;
 }
 
-/** Every mate whose two parts do not meet at rest. */
-function restPoseMateGapFor(
-  mate: MateRecord,
-  byName: Map<string, SceneBackend['parts'][number]>,
+type ScenePart = SceneBackend['parts'][number];
+
+/** Rest-pose distance (mm) between two scene parts: the analysis mesh, with
+ *  the exact BREP distance when the mesh reading sits near the tolerance.
+ *  Cached per unordered pair in `seen`. */
+function restPartGapMm(
+  pa: ScenePart,
+  pb: ScenePart,
   seen: Map<string, number | undefined>,
   toleranceMm: number,
-): RestMateGap | undefined {
-  let a: string;
-  let b: string;
-  try {
-    a = parseConnectorRef(mate.a).partName;
-    b = parseConnectorRef(mate.b).partName;
-  } catch {
-    return undefined;
-  }
-  if (a === b) return undefined;
-  const pa = byName.get(a);
-  const pb = byName.get(b);
-  if (pa === undefined || pb === undefined) return undefined;
+): number | undefined {
   if (!(pa.shape instanceof OcctBackend) || !(pb.shape instanceof OcctBackend)) return undefined;
-  const key = a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`;
+  const key = pa.name < pb.name ? `${pa.name}\u0000${pb.name}` : `${pb.name}\u0000${pa.name}`;
   if (!seen.has(key)) {
     const meshContact = restMeshContact(pa, pb, 'analysis');
     seen.set(key, meshContact !== undefined && Math.abs(meshContact.distanceMm - toleranceMm) > 0.25
@@ -365,9 +419,97 @@ function restPoseMateGapFor(
         analysisBodyOf(pb.shape) as OcctBackend, pb.worldTransform,
       ));
   }
-  const gap = seen.get(key);
-  if (gap !== undefined && gap > toleranceMm) return { mateName: mate.name, a, b, gapMm: gap };
-  return undefined;
+  return seen.get(key);
+}
+
+function mateParts(mate: MateRecord): [string, string] | undefined {
+  try {
+    return [parseConnectorRef(mate.a).partName, parseConnectorRef(mate.b).partName];
+  } catch {
+    return undefined;
+  }
+}
+
+/** Smallest rest gap between any member of `groupA` and any member of
+ *  `groupB` (parts fastened to each mated part count as that side). */
+function restGroupGapMm(
+  groupA: readonly string[],
+  groupB: readonly string[],
+  byName: Map<string, ScenePart>,
+  seen: Map<string, number | undefined>,
+  toleranceMm: number,
+): number | undefined {
+  let best: number | undefined;
+  for (const a of groupA) {
+    for (const b of groupB) {
+      if (a === b) return 0;
+      const pa = byName.get(a);
+      const pb = byName.get(b);
+      if (pa === undefined || pb === undefined) continue;
+      const gap = restPartGapMm(pa, pb, seen, toleranceMm);
+      if (gap !== undefined && (best === undefined || gap < best)) best = gap;
+      if (best !== undefined && best <= toleranceMm) return best;
+    }
+  }
+  return best;
+}
+
+/** Every mate whose two parts do not meet at rest. A moving mate (anything
+ *  but fastened) is judged across the rigid groups: in a servo joint the
+ *  revolute links two printed parts that never touch, while the servo on
+ *  one and the horn on the other carry the load. */
+function restPoseMateGapFor(
+  mate: MateRecord,
+  byName: Map<string, ScenePart>,
+  seen: Map<string, number | undefined>,
+  toleranceMm: number,
+  groups: ReadonlyMap<string, readonly string[]> | undefined,
+): RestMateGap | undefined {
+  const ends = mateParts(mate);
+  if (ends === undefined) return undefined;
+  const [a, b] = ends;
+  if (a === b) return undefined;
+  const pa = byName.get(a);
+  const pb = byName.get(b);
+  if (pa === undefined || pb === undefined) return undefined;
+  const gap = restPartGapMm(pa, pb, seen, toleranceMm);
+  if (gap === undefined || gap <= toleranceMm) return undefined;
+  if (mate.type === 'fastened' || groups === undefined) return { mateName: mate.name, a, b, gapMm: gap };
+  const groupGap = restGroupGapMm(groups.get(a) ?? [a], groups.get(b) ?? [b], byName, seen, toleranceMm);
+  if (groupGap !== undefined && groupGap <= toleranceMm) return undefined;
+  return { mateName: mate.name, a, b, gapMm: gap, groupGapMm: groupGap ?? gap };
+}
+
+/**
+ * Rigid groups at rest: parts joined transitively by fastened mates whose
+ * two parts actually touch (gap within `toleranceMm`). A part fastened to a
+ * host it floats away from is not held by it, so it does not join the
+ * group. Returns part name -> every member of its group (itself included).
+ */
+export function restFastenedGroups(
+  arm: Assembly,
+  scene: SceneBackend,
+  toleranceMm: number = REST_MATE_CONTACT_TOLERANCE_MM,
+): Map<string, string[]> {
+  const byName = new Map(scene.parts.map((p) => [p.name, p]));
+  const seen = new Map<string, number | undefined>();
+  const parent = new Map<string, string>(scene.parts.map((p) => [p.name, p.name]));
+  const find = (name: string): string => {
+    let root = name;
+    while (parent.get(root) !== root) root = parent.get(root)!;
+    return root;
+  };
+  for (const mate of arm.__mates()) {
+    if (mate.type !== 'fastened') continue;
+    const ends = mateParts(mate);
+    if (ends === undefined || !parent.has(ends[0]) || !parent.has(ends[1])) continue;
+    const gap = restPartGapMm(byName.get(ends[0])!, byName.get(ends[1])!, seen, toleranceMm);
+    if (gap === undefined || gap > toleranceMm) continue;
+    parent.set(find(ends[0]), find(ends[1]));
+  }
+  const members = new Map<string, string[]>();
+  for (const name of parent.keys()) members.set(find(name), [...(members.get(find(name)) ?? []), name]);
+  return new Map([...parent.keys()].map((name) => [name, members.get(find(name))!]));
 }
 
 export function restPoseMateGaps(
@@ -375,13 +517,14 @@ export function restPoseMateGaps(
   scene: SceneBackend,
   toleranceMm: number = REST_MATE_CONTACT_TOLERANCE_MM,
   includeMate: (mate: MateRecord) => boolean = () => true,
+  groups?: ReadonlyMap<string, readonly string[]>,
 ): RestMateGap[] {
   const byName = new Map(scene.parts.map((p) => [p.name, p]));
   const out: RestMateGap[] = [];
   const seen = new Map<string, number | undefined>();
   for (const mate of arm.__mates()) {
     if (!includeMate(mate)) continue;
-    const gap = restPoseMateGapFor(mate, byName, seen, toleranceMm);
+    const gap = restPoseMateGapFor(mate, byName, seen, toleranceMm, groups);
     if (gap !== undefined) out.push(gap);
   }
   return out;

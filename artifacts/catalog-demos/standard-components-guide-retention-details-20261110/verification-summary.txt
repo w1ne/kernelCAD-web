@@ -1,0 +1,6 @@
+Global quality: 2402/2402 assets pass (50 rich kits, 0 thin kits)
+Standard-components: 50/50 assets pass (1 rich kits, 0 thin kits)
+Catalog integration: Test Files  4 passed (4); Tests  15 passed (15)
+ESLint: passed for catalog/kits/standard-components/.
+Index freshness passed; all 50 kit rows have previews and matching source hashes.
+Local catalog hub and all three affected asset pages verified; deployment not checked.

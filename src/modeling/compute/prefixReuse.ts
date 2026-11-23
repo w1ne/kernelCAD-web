@@ -22,6 +22,7 @@ import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { DRILLED_POLAR_FRAME_KEY } from '../../shared/intent/drilledPolarFrame';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { resolveParams } from '../../shared/runtime/resolveParams';
+import { predecessorsByRecord } from './recomputeEngine';
 
 /**
  * Deterministic structural hash of a single record's lowering-relevant state,
@@ -199,4 +200,47 @@ export function computePrefixReuse(input: PrefixReuseInput): PrefixReuseDecision
   return reusable
     ? { reusable: true, matchedPrefixLength: matched, reusableIds }
     : { ...noReuse, matchedPrefixLength: matched };
+}
+
+export interface GraphReuseDecision {
+  /** Ids of next-build records whose previous cached shape can be seeded, in record order. */
+  reusableIds: readonly string[];
+  /** Next-build records that must be lowered. */
+  loweredCount: number;
+}
+
+/**
+ * Dependency-aware reuse for an edit anywhere in the script (a code edit or a
+ * param default rewritten in the source). A record of the new build reuses
+ * the previous build's cached shape when:
+ *   - the previous build has a record with the same id that lowered healthy
+ *     and has a cached shape,
+ *   - its structural hash (resolved against each build's param table) is
+ *     identical, and
+ *   - every predecessor it consumes is itself reused.
+ * Predecessors are the same input edges the recompute engine and the
+ * incremental param path (`affectedFeatureIds`) follow, so a changed feature
+ * re-lowers everything downstream of it and nothing else. Records upstream
+ * of, or unrelated to, the change keep their shapes.
+ */
+export function computeGraphReuse(input: PrefixReuseInput): GraphReuseDecision {
+  const { prevRecords, nextRecords, prevParamTable, nextParamTable, hasCachedShape, prevHealth } = input;
+  if (prevRecords.length === 0) return { reusableIds: [], loweredCount: nextRecords.length };
+  const prevById = new Map(prevRecords.map((r) => [r.id, r]));
+  const nextIds = new Set(nextRecords.map((r) => r.id));
+  const predecessors = predecessorsByRecord(nextRecords);
+  const reused = new Set<string>();
+  const reusableIds: string[] = [];
+  for (const next of nextRecords) {
+    const prev = prevById.get(next.id);
+    if (!prev || prevHealth.get(prev.id) !== 'healthy' || !hasCachedShape(prev.id)) continue;
+    // An input that is not a record of this build (a surface) carries no
+    // reuse proof of its own; the hash still covers the reference itself.
+    const preds = (predecessors.get(next.id) ?? []).filter((id) => nextIds.has(id));
+    if (!preds.every((id) => reused.has(id))) continue;
+    if (structuralHashRecord(prev, prevParamTable) !== structuralHashRecord(next, nextParamTable)) continue;
+    reused.add(next.id);
+    reusableIds.push(next.id);
+  }
+  return { reusableIds, loweredCount: nextRecords.length - reusableIds.length };
 }
