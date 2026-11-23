@@ -10,6 +10,7 @@ import { compoundShapes, type Face, type Shape3D } from 'replicad';
 import { initOcct, meshShapeForExport, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { encodeBinaryStlBytes } from '../../../src/kernel/backends/occt/exportStlBinary';
 import { stitchCracks, verifyWatertight, dropDegenerateTriangles } from '../../../src/kernel/backends/occt/meshHeal';
+import { cleanupExportMesh } from '../../../src/kernel/backends/occt/meshCleanup';
 
 beforeAll(async () => {
   await initOcct();
@@ -45,6 +46,7 @@ function referenceMesh(shape: Shape3D): { vertices: number[]; triangles: number[
   const mesh = { vertices, triangles: dropDegenerateTriangles(rawTriangles.map(t => remap[t])) };
   stitchCracks(mesh, 0.05);
   mesh.triangles = dropDegenerateTriangles(mesh.triangles);
+  cleanupExportMesh(mesh);
   return mesh;
 }
 

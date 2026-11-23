@@ -41,7 +41,9 @@ describe('agent-controlled mesh tolerance', () => {
       }
       expect(hashes).toEqual([
         'f29ac00494098b29a05e3c97b6681474976d5dedd3d0c1e5d7949bd96616dc05',
-        '1d8729a07ce252aacbb0a000812cefdefcc5c434797d1dcefe8747a6a61df530',
+        // Re-pinned when export meshes started flipping cap slivers on flat
+        // faces (meshCleanup.ts); the cylinder's end caps changed, the box did not.
+        'aa7ca3d0c20b52d3fa2c0e0ff1866ac3a1b9cae15fd7dd521c74205c11f5a8cf',
       ]);
     } finally {
       globalThis.Date = originalDate;
