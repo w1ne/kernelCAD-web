@@ -13,7 +13,17 @@ describe('mesh interchange writers', () => {
     const text = new TextDecoder().decode(exportMeshObj([{ name: 'Plate', mesh: triangle }]).obj);
     expect(text).toContain('o Plate');
     expect(text).toContain('v 10 0 0');
-    expect(text).toContain('f 1 2 3');
+    expect(text).toContain('vn 0 0 1');
+    expect(text).toContain('f 1//1 2//1 3//1');
+  });
+
+  it('offsets OBJ vertex and normal indices across objects', () => {
+    const text = new TextDecoder().decode(exportMeshObj([
+      { name: 'A', mesh: triangle },
+      { name: 'B', mesh: { vertices: [0, 0, 0, 0, 10, 0, 10, 0, 0], triangles: [0, 1, 2] } },
+    ]).obj);
+    expect(text).toContain('vn 0 0 -1');
+    expect(text).toContain('f 4//2 5//2 6//2');
   });
 
   it('sanitizes comment markers in OBJ object names', () => {

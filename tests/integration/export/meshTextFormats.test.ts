@@ -4,6 +4,7 @@ import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { runAndExport } from '../../../src/agent/script-runtime/export';
 import type { Mesh } from 'three';
 import { USDLoader } from 'three/examples/jsm/loaders/USDLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 
 function objBundle(bytes: Uint8Array): { obj: string; mtl: string } {
   const files = unzipSync(bytes);
@@ -15,6 +16,16 @@ async function loadUsdMeshes(code: string): Promise<Mesh[]> {
   const result = await runAndExport({ code, fileName: 'usd.kcad.ts', format: 'usd' });
   const meshes: Mesh[] = [];
   new USDLoader().parse(new TextDecoder().decode(result.bytes)).traverse(o => {
+    if ((o as Mesh).isMesh) meshes.push(o as Mesh);
+  });
+  return meshes;
+}
+
+/** Load the OBJ the way three.js viewers do and return its meshes. */
+async function loadObjMeshes(code: string): Promise<Mesh[]> {
+  const result = await runAndExport({ code, fileName: 'obj.kcad.ts', format: 'obj' });
+  const meshes: Mesh[] = [];
+  new OBJLoader().parse(objBundle(result.bytes).obj).traverse(o => {
     if ((o as Mesh).isMesh) meshes.push(o as Mesh);
   });
   return meshes;
@@ -38,7 +49,33 @@ describe('standalone OBJ and USD mesh exports', () => {
     expect(mtl).toContain('newmtl part');
     expect(text).toContain('o part');
     expect(text).toMatch(/^v 0 0 0$/m);
-    expect(text).toMatch(/^f \d+ \d+ \d+$/m);
+    expect(text).toMatch(/^vn 0 0 1$/m);
+    expect(text).toMatch(/^f \d+\/\/\d+ \d+\/\/\d+ \d+\/\/\d+$/m);
+  });
+
+  it('loads in the three.js OBJ reader with flat box faces', async () => {
+    const normals = cornerNormals((await loadObjMeshes('return box(10, 20, 30);'))[0]!);
+    expect(normals).toHaveLength(36);
+    for (const n of normals) expect(Math.max(...n.map(Math.abs))).toBeCloseTo(1, 5);
+  });
+
+  it('keeps a cylinder side smooth and its caps flat in OBJ normals', async () => {
+    const normals = cornerNormals((await loadObjMeshes('return cylinder(10, 20);'))[0]!);
+    const same = (a: number[], b: number[]): boolean => a.every((v, i) => Math.abs(v - b[i]!) < 1e-9);
+    let sideTriangles = 0;
+    for (let k = 0; k < normals.length; k += 3) {
+      const [a, b, c] = [normals[k]!, normals[k + 1]!, normals[k + 2]!];
+      if (Math.abs(a[2]) > 1e-6) {
+        // Caps stay flat: one axial normal per triangle.
+        expect(Math.abs(Math.abs(a[2]) - 1)).toBeLessThan(1e-6);
+        expect(same(a, b) && same(a, c)).toBe(true);
+        continue;
+      }
+      // Without `vn` three.js gives each side triangle one flat facet normal.
+      sideTriangles++;
+      expect(same(a, b) && same(a, c)).toBe(false);
+    }
+    expect(sideTriangles).toBeGreaterThan(32);
   });
 
   it('exports a named finish into the OBJ zip and the USD stage', async () => {
