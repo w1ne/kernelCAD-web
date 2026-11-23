@@ -267,31 +267,57 @@ describe('importSvgText — path data', () => {
     expect(minor.regions[0].commands.filter(c => c.kind === 'bulgeArc')).toHaveLength(1);
   });
 
-  it('flattens C/S/Q/T Béziers within curveTolerance', () => {
-    // The cubic is the standard 4/3·(√2−1) approximation of the quarter
-    // circle of radius 10 centred on (0, 10), so the closed region is the
-    // triangle (0,0)-(10,10)-(10,0) plus the circular segment cut off by the
-    // chord: 50 + r²/2·(π/2 − 1). Refining the tolerance must converge on
-    // that, not wander off it.
+  it('keeps C/S/Q/T Béziers exact as NURBS segments, whatever curveTolerance says', () => {
+    type Nurbs = Extract<SketchCommand, { kind: 'nurbsSegment' }>;
+    const nurbsOf = (commands: readonly SketchCommand[]): Nurbs[] =>
+      commands.filter((c): c is Nurbs => c.kind === 'nurbsSegment');
+    const poles = (c: Nurbs): Array<[number, number]> =>
+      c.controlPoints.map(p => [Math.round(p.x.evaluated * 1e9) / 1e9, Math.round(p.y.evaluated * 1e9) / 1e9]);
+
+    // One cubic and one closing line: two segments at any tolerance, and the
+    // cubic's poles are the SVG control points after the Y flip (y -> 40 - y).
     const d = '<path d="M0 0 C 0 5.5228 4.4772 10 10 10 L 10 0 Z"/>';
-    const exact = 50 + (100 / 2) * (Math.PI / 2 - 1);
     const coarse = importSvgText(svg(d), { curveTolerance: 0.5 });
     const fine = importSvgText(svg(d), { curveTolerance: 0.0005 });
-    expect(fine.regions[0].segmentCount).toBeGreaterThan(coarse.regions[0].segmentCount);
-    // Tolerance 1 decimal, not more: the residual ~0.02 mm² is the CUBIC's
-    // own error against a true quarter circle (the 0.5523 handle constant is
-    // itself an approximation), not the flattener's. Tightening
-    // curveTolerance cannot remove it.
-    expect(fine.regions[0].areaMm2).toBeCloseTo(exact, 1);
-    expect(Math.abs(coarse.regions[0].areaMm2 - exact))
-      .toBeGreaterThan(Math.abs(fine.regions[0].areaMm2 - exact));
+    expect(coarse.regions[0].segmentCount).toBe(3);
+    expect(fine.regions[0].commands).toEqual(coarse.regions[0].commands);
+    const [cubic] = nurbsOf(coarse.regions[0].commands);
+    expect(cubic.degree.evaluated).toBe(3);
+    expect(cubic.knots?.map(k => k.evaluated)).toEqual([0, 0, 0, 0, 1, 1, 1, 1]);
+    expect(cubic.weights).toBeUndefined();
+    expect(new Set(poles(cubic).map(p => p.join(',')))).toEqual(
+      new Set([[0, 40], [0, 34.4772], [4.4772, 30], [10, 30]].map(p => p.join(','))),
+    );
 
-    // S and T must reflect the previous control point, i.e. produce a curve
-    // that is NOT the straight-line chord.
+    // S reflects the previous cubic control point through the pen:
+    // (5, 10) about (10, 10) is (15, 10).
     const smooth = importSvgText(svg('<path d="M0 0 C 0 5 5 10 10 10 S 20 5 20 0 Z"/>'));
-    expect(smooth.regions[0].segmentCount).toBeGreaterThan(4);
+    const smoothCurves = nurbsOf(smooth.regions[0].commands);
+    expect(smoothCurves).toHaveLength(2);
+    expect(smoothCurves.flatMap(poles).map(p => p.join(','))).toContain('15,30');
+
+    // Q is kept as an exact quadratic; T reflects its control: (5, 10)
+    // about (10, 10) is (15, 10).
     const quadT = importSvgText(svg('<path d="M0 0 Q 5 10 10 10 T 20 0 Z"/>'));
-    expect(quadT.regions[0].segmentCount).toBeGreaterThan(4);
+    const quads = nurbsOf(quadT.regions[0].commands);
+    expect(quads).toHaveLength(2);
+    expect(quads.every(q => q.degree.evaluated === 2 && q.controlPoints.length === 3)).toBe(true);
+    expect(quads.flatMap(poles).map(p => p.join(','))).toContain('15,30');
+  });
+
+  it('keeps a Bézier exact under a non-uniform transform', () => {
+    // An affine map sends a Bézier to the Bézier of the mapped poles, so a
+    // stretched group still imports as one cubic, not chords.
+    const r = importSvgText(svg('<g transform="scale(2 0.5)"><path d="M0 0 C 0 10 10 10 10 0 Z"/></g>'));
+    const curves = r.regions[0].commands.filter(c => c.kind === 'nurbsSegment');
+    expect(curves).toHaveLength(1);
+    expect(r.regions[0].segmentCount).toBe(2);
+  });
+
+  it('drops a Bézier whose poles all coincide instead of emitting a zero-length curve', () => {
+    const r = importSvgText(svg('<path d="M0 0 C 0 0 0 0 0 0 L 10 0 L 10 10 Z"/>'));
+    expect(r.regions[0].commands.some(c => c.kind === 'nurbsSegment')).toBe(false);
+    expect(r.regions[0].areaMm2).toBeCloseTo(50, 9);
   });
 });
 
