@@ -83,26 +83,40 @@ export function cleanupExportMesh(
   return stats;
 }
 
-/** Every undirected edge is used by exactly two triangles, once in each direction. */
+/** Every undirected edge is used by exactly two triangles, once in each direction.
+ *  Use a sorted Float64Array instead of a JS Map containing 3 entries per
+ *  triangle: on dense STL exports the Map consumes hundreds of MB. Pack an
+ *  undirected edge into the high bits, and its direction into the low bit.
+ *  Pairs must contain exactly one edge in each direction. */
 function isClosedEdgeManifold(triangles: ArrayLike<number>): boolean {
-  const directed = new Map<number, number>();
   const n = triangles.length;
   if (n % 3 !== 0) return false;
   let maxIndex = 0;
-  for (let i = 0; i < n; i++) if (triangles[i] > maxIndex) maxIndex = triangles[i];
+  for (let i = 0; i < n; i++) {
+    const v = triangles[i];
+    if (!Number.isSafeInteger(v) || v < 0) return false;
+    if (v > maxIndex) maxIndex = v;
+  }
   const stride = maxIndex + 1;
+  // Packed keys must be exact numbers; no aliasing of distinct mesh edges.
+  if (2 * (maxIndex * stride + maxIndex) + 1 > Number.MAX_SAFE_INTEGER) return false;
+  const edges = new Float64Array(n);
+  let index = 0;
   for (let t = 0; t < n; t += 3) {
     for (let k = 0; k < 3; k++) {
       const a = triangles[t + k], b = triangles[t + ((k + 1) % 3)];
       if (a === b) return false;
-      const key = a * stride + b;
-      if (directed.has(key)) return false;
-      directed.set(key, 1);
+      const lo = Math.min(a, b), hi = Math.max(a, b);
+      edges[index++] = 2 * (lo * stride + hi) + (a > b ? 1 : 0);
     }
   }
-  for (const key of directed.keys()) {
-    const a = Math.floor(key / stride), b = key - a * stride;
-    if (!directed.has(b * stride + a)) return false;
+  edges.sort();
+  for (let i = 0; i < n; i += 2) {
+    if (i + 1 >= n) return false;
+    // Consecutive even/odd keys represent the same edge in reverse.
+    if (edges[i + 1] !== edges[i] + 1 || edges[i] % 2 !== 0) return false;
+    // Reject edges with four or more uses, even if directions balance.
+    if (i + 2 < n && Math.floor(edges[i + 2] / 2) === Math.floor(edges[i] / 2)) return false;
   }
   return true;
 }
@@ -128,8 +142,16 @@ class CleanupState {
   }
 
   liveStar(v: number): number[] {
-    const list = this.star[v].filter(t => this.alive[t] === 1 && this.hasVertex(t, v));
-    this.star[v] = list;
+    // Prune stale triangle IDs in place. Mesh cleanup repeatedly visits
+    // adjacent stars, and .filter() allocated millions of short arrays on
+    // dense exports even when no vertex was eligible to collapse.
+    const list = this.star[v];
+    let length = 0;
+    for (let i = 0; i < list.length; i++) {
+      const t = list[i];
+      if (this.alive[t] === 1 && this.hasVertex(t, v)) list[length++] = t;
+    }
+    list.length = length;
     return list;
   }
 
@@ -255,11 +277,20 @@ class CleanupState {
     return removed === 2;
   }
 
-  /** v and u share exactly the two vertices opposite edge uv. */
+  /** v and u share exactly the two vertices opposite edge uv.
+   *  Search the short incident-star list directly. Building a fresh Set for
+   *  every candidate edge generated substantial garbage on dense meshes. */
   linkConditionHolds(u: number, ringV: Set<number>): boolean {
-    const ringU = this.ring(u, this.liveStar(u));
+    const starU = this.liveStar(u);
     let common = 0;
-    for (const x of ringV) if (ringU.has(x)) common++;
+    for (const x of ringV) {
+      if (x === u) continue; // ring(u) excludes the center vertex itself.
+      for (let i = 0; i < starU.length; i++) {
+        if (!this.hasVertex(starU[i], x)) continue;
+        if (++common > 2) return false;
+        break;
+      }
+    }
     return common === 2;
   }
 
@@ -476,21 +507,29 @@ class CleanupState {
   writeBack(mesh: CleanupMesh): void {
     const nt = this.T.length / 3;
     const used = new Int32Array(this.V.length / 3).fill(-1);
-    const vertices: number[] = [];
-    const triangles: number[] = [];
+    // Reuse the input arrays. Allocating new JS arrays for all triangle
+    // indices doubles peak memory on dense STL exports; the source vertices
+    // and faces are already copied into V and T, so it is safe to compact
+    // those original arrays in place.
+    const vertices = mesh.vertices;
+    const triangles = mesh.triangles;
+    let vertexCount = 0;
+    let triangleIndexCount = 0;
     for (let t = 0; t < nt; t++) {
       if (!this.alive[t]) continue;
       for (let k = 0; k < 3; k++) {
         const v = this.T[3 * t + k];
         if (used[v] < 0) {
-          used[v] = vertices.length / 3;
-          vertices.push(this.V[3 * v], this.V[3 * v + 1], this.V[3 * v + 2]);
+          used[v] = vertexCount / 3;
+          vertices[vertexCount++] = this.V[3 * v];
+          vertices[vertexCount++] = this.V[3 * v + 1];
+          vertices[vertexCount++] = this.V[3 * v + 2];
         }
-        triangles.push(used[v]);
+        triangles[triangleIndexCount++] = used[v];
       }
     }
-    mesh.vertices = vertices;
-    mesh.triangles = triangles;
+    vertices.length = vertexCount;
+    triangles.length = triangleIndexCount;
   }
 }
 

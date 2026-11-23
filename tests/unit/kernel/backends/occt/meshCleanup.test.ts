@@ -26,8 +26,14 @@ function splitWallBox(rows: number, h = 10): { vertices: number[]; triangles: nu
 describe('cleanupExportMesh', () => {
   it('removes the rows of a wall split along straight rulings without moving it', () => {
     const mesh = splitWallBox(5);
+    const originalVertices = mesh.vertices;
+    const originalTriangles = mesh.triangles;
     const stats = cleanupExportMesh(mesh);
     expect(stats.applied).toBe(true);
+    // The cleanup compacts its caller-owned buffers without allocating full
+    // replacement arrays (dense STL memory regression #1585).
+    expect(mesh.vertices).toBe(originalVertices);
+    expect(mesh.triangles).toBe(originalTriangles);
     expect(mesh.triangles.length / 3).toBe(12);
     const zs = new Set<number>();
     for (let i = 2; i < mesh.vertices.length; i += 3) zs.add(mesh.vertices[i]);
@@ -37,6 +43,18 @@ describe('cleanupExportMesh', () => {
   it('leaves an open mesh untouched', () => {
     const mesh = splitWallBox(3);
     mesh.triangles.splice(0, 3);
+    const before = mesh.triangles.slice();
+    const stats = cleanupExportMesh(mesh);
+    expect(stats.applied).toBe(false);
+    expect(mesh.triangles).toEqual(before);
+  });
+
+  it('rejects duplicate shells even when every edge has a balanced direction', () => {
+    const shell = splitWallBox(1);
+    const mesh = {
+      vertices: shell.vertices,
+      triangles: [...shell.triangles, ...shell.triangles],
+    };
     const before = mesh.triangles.slice();
     const stats = cleanupExportMesh(mesh);
     expect(stats.applied).toBe(false);
