@@ -1,0 +1,10 @@
+573901ca9935afe44dee9ae23c5ecd736996a6ac3bfb06cc3c77bd9a3bf93b08  artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/before/air-compressor.kcad.ts
+346071e15bd2b01041454c8aff453cd65ea9e0e638b8ce2dbfe6ab5c7cc3ef90  artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/before/belt-conveyor.kcad.ts
+8bf1d5846b374fd4a2e750bfbbd9d43e60967e88278b5f6576ec28f58414382c  artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/before/centrifugal-pump.kcad.ts
+2b3513bf26b526d5f017469e6d1cf6013e9f063a60e8b866df502277bc22ebfe  artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/before/forklift-truck.kcad.ts
+df91b1dc1be2b892c78187077ba2d0d1afe2697baf24bc8089b1563d296f8275  artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/before/roller-conveyor-line.kcad.ts
+689b18cd368ee8457dd746c3ffa58ad627ef92257e02d445c3ff7695d53e221c  artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/before/air-compressor.png
+8354c91d9032bbe31e6cc3b42f7da45d3b7668f97d897f83caa5d0a4a6fb9074  artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/before/belt-conveyor.png
+e17189d23e03daf4c2c4bac7e9749ab5c0af6608cadcfd0e898352f43ac2dbd9  artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/before/centrifugal-pump.png
+a9bec1aa7dfd806d7a521537e3cc4d44f56464408defa02e80cf02eec141dd90  artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/before/forklift-truck.png
+7ea3053af89825d920e70b0be7448cc76dd5b040773b57ee16b88e7c3920a8c6  artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/before/roller-conveyor-line.png

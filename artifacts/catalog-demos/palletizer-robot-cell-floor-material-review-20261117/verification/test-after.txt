@@ -1,0 +1,9 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/palletizerRobotCellFloorMaterial.test.ts (1 test) 531ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  03:42:38
+   Duration  8.01s (transform 4.88s, setup 280ms, import 5.79s, tests 531ms, environment 0ms)

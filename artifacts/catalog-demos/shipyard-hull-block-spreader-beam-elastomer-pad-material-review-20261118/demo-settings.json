@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-18",
+  "scope": "five existing shipyard asset previews plus one source-to-preview material correction",
+  "assetOrder": [
+    "hull-block-spreader-beam",
+    "plate-pack-transfer-cart",
+    "pipe-rack-fork-pocket",
+    "weld-consumable-issue-cage",
+    "shipfitter-tool-cabinet"
+  ],
+  "canvas": "1280x720",
+  "slideCount": 8,
+  "secondsPerSlide": 3,
+  "frameRate": 12,
+  "frameCount": 288,
+  "videoCodec": "H.264 / libx264",
+  "encoderPreset": "medium",
+  "crf": 24,
+  "pixelFormat": "yuv420p",
+  "faststart": true,
+  "invocation": "python3 <bundle>/make_demo.py",
+  "ffmpegInvocation": "8 still PNG inputs at 12 fps, 3 seconds each; fps/format filters; concat; libx264 medium CRF 24; faststart",
+  "source": "make_demo.py plus retained native preview PNGs and verification summary",
+  "provenance": "Local software preview, exported-GLB regression and catalog checks only. No simulation, deployment or hardware acceptance."
+}

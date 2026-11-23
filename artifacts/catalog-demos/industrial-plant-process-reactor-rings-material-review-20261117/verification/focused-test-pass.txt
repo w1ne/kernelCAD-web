@@ -1,0 +1,11 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/processReactorVesselRingsMaterial.test.ts (1 test) 1402ms
+     ✓ keeps the welded shell rings on the steel finish  694ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  02:16:57
+   Duration  18.10s (transform 13.23s, setup 273ms, import 15.98s, tests 1.40s, environment 0ms)
+

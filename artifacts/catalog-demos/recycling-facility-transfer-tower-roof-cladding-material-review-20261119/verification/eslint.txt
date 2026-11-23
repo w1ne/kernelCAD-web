@@ -1,0 +1,2 @@
+Command: npx eslint catalog/kits/recycling-facility/ tests/integration/catalog/recyclingTransferTowerRoofMaterial.test.ts
+Exit code: 0; no lint findings.

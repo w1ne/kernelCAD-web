@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/airCompressorPumpFinMaterial.test.ts (1 test) 3196ms
+     ✓ keeps the finned pump cylinders and heads on the cast-iron palette  2371ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  00:28:40
+   Duration  25.06s (transform 16.86s, setup 513ms, import 20.82s, tests 3.20s, environment 0ms)

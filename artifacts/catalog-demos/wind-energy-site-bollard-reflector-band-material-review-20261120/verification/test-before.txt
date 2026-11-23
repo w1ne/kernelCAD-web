@@ -1,0 +1,38 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/windSiteBollardReflectorBandMaterial.test.ts (1 test | 1 failed) 954ms
+     × draws the two reflector bands as reflective sheeting on the painted post 248ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/windSiteBollardReflectorBandMaterial.test.ts > wind-energy/wind-site-bollard reflector band material > draws the two reflector bands as reflective sheeting on the painted post
+AssertionError: expected [ 'concrete', 'safetyPaint', …(1) ] to deeply equal [ 'concrete', 'reflectiveBand', …(1) ]
+
+- Expected
++ Received
+
+  [
+    "concrete",
+-   "reflectiveBand",
+    "safetyPaint",
++   "stainlessSteel",
+  ]
+
+ ❯ tests/integration/catalog/windSiteBollardReflectorBandMaterial.test.ts:21:102
+     19|     const { asset, glb } = await buildCatalogAssetWithGlb(repoRoot, so…
+     20| 
+     21|     expect(asset.params.filter((param) => param.type === 'color').map(…
+       |                                                                                                      ^
+     22|       'concrete', 'reflectiveBand', 'safetyPaint',
+     23|     ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  00:06:31
+   Duration  19.38s (transform 15.40s, setup 372ms, import 17.66s, tests 954ms, environment 0ms)
+
+exit 1

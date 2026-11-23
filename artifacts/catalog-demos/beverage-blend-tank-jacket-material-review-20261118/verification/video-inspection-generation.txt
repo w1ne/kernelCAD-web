@@ -1,0 +1,1 @@
+PASS — `python3 artifacts/catalog-demos/beverage-blend-tank-jacket-material-review-20261118/inspect_video.py` exited 0; ffprobe metadata and five review frames were generated.

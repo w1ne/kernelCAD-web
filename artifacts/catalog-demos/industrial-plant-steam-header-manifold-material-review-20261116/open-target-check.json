@@ -1,0 +1,16 @@
+{
+  "checkedOn": "2026-11-16",
+  "method": "gh pr list and gh issue list with --state open --search <exact asset ID>",
+  "pr1258": {
+    "state": "MERGED",
+    "ci": "all recorded checks passed",
+    "url": "https://github.com/w1ne/kernelCAD-web/pull/1258"
+  },
+  "assets": [
+    {"id": "distillation-column", "openPrs": [], "openIssues": []},
+    {"id": "screw-conveyor", "openPrs": [], "openIssues": []},
+    {"id": "vibratory-feeder", "openPrs": [], "openIssues": []},
+    {"id": "diesel-generator-set", "openPrs": [], "openIssues": []},
+    {"id": "steam-header-manifold", "openPrs": [], "openIssues": []}
+  ]
+}

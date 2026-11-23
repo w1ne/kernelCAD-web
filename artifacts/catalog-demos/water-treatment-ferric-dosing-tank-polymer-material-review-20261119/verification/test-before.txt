@@ -1,0 +1,39 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/legacy-migrated/kernelcad-catalog-2000[39m
+
+ [31m❯[39m tests/integration/catalog/ferricDosingTankPolymerMaterial.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 845[2mms[22m[39m
+[31m     [31m×[31m draws a polyethylene tank and bund with PVC pipework and a seated sight tube[39m[33m 485[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/catalog/ferricDosingTankPolymerMaterial.test.ts[2m > [22mwater-treatment/ferric-dosing-tank polymer materials[2m > [22mdraws a polyethylene tank and bund with PVC pipework and a seated sight tube
+[31m[1mAssertionError[22m: expected [ 'coatedSteel', 'stainlessSteel' ] to deeply equal [ 'bundPolymer', 'pipePvc', …(2) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   "bundPolymer",[39m
+[32m-   "pipePvc",[39m
+[32m-   "sightTube",[39m
+[32m-   "tankPolymer",[39m
+[31m+   "coatedSteel",[39m
+[31m+   "stainlessSteel",[39m
+[2m  ][22m
+
+[36m [2m❯[22m tests/integration/catalog/ferricDosingTankPolymerMaterial.test.ts:[2m24:102[22m[39m
+    [90m 22| [39m    expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+    [90m 23| [39m    [34mexpect[39m(asset[33m.[39mstats[33m.[39mminUpM)[33m.[39m[34mtoBeCloseTo[39m([34m0[39m[33m,[39m [34m6[39m)[33m;[39m
+    [90m 24| [39m    expect(asset.params.filter((param) => param.type === 'color').map(…
+    [90m   | [39m                                                                                                     [31m^[39m
+    [90m 25| [39m      [32m'bundPolymer'[39m[33m,[39m [32m'pipePvc'[39m[33m,[39m [32m'sightTube'[39m[33m,[39m [32m'tankPolymer'[39m[33m,[39m
+    [90m 26| [39m    ])[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 21:13:56
+[2m   Duration [22m 11.20s[2m (transform 8.02s, setup 253ms, import 9.84s, tests 845ms, environment 0ms)[22m
+

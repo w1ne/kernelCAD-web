@@ -1,0 +1,1 @@
+industrial-plant/palletizer-robot-cell: 254 tris

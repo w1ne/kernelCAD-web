@@ -1,0 +1,2 @@
+Command: npx tsx scripts/renderCatalogPreviews.ts electrical-control-cabinet
+Result: industrial-plant/electrical-control-cabinet rendered at 264 tris.

@@ -1,0 +1,1 @@
+telecom-infrastructure/radome-cylinder: 634 tris

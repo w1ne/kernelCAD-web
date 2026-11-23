@@ -1,0 +1,170 @@
+{
+  "checkedAt": "2026-11-19T01:34:26Z",
+  "results": [
+    {
+      "asset": "mining/core-drill-rig",
+      "kind": "page",
+      "url": "https://kernelcad.com/catalog/mining/core-drill-rig/",
+      "finalUrl": "https://kernelcad.com/catalog/mining/core-drill-rig/",
+      "httpStatus": 200,
+      "bytes": 18371,
+      "sha256": "4c51a3019628aaf9e31d0cc879790e8b4db7c09227756c8654bdd581435f1e7c",
+      "localSha256": null,
+      "matchesLocal": null
+    },
+    {
+      "asset": "mining/core-drill-rig",
+      "kind": "preview",
+      "url": "https://kernelcad.com/catalog/mining/core-drill-rig/preview.png",
+      "finalUrl": "https://kernelcad.com/catalog/mining/core-drill-rig/preview.png",
+      "httpStatus": 200,
+      "bytes": 41311,
+      "sha256": "24fb66d3ec62997eb21184a7a2c2414d5bff1283fa546acf4f31f4b84acf023c",
+      "localSha256": "24fb66d3ec62997eb21184a7a2c2414d5bff1283fa546acf4f31f4b84acf023c",
+      "matchesLocal": true
+    },
+    {
+      "asset": "mining/core-drill-rig",
+      "kind": "source",
+      "url": "https://kernelcad.com/assets/mining-core-drill-rig.kcad.ts",
+      "finalUrl": "https://kernelcad.com/assets/mining-core-drill-rig.kcad.ts",
+      "httpStatus": 200,
+      "bytes": 10160,
+      "sha256": "962ff0a9cb75967f9d6d71dcc3ba2dd7674ca7c921164bf025b7a50b8bade685",
+      "localSha256": "962ff0a9cb75967f9d6d71dcc3ba2dd7674ca7c921164bf025b7a50b8bade685",
+      "matchesLocal": true
+    },
+    {
+      "asset": "mining/overland-conveyor-bridge",
+      "kind": "page",
+      "url": "https://kernelcad.com/catalog/mining/overland-conveyor-bridge/",
+      "finalUrl": "https://kernelcad.com/catalog/mining/overland-conveyor-bridge/",
+      "httpStatus": 200,
+      "bytes": 18313,
+      "sha256": "5b22064b10077532d382d2851c1c19517b9112dd084b02958328d18a06818fdf",
+      "localSha256": null,
+      "matchesLocal": null
+    },
+    {
+      "asset": "mining/overland-conveyor-bridge",
+      "kind": "preview",
+      "url": "https://kernelcad.com/catalog/mining/overland-conveyor-bridge/preview.png",
+      "finalUrl": "https://kernelcad.com/catalog/mining/overland-conveyor-bridge/preview.png",
+      "httpStatus": 200,
+      "bytes": 73596,
+      "sha256": "eb536fa1c038e82c32a61aef758b00077aef5a4e6529999670af2456bf777265",
+      "localSha256": "eb536fa1c038e82c32a61aef758b00077aef5a4e6529999670af2456bf777265",
+      "matchesLocal": true
+    },
+    {
+      "asset": "mining/overland-conveyor-bridge",
+      "kind": "source",
+      "url": "https://kernelcad.com/assets/mining-overland-conveyor-bridge.kcad.ts",
+      "finalUrl": "https://kernelcad.com/assets/mining-overland-conveyor-bridge.kcad.ts",
+      "httpStatus": 200,
+      "bytes": 8754,
+      "sha256": "2009ac73b49cebe3267bd0e1ce038ef1209f4bb7a6c3df5defb6aa16810d2c50",
+      "localSha256": "2009ac73b49cebe3267bd0e1ce038ef1209f4bb7a6c3df5defb6aa16810d2c50",
+      "matchesLocal": true
+    },
+    {
+      "asset": "mining/stacker-reclaimer-boom",
+      "kind": "page",
+      "url": "https://kernelcad.com/catalog/mining/stacker-reclaimer-boom/",
+      "finalUrl": "https://kernelcad.com/catalog/mining/stacker-reclaimer-boom/",
+      "httpStatus": 200,
+      "bytes": 18587,
+      "sha256": "c96fcc985bbda81f5eab609314753079ba482621ff4c2b0f381f99b2934e8c3f",
+      "localSha256": null,
+      "matchesLocal": null
+    },
+    {
+      "asset": "mining/stacker-reclaimer-boom",
+      "kind": "preview",
+      "url": "https://kernelcad.com/catalog/mining/stacker-reclaimer-boom/preview.png",
+      "finalUrl": "https://kernelcad.com/catalog/mining/stacker-reclaimer-boom/preview.png",
+      "httpStatus": 200,
+      "bytes": 58033,
+      "sha256": "5bdb73e17b9646a22381d0e56077a7fa4f70523a1c48e9a614b2555aa2b48cc8",
+      "localSha256": "5bdb73e17b9646a22381d0e56077a7fa4f70523a1c48e9a614b2555aa2b48cc8",
+      "matchesLocal": true
+    },
+    {
+      "asset": "mining/stacker-reclaimer-boom",
+      "kind": "source",
+      "url": "https://kernelcad.com/assets/mining-stacker-reclaimer-boom.kcad.ts",
+      "finalUrl": "https://kernelcad.com/assets/mining-stacker-reclaimer-boom.kcad.ts",
+      "httpStatus": 200,
+      "bytes": 13924,
+      "sha256": "05a9842671adacfc5dd24768d45e0178558d8405eeeb14db4642d1046aa652d7",
+      "localSha256": "05a9842671adacfc5dd24768d45e0178558d8405eeeb14db4642d1046aa652d7",
+      "matchesLocal": true
+    },
+    {
+      "asset": "mining/tailings-stack-conveyor",
+      "kind": "page",
+      "url": "https://kernelcad.com/catalog/mining/tailings-stack-conveyor/",
+      "finalUrl": "https://kernelcad.com/catalog/mining/tailings-stack-conveyor/",
+      "httpStatus": 200,
+      "bytes": 18733,
+      "sha256": "6c7ff31cd2b037adc2ea969ce79d5dea3006d788b13fcd690ba3d935c999b39b",
+      "localSha256": null,
+      "matchesLocal": null
+    },
+    {
+      "asset": "mining/tailings-stack-conveyor",
+      "kind": "preview",
+      "url": "https://kernelcad.com/catalog/mining/tailings-stack-conveyor/preview.png",
+      "finalUrl": "https://kernelcad.com/catalog/mining/tailings-stack-conveyor/preview.png",
+      "httpStatus": 200,
+      "bytes": 47360,
+      "sha256": "8d65ef60f60e8d53b838b9aaf5276f42346ccd24799bf4fabf9ebd3ac91bc15e",
+      "localSha256": "8d65ef60f60e8d53b838b9aaf5276f42346ccd24799bf4fabf9ebd3ac91bc15e",
+      "matchesLocal": true
+    },
+    {
+      "asset": "mining/tailings-stack-conveyor",
+      "kind": "source",
+      "url": "https://kernelcad.com/assets/mining-tailings-stack-conveyor.kcad.ts",
+      "finalUrl": "https://kernelcad.com/assets/mining-tailings-stack-conveyor.kcad.ts",
+      "httpStatus": 200,
+      "bytes": 11908,
+      "sha256": "f69ef7d71f976babdfaa9397672ebcbc817eca1fd0b5b31e8463ce321ba266d1",
+      "localSha256": "f69ef7d71f976babdfaa9397672ebcbc817eca1fd0b5b31e8463ce321ba266d1",
+      "matchesLocal": true
+    },
+    {
+      "asset": "mining/ore-sorting-arch",
+      "kind": "page",
+      "url": "https://kernelcad.com/catalog/mining/ore-sorting-arch/",
+      "finalUrl": "https://kernelcad.com/catalog/mining/ore-sorting-arch/",
+      "httpStatus": 200,
+      "bytes": 18551,
+      "sha256": "cf67ac43ad7dddcbc3efbd3ab2709dc3d7eb529ec7d540a5601510147f77d6b0",
+      "localSha256": null,
+      "matchesLocal": null
+    },
+    {
+      "asset": "mining/ore-sorting-arch",
+      "kind": "preview",
+      "url": "https://kernelcad.com/catalog/mining/ore-sorting-arch/preview.png",
+      "finalUrl": "https://kernelcad.com/catalog/mining/ore-sorting-arch/preview.png",
+      "httpStatus": 200,
+      "bytes": 44668,
+      "sha256": "d96fcd36998caf991e8f7cce8841856168acc13b29d0f591faaf9742aa7f777f",
+      "localSha256": "d96fcd36998caf991e8f7cce8841856168acc13b29d0f591faaf9742aa7f777f",
+      "matchesLocal": true
+    },
+    {
+      "asset": "mining/ore-sorting-arch",
+      "kind": "source",
+      "url": "https://kernelcad.com/assets/mining-ore-sorting-arch.kcad.ts",
+      "finalUrl": "https://kernelcad.com/assets/mining-ore-sorting-arch.kcad.ts",
+      "httpStatus": 200,
+      "bytes": 12440,
+      "sha256": "11af3074bcd8f2bb54d2c13c3cbe00dfbe4e254140ad601606cc458ba06cc6f5",
+      "localSha256": "11af3074bcd8f2bb54d2c13c3cbe00dfbe4e254140ad601606cc458ba06cc6f5",
+      "matchesLocal": true
+    }
+  ]
+}

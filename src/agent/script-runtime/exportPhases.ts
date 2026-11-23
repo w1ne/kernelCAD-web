@@ -3,6 +3,7 @@
 import { runScript } from '../../composition/runScript';
 import { meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { exportSceneToSTEPAsync } from '../../kernel/backends/occt/sceneStepExport';
+import type { StepLengthUnit } from '../../kernel/backends/occt/stepAssemblyExport';
 import { exportShapeToSTEPAsync, stepBodyName } from '../../kernel/backends/occt/singleBodyStepExport';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
 import { exportSceneDxf } from './exportDxfProfiles';
@@ -421,7 +422,7 @@ export async function exportSceneBackend(
   featureCount: number,
 ): Promise<ExportResult | undefined> {
   if (format === 'step') {
-    const result = await exportSceneStep(scene, manifestRequest, manifestScene, run, diagnostics, featureCount);
+    const result = await exportSceneStep(scene, manifestRequest, manifestScene, run, diagnostics, featureCount, stepUnit(input.options));
     // STEP exports run the same mesh verify as STL (default-on; options.verify
     // false skips). Downstream consumers tessellate the STEP and reject
     // non-manifold meshes (e.g. exact coincident/tangent faces), so surface the
@@ -481,6 +482,7 @@ export async function exportSceneStep(
   run: Awaited<ReturnType<typeof runScript>>,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
+  unit: StepLengthUnit = 'mm',
 ): Promise<ExportResult> {
   const connectorManifest = manifestRequest === undefined
     ? undefined
@@ -490,7 +492,7 @@ export async function exportSceneStep(
         resolveParams(run.records, run.paramTable),
         manifestRequest,
       );
-  const bytes = stampStepOriginatingSystem(await exportSceneToSTEPAsync(scene), attributionGenerator());
+  const bytes = stampStepOriginatingSystem(await exportSceneToSTEPAsync(scene, unit), attributionGenerator());
   return {
     bytes,
     featureCount,
@@ -797,6 +799,14 @@ async function exportSingleGcode(
   );
 }
 
+/** The STEP `unit` option, checked: untyped callers can pass any value. */
+function stepUnit(options: ExportInput['options']): StepLengthUnit {
+  const unit = (options as { unit?: unknown } | undefined)?.unit;
+  if (unit === undefined) return 'mm';
+  if (unit === 'mm' || unit === 'cm' || unit === 'in') return unit;
+  throw new Error(`export: STEP options.unit must be 'mm', 'cm' or 'in'; got ${JSON.stringify(unit)}.`);
+}
+
 async function exportSingleStep(
   input: ExportInput,
   shape: OcctBackend,
@@ -810,7 +820,7 @@ async function exportSingleStep(
   const tailRecord = run.records.find((rec) => rec.id === targetId);
   const color = tailRecord ? lookupColorFromLineage(tailRecord, run.records) : undefined;
   const bytes = stampStepOriginatingSystem(
-    await exportShapeToSTEPAsync(shape, stepBodyName(input.fileName), color),
+    await exportShapeToSTEPAsync(shape, stepBodyName(input.fileName), color, stepUnit(input.options)),
     attributionGenerator(),
   );
   const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;

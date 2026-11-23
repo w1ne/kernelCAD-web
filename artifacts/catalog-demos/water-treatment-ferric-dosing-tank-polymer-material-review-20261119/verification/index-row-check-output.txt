@@ -1,0 +1,25 @@
+{
+  "asset": "ferric-dosing-tank",
+  "sourceSha256": "68a1653334a108b960d8bec79e52cc05661bd0db5ea063e613834156e52addb3",
+  "preview": "/assets/water-treatment-ferric-dosing-tank.png",
+  "changedIndexRows": [
+    "ferric-dosing-tank"
+  ],
+  "triangleCount": 360,
+  "boundsM": [
+    0.65,
+    0.845,
+    0.52
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountUnchanged": true,
+    "boundsUnchanged": true,
+    "falseSteelControlsRemoved": true,
+    "plasticControlsListed": true
+  },
+  "passed": true
+}

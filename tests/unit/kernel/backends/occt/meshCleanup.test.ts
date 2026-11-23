@@ -40,6 +40,18 @@ describe('cleanupExportMesh', () => {
     expect([...zs].sort((a, b) => a - b)).toEqual([0, 10]);
   });
 
+  it('preserves unreferenced geometric envelope points when no vertex collapses', () => {
+    const mesh = splitWallBox(1);
+    // A BRep tessellator can retain an exact surface extremum even when
+    // its coarse triangle fan does not reference that point.
+    mesh.vertices.push(0, 0, -2);
+    const originalVertices = mesh.vertices.slice();
+    const stats = cleanupExportMesh(mesh);
+    expect(stats.applied).toBe(true);
+    expect(stats.collapsed).toBe(0);
+    expect(mesh.vertices).toEqual(originalVertices);
+  });
+
   it('leaves an open mesh untouched', () => {
     const mesh = splitWallBox(3);
     mesh.triangles.splice(0, 3);

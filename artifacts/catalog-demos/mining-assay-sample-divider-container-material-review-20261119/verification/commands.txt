@@ -1,0 +1,16 @@
+# Environment: repository root; current branch head 597aa8bfd was checked against PR #1507.
+# The five selected paths were audited before the source change.
+python3 artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/verification/check_open_targets.py
+python3 artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/verification/capture_baseline.py
+python3 artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/verification/run_baseline_regression.py
+
+# Final source change: map the eight rotary sample buckets to stainlessSteel;
+# keep geometry, scale, presets, and the bucket-count/divider choices unchanged.
+npx tsx scripts/renderCatalogPreviews.ts assay-sample-divider
+npx tsx scripts/buildAssetCatalog.ts
+python3 artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/verification/verify_index_row.py
+python3 artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/verification/run_verification.py
+python3 artifacts/catalog-demos/mining-assay-sample-divider-container-material-review-20261119/make_demo.py
+
+# Capture the first frame of each slide, inspect the MP4, and retain the packet.
+# The public site is not deployed or rechecked after deployment.

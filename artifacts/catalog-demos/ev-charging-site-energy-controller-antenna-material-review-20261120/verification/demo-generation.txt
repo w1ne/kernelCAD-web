@@ -1,0 +1,12 @@
+wrote /data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/ev-charging-site-energy-controller-antenna-material-review-20261120/review-demo.mp4
+{
+  "durationSeconds": 16.041667,
+  "width": 1280,
+  "height": 720,
+  "sampleTimesSeconds": [
+    2.0,
+    6.0,
+    10.0,
+    14.0
+  ]
+}

@@ -1,0 +1,24 @@
+# Baseline selection and public comparison
+python3 artifacts/catalog-demos/mining-tailings-stack-conveyor-crawler-track-material-review-20261119/verification/check_open_targets.py
+curl -L -sS https://kernelcad.com/catalog/mining/<asset>/
+curl -L -sS https://kernelcad.com/catalog/mining/<asset>/preview.png
+curl -L -sS https://kernelcad.com/assets/mining-<asset>.kcad.ts
+
+# Focused regression: deliberately run once before the source edit, then after it
+npx vitest run tests/integration/catalog/miningTailingsCrawlerTrackMaterial.test.ts
+
+# Source and index update
+npx eslint catalog/kits/mining/ tests/integration/catalog/miningTailingsCrawlerTrackMaterial.test.ts
+npx tsx scripts/renderCatalogPreviews.ts tailings-stack-conveyor
+npx tsx scripts/buildAssetCatalog.ts
+python3 artifacts/catalog-demos/mining-tailings-stack-conveyor-crawler-track-material-review-20261119/verify_index_row.py
+
+# Required final verification
+npx vitest run tests/integration/catalog/
+python3 scripts/checkCatalogQuality.py
+
+# Review demo
+python3 artifacts/catalog-demos/mining-tailings-stack-conveyor-crawler-track-material-review-20261119/make_demo.py
+ffprobe -v error -show_streams -show_format -of json artifacts/catalog-demos/mining-tailings-stack-conveyor-crawler-track-material-review-20261119/review-demo.mp4
+python3 artifacts/catalog-demos/mining-tailings-stack-conveyor-crawler-track-material-review-20261119/video-review/inspect_demo.py
+sha256sum artifacts/catalog-demos/mining-tailings-stack-conveyor-crawler-track-material-review-20261119/review-demo.mp4

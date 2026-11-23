@@ -1,0 +1,111 @@
+{
+  "id": "packed-scrubber-column",
+  "kit": "industrial-plant",
+  "title": "Packed scrubber column",
+  "description": "Packed scrubber tower with a wide sump, narrow stack, spray headers and ladder cage. Controls: overall scale, steel, safety paint.",
+  "category": "structure",
+  "origin": "base",
+  "tags": [
+    "industrial plant",
+    "factory",
+    "process equipment",
+    "low poly",
+    "CC0"
+  ],
+  "compat": [
+    "industrial-plant",
+    "factory",
+    "manufacturing",
+    "industrial-scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/industrial-plant/packed-scrubber-column.kcad.ts",
+  "preview": "/assets/industrial-plant-packed-scrubber-column.png",
+  "sourceSha256": "e23c17496117618fe7bdfc2e74c51b4d31b89addea0d5171aa81fd4b0e8189f0",
+  "triangleBudget": 1400,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "steel",
+      "type": "color",
+      "default": "#70848d",
+      "label": "Structural steel"
+    },
+    {
+      "name": "safetyPaint",
+      "type": "color",
+      "default": "#dca84a",
+      "label": "Safety paint"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "steel": "#575851",
+      "safetyPaint": "#9e722f"
+    },
+    "highVisibility": {
+      "safetyPaint": "#f5c640"
+    }
+  },
+  "stats": {
+    "triangles": 548,
+    "sizeM": [
+      0.56125,
+      1.26,
+      0.51765
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "steel",
+      "color": "#70848d",
+      "parts": [
+        "shell",
+        "roof-cap",
+        "deck-post-0",
+        "deck-post-1",
+        "foot-0",
+        "foot-1",
+        "foot-2",
+        "foot-3",
+        "side-flange",
+        "ladder-rung-0",
+        "ladder-rung-1",
+        "ladder-rung-2",
+        "ladder-rung-3",
+        "ladder-rung-4",
+        "ladder-rung-5"
+      ],
+      "param": "steel"
+    },
+    {
+      "name": "safetyPaint",
+      "color": "#dca84a",
+      "parts": [
+        "roof-lip",
+        "top-nozzle",
+        "service-deck-0",
+        "service-deck-1",
+        "sump",
+        "support-leg-0",
+        "support-leg-1",
+        "support-leg-2",
+        "support-leg-3",
+        "side-nozzle",
+        "ladder-left-rail",
+        "ladder-right-rail"
+      ],
+      "param": "safetyPaint"
+    }
+  ]
+}

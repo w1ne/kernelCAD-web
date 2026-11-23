@@ -1,0 +1,12 @@
+{
+  "mode": "public site check only; local branch is not deployed",
+  "pageUrl": "https://kernelcad.com/catalog/industrial-plant/packed-scrubber-column/",
+  "previewUrl": "https://kernelcad.com/catalog/industrial-plant/packed-scrubber-column/preview.png",
+  "pageHttp": 200,
+  "previewHttp": 200,
+  "publicPreviewSha256": "ab448755ac6c1fb6ca642a0558c4274470c95f44e0c1b76caa08c1d711ddb995",
+  "baselinePreviewSha256": "ab448755ac6c1fb6ca642a0558c4274470c95f44e0c1b76caa08c1d711ddb995",
+  "localPreviewSha256": "dbd4f996cd0339272d2b5764cdcda33746223a16adf3be1382b0c5f7545fa22a",
+  "publicPreviewMatchesBaseline": true,
+  "publicPreviewMatchesLocalChange": false
+}

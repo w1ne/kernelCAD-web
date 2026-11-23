@@ -1,0 +1,17 @@
+{
+  "checks": [
+    "Focused GLB regression passed: all 7 tooth nodes use #89969a; 4 representative painted parts retain #e1a31b.",
+    "Construction-equipment ESLint passed; kit quality gate: 60/60 assets (100%).",
+    "Generated index rebuild passed; source SHA matches and the existing preview path is present.",
+    "Full catalog integration passed: 151 files and 221 tests, including index freshness.",
+    "Global quality gate reports 2,398/2,402 assets (99.83%); 4 thin assets remain in standard-components."
+  ],
+  "triangleCount": 816,
+  "triangleBudget": 2200,
+  "defaultCatalogPreviewChanged": false,
+  "defaultPreviewReason": "The cutter teeth are occluded by the milling hood.",
+  "publicPageCheckedBeforeChange": true,
+  "deployment": "not deployed",
+  "simulation": "not run",
+  "hardwareAcceptance": "not claimed"
+}

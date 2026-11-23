@@ -1,0 +1,5 @@
+Catalog rows: 2,402.
+Changed row IDs versus parent commit: electrical-control-cabinet only.
+Target sourceSha256: 801c352d1d34fb4fe314f3d92409341ec53d78b5ac915be6972ab51ed4f81e5c (matches source).
+Indexed preview: /assets/industrial-plant-electrical-control-cabinet.png (file exists).
+Triangle count: 264 before and after; geometry is unchanged.

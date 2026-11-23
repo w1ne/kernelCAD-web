@@ -1,0 +1,2 @@
+552252cf26ea0ffcf5ca21654da2544a24481fdaf229ea733c61477b0d8bd098  catalog/kits/industrial-plant/air-compressor.kcad.ts
+82fa977bfb289732b4d3cd41187ffd2e3f9fab16e9f5c7c8af7b11e115bc429d  catalog/kits/industrial-plant/previews/air-compressor.png

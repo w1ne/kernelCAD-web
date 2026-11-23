@@ -1,0 +1,2 @@
+Command: python3 artifacts/catalog-demos/recycling-facility-transfer-tower-roof-cladding-material-review-20261119/make_demo.py
+Exit code: 0. Encoded 1280x720 H.264 at 30 fps; ffprobe and extracted-frame inspection passed.

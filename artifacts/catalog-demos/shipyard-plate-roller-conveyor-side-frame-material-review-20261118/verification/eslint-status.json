@@ -1,0 +1,4 @@
+{
+  "command": "npx eslint catalog/kits/shipyard/ tests/integration/catalog/plateRollerConveyorSideFrameMaterials.test.ts",
+  "exitCode": 0
+}

@@ -1,0 +1,87 @@
+{
+  "checkedAtUtc": "2026-11-18T21:33:26.177247+00:00",
+  "method": "All open PR file lists plus open issue and PR title/body scans; exact slugs checked against fixes #1298/#1305/#1307/#1308.",
+  "assets": [
+    "apron-feeder",
+    "double-deck-screen",
+    "flotation-conditioning-tank",
+    "gyratory-crusher-station",
+    "hydrocyclone-cluster"
+  ],
+  "openPullRequestsScanned": 5,
+  "openIssuesScanned": 9,
+  "pullRequests": [
+    {
+      "number": 1507,
+      "title": "fix(catalog): refine industrial-plant material finishes",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1507",
+      "changedFileCount": 1522,
+      "pathMatches": [],
+      "titleOrBodyMatches": []
+    },
+    {
+      "number": 1400,
+      "title": "fix(examples): seat the meta-glasses parts without interpenetration",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1400",
+      "changedFileCount": 3,
+      "pathMatches": [],
+      "titleOrBodyMatches": []
+    },
+    {
+      "number": 1309,
+      "title": "Rebuild the compact supported arm as a desktop 4-DOF",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1309",
+      "changedFileCount": 4,
+      "pathMatches": [],
+      "titleOrBodyMatches": []
+    },
+    {
+      "number": 1253,
+      "title": "feat(catalog): downloadable GLB + STEP on every asset page (the acquisition loop)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1253",
+      "changedFileCount": 13,
+      "pathMatches": [],
+      "titleOrBodyMatches": []
+    },
+    {
+      "number": 1094,
+      "title": "perf(gears): ring gear as one holed-profile extrude (HOLD: face IDs change)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1094",
+      "changedFileCount": 6,
+      "pathMatches": [],
+      "titleOrBodyMatches": []
+    }
+  ],
+  "matchingOpenIssues": [],
+  "trackedFixes": [
+    {
+      "number": 1298,
+      "state": "MERGED",
+      "title": "Fix substation cable ladder floating rungs and misleading proportions",
+      "pathMatches": [],
+      "titleOrBodyMatches": []
+    },
+    {
+      "number": 1305,
+      "state": "MERGED",
+      "title": "Fix sanitary lobe pump missing cover fasteners and verify both orientations",
+      "pathMatches": [],
+      "titleOrBodyMatches": []
+    },
+    {
+      "number": 1307,
+      "state": "MERGED",
+      "title": "Fix duplicated storage array geometry with distinct 24-bay scene prop",
+      "pathMatches": [],
+      "titleOrBodyMatches": []
+    },
+    {
+      "number": 1308,
+      "state": "MERGED",
+      "title": "Repair missing split shaft collar clamp screw and opposed lugs",
+      "pathMatches": [],
+      "titleOrBodyMatches": []
+    }
+  ],
+  "noOverlap": true
+}

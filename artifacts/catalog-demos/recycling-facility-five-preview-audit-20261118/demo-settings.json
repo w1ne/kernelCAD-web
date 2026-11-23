@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-18",
+  "scope": "five existing recycling-facility machinery previews",
+  "assetOrder": [
+    "green-waste-shredder",
+    "plastic-film-compactor",
+    "plastic-flake-silo",
+    "recovered-plastic-bagger",
+    "product-pelletizer"
+  ],
+  "canvas": "1280x720",
+  "slideCount": 6,
+  "secondsPerSlide": 3,
+  "frameRate": 12,
+  "videoCodec": "H.264",
+  "pixelFormat": "yuv420p",
+  "envelopeSource": "catalog/index.json stats.sizeM, exported GLB axes; measured mesh bounds, not product specifications",
+  "conclusion": "No material mismatch established; no catalog source or index changed.",
+  "provenance": "Local software preview audit. No simulation, deployment, or hardware acceptance claimed."
+}

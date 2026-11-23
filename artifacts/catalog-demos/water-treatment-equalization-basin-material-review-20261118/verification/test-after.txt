@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/equalizationBasinFloorMaterial.test.ts (1 test) 587ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  01:36:30
+   Duration  7.23s (transform 5.36s, setup 125ms, import 6.40s, tests 587ms, environment 0ms)
+

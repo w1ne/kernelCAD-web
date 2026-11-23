@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-11-17T02:57:04.506958+00:00",
+  "scope": "All open issues and open PR descriptions plus changed file paths",
+  "assets": [
+    "palletizer-robot-cell",
+    "pressure-relief-valve",
+    "process-blower",
+    "bucket-elevator",
+    "chemical-metering-skid"
+  ],
+  "openIssueCount": 8,
+  "openPullRequestCount": 13,
+  "issueHits": [],
+  "pullRequestHits": []
+}

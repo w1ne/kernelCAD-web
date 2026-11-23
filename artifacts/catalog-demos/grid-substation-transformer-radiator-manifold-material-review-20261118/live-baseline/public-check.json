@@ -1,0 +1,10 @@
+{
+  "checkedDate": "2026-11-18",
+  "url": "https://kernelcad.com/catalog/grid-substation/substation-transformer-radiator-bank/",
+  "httpStatus": 200,
+  "previewUrl": "https://kernelcad.com/assets/grid-substation-substation-transformer-radiator-bank.png",
+  "previewHttpStatus": 200,
+  "previewSha256": "5b781d08c51df247fc3aee56e4a06dfc94e49cd0d9f9a11b7db0f6004bdfefdb",
+  "localBeforePreviewSha256": "5b781d08c51df247fc3aee56e4a06dfc94e49cd0d9f9a11b7db0f6004bdfefdb",
+  "comparison": "Live page and preview match the pre-change local baseline. No post-change deployment is claimed."
+}

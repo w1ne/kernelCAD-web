@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: CC0-1.0
 // Wall-mount network cabinet: Compact wall cabinet with framed door, mounting ears, and cable-entry plate.
+// The front door is a painted-steel frame around a tempered glass panel, so staff can read switch lights without opening it.
 
 meta({
   name: "wall-mount-network-cabinet",
   license: 'CC0-1.0',
   title: "Wall-mount network cabinet",
-  description: "Compact wall cabinet with framed door, mounting ears, and cable-entry plate. Knobs: overall scale; painted steel, rubber and elastomer. Presets: facilityStandard and highVisibility.",
+  description: "Compact wall cabinet with a painted-steel framed door with a tempered glass panel, mounting ears, and cable-entry plate. Knobs: overall scale; painted steel, tempered glass, rubber and elastomer. Presets: facilityStandard and highVisibility.",
   tags: ['data center', 'critical infrastructure', 'IT equipment', 'power', 'cooling', 'scene prop'],
   kit: 'data-center-infrastructure',
   category: 'prop',
@@ -16,15 +17,18 @@ meta({
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
 const steel = param('steel', '#4f7485', { label: 'Painted steel' });
+const glass = param('glass', '#8fb8c4', { label: 'Tempered glass' });
 const rubber = param('rubber', '#252a2d', { label: 'Rubber and elastomer' });
 
 presets({
   facilityStandard: {
     steel: '#4f7485',
+    glass: '#8fb8c4',
     rubber: '#252a2d',
   },
   highVisibility: {
     steel: '#d99b22',
+    glass: '#c4e8ee',
     rubber: '#2a3033',
   },
 });
@@ -46,7 +50,11 @@ p.part("rear-crossbar", b(0, 215.0, 451.00000000000006, 510, 45, 65).color(steel
 p.part("leveling-foot-front-left", c(-255.0, -205.0, 0, 55, 32, 8).color(rubber));
 p.part("leveling-foot-front-right", c(255.0, -205.0, 0, 55, 32, 8).color(rubber));
 p.part("rear-mounting-plate", b(0, 230.0, 100, 515, 35, 620).color(steel));
-p.part("front-door", b(0, -230.0, 120, 500, 24, 590).color(steel));
+p.part("door-stile-left", b(-227.5, -230.0, 120, 45, 24, 590).color(steel));
+p.part("door-stile-right", b(227.5, -230.0, 120, 45, 24, 590).color(steel));
+p.part("door-rail-bottom", b(0, -230.0, 120, 410, 24, 60).color(steel));
+p.part("door-rail-top", b(0, -230.0, 650, 410, 24, 60).color(steel));
+p.part("door-glass", b(0, -230.0, 180, 410, 6, 470).color(glass));
 p.part("left-mounting-ear", b(-335.0, 230.0, 369.0, 50, 35, 574.0).color(steel));
 p.part("right-mounting-ear", b(335.0, 230.0, 369.0, 50, 35, 574.0).color(steel));
 p.part("door-lock", c(180.0, -268.0, 410.0, 32, 22, 8).color(steel));

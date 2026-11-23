@@ -1,0 +1,51 @@
+{
+  "assetCount": 2402,
+  "assetIdsSha256BeforeAndAfter": {
+    "before": "419fbd748f483b89c1ee41c50a55672ea69e39a7456bba1bbbd442595bf65ad9",
+    "after": "419fbd748f483b89c1ee41c50a55672ea69e39a7456bba1bbbd442595bf65ad9"
+  },
+  "nonTargetRowsSha256BeforeAndAfter": {
+    "before": "477a8e87888bb5aff20251acab1b533d01ce14976786d92734071bd8a443deac",
+    "after": "477a8e87888bb5aff20251acab1b533d01ce14976786d92734071bd8a443deac"
+  },
+  "changedAssetRows": [
+    "packed-scrubber-column"
+  ],
+  "changedTargetFields": [
+    "palette",
+    "sourceSha256"
+  ],
+  "target": {
+    "id": "industrial-plant/packed-scrubber-column",
+    "sourceSha256": {
+      "index": "73a5d84961c19b3c34311b7f92633d42fb50a4f5a961d18fc9975791f0da12f1",
+      "source": "73a5d84961c19b3c34311b7f92633d42fb50a4f5a961d18fc9975791f0da12f1"
+    },
+    "preview": "/assets/industrial-plant-packed-scrubber-column.png",
+    "previewSha256": "dbd4f996cd0339272d2b5764cdcda33746223a16adf3be1382b0c5f7545fa22a",
+    "params": [
+      "scale",
+      "steel",
+      "safetyPaint"
+    ],
+    "presets": [
+      "highVisibility",
+      "weathered"
+    ],
+    "triangles": 548,
+    "triangleBudget": 1400
+  },
+  "checks": {
+    "assetCountUnchanged": true,
+    "assetIdsUnchanged": true,
+    "targetSourceHashCurrent": true,
+    "targetPreviewPathPresent": true,
+    "targetPreviewFilePresent": true,
+    "nonTargetRowsUnchanged": true,
+    "onlyTargetRowChanged": true,
+    "targetFieldsChangedOnlyForPaletteAndSourceHash": true,
+    "paletteDefinitionsUnchanged": true,
+    "threeProcessPartsMovedFromSafetyPaintToVesselFinish": true
+  },
+  "allChecksPass": true
+}

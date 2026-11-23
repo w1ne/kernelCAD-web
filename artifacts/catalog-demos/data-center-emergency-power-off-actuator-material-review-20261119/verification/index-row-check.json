@@ -1,0 +1,24 @@
+{
+  "asset": "emergency-power-off-station",
+  "sourceSha256": "a7c1ddd8ad61e695da3cb28f9805134cdccc74793d180addbc7cc4ce5c40e61d",
+  "preview": "/assets/data-center-infrastructure-emergency-power-off-station.png",
+  "changedIndexRows": [
+    "emergency-power-off-station"
+  ],
+  "triangleCount": 136,
+  "boundsM": [
+    0.32,
+    0.42,
+    0.2675
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountUnchanged": true,
+    "boundsMatchReorientedActuator": true,
+    "widthAndHeightUnchanged": true
+  },
+  "passed": true
+}

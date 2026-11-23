@@ -27,17 +27,17 @@ p.part('riser-0', cylinder(201.6, 20, 10).translate(-219, 0, 192).scale(scale).c
 p.part('valve-0', cylinder(62, 38, 10).translate(-219, 0, 321.6).scale(scale).color(steel));
 p.part('handwheel-0', cylinder(90, 8, 8).rotate([0, 1, 0], 90).translate(-264, 0, 364.8).scale(scale).color(safetyPaint));
 p.part('branch-outlet-0', cylinder(120, 22, 10).rotate([0, 1, 0], 90).translate(-279, 0, 403.2).scale(scale).color(steel));
-p.part('flange-0', cylinder(18, 44, 10).rotate([0, 1, 0], 90).translate(-166, 0, 403.2).scale(scale).color(safetyPaint));
+p.part('flange-0', cylinder(18, 44, 10).rotate([0, 1, 0], 90).translate(-166, 0, 403.2).scale(scale).color(steel));
 p.part('riser-1', cylinder(201.6, 20, 10).translate(0, 0, 192).scale(scale).color(safetyPaint));
 p.part('valve-1', cylinder(62, 38, 10).translate(0, 0, 321.6).scale(scale).color(steel));
 p.part('handwheel-1', cylinder(90, 8, 8).rotate([0, 1, 0], 90).translate(-45, 0, 364.8).scale(scale).color(safetyPaint));
 p.part('branch-outlet-1', cylinder(120, 22, 10).rotate([0, 1, 0], 90).translate(-60, 0, 403.2).scale(scale).color(steel));
-p.part('flange-1', cylinder(18, 44, 10).rotate([0, 1, 0], 90).translate(53, 0, 403.2).scale(scale).color(safetyPaint));
+p.part('flange-1', cylinder(18, 44, 10).rotate([0, 1, 0], 90).translate(53, 0, 403.2).scale(scale).color(steel));
 p.part('riser-2', cylinder(201.6, 20, 10).translate(219, 0, 192).scale(scale).color(safetyPaint));
 p.part('valve-2', cylinder(62, 38, 10).translate(219, 0, 321.6).scale(scale).color(steel));
 p.part('handwheel-2', cylinder(90, 8, 8).rotate([0, 1, 0], 90).translate(174, 0, 364.8).scale(scale).color(safetyPaint));
 p.part('branch-outlet-2', cylinder(120, 22, 10).rotate([0, 1, 0], 90).translate(159, 0, 403.2).scale(scale).color(steel));
-p.part('flange-2', cylinder(18, 44, 10).rotate([0, 1, 0], 90).translate(272, 0, 403.2).scale(scale).color(safetyPaint));
+p.part('flange-2', cylinder(18, 44, 10).rotate([0, 1, 0], 90).translate(272, 0, 403.2).scale(scale).color(steel));
 p.part('stand--1', box(32, 32, 182.4, true).translate(-277.4, 0, 91.2).scale(scale).color(steel));
 p.part('stand-1', box(32, 32, 182.4, true).translate(277.4, 0, 91.2).scale(scale).color(steel));
 

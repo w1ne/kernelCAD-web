@@ -1,0 +1,20 @@
+{
+  "assetCount": 2402,
+  "kitCount": 50,
+  "changedRows": [
+    {
+      "kit": "beverage-bottling-line",
+      "id": "case-taper"
+    }
+  ],
+  "addedRows": [],
+  "removedRows": [],
+  "caseTaperSourceSha256": "e2d04293ed7b555c55bd2a0d8b3079dbba24617b5c665e822ca6a53e17d6586c",
+  "indexSourceSha256": "e2d04293ed7b555c55bd2a0d8b3079dbba24617b5c665e822ca6a53e17d6586c",
+  "previewPath": "/assets/beverage-bottling-line-case-taper.png",
+  "previewExists": true,
+  "triangles": 176,
+  "triangleBudget": 2200,
+  "tapeHeadPalette": "stainlessSteel",
+  "tapeRollPalette": "packingTape"
+}

@@ -1,0 +1,37 @@
+{
+  "video": "shipyard-ship-lift-cradle-rail-material-review.mp4",
+  "durationSeconds": 14.0,
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "frameRate": "25/1",
+  "frameCount": 350,
+  "decodedFrames": [
+    {
+      "path": "video-review/frame-01.png",
+      "timeSeconds": 1.4,
+      "label": "Five reviewed previews"
+    },
+    {
+      "path": "video-review/frame-02.png",
+      "timeSeconds": 4.2,
+      "label": "Before: split rail finishes"
+    },
+    {
+      "path": "video-review/frame-03.png",
+      "timeSeconds": 7.0,
+      "label": "Source: shared yardPaint mapping"
+    },
+    {
+      "path": "video-review/frame-04.png",
+      "timeSeconds": 9.8,
+      "label": "After: matched rails"
+    },
+    {
+      "path": "video-review/frame-05.png",
+      "timeSeconds": 12.6,
+      "label": "Local verification"
+    }
+  ],
+  "visualReview": "All five sampled frames opened and checked for legible captions, full previews, and correct before/after order."
+}

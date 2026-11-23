@@ -1,0 +1,1 @@
+PASS — `npx eslint tests/integration/catalog/beverageBlendTankJacketMaterial.test.ts` exited 0 with no diagnostics.

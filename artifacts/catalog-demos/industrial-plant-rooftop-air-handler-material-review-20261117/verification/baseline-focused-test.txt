@@ -1,0 +1,9 @@
+Baseline command: npx vitest run tests/integration/catalog/rooftopAirHandlerCabinetFinish.test.ts
+
+Result before the source correction: failed as intended.
+
+ FAIL  tests/integration/catalog/rooftopAirHandlerCabinetFinish.test.ts > industrial-plant/rooftop-air-handler cabinet finish > keeps service casing and access doors on the steel finish
+AssertionError: service-section-1 should use the cabinet steel finish: expected false to be true
+
+The failing assertion demonstrates that the original GLB exported the center
+service casing with the safety-paint color instead of the expected steel.

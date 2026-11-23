@@ -1,0 +1,31 @@
+# Baseline regression evidence: a temporary copy of the retained source was
+# placed in the construction-equipment kit with a matching temporary name, and
+# a temporary test copy was pointed at it. Both temporary files were removed
+# after the expected tooth-color assertion failed. See baseline-test.txt.
+# Passing regression against the current source:
+npx vitest run tests/integration/catalog/roadReclaimerCuttingToothMaterial.test.ts
+
+# Re-render the changed catalog thumbnail and regenerate the generated index.
+npx tsx scripts/renderCatalogPreviews.ts road-reclaimer
+npx tsx scripts/buildAssetCatalog.ts
+
+# Focused before/after renders. The successful pair was produced by the
+# connected kernelCAD render_preview tool using the source files and settings
+# in render-preview-settings.json. Each call passed:
+#   autosave: false
+#   views: ["iso"]
+#   focus: ["cutter-drum", "cutting-tooth-0", ..., "cutting-tooth-6"]
+#   width: 800, height: 800, no_mechanism_check: true
+# Per-image invocation metadata is in render-inspect-{before,after}/manifest.json.
+# The repository CLI was also attempted via the existing Chrome CDP profile;
+# its player did not initialize. The captured failure is in render-before.txt.
+
+# Repository quality and integration checks.
+npx eslint catalog/kits/construction-equipment/
+python3 scripts/checkCatalogQuality.py --kit construction-equipment
+python3 scripts/checkCatalogQuality.py
+python3 scripts/checkCatalogQuality.py --top 10
+npx vitest run tests/integration/catalog/
+
+# Generate the retained 18-second MP4 and per-slide PNG source frames.
+python3 artifacts/catalog-demos/construction-road-reclaimer-cutting-tooth-material-review-20261118/make_demo.py

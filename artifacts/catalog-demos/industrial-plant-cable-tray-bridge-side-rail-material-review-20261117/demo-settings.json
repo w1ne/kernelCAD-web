@@ -1,0 +1,28 @@
+{
+  "capturedAt": "2026-11-17",
+  "workflow": "five-preview software-rendered audit, local source correction, catalog preview rerender, GLB material regression",
+  "inputPreviews": [
+    "samples/cyclone-separator.png",
+    "samples/cable-tray-bridge.png",
+    "samples/horizontal-pressure-vessel.png",
+    "samples/vibratory-feeder.png",
+    "samples/electric-chain-hoist.png"
+  ],
+  "beforePreview": "before/cable-tray-bridge.png",
+  "afterPreview": "after-cable-tray-bridge.png",
+  "regression": "tests/integration/catalog/cableTrayBridgeMaterial.test.ts",
+  "frameSize": "1280x720",
+  "fps": 30,
+  "secondsPerSlide": 5,
+  "durationSeconds": 15,
+  "codec": "H.264 / libx264",
+  "pixelFormat": "yuv420p",
+  "commands": [
+    "python artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/make_demo.py",
+    "python artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/inspect_video.py",
+    "npx vitest run tests/integration/catalog/cableTrayBridgeMaterial.test.ts",
+    "npx tsx scripts/renderCatalogPreviews.ts cable-tray-bridge",
+    "npx tsx scripts/buildAssetCatalog.ts"
+  ],
+  "claimBoundary": "Local source evaluation, software preview rendering, and a code regression only; no simulation, deployment verification, or hardware acceptance."
+}

@@ -1,0 +1,64 @@
+{
+  "checkedAtUtc": "2026-11-18T04:51:40.362365+00:00",
+  "openPullRequests": [
+    {
+      "number": 1507,
+      "title": "fix(catalog): refine industrial-plant material finishes",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1507"
+    },
+    {
+      "number": 1400,
+      "title": "fix(examples): seat the meta-glasses parts without interpenetration",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1400"
+    },
+    {
+      "number": 1309,
+      "title": "Rebuild the compact supported arm as a desktop 4-DOF",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1309"
+    },
+    {
+      "number": 1253,
+      "title": "feat(catalog): downloadable GLB + STEP on every asset page (the acquisition loop)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1253"
+    },
+    {
+      "number": 1187,
+      "title": "feat(params): plain JS math on params, fast and universal (dependency-aware rebuild)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1187"
+    },
+    {
+      "number": 1094,
+      "title": "perf(gears): ring gear as one holed-profile extrude (HOLD: face IDs change)",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1094"
+    }
+  ],
+  "candidateOpenPrMatches": [],
+  "candidateOpenIssueMatches": [],
+  "knownMergedFixPrs": [
+    {
+      "number": 1298,
+      "title": "Fix substation cable ladder floating rungs and misleading proportions",
+      "state": "MERGED",
+      "candidateSourceMatches": []
+    },
+    {
+      "number": 1305,
+      "title": "Fix sanitary lobe pump missing cover fasteners and verify both orientations",
+      "state": "MERGED",
+      "candidateSourceMatches": []
+    },
+    {
+      "number": 1307,
+      "title": "Fix duplicated storage array geometry with distinct 24-bay scene prop",
+      "state": "MERGED",
+      "candidateSourceMatches": []
+    },
+    {
+      "number": 1308,
+      "title": "Repair missing split shaft collar clamp screw and opposed lugs",
+      "state": "MERGED",
+      "candidateSourceMatches": []
+    }
+  ],
+  "noOpenTargetOverlap": true
+}

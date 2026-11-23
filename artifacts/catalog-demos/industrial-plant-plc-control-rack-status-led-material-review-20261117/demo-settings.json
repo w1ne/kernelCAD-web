@@ -1,0 +1,23 @@
+{
+  "workflow": "five-preview industrial semantic review with one source correction",
+  "source": "catalog/kits/industrial-plant/plc-control-rack.kcad.ts",
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts plc-control-rack",
+  "testCommand": "npx vitest run tests/integration/catalog/plcControlRackStatusLedsMaterial.test.ts",
+  "videoCommand": "python3 make_review_assets.py && ./make_demo.sh",
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "fps": 25,
+    "codec": "H.264 / yuv420p",
+    "crf": 22,
+    "slideSeconds": 2.8,
+    "slides": [
+      "preview-review-five-assets.png",
+      "before/plc-control-rack.png",
+      "after/plc-control-rack.png",
+      "verification-card.png",
+      "after/plc-control-rack.png"
+    ]
+  },
+  "provenance": "Local catalog PNG renders and exported-GLB regression. This is not simulation, deployment verification, or hardware acceptance."
+}

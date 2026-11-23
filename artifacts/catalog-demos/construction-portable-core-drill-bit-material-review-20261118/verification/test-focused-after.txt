@@ -1,0 +1,9 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/portableCoreDrillStandMaterial.test.ts (1 test) 570ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  23:50:34
+   Duration  12.51s (transform 9.07s, setup 142ms, import 10.91s, tests 570ms, environment 0ms)

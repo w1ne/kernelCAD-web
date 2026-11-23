@@ -1,0 +1,120 @@
+{
+  "id": "hull-block-fabrication-jig",
+  "kit": "shipyard",
+  "title": "Hull block fabrication jig",
+  "description": "Open box-section fixture with corner towers, transverse alignment beams, and replaceable block-contact pads. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "shipyard",
+    "shipbuilding",
+    "drydock",
+    "refit",
+    "low poly",
+    "CC0",
+    "hull",
+    "block",
+    "fabrication",
+    "jig"
+  ],
+  "compat": [
+    "shipyard",
+    "marine",
+    "drydock",
+    "ship-repair"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/shipyard/hull-block-fabrication-jig.kcad.ts",
+  "preview": "/assets/shipyard-hull-block-fabrication-jig.png",
+  "sourceSha256": "cd1288b2f879af9b6e5460da8409db50eec9f19eaf2a563b274ee47b0d22400e",
+  "triangleBudget": 1800,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "yardPaint",
+      "type": "color",
+      "default": "#657c78",
+      "label": "Yard finish"
+    },
+    {
+      "name": "structuralSteel",
+      "type": "color",
+      "default": "#b6c1c4",
+      "label": "Structural steel"
+    },
+    {
+      "name": "elastomer",
+      "type": "color",
+      "default": "#30383b",
+      "label": "Elastomer"
+    }
+  ],
+  "presets": {
+    "fresh-coat": {
+      "yardPaint": "#819490",
+      "structuralSteel": "#d0d7d8",
+      "elastomer": "#3a4245"
+    },
+    "weathered-yard": {
+      "yardPaint": "#546764",
+      "structuralSteel": "#828d91",
+      "elastomer": "#252b2d"
+    }
+  },
+  "stats": {
+    "triangles": 420,
+    "sizeM": [
+      2.7,
+      1.77,
+      2.3
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "yardPaint",
+      "color": "#657c78",
+      "parts": [
+        "base-rail-0",
+        "base-rail-1"
+      ],
+      "param": "yardPaint"
+    },
+    {
+      "name": "structuralSteel",
+      "color": "#b6c1c4",
+      "parts": [
+        "cross-rail-0",
+        "cross-rail-1",
+        "cross-rail-2",
+        "corner-tower-0",
+        "corner-tower-1",
+        "corner-tower-2",
+        "corner-tower-3",
+        "alignment-beam-0",
+        "alignment-beam-1"
+      ],
+      "param": "structuralSteel"
+    },
+    {
+      "name": "elastomer",
+      "color": "#30383b",
+      "parts": [
+        "contact-pad-0",
+        "contact-pad-1",
+        "contact-pad-2",
+        "contact-pad-3"
+      ],
+      "param": "elastomer"
+    }
+  ]
+}

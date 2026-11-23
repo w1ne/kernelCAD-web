@@ -1,0 +1,3 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: hanger-left should use the painted-steel finish: expected false to be true // Object.is equality
+      Tests  1 failed (1)

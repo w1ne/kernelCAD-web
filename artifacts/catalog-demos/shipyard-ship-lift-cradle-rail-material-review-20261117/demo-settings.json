@@ -1,0 +1,29 @@
+{
+  "workflow": "five-preview shipyard semantic review with one material correction",
+  "source": "catalog/kits/shipyard/ship-lift-cradle.kcad.ts",
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts ship-lift-cradle",
+  "indexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "renderInspectCommand": "PW_CDP_URL=http://127.0.0.1:9333 timeout --signal=TERM --kill-after=5s 75s node dist/cli/index.js render inspect artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/after/ship-lift-cradle.kcad.ts artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/inspection/final --views front,right,top,iso --channels rgb --no-watermark --environment softbox --screenshot-timeout 20000",
+  "renderInspectStatus": "Timed out connecting to the already-running Chrome CDP session after 30 seconds; no duplicate browser was launched and the existing session remained responsive.",
+  "testCommand": "npx vitest run tests/integration/catalog/shipLiftCradleRailMaterial.test.ts",
+  "lintCommand": "npx eslint catalog/kits/shipyard/ tests/integration/catalog/shipLiftCradleRailMaterial.test.ts",
+  "assetGenerationCommand": "python3 artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/make_review_assets.py",
+  "videoCommand": "bash artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/make_demo.sh",
+  "videoInspectionCommand": "python3 artifacts/catalog-demos/shipyard-ship-lift-cradle-rail-material-review-20261117/inspect_video.py",
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "fps": 25,
+    "codec": "H.264 / yuv420p",
+    "crf": 22,
+    "slideSeconds": 2.8,
+    "slides": [
+      "samples/five-preview-contact-sheet.png",
+      "before/ship-lift-cradle.png",
+      "source-mapping.png",
+      "after/ship-lift-cradle.png",
+      "verification-card.png"
+    ]
+  },
+  "provenance": "Checked-in kernelCAD source, named software preview render, generated catalog index, and exported-GLB regression. The clip does not show deployment, simulation, or hardware acceptance."
+}

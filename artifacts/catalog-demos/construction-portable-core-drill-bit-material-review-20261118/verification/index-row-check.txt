@@ -1,0 +1,26 @@
+{
+  "rowMatchesGeneratedSnapshot": true,
+  "sourceSha256": "65523ecd8560ed4cd256b1613e77c52e516a60399617b20cb574292f48fda633",
+  "diskSha256": "65523ecd8560ed4cd256b1613e77c52e516a60399617b20cb574292f48fda633",
+  "sourceHashMatches": true,
+  "preview": "/assets/construction-equipment-portable-core-drill-stand.png",
+  "previewPathExists": true,
+  "previewSha256": "a1e92c2d58fb060d0beccd72c2cd4f1d308914493963d3166cf90c2bdca07835",
+  "changedRowFields": [
+    "description",
+    "palette",
+    "sourceSha256"
+  ],
+  "geometryUnchanged": true,
+  "triangleCount": 92,
+  "sizeM": [
+    0.5616,
+    1.1046,
+    0.4
+  ],
+  "steelParts": [
+    "drill-carriage",
+    "core-bit",
+    "feed-handle"
+  ]
+}

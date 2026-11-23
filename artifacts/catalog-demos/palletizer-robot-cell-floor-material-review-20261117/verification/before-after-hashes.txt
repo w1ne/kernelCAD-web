@@ -1,0 +1,4 @@
+7a7a33dd0ecc04f58ddad77029a7ed00a38200c760bdfbc0aaea632437e5eb18  artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/sources/before.kcad.ts
+ed5a1f70836696f10ca7dbcf936e3e5dfc298fd8f874f9e73792ff0b28091c1b  artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/sources/after.kcad.ts
+b73a2974c5eddd59fa69de0a227b5b5dc12fe8104b09f640e26acdd44d3c8c62  artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/previews/before/palletizer-robot-cell.png
+2dd861002944c210aeafd68b82dce15e8c40115ee09aaba440f06288adf1a905  artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/previews/after/palletizer-robot-cell.png

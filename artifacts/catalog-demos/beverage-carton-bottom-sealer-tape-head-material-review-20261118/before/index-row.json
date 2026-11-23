@@ -1,0 +1,112 @@
+{
+  "id": "carton-bottom-sealer",
+  "kit": "beverage-bottling-line",
+  "title": "Carton bottom sealer",
+  "description": "Drive-belt case sealer closes erected carton flaps before bottle loading. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+  "category": "structure",
+  "origin": "base",
+  "tags": [
+    "beverage bottling",
+    "packaging line",
+    "food manufacturing",
+    "low poly",
+    "CC0"
+  ],
+  "compat": [
+    "beverage-bottling-line",
+    "factory",
+    "food-manufacturing",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/beverage-bottling-line/carton-bottom-sealer.kcad.ts",
+  "preview": "/assets/beverage-bottling-line-carton-bottom-sealer.png",
+  "sourceSha256": "4fccc812e26c7855125e5999dd6f210da49467b9159293867f1a887465fb773d",
+  "triangleBudget": 2200,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "stainlessSteel",
+      "type": "color",
+      "default": "#aebdc1",
+      "label": "Stainless steel"
+    },
+    {
+      "name": "powderCoat",
+      "type": "color",
+      "default": "#397e91",
+      "label": "Powder-coated steel"
+    },
+    {
+      "name": "foodPolymer",
+      "type": "color",
+      "default": "#3999a1",
+      "label": "Food-grade polymer"
+    }
+  ],
+  "presets": {
+    "sanitaryLine": {
+      "stainlessSteel": "#d2dfe1",
+      "powderCoat": "#4b95a4",
+      "foodPolymer": "#2c828c"
+    },
+    "legacyPlant": {
+      "stainlessSteel": "#858f91",
+      "powderCoat": "#315b70",
+      "foodPolymer": "#286c75"
+    }
+  },
+  "stats": {
+    "triangles": 176,
+    "sizeM": [
+      1.3,
+      0.995,
+      0.75
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "powderCoat",
+      "color": "#397e91",
+      "parts": [
+        "base-frame",
+        "top-crossbeam"
+      ],
+      "param": "powderCoat"
+    },
+    {
+      "name": "stainlessSteel",
+      "color": "#aebdc1",
+      "parts": [
+        "infeed-bed",
+        "outfeed-bed",
+        "tower-left",
+        "tower-right"
+      ],
+      "param": "stainlessSteel"
+    },
+    {
+      "name": "foodPolymer",
+      "color": "#3999a1",
+      "parts": [
+        "tape-head",
+        "tape-roll",
+        "guide-0",
+        "guide-1",
+        "guide-2",
+        "guide-3"
+      ],
+      "param": "foodPolymer"
+    }
+  ]
+}

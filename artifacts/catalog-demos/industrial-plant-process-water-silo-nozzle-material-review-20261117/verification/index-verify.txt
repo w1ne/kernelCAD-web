@@ -1,0 +1,14 @@
+{
+  "generatedBy": "npx tsx scripts/buildAssetCatalog.ts",
+  "changedRowsComparedWithHead": [
+    "industrial-plant/process-water-silo"
+  ],
+  "changedRowCount": 1,
+  "targetRowSourceSha256": "d00b465b4ea0497fa43260a000e222cdb559d02fb567256eaba8ffd5fe9a616e",
+  "actualSourceSha256": "d00b465b4ea0497fa43260a000e222cdb559d02fb567256eaba8ffd5fe9a616e",
+  "sourceShaMatches": true,
+  "preview": "/assets/industrial-plant-process-water-silo.png",
+  "previewExists": true,
+  "triangleBudget": 1400,
+  "triangles": 588
+}

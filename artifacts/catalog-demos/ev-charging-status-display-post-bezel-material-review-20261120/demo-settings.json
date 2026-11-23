@@ -1,0 +1,21 @@
+{
+  "created": "2026-11-20",
+  "output": "review-demo.mp4",
+  "resolution": "1280x720",
+  "frameRate": 24,
+  "plannedSlideDurationSeconds": 4,
+  "slides": [
+    "Five rendered EV charging previews",
+    "Before and after charger-status-display-post previews",
+    "Screen bezel, glass and display housing material mapping",
+    "Local verification and evidence scope"
+  ],
+  "sourceImages": [
+    "samples/previews/*.png",
+    "before/charger-status-display-post.png",
+    "after/charger-status-display-post.png"
+  ],
+  "generationCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/ev-charging-status-display-post-bezel-material-review-20261120/make_demo.py",
+  "inspectionCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/ev-charging-status-display-post-bezel-material-review-20261120/inspect_video.py",
+  "claimScope": "Local source, software-rendered catalog preview, and exported-GLB colour and part-placement regression only; no deployment, simulation, safety assessment, or hardware acceptance."
+}

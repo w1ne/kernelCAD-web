@@ -1,0 +1,5 @@
+Command: python3 artifacts/catalog-demos/beverage-carton-bottom-sealer-tape-head-material-review-20261118/make_demo.py
+Exit code: 0
+Output: created beverage-carton-bottom-sealer-tape-head-material-review.mp4 (H.264, 1280x720, 30 fps, 15.000 seconds)
+Inspection: python3 artifacts/catalog-demos/beverage-carton-bottom-sealer-tape-head-material-review-20261118/inspect_video.py
+Inspection result: five decoded frames reviewed in video-review/contact-sheet.png; text, preview contrast, and scope caption are legible.

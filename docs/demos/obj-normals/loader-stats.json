@@ -1,0 +1,16 @@
+[
+  {
+    "url": "/before",
+    "meshes": 1,
+    "triangles": 3040,
+    "facetedNonAxialTriangles": 1464,
+    "diagonal": 98.99494936611666
+  },
+  {
+    "url": "/after",
+    "meshes": 1,
+    "triangles": 3040,
+    "facetedNonAxialTriangles": 0,
+    "diagonal": 98.99494936611666
+  }
+]

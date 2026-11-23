@@ -1,0 +1,6 @@
+Catalog index: 2402 assets / 50 kits.
+OK mining/assay-sample-divider: source SHA current, preview path exists, mesh bounds unchanged
+OK mining/core-tray-rack: source SHA current, preview path exists, mesh bounds unchanged
+OK mining/mine-refuge-chamber: source SHA current, preview path exists, mesh bounds unchanged
+OK mining/mine-survey-tripod: source SHA current, preview path exists, mesh bounds unchanged
+OK mining/mine-ventilation-fan: source SHA current, preview path exists, mesh bounds unchanged

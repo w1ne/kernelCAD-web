@@ -1,0 +1,11 @@
+{
+  "created": "2026-11-23",
+  "output": "review-demo.mp4",
+  "resolution": "1280x720",
+  "frameRate": 24,
+  "plannedSlideDurationSeconds": 4,
+  "sourceImages": ["samples/*.png", "before/freight-boxcar.png", "after/freight-boxcar.png", "inspect/{before,after}/{right,front}.png"],
+  "generationCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/railway-freight-boxcar-running-gear-geometry-review-20261123/make_demo.py",
+  "inspectionCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/railway-freight-boxcar-running-gear-geometry-review-20261123/inspect_video.py",
+  "claimScope": "Local source, software-rendered catalog preview and inspection views, and exported-GLB geometry regression only; no deployment, structural or gauge check, or hardware acceptance."
+}

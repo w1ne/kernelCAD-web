@@ -1,0 +1,1 @@
+recycling-facility/vehicle-barrier-gate: 1050 tris

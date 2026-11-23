@@ -1,0 +1,38 @@
+Command: npx vitest run tests/integration/catalog/assaySampleDividerContainerMaterial.test.ts
+Exit code: 1
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/assaySampleDividerContainerMaterial.test.ts (1 test | 1 failed) 5888ms
+     × keeps rotary sample buckets on the stainless-steel palette 5370ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  04:06:35
+   Duration  25.06s (transform 14.82s, setup 225ms, import 17.49s, tests 5.89s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/assaySampleDividerContainerMaterial.test.ts > mining/assay-sample-divider collection-container material > keeps rotary sample buckets on the stainless-steel palette
+AssertionError: expected [ 'housingPaint', …(3) ] to deeply equal [ 'housingPaint', …(2) ]
+
+- Expected
++ Received
+
+  [
+    "housingPaint",
+    "stainlessSteel",
+    "sampleOre",
++   "jarPlastic",
+  ]
+
+ ❯ tests/integration/catalog/assaySampleDividerContainerMaterial.test.ts:26:95
+     24|     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+     25|     expect(asset.stats.sizeM).toEqual([0.69, 0.82, 0.504868]);
+     26|     expect(asset.params.filter((param) => param.type === 'color').map(…
+       |                                                                                               ^
+     27|       'housingPaint', 'stainlessSteel', 'sampleOre',
+     28|     ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

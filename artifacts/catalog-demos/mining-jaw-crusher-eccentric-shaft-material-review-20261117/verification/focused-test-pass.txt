@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/jawCrusherEccentricShaftMaterial.test.ts (1 test) 1665ms
+     ✓ keeps the eccentric shaft steel and reserves manganese for the jaw liners  1368ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  08:04:43
+   Duration  9.01s (transform 5.96s, setup 97ms, import 6.89s, tests 1.66s, environment 0ms)

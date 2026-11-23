@@ -1,0 +1,9 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/processWaterSiloNozzleMaterial.test.ts (1 test) 572ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  20:38:18
+   Duration  6.71s (transform 4.80s, setup 129ms, import 5.90s, tests 572ms, environment 0ms)

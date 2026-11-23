@@ -1,0 +1,14 @@
+{
+  "asset": "industrial-plant/scissor-lift-table",
+  "format": "mp4",
+  "resolution": "1280x720",
+  "frameRate": 25,
+  "slideCount": 5,
+  "secondsPerSlide": 2.8,
+  "durationSeconds": 14,
+  "videoCodec": "h264",
+  "pixelFormat": "yuv420p",
+  "imageSource": "local software-rendered catalog previews",
+  "command": "bash artifacts/catalog-demos/industrial-plant-scissor-lift-table-arm-material-review-20261117/make_demo.sh",
+  "claims": "Local source edit, software preview, and exported-GLB regression only; not simulation, deployed behavior, or hardware acceptance."
+}

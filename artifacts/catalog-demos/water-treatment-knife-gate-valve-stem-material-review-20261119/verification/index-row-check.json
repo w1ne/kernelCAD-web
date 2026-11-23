@@ -1,0 +1,25 @@
+{
+  "asset": "knife-gate-valve-assembly",
+  "sourceSha256": "7c7c67683acb031952687a97d36b2eb4d94b657dff14d6153629623addbdab0b",
+  "preview": "/assets/water-treatment-knife-gate-valve-assembly.png",
+  "changedIndexRows": [
+    "knife-gate-valve-assembly"
+  ],
+  "triangleCount": 356,
+  "boundsM": [
+    0.38,
+    0.685,
+    0.64
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountUnchanged": true,
+    "boundsUnchanged": true,
+    "colorControlsUnchanged": true,
+    "descriptionNamesStainlessStem": true
+  },
+  "passed": true
+}

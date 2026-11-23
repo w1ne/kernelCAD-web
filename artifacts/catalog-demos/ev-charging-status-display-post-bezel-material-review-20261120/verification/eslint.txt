@@ -1,0 +1,1 @@
+eslint: exit 0, no findings (catalog/kits/ev-charging-infrastructure/ and the new test)

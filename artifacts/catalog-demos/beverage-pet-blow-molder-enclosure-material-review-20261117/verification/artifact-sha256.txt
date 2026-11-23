@@ -1,0 +1,7 @@
+3264a72debdcd31f4fec39e465d97736612fdd76565d939307ed45a4bfdcffb0  catalog/kits/beverage-bottling-line/pet-blow-molder.kcad.ts
+dd276cfc536e4e6fd090b8519a4525e315a3165d293c330e99acb807e64f9309  catalog/kits/beverage-bottling-line/previews/pet-blow-molder.png
+947420dadfe8596cb97617b321151c768ee77d4813e1c45b9ad2f33bbcdef45a  tests/integration/catalog/petBlowMolderEnclosureMaterial.test.ts
+d6f5019c87ce4b80e9e781befbbd453866da78bea38969192d533c613d6813a8  artifacts/catalog-demos/beverage-pet-blow-molder-enclosure-material-review-20261117/previews/before/pet-blow-molder.png
+dd276cfc536e4e6fd090b8519a4525e315a3165d293c330e99acb807e64f9309  artifacts/catalog-demos/beverage-pet-blow-molder-enclosure-material-review-20261117/previews/after/pet-blow-molder.png
+2fe33676e570d64c36fa4619d3142a6b71732fc4d95a7e9c3b49138a86d79ea4  artifacts/catalog-demos/beverage-pet-blow-molder-enclosure-material-review-20261117/beverage-pet-blow-molder-enclosure-material-review.mp4
+d958a609fb69c1b3cd0509466949de749c452cbae56a23ce2d6b34485fb7e969  artifacts/catalog-demos/beverage-pet-blow-molder-enclosure-material-review-20261117/make_demo.sh

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Cam plate with Bezier edges for lib.fromSVG exactness tests.
+     Outer: a 60 x 20 mm base with a cubic crown (C then smooth S).
+     Hole: a quadratic (Q then smooth T) rounded square, stretched 1.5 x 1
+     by a non-uniform group transform. A Bezier stays a Bezier under any
+     affine map, so both must import as exact curves, not chords. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="60mm" height="40mm" viewBox="0 0 60 40">
+  <path d="M 0 40 L 60 40 L 60 20 C 60 5 45 0 30 0 S 0 5 0 20 Z" fill="#888"/>
+  <g transform="translate(30 25) scale(1.5 1)">
+    <path d="M -6 0 Q -6 -6 0 -6 T 6 0 Q 6 6 0 6 T -6 0 Z" fill="#fff"/>
+  </g>
+</svg>

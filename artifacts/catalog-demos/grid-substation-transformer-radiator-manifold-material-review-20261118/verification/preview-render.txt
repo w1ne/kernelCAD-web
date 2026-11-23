@@ -1,0 +1,1 @@
+grid-substation/substation-transformer-radiator-bank: 200 tris

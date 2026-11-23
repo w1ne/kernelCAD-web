@@ -1,0 +1,24 @@
+{
+  "video": "industrial-plant-inline-flow-meter-material-review.mp4",
+  "decodedOn": "2026-11-17",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "durationSeconds": 15.0,
+  "sampleTimesSeconds": [
+    0,
+    3,
+    6,
+    9,
+    12
+  ],
+  "decodedFrames": 5,
+  "sampleSha256": [
+    "483f8593d8f74a0e36066efa65229d6d042f3ca77dfbf729d64b6b8c617ac86b",
+    "6acf63469dc3ccb03ced7bed96e4289968161512fcec8cf3da844e50b56f3095",
+    "49edbd7c47431f46beb3709e5b06f998a77a25024bf31327e9e28565c1985310",
+    "76acc638082c31869a555d3d27c99d79124e69fc413dcbf00f2aa60913d7a6cd",
+    "843d51ff066389dcca6a31e88d4fe77e6d963aa2ea044db3c7f1913b6e10a899"
+  ],
+  "manualReview": "Inspected the decoded contact sheet and full-size before/after and verification frames. The two gray flanges visibly match the steel-gray pipe; the housing and glass display remain distinct. Captions and provenance are readable, and no video frame shows deployment or claims simulation or hardware acceptance."
+}

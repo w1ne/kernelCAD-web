@@ -1,0 +1,5 @@
+Candidate source files checked against the open PR #1507 diff (git diff --name-only origin/develop...HEAD at bd99908d5): no matches. The only data-center or telecom source in that diff is overhead-power-busway.
+gh search issues and gh search prs "<id>" --repo w1ne/kernelCAD-web --state open returned zero results for each of the five candidate IDs.
+Open PRs at audit time: #1507 (this lane), #1309, #1253, #1094. None names a cable ladder, cooling manifold, coolant header, lattice mast section or mast outrigger frame asset.
+No earlier preview-review.md, README.md or ledger file under artifacts/catalog-demos/ names any of the five IDs. The IDs occur there only in full-catalog listings (npm pack output and a live assets.json baseline).
+Selection method: a source scan listed left/right, front/rear and a/b part pairs with different color controls in assets that no earlier ledger names. Signal-lamp, needle and stripe pairs were excluded as intentional. The five listed assets were then checked in their rendered previews.

@@ -1,0 +1,56 @@
+{
+  "checkedAtUtc": "2026-11-17",
+  "pr1258": {
+    "state": "MERGED",
+    "reviewDecision": "",
+    "checks": "17 reported CI checks concluded SUCCESS before merge"
+  },
+  "openRelevantPullRequests": [
+    {
+      "number": 1507,
+      "state": "OPEN",
+      "headRefName": "feat/catalog-2000",
+      "changedIndustrialPlantAssets": [
+        "inline-flow-meter",
+        "packed-scrubber-column",
+        "palletizer-robot-cell",
+        "plc-control-rack",
+        "process-blower",
+        "process-reactor-vessel",
+        "roller-conveyor-line",
+        "rooftop-air-handler",
+        "steam-header-manifold",
+        "valve-manifold-station"
+      ]
+    }
+  ],
+  "sampledAssets": [
+    "burner-management-skid",
+    "industrial-stair-tower",
+    "motor-control-center",
+    "pipe-rack-bay",
+    "steel-access-gate"
+  ],
+  "exactIdOpenIssueOrPullRequestSearches": {
+    "burner-management-skid": [],
+    "industrial-stair-tower": [],
+    "motor-control-center": [],
+    "pipe-rack-bay": [],
+    "steel-access-gate": []
+  },
+  "result": "No open issue or pull request targets any of the five sampled asset IDs. PR #1507 targets other industrial-plant assets. The four named prior-fix PRs contain no industrial-plant source changes.",
+  "previousFixPullRequestsChecked": {
+    "1298": {
+      "industrialPlantCatalogSourcesChanged": []
+    },
+    "1305": {
+      "industrialPlantCatalogSourcesChanged": []
+    },
+    "1307": {
+      "industrialPlantCatalogSourcesChanged": []
+    },
+    "1308": {
+      "industrialPlantCatalogSourcesChanged": []
+    }
+  }
+}

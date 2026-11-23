@@ -11,7 +11,7 @@ meta({
   name: "jaw-crusher-module",
   license: 'CC0-1.0',
   title: "Jaw crusher module",
-  description: "Primary jaw crusher at about real size on a raised steel stand: thick profiled side plates and front wall, fixed and swing jaws with ridged manganese liners forming a V chamber full of rock, eccentric shaft in pillow blocks, a spoked flywheel and a grooved drive sheave, V-belt drive from a motor on a pivoting base, rear toggle adjustment cylinders and tension rod with spring, and an inclined discharge conveyor under the crusher carrying crushed ore. Material controls: crusher body coating, stand and drive steel, belts and rubber, manganese liners; weathered, highVisibility and yellowPlant presets.",
+  description: "Primary jaw crusher at about real size on a raised steel stand: thick profiled side plates and front wall, fixed and swing jaws with ridged manganese liners forming a V chamber full of rock, forged-steel eccentric shaft in pillow blocks, a spoked flywheel and a grooved drive sheave, V-belt drive from a motor on a pivoting base, rear toggle adjustment cylinders and tension rod with spring, and an inclined discharge conveyor under the crusher carrying crushed ore. Material controls: crusher body coating, structural steel, belts and rubber, manganese liners; weathered, highVisibility and yellowPlant presets.",
   tags: ['mining', 'mineral processing', 'crushing', 'jaw crusher', 'primary crusher', 'flywheel', 'V-belt drive', 'conveyor'],
   kit: 'mining',
   category: 'prop',
@@ -117,7 +117,7 @@ const rocks = [[700, -500, 2700, 260], [620, 250, 2750, 300], [850, 600, 2500, 2
 rocks.forEach(([x, y, z, r], k) => add(`rock-${k}`, lathe([[r * 0.7, Z(z) - r], [r, Z(z) - r * 0.3], [r * 0.8, Z(z) + r * 0.5], [r * 0.3, Z(z) + r]], 5).rotateZ(k * 37).translate(x, y, 0).color(k % 2 ? rockDark : rock)));
 
 // ---- Eccentric shaft, pillow blocks and flywheels ----
-add('eccentric-shaft', latheY([[230, -1950], [230, 1950]], ex, ez, 12).color(manganeseSteel));
+add('eccentric-shaft', latheY([[230, -1950], [230, 1950]], ex, ez, 12).color(structuralSteel));
 for (const s of [-1, 1]) add(`pillow-block-${s}`, blk(ex - 450, s * 1050 - 200, Z(2450), ex + 450, s * 1050 + 200, Z(3050)).color(structuralSteel));
 const fr = 1150;
 // Spoked flywheel on the -Y end.

@@ -1,0 +1,167 @@
+{
+  "checkedAtUtc": "2026-11-18T04:51:41.573904+00:00",
+  "pullRequests": [
+    {
+      "number": 1258,
+      "title": "catalog: rebuild 30 box-stack assets as real machines (music, amusement, sports, solar, construction)",
+      "state": "MERGED",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1258",
+      "headRefOid": "3aee333615aec86ca4644e8150c494250cf2aa80",
+      "reviewDecision": "",
+      "reviewCount": 0,
+      "checks": [
+        {
+          "name": "changes",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "reference-parts",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "solidcraft-ledger",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "lint",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "build-and-checks",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "catalog-index",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "geometry-proofs",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (1)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (2)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (3)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (4)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (5)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (6)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (7)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test-shard (8)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "external-tools",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "test",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        }
+      ]
+    },
+    {
+      "number": 1507,
+      "title": "fix(catalog): refine industrial-plant material finishes",
+      "state": "OPEN",
+      "url": "https://github.com/w1ne/kernelCAD-web/pull/1507",
+      "headRefOid": "d52b9f3403be237a15c819df97edf22ee5d25636",
+      "reviewDecision": "",
+      "reviewCount": 0,
+      "checks": [
+        {
+          "name": "changes",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "reference-parts",
+          "status": "COMPLETED",
+          "conclusion": "SKIPPED"
+        },
+        {
+          "name": "solidcraft-ledger",
+          "status": "COMPLETED",
+          "conclusion": "SKIPPED"
+        },
+        {
+          "name": "lint",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "build-and-checks",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "catalog-index",
+          "status": "COMPLETED",
+          "conclusion": "SKIPPED"
+        },
+        {
+          "name": "geometry-proofs",
+          "status": "COMPLETED",
+          "conclusion": "SKIPPED"
+        },
+        {
+          "name": "test-shard",
+          "status": "COMPLETED",
+          "conclusion": "SKIPPED"
+        },
+        {
+          "name": "changed-tests",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "external-tools",
+          "status": "COMPLETED",
+          "conclusion": "SKIPPED"
+        },
+        {
+          "name": "test (draft-light)",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS"
+        }
+      ]
+    }
+  ]
+}

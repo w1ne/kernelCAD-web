@@ -1,0 +1,7 @@
+9b95bfd52a0b606f1ae22f7cd0cbddcdedae6a8b692e1b8f66e54d636a117471  artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/before/cable-tray-bridge.kcad.ts
+d1a8c2da22b7386b290e8db624917e2f4d5a05d238635513bb6f2697bb432ef3  artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/before/cable-tray-bridge.png
+d1a8c2da22b7386b290e8db624917e2f4d5a05d238635513bb6f2697bb432ef3  artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/samples/cable-tray-bridge.png
+c0f2d0bd0330824a43bf6480690014831e384c8b3023ee920bed4ecaad04e8c4  artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/samples/cyclone-separator.png
+fc7d7b03039efa905eaf97d4571c239a890647ee5f55f323aa13b9bc4b6db541  artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/samples/electric-chain-hoist.png
+bdeae139c728de857f5386c4b453bfe25fe62db54be925494268e39cac5329ad  artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/samples/horizontal-pressure-vessel.png
+99be648b681dc8e298c729416cff69e6121529193f7bd584953269119a418d9f  artifacts/catalog-demos/industrial-plant-cable-tray-bridge-side-rail-material-review-20261117/samples/vibratory-feeder.png

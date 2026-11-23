@@ -1,0 +1,1 @@
+industrial-plant/motor-control-center: 396 tris

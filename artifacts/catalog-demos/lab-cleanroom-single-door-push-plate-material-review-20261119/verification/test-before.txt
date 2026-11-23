@@ -1,0 +1,38 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/labCleanroomSingleDoorPushPlateMaterial.test.ts (1 test | 1 failed) 590ms
+     × draws a stainless push plate that lies on the door leaf face 224ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/labCleanroomSingleDoorPushPlateMaterial.test.ts > lab-infrastructure/cleanroom-single-door-module push plate material > draws a stainless push plate that lies on the door leaf face
+AssertionError: expected [ 'enamel', 'glass', 'steel' ] to deeply equal [ Array(4) ]
+
+- Expected
++ Received
+
+  [
+    "enamel",
+    "glass",
+-   "stainless",
+    "steel",
+  ]
+
+ ❯ tests/integration/catalog/labCleanroomSingleDoorPushPlateMaterial.test.ts:24:95
+     22|     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+     23|     expect(asset.stats.minUpM).toBeCloseTo(0, 6);
+     24|     expect(asset.params.filter((param) => param.type === 'color').map(…
+       |                                                                                               ^
+     25|       'enamel', 'glass', 'stainless', 'steel',
+     26|     ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  19:44:21
+   Duration  11.06s (transform 8.32s, setup 204ms, import 10.10s, tests 590ms, environment 0ms)
+
+exit 1

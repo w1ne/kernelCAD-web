@@ -1,0 +1,29 @@
+{
+  "checkedAt": "2026-11-18",
+  "featurePR": {
+    "number": 1258,
+    "state": "MERGED",
+    "reportedChecks": "all successful",
+    "submittedReviews": 0
+  },
+  "activeCatalogPR": {
+    "number": 1507,
+    "state": "OPEN",
+    "head": "bd26c457fc7c3a631e24be484f34271662764404",
+    "reportedNonSkippedChecks": "all successful",
+    "submittedReviews": 0,
+    "candidateSourceOverlap": false,
+    "fullIndustrialSourcePathList": "pr-1507-industrial-source-paths.txt"
+  },
+  "candidates": [
+    "industrial-plant/pipe-rack-bay",
+    "industrial-plant/jib-crane",
+    "industrial-plant/electric-pallet-jack",
+    "industrial-plant/steel-access-gate",
+    "industrial-plant/machine-guard-enclosure"
+  ],
+  "openIssueTitleBodyMatches": [],
+  "openPRTitleBodyMatches": [],
+  "searchOutput": "open-target-search.txt",
+  "knownMergedFixesExcluded": [1298, 1305, 1307, 1308]
+}

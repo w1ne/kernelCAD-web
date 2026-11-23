@@ -1,0 +1,2 @@
+$ npx eslint catalog/kits/industrial-plant/ tests/integration/catalog/steamHeaderManifoldBranchMaterial.test.ts
+exit 0 (no diagnostics)

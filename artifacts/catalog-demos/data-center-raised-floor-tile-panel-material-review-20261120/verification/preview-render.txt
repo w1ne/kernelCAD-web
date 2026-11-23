@@ -1,0 +1,1 @@
+data-center-infrastructure/raised-floor-tile: 460 tris

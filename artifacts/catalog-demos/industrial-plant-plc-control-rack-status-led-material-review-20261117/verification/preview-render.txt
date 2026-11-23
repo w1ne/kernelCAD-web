@@ -1,0 +1,1 @@
+industrial-plant/plc-control-rack: 384 tris

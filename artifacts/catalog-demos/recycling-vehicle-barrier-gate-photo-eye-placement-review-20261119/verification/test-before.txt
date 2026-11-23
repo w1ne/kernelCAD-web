@@ -1,0 +1,27 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/legacy-migrated/kernelcad-catalog-2000[39m
+
+ [31m❯[39m tests/integration/catalog/recyclingVehicleBarrierGatePhotoEyePlacement.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1038[2mms[22m[39m
+[31m     [31m×[31m stands the photo-eye pair either side of the lane with the beam across it[39m[33m 642[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/catalog/recyclingVehicleBarrierGatePhotoEyePlacement.test.ts[2m > [22mrecycling-facility/vehicle-barrier-gate photo-eye placement[2m > [22mstands the photo-eye pair either side of the lane with the beam across it
+[31m[1mAssertionError[22m: expected 1.31 to be close to 0.595, received difference is 0.7150000000000001, but expected 0.0000049999999999999996[39m
+[36m [2m❯[22m tests/integration/catalog/recyclingVehicleBarrierGatePhotoEyePlacement.test.ts:[2m24:39[22m[39m
+    [90m 22| [39m    expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+    [90m 23| [39m    [[34m4.52[39m[33m,[39m [34m1.266[39m[33m,[39m [34m0.595[39m][33m.[39m[34mforEach[39m((expected[33m,[39m axis) [33m=>[39m {
+    [90m 24| [39m      [34mexpect[39m(asset[33m.[39mstats[33m.[39msizeM[axis])[33m.[39m[34mtoBeCloseTo[39m(expected[33m,[39m [34m5[39m)[33m;[39m
+    [90m   | [39m                                      [31m^[39m
+    [90m 25| [39m    })[33m;[39m
+    [90m 26| [39m    [34mexpect[39m(asset[33m.[39mstats[33m.[39mminUpM)[33m.[39m[34mtoBeCloseTo[39m([34m0[39m[33m,[39m [34m6[39m)[33m;[39m
+[90m [2m❯[22m tests/integration/catalog/recyclingVehicleBarrierGatePhotoEyePlacement.test.ts:[2m23:26[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 18:23:22
+[2m   Duration [22m 16.29s[2m (transform 11.58s, setup 239ms, import 14.07s, tests 1.04s, environment 0ms)[22m
+

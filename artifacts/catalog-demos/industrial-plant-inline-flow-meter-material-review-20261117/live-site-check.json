@@ -1,0 +1,12 @@
+{
+  "mode": "currently deployed public site check; local feature branch is not deployed",
+  "pageUrl": "https://kernelcad.com/catalog/industrial-plant/inline-flow-meter/",
+  "previewUrl": "https://kernelcad.com/catalog/industrial-plant/inline-flow-meter/preview.png",
+  "pageHttp": 200,
+  "previewHttp": 200,
+  "publicPreviewSha256": "7ad9c4f2c1a0d6d9baa10602a3c6503225c4f654b62ef5188563459d20ec2916",
+  "checkedInBaselinePreviewSha256": "7ad9c4f2c1a0d6d9baa10602a3c6503225c4f654b62ef5188563459d20ec2916",
+  "localPreviewSha256": "5a50d22775c2a9d7a79e3d4444f5ec068f41aff4b7cca7ca5fd1daf3e8ac42a2",
+  "publicPreviewMatchesBaseline": true,
+  "publicPreviewMatchesLocalChange": false
+}

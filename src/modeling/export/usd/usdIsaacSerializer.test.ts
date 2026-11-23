@@ -55,9 +55,18 @@ function parseUsda(text: string): Stage {
 
   let pending: Prim | undefined;
   let inPrimMeta = false;
+  let attrMeta: { prim: Prim; name: string } | undefined;
   for (; i < lines.length; i++) {
     const line = lines[i];
     if (line === '') continue;
+    if (attrMeta) {
+      // Attribute metadata block: kept as `name:<key>` entries.
+      if (line === ')') { attrMeta = undefined; continue; }
+      const m = /^(\w+)\s*=\s*(.+)$/.exec(line);
+      expect(m, `unparseable attribute metadata line ${i + 1}: ${line}`).not.toBeNull();
+      attrMeta.prim.attrs.set(`${attrMeta.name}:${m![1]}`, m![2]);
+      continue;
+    }
 
     const def = /^def\s+(\w+)\s+"([^"]+)"\s*(\()?$/.exec(line);
     if (def) {
@@ -101,7 +110,12 @@ function parseUsda(text: string): Stage {
     const attr = /^(?:uniform\s+)?([\w[\]]+)\s+([\w:.]+)(?:\s*=\s*(.+))?$/.exec(line);
     expect(attr, `unparseable line ${i + 1}: ${line}`).not.toBeNull();
     expect(stack.length, `attribute outside a prim at line ${i + 1}`).toBeGreaterThan(0);
-    if (attr![3] !== undefined) stack[stack.length - 1].attrs.set(attr![2], attr![3]);
+    const prim = stack[stack.length - 1];
+    const value = attr![3];
+    if (value?.endsWith(' (')) {
+      prim.attrs.set(attr![2], value.slice(0, -2));
+      attrMeta = { prim, name: attr![2] };
+    } else if (value !== undefined) prim.attrs.set(attr![2], value);
   }
   expect(stack).toHaveLength(0);
   return { meta, prims, roots };
@@ -239,6 +253,29 @@ describe('usdIsaacSerialize — two-link arm stage', () => {
       expect(counts.every((c) => c === 3)).toBe(true);
       expect(indices).toHaveLength(counts.length * 3);
       expect(Math.max(...indices)).toBeLessThan(points.length / 3);
+
+      // Authored face-varying normals: the welded mesh shares each box corner
+      // between three faces, so a reader that computes smooth normals shades
+      // every edge as a bevel. Each box face corner must keep its face normal.
+      const normalsAttr = mesh.attrs.get('primvars:normals');
+      expect(normalsAttr, 'mesh layer has no primvars:normals').toBeDefined();
+      expect(mesh.attrs.get('primvars:normals:interpolation')).toBe('"faceVarying"');
+      const normals = nums(normalsAttr!);
+      const normalIndices = nums(mesh.attrs.get('primvars:normals:indices')!);
+      expect(normalIndices).toHaveLength(indices.length);
+      for (let k = 0; k < indices.length; k++) {
+        const n = normals.slice(normalIndices[k] * 3, normalIndices[k] * 3 + 3);
+        const t = Math.floor(k / 3) * 3;
+        const p = (c: number) => points.slice(indices[t + c] * 3, indices[t + c] * 3 + 3);
+        const [a, b, c] = [p(0), p(1), p(2)];
+        const face = [
+          (b[1] - a[1]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[1] - a[1]),
+          (b[2] - a[2]) * (c[0] - a[0]) - (b[0] - a[0]) * (c[2] - a[2]),
+          (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]),
+        ];
+        const len = Math.hypot(...face);
+        expect(face.reduce((s, v, j) => s + (v / len) * n[j], 0)).toBeCloseTo(1, 5);
+      }
 
       const binding = target(visual.attrs.get('material:binding')!);
       const material = stage.prims.get(binding)!;

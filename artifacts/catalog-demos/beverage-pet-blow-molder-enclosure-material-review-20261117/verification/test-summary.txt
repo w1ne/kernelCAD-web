@@ -1,0 +1,5 @@
+Command: npx vitest run tests/integration/catalog/
+Exit status: 0
+Test Files: 143 passed (143)
+Tests: 213 passed (213)
+Catalog index source-freshness test: passed

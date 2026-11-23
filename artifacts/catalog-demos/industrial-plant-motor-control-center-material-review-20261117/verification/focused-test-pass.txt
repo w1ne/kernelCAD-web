@@ -1,0 +1,11 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/motorControlCenterBayMaterials.test.ts (1 test) 860ms
+     ✓ keeps all cabinet bays on steel and the plinth and operator panels on safety paint  369ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  07:13:32
+   Duration  13.21s (transform 9.96s, setup 191ms, import 11.89s, tests 860ms, environment 0ms)
+

@@ -1,0 +1,1 @@
+python3 -I scripts/checkCatalogQuality.py --kit railway: 40/40 assets pass (100.00%)

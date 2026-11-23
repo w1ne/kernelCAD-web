@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-19",
+  "video": "review-demo.mp4",
+  "durationSeconds": 15,
+  "resolution": "1280x720",
+  "frameRate": 30,
+  "codec": "H.264, yuv420p",
+  "invocation": "python3 artifacts/catalog-demos/recycling-facility-transfer-tower-roof-cladding-material-review-20261119/make_demo.py",
+  "renderInvocation": "npx tsx scripts/renderCatalogPreviews.ts conveyor-transfer-tower",
+  "catalogInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "testInvocation": "npx vitest run tests/integration/catalog/recyclingTransferTowerRoofMaterial.test.ts",
+  "reviewSamples": [
+    "recycling-facility/conveyor-transfer-tower",
+    "recycling-facility/conveyor-transfer-chute",
+    "recycling-facility/color-sorter-camera",
+    "recycling-facility/inclined-belt-conveyor",
+    "recycling-facility/magnet-cleanout-drum"
+  ],
+  "claims": "Local software-rendered catalog previews and exported-GLB material regression only. No deployed page, simulation, or hardware acceptance is shown."
+}

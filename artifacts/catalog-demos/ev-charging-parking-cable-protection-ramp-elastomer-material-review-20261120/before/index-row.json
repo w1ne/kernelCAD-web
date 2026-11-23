@@ -1,0 +1,95 @@
+{
+  "id": "parking-cable-protection-ramp",
+  "kit": "ev-charging-infrastructure",
+  "title": "Parking cable protection ramp",
+  "description": "Low-profile cable bridge with two raised covers, end slopes, and ground anchors. Knobs: overall scale and powder-coated metal and stainless steel color controls.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "EV charging",
+    "electric vehicle",
+    "charging station",
+    "low poly",
+    "scene prop",
+    "CC0"
+  ],
+  "compat": [
+    "ev-charging",
+    "parking",
+    "fleet",
+    "electric-vehicle",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/ev-charging-infrastructure/parking-cable-protection-ramp.kcad.ts",
+  "preview": "/assets/ev-charging-infrastructure-parking-cable-protection-ramp.png",
+  "sourceSha256": "a8da51f1170bbe77c0aa17309e60fb343104e53b5f7a8655d3b4a907db809bc0",
+  "triangleBudget": 2400,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "powderCoat",
+      "type": "color",
+      "default": "#397f90",
+      "label": "Powder-coated metal"
+    },
+    {
+      "name": "stainlessSteel",
+      "type": "color",
+      "default": "#b5c0c2",
+      "label": "Stainless steel"
+    }
+  ],
+  "presets": {
+    "fleetReady": {
+      "powderCoat": "#28765f",
+      "stainlessSteel": "#c2c9c8"
+    },
+    "nightService": {
+      "powderCoat": "#3f5059",
+      "stainlessSteel": "#c8cecd"
+    }
+  },
+  "stats": {
+    "triangles": 160,
+    "sizeM": [
+      1.33,
+      0.15,
+      0.36
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "stainlessSteel",
+      "color": "#b5c0c2",
+      "parts": [
+        "ramp-base",
+        "anchor-left",
+        "anchor-right"
+      ],
+      "param": "stainlessSteel"
+    },
+    {
+      "name": "powderCoat",
+      "color": "#397f90",
+      "parts": [
+        "cover-left",
+        "cover-right",
+        "center-divider",
+        "end-slope-left",
+        "end-slope-right"
+      ],
+      "param": "powderCoat"
+    }
+  ]
+}

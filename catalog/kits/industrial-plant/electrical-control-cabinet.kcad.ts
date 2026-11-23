@@ -24,7 +24,7 @@ presets({
 const p = assembly('electrical-control-cabinet');
 p.part('plinth', box(473, 248.4, 48, true).translate(0, 0, 24).scale(scale).color(safetyPaint));
 p.part('enclosure', box(430, 230, 720, true).translate(0, 0, 408).scale(scale).color(steel));
-p.part('door-0', box(180.6, 14, 590.4, true).translate(-107.5, -117.3, 386.4).scale(scale).color(safetyPaint));
+p.part('door-0', box(180.6, 14, 590.4, true).translate(-107.5, -117.3, 386.4).scale(scale).color(steel));
 p.part('handle-0', box(15, 20, 122.4, true).translate(-51.6, -131.1, 372).scale(scale).color(steel));
 p.part('door-1', box(180.6, 14, 590.4, true).translate(107.5, -117.3, 386.4).scale(scale).color(steel));
 p.part('handle-1', box(15, 20, 122.4, true).translate(163.4, -131.1, 372).scale(scale).color(steel));

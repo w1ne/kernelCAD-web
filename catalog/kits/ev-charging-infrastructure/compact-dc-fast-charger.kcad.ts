@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: CC0-1.0
 // quality-promotion: ev-charging-infrastructure 2026-11-05
 // Compact DC fast charger: floor-standing DC charger with a front display, service door, and paired charging leads.
+// The two plugs at the lead ends are moulded polymer handles with polymer contact collars, not painted metal.
 // Source convention: millimetres, Z up, base at z = 0.
 
 meta({
   name: "compact-dc-fast-charger",
   license: 'CC0-1.0',
   title: "Compact DC fast charger",
-  description: "Floor-standing DC charger with a front display, service door, and paired charging leads. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
+  description: "Floor-standing DC charger with a front display, service door, and paired charging leads. Knobs: overall scale and powder-coated metal, display glass, cable elastomer, safety-colored polymer and plug handle polymer color controls.",
   tags: ['EV charging', 'electric vehicle', 'charging station', 'low poly', 'scene prop', 'CC0'],
   kit: "ev-charging-infrastructure",
   category: 'prop',
@@ -21,10 +22,11 @@ const powderCoat = param('powderCoat', '#397f90', { label: 'Powder-coated metal'
 const displayGlass = param('displayGlass', '#79cfda', { label: 'Display glass' });
 const cableElastomer = param('cableElastomer', '#1b2427', { label: 'Cable elastomer' });
 const safetyPolymer = param('safetyPolymer', '#f0b13c', { label: 'Safety-colored polymer' });
+const connectorPolymer = param('connectorPolymer', '#2a3033', { label: 'Plug handle and contact collar (moulded polymer)' });
 
 presets({
-  fleetReady: { powderCoat: '#28765f', displayGlass: '#46b8c4', cableElastomer: '#1a2522', safetyPolymer: '#f3bd2f' },
-  nightService: { powderCoat: '#3f5059', displayGlass: '#11bfd0', cableElastomer: '#111719', safetyPolymer: '#ffbf24' },
+  fleetReady: { powderCoat: '#28765f', displayGlass: '#46b8c4', cableElastomer: '#1a2522', safetyPolymer: '#f3bd2f', connectorPolymer: '#262c2b' },
+  nightService: { powderCoat: '#3f5059', displayGlass: '#11bfd0', cableElastomer: '#111719', safetyPolymer: '#ffbf24', connectorPolymer: '#1c2124' },
 });
 const b=(x:number,y:number,z:number,w:number,d:number,h:number)=>box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
 const c=(x:number,y:number,z:number,h:number,r:number,n=10)=>cylinder(h,r,n).translate(x,y,z).scale(scale);
@@ -50,9 +52,9 @@ p.part("left-connector-cradle", hy(-353.79999999999995, -300.0, 470, 130, 38, 8)
 p.part("right-connector-cradle", hy(353.79999999999995, -300.0, 470, 130, 38, 8).color(powderCoat));
 p.part("left-charging-cable", hy(-353.79999999999995, -500.0, 260, 650, 22, 8).color(cableElastomer));
 p.part("right-charging-cable", hy(353.79999999999995, -500.0, 260, 650, 22, 8).color(cableElastomer));
-p.part("left-connector-handle", plugShell(-353.79999999999995, -825, 170).color(powderCoat));
-p.part("right-connector-handle", plugShell(353.79999999999995, -825, 170).color(powderCoat));
-p.part("left-contact-collar", hy(-353.79999999999995, -881, 260, 34, 24, 8).color(powderCoat));
-p.part("right-contact-collar", hy(353.79999999999995, -881, 260, 34, 24, 8).color(powderCoat));
+p.part("left-connector-handle", plugShell(-353.79999999999995, -825, 170).color(connectorPolymer));
+p.part("right-connector-handle", plugShell(353.79999999999995, -825, 170).color(connectorPolymer));
+p.part("left-contact-collar", hy(-353.79999999999995, -881, 260, 34, 24, 8).color(connectorPolymer));
+p.part("right-contact-collar", hy(353.79999999999995, -881, 260, 34, 24, 8).color(connectorPolymer));
 
 return p.model();

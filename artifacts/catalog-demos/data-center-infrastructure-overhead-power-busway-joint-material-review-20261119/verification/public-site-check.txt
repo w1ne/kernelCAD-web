@@ -1,0 +1,1 @@
+The current public catalog page lists Data-center infrastructure (50 models) and the existing Overhead power busway asset. The local source and preview are the existing public-asset implementation; this change adds no new kit or feature.

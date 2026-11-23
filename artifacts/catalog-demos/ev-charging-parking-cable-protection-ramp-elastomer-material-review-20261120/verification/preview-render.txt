@@ -1,0 +1,1 @@
+ev-charging-infrastructure/parking-cable-protection-ramp: 240 tris

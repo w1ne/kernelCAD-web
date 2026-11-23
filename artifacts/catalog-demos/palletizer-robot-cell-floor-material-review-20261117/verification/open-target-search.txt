@@ -1,0 +1,15 @@
+forklift-truck
+  PRs: []
+  Issues: []
+distillation-column
+  PRs: []
+  Issues: []
+centrifugal-pump
+  PRs: []
+  Issues: []
+palletizer-robot-cell
+  PRs: []
+  Issues: []
+bucket-elevator
+  PRs: []
+  Issues: []

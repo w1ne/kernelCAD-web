@@ -1,0 +1,1 @@
+codec=h264 resolution=1280x720 fps=25/1 duration=14.000000s audio=0

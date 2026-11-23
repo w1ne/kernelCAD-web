@@ -44,11 +44,14 @@
 // EXACT VS FLATTENED
 // ------------------
 // Straight lines and CIRCULAR arcs are exact — the latter ride as bulge
-// factors in the sketch IR. Cubic/quadratic Béziers and true ellipses have no
-// exact form in that IR, so they are subdivided into chords under an explicit
-// `curveTolerance` (max deviation in mm, default 0.01). That is an
-// approximation and is named as one; it is not a fallback, because there is
-// no exact path being silently skipped.
+// factors in the sketch IR. Cubic and quadratic Béziers (C/S/Q/T) are exact
+// too: a Bézier is the clamped NURBS of its poles, and an affine transform
+// maps it to the Bézier of the mapped poles, so each one becomes a single
+// `nurbsSegment` under any transform. True ellipses (non-circular arcs,
+// `<ellipse>`, a circle under a non-uniform transform) are still subdivided
+// into chords under an explicit `curveTolerance` (max deviation in mm,
+// default 0.01). That is an approximation and is named as one; it is not a
+// fallback, because there is no exact path being silently skipped.
 
 import {
   assembleRegions,
@@ -84,8 +87,8 @@ export interface ImportSvgOptions {
   /** Endpoint-matching / gap-closing distance in mm. Default 1e-3. */
   tolerance?: number;
   /**
-   * Maximum chord deviation in mm when subdividing a Bézier or a true
-   * ellipse. Default 0.01 mm — an order of magnitude below a typical FDM
+   * Maximum chord deviation in mm when subdividing a true ellipse.
+   * Béziers are exact and ignore it. Default 0.01 mm — an order of magnitude below a typical FDM
    * layer and below any mill's positioning error, so the approximation
    * disappears into manufacturing tolerance while keeping segment counts
    * modest.
@@ -221,41 +224,10 @@ class PathScanner {
 }
 
 // ---------------------------------------------------------------------------
-// Curve flattening
+// Points
 // ---------------------------------------------------------------------------
 
 type Pt = [number, number];
-
-/**
- * Adaptive cubic subdivision. Operates on ALREADY-TRANSFORMED control points
- * (Béziers are affine-invariant, so transforming the hull first lets the
- * tolerance be a real millimetre number instead of a user-unit guess).
- */
-function flattenCubic(p0: Pt, p1: Pt, p2: Pt, p3: Pt, tol: number, out: Pt[], depth = 0): void {
-  // Flatness = how far the interior control points stray from the chord.
-  const dx = p3[0] - p0[0];
-  const dy = p3[1] - p0[1];
-  const chord = Math.hypot(dx, dy);
-  const dev = chord < 1e-12
-    ? Math.max(Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), Math.hypot(p2[0] - p0[0], p2[1] - p0[1]))
-    : Math.max(
-        Math.abs((p1[0] - p0[0]) * dy - (p1[1] - p0[1]) * dx) / chord,
-        Math.abs((p2[0] - p0[0]) * dy - (p2[1] - p0[1]) * dx) / chord,
-      );
-  // Depth cap: a cusp can keep the deviation above tolerance forever. 20
-  // levels is a million chords — far past any real profile — and stopping
-  // there bounds the work without changing the answer for sane input.
-  if (dev <= tol || depth >= 20) {
-    out.push(p3);
-    return;
-  }
-  const mid = (a: Pt, b: Pt): Pt => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-  const p01 = mid(p0, p1), p12 = mid(p1, p2), p23 = mid(p2, p3);
-  const p012 = mid(p01, p12), p123 = mid(p12, p23);
-  const m = mid(p012, p123);
-  flattenCubic(p0, p01, p012, m, tol, out, depth + 1);
-  flattenCubic(m, p123, p23, p3, tol, out, depth + 1);
-}
 
 // ---------------------------------------------------------------------------
 // Sub-path accumulation
@@ -308,6 +280,26 @@ class ContourBuilder {
       x0: this.cur[0], y0: this.cur[1], x1: p[0], y1: p[1], bulge, source: this.source,
     });
     this.cur = p;
+  }
+
+  /**
+   * Bézier through MILLIMETRE-space poles, after the pen: an exact clamped
+   * NURBS of degree `poles.length`. A curve whose poles all sit on the pen
+   * has no extent and is dropped.
+   */
+  bezierToMm(poles: readonly Pt[]): void {
+    const end = poles[poles.length - 1];
+    if (poles.every(p => p[0] === this.cur[0] && p[1] === this.cur[1])) return;
+    const degree = poles.length;
+    this.segments.push({
+      x0: this.cur[0], y0: this.cur[1], x1: end[0], y1: end[1], source: this.source,
+      nurbs: {
+        degree,
+        controlPoints: [this.cur, ...poles],
+        knots: [...new Array<number>(degree + 1).fill(0), ...new Array<number>(degree + 1).fill(1)],
+      },
+    });
+    this.cur = end;
   }
 
   /** Close back onto the sub-path's first point with a straight line. */
@@ -567,7 +559,6 @@ function emitCubicPathCommand(
   ux: number,
   uy: number,
   lastCubicCtrl: Pt | null,
-  tolMm: number,
 ): { ux: number; uy: number; lastCubicCtrl: Pt } {
   let c1x: number, c1y: number;
   if (up === 'C') {
@@ -586,14 +577,12 @@ function emitCubicPathCommand(
   const a3 = scanner.number(), b3 = scanner.number();
   const ex = rel ? ux + a3 : a3;
   const ey = rel ? uy + b3 : b3;
-  const pts: Pt[] = [];
-  flattenCubic(b.position, b.toMm(c1x, c1y), b.toMm(c2x, c2y), b.toMm(ex, ey), tolMm, pts);
-  for (const p of pts) b.lineToMm(p);
+  b.bezierToMm([b.toMm(c1x, c1y), b.toMm(c2x, c2y), b.toMm(ex, ey)]);
   return { ux: ex, uy: ey, lastCubicCtrl: [c2x, c2y] };
 }
 
-/** Q / T: quadratic Bézier, exactly elevated to cubic before the same
- *  subdivision. Returns the new pen position and the next `T` reflection. */
+/** Q / T: quadratic Bézier with optional smooth-control reflection. Returns
+ *  the new pen position and the control point the next `T` reflects. */
 function emitQuadraticPathCommand(
   up: string,
   scanner: PathScanner,
@@ -602,7 +591,6 @@ function emitQuadraticPathCommand(
   ux: number,
   uy: number,
   lastQuadCtrl: Pt | null,
-  tolMm: number,
 ): { ux: number; uy: number; lastQuadCtrl: Pt } {
   let qx: number, qy: number;
   if (up === 'Q') {
@@ -617,14 +605,7 @@ function emitQuadraticPathCommand(
   const a2 = scanner.number(), b2 = scanner.number();
   const ex = rel ? ux + a2 : a2;
   const ey = rel ? uy + b2 : b2;
-  // Exact quadratic -> cubic elevation, then the same subdivision.
-  const c1x = ux + (2 / 3) * (qx - ux);
-  const c1y = uy + (2 / 3) * (qy - uy);
-  const c2x = ex + (2 / 3) * (qx - ex);
-  const c2y = ey + (2 / 3) * (qy - ey);
-  const pts: Pt[] = [];
-  flattenCubic(b.position, b.toMm(c1x, c1y), b.toMm(c2x, c2y), b.toMm(ex, ey), tolMm, pts);
-  for (const p of pts) b.lineToMm(p);
+  b.bezierToMm([b.toMm(qx, qy), b.toMm(ex, ey)]);
   return { ux: ex, uy: ey, lastQuadCtrl: [qx, qy] };
 }
 
@@ -704,12 +685,12 @@ function emitPathCommand(
     }
     case 'C':
     case 'S': {
-      const res = emitCubicPathCommand(up, scanner, rel, b, ux, uy, lastCubicCtrl, tolMm);
+      const res = emitCubicPathCommand(up, scanner, rel, b, ux, uy, lastCubicCtrl);
       return { ux: res.ux, uy: res.uy, lastCubicCtrl: res.lastCubicCtrl, lastQuadCtrl: null };
     }
     case 'Q':
     case 'T': {
-      const res = emitQuadraticPathCommand(up, scanner, rel, b, ux, uy, lastQuadCtrl, tolMm);
+      const res = emitQuadraticPathCommand(up, scanner, rel, b, ux, uy, lastQuadCtrl);
       return { ux: res.ux, uy: res.uy, lastCubicCtrl: null, lastQuadCtrl: res.lastQuadCtrl };
     }
     case 'A': {

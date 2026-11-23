@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "featureCount": 65,
+  "diagnostics": [],
+  "requirements": {
+    "ok": true,
+    "entries": [],
+    "summary": {
+      "pass": 0,
+      "fail": 0,
+      "notEvaluated": 0
+    }
+  },
+  "ports": []
+}

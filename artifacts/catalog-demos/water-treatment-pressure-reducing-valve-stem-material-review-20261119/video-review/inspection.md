@@ -1,0 +1,6 @@
+# MP4 visual inspection
+
+- Probe: H.264, 1280 × 720, 24 fps, 16.04 seconds; full output is in `ffprobe.json`.
+- Opened a contact sheet of frames extracted at 2, 6, 10 and 14 seconds, and the 10-second frame at full resolution. `inspect_video.py` regenerates these frames; they are not retained in the bundle.
+- The first frame shows the five named rendered assets and marks the selected pressure reducing valve. The second frame shows the before state (an upright teal drum between two grey discs, with a teal stem) beside the after state (a horizontal teal body between two grey flanges on edge, the bonnet on top of the body, a grey stainless stem). The third frame lists the three colour controls with their parts before and after, the layout change and the noted limits. The last frame shows the local verification and limits claims to source, software preview and GLB regression.
+- Headings, part labels and captions are legible at full video resolution; no visible text clipping. The asset thumbnails on the first frame are small; the caption names the selected mismatch. In the after preview the right flange is partly hidden by the body. The closing frame states the branch is not deployed and makes no simulation, safety or compliance claim.

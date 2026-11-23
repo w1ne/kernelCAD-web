@@ -10,7 +10,7 @@ import { Transform } from '../../../shared/runtime/se3';
 import type { SceneBackend, SceneBackendPart } from '../sceneBackend';
 import { OcctBackend } from './occtBackend';
 import { releaseWorldFrameParts, sceneToWorldFrameParts } from './sceneToWorldFrame';
-import { groupStepProducts, writeStepAssembly, writeStepProductTree } from './stepAssemblyExport';
+import { groupStepProducts, writeStepAssembly, writeStepProductTree, type StepLengthUnit } from './stepAssemblyExport';
 
 interface StepScenePart { part: SceneBackendPart; name: string; color?: string }
 
@@ -67,6 +67,7 @@ function splitMismatchedInstances(group: StepScenePart[]): StepScenePart[][] {
 function writeSceneProductTree(
   assemblyName: string,
   groups: readonly (readonly StepScenePart[])[],
+  unit: StepLengthUnit,
 ): Uint8Array {
   const owned: OcctBackend[] = [];
   try {
@@ -85,7 +86,7 @@ function writeSceneProductTree(
           transform: part.worldTransform.compose(part.prototype?.placement ?? Transform.identity()).toMat4(),
         })),
       };
-    }));
+    }), { unit });
   } finally {
     releaseWorldFrameParts(owned.map((shape) => ({ shape })));
   }
@@ -120,6 +121,7 @@ function writeSceneProductTree(
  */
 export async function exportSceneToSTEPAsync(
   sceneBackend: SceneBackend,
+  unit: StepLengthUnit = 'mm',
 ): Promise<Uint8Array> {
   const groups = groupStepProducts(sceneBackend.parts.map((part) => ({
     part,
@@ -128,7 +130,7 @@ export async function exportSceneToSTEPAsync(
     sourceId: part.shape instanceof OcctBackend ? part.prototype?.sourceId : undefined,
   }))).flatMap(splitMismatchedInstances);
   if (groups.some((group) => group.length > 1)) {
-    return writeSceneProductTree(sceneBackend.assemblyName, groups);
+    return writeSceneProductTree(sceneBackend.assemblyName, groups, unit);
   }
   // `sceneToWorldFrameParts` enforces the non-empty-scene invariant and
   // owns the clone-before-transform contract for every multi-body exporter.
@@ -140,6 +142,7 @@ export async function exportSceneToSTEPAsync(
         name: p.name,
         color: resolveColor(p.color),
       })),
+      { unit },
     );
   } finally {
     releaseWorldFrameParts(worldParts);

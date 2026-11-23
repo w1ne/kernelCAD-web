@@ -1,0 +1,53 @@
+{
+  "video": "industrial-plant-roller-conveyor-line-semantic-review.mp4",
+  "sha256": "2b36e6d1d12ce56454dd3ace98d79ee46bb2b3d452b19e40bbe25879f4e046e2",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "pixelFormat": "yuv420p",
+  "durationSeconds": 15.0,
+  "decodedSamples": [
+    {
+      "timeSeconds": 1.5,
+      "path": "decoded-01.png",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "timeSeconds": 4.5,
+      "path": "decoded-02.png",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "timeSeconds": 7.5,
+      "path": "decoded-03.png",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "timeSeconds": 10.5,
+      "path": "decoded-04.png",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "timeSeconds": 13.5,
+      "path": "decoded-05.png",
+      "size": [
+        1280,
+        720
+      ]
+    }
+  ],
+  "contactSheet": "contact-sheet.png",
+  "inspection": "Representative frames decoded from the encoded MP4 and visually reviewed for text clipping, preview visibility, and truthful workflow captions."
+}

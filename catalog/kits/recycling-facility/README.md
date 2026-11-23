@@ -56,6 +56,11 @@ finish. Its original parameter keys and four material controls remain intact;
 the GLB regression, five-preview audit, before/after renders and inspected local
 MP4 are in the bundle.
 
+The [glass-breaker flail material review](../../../artifacts/catalog-demos/recycling-glass-breaker-flails-material-review-20261118/README.md)
+routes all 16 flails through the existing `wearSteel` control. The handoff
+contains a five-preview audit, the exported-GLB regression, same-view rotor
+comparison and inspected local MP4.
+
 These are visualization assets. They do not represent equipment specifications,
 process performance, operator safety, regulatory compliance, or physical
 acceptance.

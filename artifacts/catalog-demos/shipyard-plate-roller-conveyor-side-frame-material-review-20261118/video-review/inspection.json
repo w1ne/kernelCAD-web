@@ -1,0 +1,15 @@
+{
+  "codec": "h264",
+  "pixelFormat": "yuv420p",
+  "width": 1280,
+  "height": 720,
+  "frameRate": "30/1",
+  "durationSeconds": 14.97,
+  "framesInspectedAtSeconds": [
+    1,
+    4,
+    7,
+    10,
+    13
+  ]
+}

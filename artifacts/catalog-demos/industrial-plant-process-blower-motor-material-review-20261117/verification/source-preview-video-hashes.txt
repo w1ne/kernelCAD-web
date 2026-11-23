@@ -1,0 +1,5 @@
+e69029a4fdf281874072e57b61e98c12305c677642c74934868f379006221723  artifacts/catalog-demos/industrial-plant-process-blower-motor-material-review-20261117/sources/before/process-blower.kcad.ts
+c79414a575c05a8465e1fb83641daf5af90c6497c77c8160965ce5c60a2ec0d2  artifacts/catalog-demos/industrial-plant-process-blower-motor-material-review-20261117/sources/after/process-blower.kcad.ts
+22a0f407855f33a690e276673ebe0b1dac054dab0545463848ce0ab31bcae7f5  artifacts/catalog-demos/industrial-plant-process-blower-motor-material-review-20261117/previews/before/process-blower.png
+fb9e946138c7d7b1d6bc5fdf09451a512d8fb1421cf8d28beca7c6e23bbc4ce1  artifacts/catalog-demos/industrial-plant-process-blower-motor-material-review-20261117/previews/after/process-blower.png
+7463d7f8e1ed9ef7de8b4db0940969d31913c9396e8ea8989b0fe28391e242b2  artifacts/catalog-demos/industrial-plant-process-blower-motor-material-review-20261117/industrial-plant-process-blower-motor-material-review.mp4

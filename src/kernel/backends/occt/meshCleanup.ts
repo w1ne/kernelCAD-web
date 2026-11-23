@@ -77,7 +77,16 @@ export function cleanupExportMesh(
   const collapseTolerance = Math.min(tolerance, COLLAPSE_PLANE_TOLERANCE_MM * Math.max(1, state.scale));
   stats.collapsed = state.collapseFlatVertices(collapseTolerance);
   stats.flipped = state.flipEdges(tolerance, collapseTolerance);
-  state.writeBack(mesh);
+  if (stats.collapsed > 0) {
+    // Collapsed vertices must be remapped; compact the existing arrays in place.
+    state.writeBack(mesh);
+  } else if (stats.flipped > 0) {
+    // Edge flips only change face indices. Keep the original vertex array,
+    // including geometric extrema that the tessellator has not referenced.
+    // Recompacting vertices after a flip once lifted the boat fender's
+    // published lower bound from Z=0 to Z=2 mm.
+    for (let i = 0; i < mesh.triangles.length; i++) mesh.triangles[i] = state.T[i];
+  }
   stats.applied = true;
   stats.trianglesAfter = mesh.triangles.length / 3;
   return stats;
@@ -88,29 +97,42 @@ export function cleanupExportMesh(
  *  triangle: on dense STL exports the Map consumes hundreds of MB. Pack an
  *  undirected edge into the high bits, and its direction into the low bit.
  *  Pairs must contain exactly one edge in each direction. */
-function isClosedEdgeManifold(triangles: ArrayLike<number>): boolean {
-  const n = triangles.length;
-  if (n % 3 !== 0) return false;
+function maxReferencedIndex(triangles: ArrayLike<number>): number {
   let maxIndex = 0;
-  for (let i = 0; i < n; i++) {
-    const v = triangles[i];
-    if (!Number.isSafeInteger(v) || v < 0) return false;
-    if (v > maxIndex) maxIndex = v;
+  for (let i = 0; i < triangles.length; i++) {
+    const value = triangles[i];
+    if (!Number.isSafeInteger(value) || value < 0) return -1;
+    if (value > maxIndex) maxIndex = value;
   }
-  const stride = maxIndex + 1;
-  // Packed keys must be exact numbers; no aliasing of distinct mesh edges.
-  if (2 * (maxIndex * stride + maxIndex) + 1 > Number.MAX_SAFE_INTEGER) return false;
-  const edges = new Float64Array(n);
+  return maxIndex;
+}
+
+/** Packed, directed keys use 8 bytes per triangle corner, not one JS Map entry. */
+function sortedDirectedEdges(triangles: ArrayLike<number>, stride: number): Float64Array | null {
+  const edges = new Float64Array(triangles.length);
   let index = 0;
-  for (let t = 0; t < n; t += 3) {
+  for (let t = 0; t < triangles.length; t += 3) {
     for (let k = 0; k < 3; k++) {
       const a = triangles[t + k], b = triangles[t + ((k + 1) % 3)];
-      if (a === b) return false;
+      if (a === b) return null;
       const lo = Math.min(a, b), hi = Math.max(a, b);
       edges[index++] = 2 * (lo * stride + hi) + (a > b ? 1 : 0);
     }
   }
   edges.sort();
+  return edges;
+}
+
+function isClosedEdgeManifold(triangles: ArrayLike<number>): boolean {
+  const n = triangles.length;
+  if (n % 3 !== 0) return false;
+  const maxIndex = maxReferencedIndex(triangles);
+  if (maxIndex < 0) return false;
+  const stride = maxIndex + 1;
+  // Packed keys must be exact numbers; no aliasing of distinct mesh edges.
+  if (2 * (maxIndex * stride + maxIndex) + 1 > Number.MAX_SAFE_INTEGER) return false;
+  const edges = sortedDirectedEdges(triangles, stride);
+  if (edges === null) return false;
   for (let i = 0; i < n; i += 2) {
     if (i + 1 >= n) return false;
     // Consecutive even/odd keys represent the same edge in reverse.
@@ -128,6 +150,9 @@ class CleanupState {
   /** Triangles around each vertex (may hold dead entries; filtered on read). */
   readonly star: number[][];
   readonly scale: number;
+  /** Preserve the exact mesh envelope when merging vertices. */
+  readonly min: Float64Array;
+  readonly max: Float64Array;
 
   constructor(mesh: CleanupMesh) {
     this.V = Float64Array.from(mesh.vertices);
@@ -137,7 +162,15 @@ class CleanupState {
     this.star = Array.from({ length: this.V.length / 3 }, () => [] as number[]);
     for (let t = 0; t < nt; t++) for (let k = 0; k < 3; k++) this.star[this.T[3 * t + k]].push(t);
     let s = 0;
-    for (let i = 0; i < this.V.length; i++) s = Math.max(s, Math.abs(this.V[i]));
+    this.min = new Float64Array([Infinity, Infinity, Infinity]);
+    this.max = new Float64Array([-Infinity, -Infinity, -Infinity]);
+    for (let i = 0; i < this.V.length; i++) {
+      const value = this.V[i];
+      const axis = i % 3;
+      s = Math.max(s, Math.abs(value));
+      this.min[axis] = Math.min(this.min[axis], value);
+      this.max[axis] = Math.max(this.max[axis], value);
+    }
     this.scale = s;
   }
 
@@ -261,6 +294,10 @@ class CleanupState {
     v: number, u: number, star: number[], ringV: Set<number>, planeTolerance: number,
     nOld: Float64Array, nNew: Float64Array,
   ): boolean {
+    // A topological collapse must not erase an extreme tip and shrink the
+    // part's envelope. This protects grounded CAD assets (boat-fender) and
+    // hard dimensional interfaces even when all adjacent faces are planar.
+    if (!this.preservesEnvelope(v, u)) return false;
     if (!this.linkConditionHolds(u, ringV)) return false;
     let removed = 0;
     for (const t of star) {
@@ -275,6 +312,15 @@ class CleanupState {
       if (!this.movedTriangleStays(v, u, a, b, c, planeTolerance, nOld, nNew)) return false;
     }
     return removed === 2;
+  }
+
+  preservesEnvelope(v: number, u: number): boolean {
+    for (let axis = 0; axis < 3; axis++) {
+      const original = this.V[3 * v + axis];
+      const replacement = this.V[3 * u + axis];
+      if ((original === this.min[axis] || original === this.max[axis]) && original !== replacement) return false;
+    }
+    return true;
   }
 
   /** v and u share exactly the two vertices opposite edge uv.

@@ -1,0 +1,94 @@
+{
+  "checkedOn": "2026-11-17",
+  "preEditBaselineCapturedOn": "2026-11-16",
+  "method": "HTTP GET of public catalog source and PNG; SHA-256 and exact bytes compared against retained local pre-edit files",
+  "liveDetailPage": {
+    "url": "https://kernelcad.com/catalog/industrial-plant/steam-header-manifold/",
+    "status": 200,
+    "titlePresent": true
+  },
+  "liveDetailPreview": {
+    "url": "https://kernelcad.com/catalog/industrial-plant/steam-header-manifold/preview.png",
+    "status": 200,
+    "sha256": "2da9ec5d17258cdab5bdd6ec3f03e66360eecd38f5008bb9e42c05fbe8059863",
+    "matchesLocalBefore": true
+  },
+  "allPublishedBeforeBytesMatch": true,
+  "assets": {
+    "distillation-column": {
+      "sourceUrl": "https://kernelcad.com/assets/industrial-plant-distillation-column.kcad.ts",
+      "previewUrl": "https://kernelcad.com/assets/industrial-plant-distillation-column.png",
+      "publicSourceStatus": 200,
+      "publicPreviewStatus": 200,
+      "sourceSha256": {
+        "public": "15756775fb30666864eaca37a084ff0c425ed2546a2ab042a113089ade4d6654",
+        "localBefore": "15756775fb30666864eaca37a084ff0c425ed2546a2ab042a113089ade4d6654"
+      },
+      "previewSha256": {
+        "public": "3955729ffc266f97e5de7105cc75dfa5034905ab5286cd56e74ab90e841a52f3",
+        "localBefore": "3955729ffc266f97e5de7105cc75dfa5034905ab5286cd56e74ab90e841a52f3"
+      },
+      "publicMatchesLocalBefore": true
+    },
+    "screw-conveyor": {
+      "sourceUrl": "https://kernelcad.com/assets/industrial-plant-screw-conveyor.kcad.ts",
+      "previewUrl": "https://kernelcad.com/assets/industrial-plant-screw-conveyor.png",
+      "publicSourceStatus": 200,
+      "publicPreviewStatus": 200,
+      "sourceSha256": {
+        "public": "cec436312de52076654e3d715ecb32eb88f64b008cdc358ee3236404fec25c15",
+        "localBefore": "cec436312de52076654e3d715ecb32eb88f64b008cdc358ee3236404fec25c15"
+      },
+      "previewSha256": {
+        "public": "63026088e47b8f7191e7a77932ca64172022406476a5f4b9cf63a653d69ace32",
+        "localBefore": "63026088e47b8f7191e7a77932ca64172022406476a5f4b9cf63a653d69ace32"
+      },
+      "publicMatchesLocalBefore": true
+    },
+    "vibratory-feeder": {
+      "sourceUrl": "https://kernelcad.com/assets/industrial-plant-vibratory-feeder.kcad.ts",
+      "previewUrl": "https://kernelcad.com/assets/industrial-plant-vibratory-feeder.png",
+      "publicSourceStatus": 200,
+      "publicPreviewStatus": 200,
+      "sourceSha256": {
+        "public": "e05b4a6be99d89bd0d38a88b5e21b99750fbe9edebbe5f969cfa910b129f549f",
+        "localBefore": "e05b4a6be99d89bd0d38a88b5e21b99750fbe9edebbe5f969cfa910b129f549f"
+      },
+      "previewSha256": {
+        "public": "99be648b681dc8e298c729416cff69e6121529193f7bd584953269119a418d9f",
+        "localBefore": "99be648b681dc8e298c729416cff69e6121529193f7bd584953269119a418d9f"
+      },
+      "publicMatchesLocalBefore": true
+    },
+    "diesel-generator-set": {
+      "sourceUrl": "https://kernelcad.com/assets/industrial-plant-diesel-generator-set.kcad.ts",
+      "previewUrl": "https://kernelcad.com/assets/industrial-plant-diesel-generator-set.png",
+      "publicSourceStatus": 200,
+      "publicPreviewStatus": 200,
+      "sourceSha256": {
+        "public": "1c393c6d47dffd38e0acbc29024e542f1747d4b0b01a6010a4ce5aa0b6d57283",
+        "localBefore": "1c393c6d47dffd38e0acbc29024e542f1747d4b0b01a6010a4ce5aa0b6d57283"
+      },
+      "previewSha256": {
+        "public": "0110d3e71efcb5984a44446043cb1a22d7beea1906444014f80c935b7ac55d0a",
+        "localBefore": "0110d3e71efcb5984a44446043cb1a22d7beea1906444014f80c935b7ac55d0a"
+      },
+      "publicMatchesLocalBefore": true
+    },
+    "steam-header-manifold": {
+      "sourceUrl": "https://kernelcad.com/assets/industrial-plant-steam-header-manifold.kcad.ts",
+      "previewUrl": "https://kernelcad.com/assets/industrial-plant-steam-header-manifold.png",
+      "publicSourceStatus": 200,
+      "publicPreviewStatus": 200,
+      "sourceSha256": {
+        "public": "ac4a01d15da76f47ec6e3f27326d2a9dafb55942615660702245ef5ea4a059f8",
+        "localBefore": "ac4a01d15da76f47ec6e3f27326d2a9dafb55942615660702245ef5ea4a059f8"
+      },
+      "previewSha256": {
+        "public": "2da9ec5d17258cdab5bdd6ec3f03e66360eecd38f5008bb9e42c05fbe8059863",
+        "localBefore": "2da9ec5d17258cdab5bdd6ec3f03e66360eecd38f5008bb9e42c05fbe8059863"
+      },
+      "publicMatchesLocalBefore": true
+    }
+  }
+}

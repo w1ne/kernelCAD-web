@@ -4,6 +4,8 @@ Sixty original low-poly factory scene assets for process equipment, power and co
 
 The [industrial plant wave demo bundle](../../../artifacts/catalog-demos/industrial-plant-wave-20261102/README.md) retains the original kit capture and verification. The [2026-11-05 quality promotion bundle](../../../artifacts/catalog-demos/industrial-plant-quality-promotion-20261105/README.md) records the in-place material, preset, geometry, preview, and local validation work. Both bundles distinguish local source and preview checks from deployment and physical equipment acceptance.
 
+The [2026-11-17 bridge crane material review](../../../artifacts/catalog-demos/industrial-plant-bridge-crane-hoist-motor-material-review-20261117/README.md) records the hoist-motor control correction, its before/after preview and regression evidence.
+
 The Nov 9 machine-detail follow-up refines the existing diesel generator,
 belt conveyor, and distribution transformer after preview review. Their
 material controls distinguish enclosure paint, radiator metal, rubber
@@ -60,6 +62,43 @@ count are unchanged. Its [semantic-review handoff](../../../artifacts/catalog-de
 records the five-preview ledger, before/after images, GLB color regression,
 local checks, and inspected MP4.
 
+The Nov 16 roller-conveyor review replaces the solid deck and lengthwise yellow
+cylinder with an open bed of eleven crosswise steel rollers. The rollers have a
+separate material control; the steel side rails and six support stations stay
+connected. Its [semantic-review handoff](../../../artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/README.md)
+records the five-preview ledger, before/after evidence, exported-GLB regression,
+local checks, and inspected MP4. The change retains the existing asset ID and
+does not make an engineering or manufacturing claim.
+
+The Nov 17 reactor-vessel review assigns its roof lip and three shell stiffener
+rings to the existing steel finish; access and safety-painted fittings are
+unchanged. The [semantic-review handoff](../../../artifacts/catalog-demos/industrial-plant-process-reactor-rings-material-review-20261117/README.md)
+records the five-preview ledger, source and preview snapshots, GLB regression,
+full catalog integration result, index verification, and local MP4. No asset
+IDs, geometry or kit counts changed.
+
+The Nov 17 process-blower review gives the drive motor a separate enamel color
+control; the base and raised outlet remain on safety paint. The model stays at
+292 triangles under a 1,400-triangle budget. Its
+[semantic-review handoff](../../../artifacts/catalog-demos/industrial-plant-process-blower-motor-material-review-20261117/README.md)
+records the five-preview ledger, before/after source and preview, GLB regression,
+catalog index refresh, local checks, and inspected MP4. No geometry or asset
+count changed, and the branch is not deployed.
+
+The Nov 17 palletizer-cell review gives the floor slab its own concrete color
+control; structural steel and safety paint remain separate. Geometry is
+unchanged at 254 triangles under a 1,400-triangle budget. The
+[palletizer-cell handoff](../../../artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/README.md)
+records the five-preview ledger, before/after images, GLB regression, catalog
+index refresh, local checks, and inspected MP4. The branch is not deployed.
+
+The Nov 19 air-compressor review assigns the twelve cooling fins on the two
+finned pump cylinders to the existing cast-iron control, matching the barrel
+and head parts. Geometry, envelope, material controls and presets are
+unchanged. The [pump-fin material handoff](../../../artifacts/catalog-demos/industrial-plant-air-compressor-pump-fin-material-review-20261119/README.md)
+records the five-preview ledger, before/after render, exported-GLB regression,
+fresh catalog index and inspected MP4. The branch is not deployed.
+
 | id | asset | description | knobs |
 | --- | --- | --- | --- |
 | `vertical-storage-tank` | Vertical storage tank | Vertical liquid storage tank with a domed-looking roof, service ladder and foundation legs. | scale · steel · safety paint |
@@ -77,7 +116,7 @@ local checks, and inspected MP4.
 | `positive-displacement-pump` | Positive displacement pump | Compact external-gear pump scene prop with a horizontal motor, guarded coupling, bolted circular head, raised suction/discharge flanges and a relief return. | scale · steel · motor enamel · safety finish |
 | `air-compressor` | Industrial air compressor | Horizontal receiver on saddles and skid with a belt-driven motor, finned single/twin pump, intake filter and pressure controls. | scale · receiver capacity · pump arrangement · receiver steel · pump iron · motor paint · rubber |
 | `vacuum-pump-unit` | Vacuum pump unit | Vacuum pump package with a horizontal motor, exhaust silencer, intake pipe and base rails. | scale · steel · safety paint · gauge glass |
-| `process-blower` | Process blower | Industrial process blower with a broad intake housing, drive motor and raised discharge duct. | scale · steel · safety paint |
+| `process-blower` | Process blower | Industrial process blower with a broad intake housing, drive motor and raised discharge duct. | scale · steel · safety paint · motor enamel |
 | `diesel-generator-set` | Diesel generator set | Packaged generator with a louvered radiator, isolated skid mounts, service door, controls and exhaust stack. | scale · louver count · enclosure paint · steel · radiator core · rubber |
 | `industrial-boiler` | Industrial boiler | Packaged firetube steam boiler at about real size: banded shell on saddles and skid, dished doors, burner and blower housing with gas train and control panel, rear stack, stop and safety valves, water column with gauge glass. | scale · shell · trim · piping · gauge glass |
 | `burner-management-skid` | Burner management skid | Burner management skid with a gas train, control cabinet, paired valves and a pilot stack. | scale · steel · safety paint |
@@ -90,18 +129,18 @@ local checks, and inspected MP4.
 | `cyclone-separator` | Cyclone separator | Cyclone separator with a tangential inlet, tall outlet stack and a segmented dust hopper. | scale · steel · safety paint |
 | `industrial-transformer` | Industrial distribution transformer | Oil-filled transformer with two fin banks, ribbed porcelain bushings, copper terminals, lifting lugs and wheel skids. | scale · radiator fin count · tank paint · steel · porcelain · copper |
 | `electrical-control-cabinet` | Electrical control cabinet | Floor-standing control cabinet with twin doors, vent slots, indicator lamps and a plinth. | scale · steel · safety paint · gauge glass |
-| `motor-control-center` | Motor control center | Motor-control-center lineup with three distinct bays, operator panels and a shared cable base. | scale · steel · safety paint |
+| `motor-control-center` | Motor control center | Motor-control-center lineup with three matching steel cabinet sections, operator panels and a shared cable base. | scale · steel · safety paint |
 | `plc-control-rack` | PLC control rack | Open PLC rack with modular I/O cards, side rails, a communication module and wire duct. | scale · steel · safety paint |
 | `variable-frequency-drive-cabinet` | Variable frequency drive cabinet | Drive cabinet with a large heat-sink back, status display, cooling fan and disconnect handle. | scale · steel · safety paint · gauge glass |
 | `cable-tray-bridge` | Cable tray bridge | Raised cable tray bridge with perforated-looking rails, crossbars and two support frames. | scale · steel · safety paint |
 | `belt-conveyor` | Belt conveyor | Straight conveyor with a rubber belt, transverse carrying and return rollers, guarded frame, adjustable support stations and drive motor. | scale · support stations · frame steel · belt rubber · roller steel · safety paint |
-| `roller-conveyor-line` | Roller conveyor line | Gravity roller conveyor section with a sturdy side frame, repeated rollers and end stops. | scale · steel · safety paint |
+| `roller-conveyor-line` | Roller conveyor line | Straight gravity conveyor with transverse steel rollers, side rails and three support stations. | scale · structural steel · roller steel · safety paint |
 | `screw-conveyor` | Screw conveyor | Inclined screw conveyor with an enclosed tube, drive gearbox, feed hopper and support saddles. | scale · steel · safety paint |
 | `bucket-elevator` | Bucket elevator | Bucket elevator with a tall casing, front inspection cutaway showing the contained bucket belt, boot housing, head pulley cover and service ladder. | scale · steel · safety paint · belt rubber · bucket polymer |
 | `vibratory-feeder` | Vibratory feeder | Vibratory feeder with a wide feed pan, coil supports, drive unit and hopper transition. | scale · steel · safety paint |
 | `weigh-hopper` | Weigh hopper | Batch weigh hopper with a broad upper bin, load-cell supports, tapered rectangular discharge chute and outlet gate. | scale · steel · safety paint · wear liner |
 | `bulk-loading-spout` | Bulk loading spout | Bulk loading spout with a telescoping-looking outlet, overhead frame and dust skirt. | scale · steel · safety paint |
-| `palletizer-robot-cell` | Palletizer robot cell | Palletizing robot cell with a six-axis arm, pallet table, access gate and safety fence. | scale · steel · safety paint |
+| `palletizer-robot-cell` | Palletizer robot cell | Palletizing robot cell with a concrete floor slab, six-axis arm, pallet table, access gate and safety fence. | scale · concrete · steel · safety paint |
 | `bridge-crane` | Bridge crane | Double-girder top-running bridge crane in one runway bay at about real size: columns with corbels, runway beams and rails, end trucks, box girders, walkway, crab trolley with hoist drum, rope falls, hook block and pendant. | scale · girder · building · hoist · hook |
 | `gantry-crane` | Gantry crane | Mobile gantry crane with paired portal frames, caster trucks, crossbeam and chain hoist. | scale · steel · safety paint · rubber |
 | `jib-crane` | Jib crane | Floor-mounted jib crane with a base plate, mast, cantilevered boom, brace and chain block. | scale · steel · safety paint |
@@ -122,6 +161,26 @@ local checks, and inspected MP4.
 | `inline-flow-meter` | Inline flow meter | Inline flow meter with flanged pipe ends, instrument body, readable display block and cable gland. | scale · steel · safety paint · gauge glass |
 | `compressed-air-receiver` | Compressed air receiver | Compressed-air receiver tank with saddle feet, drain valve, top port and pressure gauge. | scale · steel · safety paint · gauge glass |
 | `mobile-tool-cart` | Mobile industrial tool cart | Mobile shop-floor tool cart with two trays, drawer cabinet, push handle and caster wheels. | scale · steel · safety paint · rubber |
+
+The Nov 17 semantic preview review changed the rooftop air handler's service
+casing and access doors to the steel finish, with a separate dark fan-hardware
+control; its safety-painted base remains distinct. The [review handoff](../../../artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/README.md)
+contains the five-preview ledger, before/after renders, GLB color regression,
+index verification and inspected local demo. It does not claim simulation,
+deployment or hardware acceptance.
+
+The Nov 17 scissor-lift-table material review assigns both matched scissor-arm
+pairs to the same structural-steel control. The [review handoff](../../../artifacts/catalog-demos/industrial-plant-scissor-lift-table-arm-material-review-20261117/README.md)
+contains the five-preview ledger, before/after renders, GLB regression, index
+verification and inspected local demo. The correction is a finish assignment;
+geometry, controls and triangle budget are unchanged.
+
+The Nov 17 process-water-silo review assigns the visible top nozzle, side nozzle
+and lower outlet transition to the existing steel control; safety paint remains
+on the roof lip, ring band, access rails and support legs. The [review handoff](../../../artifacts/catalog-demos/industrial-plant-process-water-silo-nozzle-material-review-20261117/README.md)
+contains the five-preview ledger, before/after renders, GLB regression, index
+verification and inspected local demo. Geometry and triangle budget are
+unchanged.
 
 ## Use a catalog asset
 

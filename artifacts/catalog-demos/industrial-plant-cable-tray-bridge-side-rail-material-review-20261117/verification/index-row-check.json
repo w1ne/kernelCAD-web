@@ -1,0 +1,17 @@
+{
+  "changedRows": [
+    "industrial-plant/cable-tray-bridge"
+  ],
+  "sourceSha256": "02d071de5a7c93767cc34ff7f5725fcb2c730ab1dc44bacd20bca1164705d318",
+  "actualSourceSha256": "02d071de5a7c93767cc34ff7f5725fcb2c730ab1dc44bacd20bca1164705d318",
+  "sourceHashMatches": true,
+  "previewPath": "/assets/industrial-plant-cable-tray-bridge.png",
+  "previewExists": true,
+  "triangles": 168,
+  "sizeM": [
+    0.94,
+    0.341,
+    0.39
+  ],
+  "triangleBudget": 1400
+}

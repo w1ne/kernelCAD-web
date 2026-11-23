@@ -1,0 +1,20 @@
+== cleanroom-single-door-module
+[]
+[]
+0
+== cold-room-door-module
+[]
+[]
+0
+== laboratory-wall-eyewash-station
+[]
+[]
+0
+== laboratory-water-service-console
+[]
+[]
+0
+== cleanroom-pass-through-chamber
+[]
+[]
+0

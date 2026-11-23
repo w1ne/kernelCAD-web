@@ -1,0 +1,25 @@
+{
+  "checkedOpenPrs": 15,
+  "assets": [
+    {
+      "asset": "industrial-plant/machine-guard-enclosure",
+      "openPrFileMatches": []
+    },
+    {
+      "asset": "industrial-plant/electrical-control-cabinet",
+      "openPrFileMatches": []
+    },
+    {
+      "asset": "industrial-plant/chemical-metering-skid",
+      "openPrFileMatches": []
+    },
+    {
+      "asset": "industrial-plant/process-reactor-vessel",
+      "openPrFileMatches": []
+    },
+    {
+      "asset": "industrial-plant/steel-access-gate",
+      "openPrFileMatches": []
+    }
+  ]
+}

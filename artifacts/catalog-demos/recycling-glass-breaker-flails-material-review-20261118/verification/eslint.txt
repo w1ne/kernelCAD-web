@@ -1,0 +1,5 @@
+Command:
+
+  npx eslint catalog/kits/recycling-facility/ tests/integration/catalog/glassBreakerFlailsMaterial.test.ts
+
+Result: exit status 0; no diagnostics (2026-11-18).

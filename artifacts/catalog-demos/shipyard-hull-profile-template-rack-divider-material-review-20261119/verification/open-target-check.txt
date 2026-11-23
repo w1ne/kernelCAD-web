@@ -1,0 +1,4 @@
+Candidate source files checked against the open PR #1507 diff (git diff --name-only origin/develop...HEAD at 282b26be8): no matches.
+gh search issues "<id>" --repo w1ne/kernelCAD-web --state open --include-prs returned zero results for each of the five candidate IDs.
+Open PRs at audit time: #1507 (this lane), #1309, #1253, #1094. None names a shipyard rack, jig, scaffold or survey-frame asset.
+No earlier preview-review.md ledger under artifacts/catalog-demos/ names any of the five IDs.
