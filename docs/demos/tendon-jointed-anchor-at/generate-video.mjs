@@ -67,8 +67,8 @@ function sceneSlide(progress) {
     <rect x="80" y="170" width="1120" height="418" rx="22" fill="#fff" stroke="#d8e1ee"/>
     <text x="111" y="215" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#415573">MESH ENDPOINTS · MILLIMETRES</text>
     <line x1="170" y1="${y0}" x2="1110" y2="${y0}" stroke="#dbe2eb" stroke-width="2"/>
-    <line x1="${x(10)}" y1="${y0 - 102}" x2="${x(10)}" y2="${y0 + 102}" stroke="#dc644d" stroke-width="3" stroke-dasharray="8 7"/>
-    <text x="${x(10) - 12}" y="${y0 - 119}" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#bb4e3a">old result x=10</text>
+    <line x1="${x(-10)}" y1="${y0 - 102}" x2="${x(-10)}" y2="${y0 + 102}" stroke="#dc644d" stroke-width="3" stroke-dasharray="8 7"/>
+    <text x="${x(-10) - 12}" y="${y0 - 119}" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#bb4e3a">old result x=-10</text>
     <rect x="${x(-10)}" y="${y0 - 54}" width="84" height="108" rx="8" fill="#91afd9" stroke="#456790" stroke-width="3"/>
     <rect x="${x(90)}" y="${y0 - 54}" width="84" height="108" rx="8" fill="#8fc7aa" stroke="#438568" stroke-width="3"/>
     <text x="${x(0)}" y="${y0 - 68}" text-anchor="middle" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#34445d">link</text>
@@ -79,7 +79,7 @@ function sceneSlide(progress) {
     <text x="${startX}" y="${y0 + 89}" text-anchor="middle" font-family="monospace" font-size="17" fill="#31547f">eye x=${to[0]} mm</text>
     <text x="${endX}" y="${y0 + 89}" text-anchor="middle" font-family="monospace" font-size="17" fill="#31547f">hook x=${from[0]} mm</text>
     <text x="111" y="543" font-family="Arial,sans-serif" font-size="17" fill="#53657f">Tendon mesh rings: from [${from.join(', ')}] · to [${to.join(', ')}]</text>
-    <text x="111" y="571" font-family="Arial,sans-serif" font-size="16" fill="#53657f">Old x=10 endpoint was 100 mm from the expected hook at x=110; the mesh now lands there.</text>
+    <text x="111" y="571" font-family="Arial,sans-serif" font-size="16" fill="#53657f">Old x=-10 endpoint was 100 mm from the expected hook at x=90; the mesh now lands there.</text>
   `;
   return panel('The tendon mesh now meets its hook', 'Diagram scaled from the verified native tendon mesh coordinates', body,
     'LOCAL MESH VERIFICATION · NO DYNAMIC SIMULATION, DEPLOYMENT, OR HARDWARE ACCEPTANCE');
@@ -96,7 +96,7 @@ try {
     'KernelCAD regression repair · issue #917 · legacy arm.revolute path',
     `<rect x="88" y="187" width="1104" height="374" rx="24" fill="#fff" stroke="#d8e1ee"/>
      <text x="143" y="275" font-family="Arial,sans-serif" font-size="24" fill="#53657f">The base is placed at x=100 mm.</text>
-     <text x="143" y="331" font-family="Arial,sans-serif" font-size="24" fill="#53657f">Its connector is local x=10 mm, so the mesh endpoint belongs at x=110 mm.</text>
+     <text x="143" y="331" font-family="Arial,sans-serif" font-size="24" fill="#53657f">Its connector is local x=-10 mm, so the mesh endpoint belongs at x=90 mm.</text>
      <text x="143" y="408" font-family="Arial,sans-serif" font-size="22" fill="#17243a">The integration test reads the real tendon mesh and checks both ends.</text>
      <text x="143" y="475" font-family="monospace" font-size="18" fill="#2866d5">examples/kinematic/jointed-tendon-anchor-at.kcad.ts</text>`,
   );

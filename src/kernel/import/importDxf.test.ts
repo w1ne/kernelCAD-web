@@ -27,6 +27,79 @@ function hatch(...pairs: Array<[number, string | number]>): string {
   );
 }
 
+/** One closed polyline boundary path: `[x, y]` or `[x, y, bulge]` vertices. */
+function polylinePath(vertices: Array<[number, number] | [number, number, number]>): Array<[number, string | number]> {
+  const hasBulges = vertices.some(v => v.length === 3);
+  return [
+    [92, 2], [72, hasBulges ? 1 : 0], [73, 1], [93, vertices.length],
+    ...vertices.flatMap(([x, y, bulge]): Array<[number, number]> =>
+      hasBulges ? [[10, x], [20, y], [42, bulge ?? 0]] : [[10, x], [20, y]]),
+    [97, 1], [330, '2A'],
+  ];
+}
+
+type HatchEdge =
+  | { line: [number, number, number, number] }
+  | { arc: [cx: number, cy: number, r: number, start: number, end: number, ccw: 0 | 1] }
+  | { ellipse: [cx: number, cy: number, mx: number, my: number, ratio: number, start: number, end: number, ccw: 0 | 1] }
+  | { spline: Array<[number, string | number]> }
+  | { type: number };
+
+/** Group codes of a HATCH spline edge after its 72 = 4 type code. */
+function splineEdge(opts: {
+  degree: number;
+  knots: number[];
+  points: Array<[number, number]>;
+  weights?: number[];
+  tail?: Array<[number, string | number]>;
+}): HatchEdge {
+  const { degree, knots, points, weights, tail = [] } = opts;
+  return {
+    spline: [
+      [94, degree], [73, weights ? 1 : 0], [74, 0], [95, knots.length], [96, points.length],
+      ...knots.map((k): [number, number] => [40, k]),
+      ...points.flatMap(([x, y], i): Array<[number, number]> =>
+        weights ? [[10, x], [20, y], [42, weights[i]]] : [[10, x], [20, y]]),
+      ...tail,
+    ],
+  };
+}
+
+/** One edge-based boundary path (group code 92 without the polyline bit). */
+function edgePath(edges: HatchEdge[]): Array<[number, string | number]> {
+  return [
+    [92, 1], [93, edges.length],
+    ...edges.flatMap((edge): Array<[number, string | number]> => {
+      if ('line' in edge) {
+        const [x0, y0, x1, y1] = edge.line;
+        return [[72, 1], [10, x0], [20, y0], [11, x1], [21, y1]];
+      }
+      if ('arc' in edge) {
+        const [cx, cy, r, start, end, ccw] = edge.arc;
+        return [[72, 2], [10, cx], [20, cy], [40, r], [50, start], [51, end], [73, ccw]];
+      }
+      if ('ellipse' in edge) {
+        const [cx, cy, mx, my, ratio, start, end, ccw] = edge.ellipse;
+        return [[72, 3], [10, cx], [20, cy], [11, mx], [21, my], [40, ratio], [50, start], [51, end], [73, ccw]];
+      }
+      if ('spline' in edge) return [[72, 4], ...edge.spline];
+      return [[72, edge.type]];
+    }),
+    [97, 0],
+  ];
+}
+
+/** 40 x 40 outer square, 30 x 30 hole, 10 x 10 island inside the hole. */
+function nestedHatch(style: number): string {
+  return hatch(
+    [91, 3],
+    ...polylinePath([[0, 0], [40, 0], [40, 40], [0, 40]]),
+    ...polylinePath([[5, 5], [35, 5], [35, 35], [5, 35]]),
+    ...polylinePath([[15, 15], [25, 15], [25, 25], [15, 25]]),
+    [75, style], [76, 1], [98, 1], [10, 2], [20, 2],
+  );
+}
+
 function header(...pairs: Array<[number, string | number]>): Array<[number, string | number]> {
   return [[0, 'SECTION'], [2, 'HEADER'], ...pairs, [0, 'ENDSEC']];
 }
@@ -36,6 +109,16 @@ function points(commands: readonly SketchCommand[]): Array<[number, number]> {
   return commands
     .filter((c): c is Extract<SketchCommand, { x: unknown; y: unknown }> => 'x' in c && 'y' in c)
     .map(c => [c.x.evaluated, c.y.evaluated]);
+}
+
+function failure(fn: () => unknown): DxfParseError {
+  try {
+    fn();
+  } catch (e) {
+    expect(e).toBeInstanceOf(DxfParseError);
+    return e as DxfParseError;
+  }
+  throw new Error('expected importDxfText to throw');
 }
 
 const SQUARE_10x5: Array<[number, string | number]> = [
@@ -54,6 +137,90 @@ const RATIONAL_QUARTER_CIRCLE: Array<[number, string | number]> = [
   [10, 10], [20, 10], [30, 0], [41, Math.SQRT1_2],
   [10, 10], [20, 0], [30, 0], [41, 1],
 ];
+
+/** Rational de Boor evaluation of a B-spline at `u`, independent of the importer. */
+function deBoor(
+  degree: number,
+  knots: readonly number[],
+  controls: ReadonlyArray<readonly [number, number]>,
+  weights: readonly number[] | undefined,
+  u: number,
+): [number, number] {
+  const n = controls.length;
+  let k = degree;
+  while (k < n - 1 && u >= knots[k + 1]) k++;
+  const d = Array.from({ length: degree + 1 }, (_, j) => {
+    const w = weights?.[k - degree + j] ?? 1;
+    const [x, y] = controls[k - degree + j];
+    return [x * w, y * w, w];
+  });
+  for (let r = 1; r <= degree; r++) {
+    for (let j = degree; j >= r; j--) {
+      const i = k - degree + j;
+      const alpha = (u - knots[i]) / (knots[i + degree + 1 - r] - knots[i]);
+      d[j] = d[j].map((v, c) => (1 - alpha) * d[j - 1][c] + alpha * v);
+    }
+  }
+  return [d[degree][0] / d[degree][2], d[degree][1] / d[degree][2]];
+}
+
+/**
+ * Points of a NURBS command at evenly spaced parameters, for on-curve checks.
+ * NURBS region areas are sampled for ranking, so they are checked to 1e-4.
+ */
+function nurbsSamples(nurbs: Extract<SketchCommand, { kind: 'nurbsSegment' }>, count = 9): Array<[number, number]> {
+  const knots = nurbs.knots!.map(k => k.evaluated);
+  const controls = nurbs.controlPoints.map(p => [p.x.evaluated, p.y.evaluated] as const);
+  const weights = nurbs.weights?.map(w => w.evaluated);
+  const degree = nurbs.degree.evaluated;
+  const [lo, hi] = [knots[degree], knots[controls.length]];
+  return Array.from({ length: count }, (_, i) => deBoor(degree, knots, controls, weights, lo + ((hi - lo) * i) / (count - 1)));
+}
+
+function expectArea(actual: number, expected: number): void {
+  expect(Math.abs(actual - expected) / expected).toBeLessThan(1e-4);
+}
+
+/**
+ * Knots and control points of a non-rational NURBS command in the direction
+ * that starts at `start`; region assembly may reverse a segment for winding.
+ */
+function orientedNet(
+  nurbs: Extract<SketchCommand, { kind: 'nurbsSegment' }>,
+  start: readonly [number, number],
+): { knots: number[]; controls: Array<readonly [number, number]> } {
+  const knots = nurbs.knots!.map(k => k.evaluated);
+  const controls = nurbs.controlPoints.map(p => [p.x.evaluated, p.y.evaluated] as const);
+  if (Math.hypot(controls[0][0] - start[0], controls[0][1] - start[1]) < 1e-9) return { knots, controls };
+  const [lo, hi] = [knots[0], knots[knots.length - 1]];
+  return { knots: knots.map(k => lo + hi - k).reverse(), controls: [...controls].reverse() };
+}
+
+function nurbsCommands(commands: readonly SketchCommand[]): Array<Extract<SketchCommand, { kind: 'nurbsSegment' }>> {
+  return commands.filter(
+    (command): command is Extract<SketchCommand, { kind: 'nurbsSegment' }> => command.kind === 'nurbsSegment',
+  );
+}
+
+const SQUARE_NET: Array<readonly [number, number]> = [[-10, -10], [10, -10], [10, 10], [-10, 10]];
+
+/**
+ * A closed periodic uniform cubic SPLINE as AutoCAD and ezdxf write it: flags
+ * 11 (closed | periodic | planar), the first `degree` control points repeated
+ * at the end, and an unclamped uniform knot vector 0..10. Weights are optional.
+ */
+function periodicSquareSpline(weights?: readonly number[]): Array<[number, string | number]> {
+  const net = [...SQUARE_NET, ...SQUARE_NET.slice(0, 3)];
+  const w = weights ? [...weights, ...weights.slice(0, 3)] : undefined;
+  return [
+    [0, 'SPLINE'], [100, 'AcDbEntity'], [8, '0'], [100, 'AcDbSpline'],
+    [210, 0], [220, 0], [230, 1], [70, 11], [71, 3], [72, 11], [73, 7], [74, 0],
+    ...Array.from({ length: 11 }, (_, i): [number, number] => [40, i]),
+    ...net.flatMap(([x, y], i): Array<[number, number]> => [
+      [10, x], [20, y], [30, 0], ...(w ? [[41, w[i]] as [number, number]] : []),
+    ]),
+  ];
+}
 
 describe('importDxfText — entities', () => {
   it('keeps rational clamped DXF SPLINE geometry in the exact NURBS sketch command', () => {
@@ -74,6 +241,174 @@ describe('importDxfText — entities', () => {
     expect(nurbs?.knots?.map(knot => knot.evaluated)).toEqual([0, 0, 0, 1, 1, 1]);
     // NURBS area is sampled for region ordering; the sketch retains the exact curve.
     expect(r.regions[0].areaMm2).toBeCloseTo((Math.PI * 100) / 4, 2);
+  });
+
+  it('clamps a periodic closed DXF SPLINE by exact knot insertion into one closed NURBS profile', () => {
+    const r = importDxfText(entities(...periodicSquareSpline()));
+    expect(r.regions).toHaveLength(1);
+    const [nurbs] = nurbsCommands(r.regions[0].commands);
+    expect(nurbs).toBeDefined();
+    const knots = nurbs.knots!.map(k => k.evaluated);
+    const controls = nurbs.controlPoints.map(p => [p.x.evaluated, p.y.evaluated] as const);
+    // The DXF domain [u3, u7] = [3, 7] becomes a clamped vector over the same parameters.
+    expect(knots).toEqual([3, 3, 3, 3, 4, 5, 6, 7, 7, 7, 7]);
+    expect(controls).toHaveLength(7);
+    // A uniform cubic passes through (P0 + 4 P1 + P2) / 6 at a knot.
+    expect(controls[0][0]).toBeCloseTo(20 / 3, 12);
+    expect(controls[0][1]).toBeCloseTo(-20 / 3, 12);
+    expect(controls[6][0]).toBeCloseTo(controls[0][0], 12);
+    expect(controls[6][1]).toBeCloseTo(controls[0][1], 12);
+    const original = [...SQUARE_NET, ...SQUARE_NET.slice(0, 3)];
+    for (let u = 3; u <= 7; u += 0.125) {
+      const [ex, ey] = deBoor(3, Array.from({ length: 11 }, (_, i) => i), original, undefined, u);
+      const [ax, ay] = deBoor(3, knots, controls, undefined, u);
+      expect(ax).toBeCloseTo(ex, 10);
+      expect(ay).toBeCloseTo(ey, 10);
+    }
+  });
+
+  it('keeps a rational periodic SPLINE on the same curve after clamping', () => {
+    const weights = [1, 2, 0.5, 1.5];
+    const r = importDxfText(entities(...periodicSquareSpline(weights)));
+    const [nurbs] = nurbsCommands(r.regions[0].commands);
+    const knots = nurbs.knots!.map(k => k.evaluated);
+    const controls = nurbs.controlPoints.map(p => [p.x.evaluated, p.y.evaluated] as const);
+    const clampedWeights = nurbs.weights!.map(w => w.evaluated);
+    const original = [...SQUARE_NET, ...SQUARE_NET.slice(0, 3)];
+    const originalWeights = [...weights, ...weights.slice(0, 3)];
+    for (let u = 3; u <= 7; u += 0.125) {
+      const [ex, ey] = deBoor(3, Array.from({ length: 11 }, (_, i) => i), original, originalWeights, u);
+      const [ax, ay] = deBoor(3, knots, controls, clampedWeights, u);
+      expect(ax).toBeCloseTo(ex, 10);
+      expect(ay).toBeCloseTo(ey, 10);
+    }
+  });
+
+  it('clamps an open unclamped uniform SPLINE so its true endpoints join the next segment', () => {
+    // Domain [3, 4]: start (P0 + 4 P1 + P2) / 6 = (20/3, -20/3), end (P1 + 4 P2 + P3) / 6 = (20/3, 20/3).
+    const r = importDxfText(entities(
+      [0, 'SPLINE'], [70, 8], [71, 3], [72, 8], [73, 4],
+      ...Array.from({ length: 8 }, (_, i): [number, number] => [40, i]),
+      ...SQUARE_NET.flatMap(([x, y]): Array<[number, number]> => [[10, x], [20, y]]),
+      [0, 'LINE'], [10, 20 / 3], [20, 20 / 3], [11, 20 / 3], [21, -20 / 3],
+    ));
+    expect(r.regions).toHaveLength(1);
+    const [nurbs] = nurbsCommands(r.regions[0].commands);
+    expect(nurbs.knots!.map(k => k.evaluated)).toEqual([3, 3, 3, 3, 4, 4, 4, 4]);
+  });
+
+  it('interpolates a fit-point-only SPLINE as a cubic that passes through every fit point', () => {
+    // ezdxf `add_spline(fit_points)` writes this form: fit points (11/21/31), no control net.
+    const fit: Array<readonly [number, number]> = [[0, 0], [10, 8], [20, 10], [30, 8], [40, 0]];
+    const r = importDxfText(entities(
+      [0, 'SPLINE'], [70, 8], [71, 3], [72, 0], [73, 0], [74, fit.length],
+      ...fit.flatMap(([x, y]): Array<[number, number]> => [[11, x], [21, y], [31, 0]]),
+      [0, 'LINE'], [10, 40], [20, 0], [11, 0], [21, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    const [nurbs] = nurbsCommands(r.regions[0].commands);
+    expect(nurbs.degree.evaluated).toBe(3);
+    expect(nurbs.weights).toBeUndefined();
+    const { knots, controls } = orientedNet(nurbs, fit[0]);
+    // Chord-length parameters; the interior knots are the interior parameters.
+    const chords = fit.slice(1).map(([x, y], i) => Math.hypot(x - fit[i][0], y - fit[i][1]));
+    const total = chords.reduce((a, b) => a + b, 0);
+    const params = [0];
+    for (const c of chords) params.push(params[params.length - 1] + c / total);
+    params[params.length - 1] = 1;
+    expect(knots).toHaveLength(controls.length + 4);
+    expect(knots.slice(0, 4)).toEqual([0, 0, 0, 0]);
+    expect(knots.slice(-4)).toEqual([1, 1, 1, 1]);
+    knots.slice(4, -4).forEach((k, i) => expect(k).toBeCloseTo(params[i + 1], 12));
+    expect(controls).toHaveLength(fit.length + 2);
+    fit.forEach(([fx, fy], i) => {
+      const [x, y] = deBoor(3, knots, controls, undefined, params[i]);
+      expect(x).toBeCloseTo(fx, 9);
+      expect(y).toBeCloseTo(fy, 9);
+    });
+    // The smooth arch bulges outside the fit-point polygon (area 260 mm²) but stays near it.
+    expect(r.regions[0].areaMm2).toBeGreaterThan(260);
+    expect(r.regions[0].areaMm2).toBeLessThan(290);
+  });
+
+  it('honours the start and end tangents of a fit-point SPLINE', () => {
+    const r = importDxfText(entities(
+      [0, 'SPLINE'], [70, 8], [71, 3], [72, 0], [73, 0], [74, 3],
+      [12, 0], [22, 1], [32, 0], [13, 0], [23, -1], [33, 0],
+      [11, 0], [21, 0], [11, 10], [21, 10], [11, 20], [21, 0],
+      [0, 'LINE'], [10, 20], [20, 0], [11, 0], [21, 0],
+    ));
+    const [nurbs] = nurbsCommands(r.regions[0].commands);
+    const { knots, controls } = orientedNet(nurbs, [0, 0]);
+    // C'(0) is parallel to P1 - P0 and C'(1) to Pn - Pn-1 on a clamped cubic.
+    expect(controls[1][0]).toBeCloseTo(0, 12);
+    expect(controls[1][1]).toBeGreaterThan(0);
+    expect(controls[controls.length - 2][0]).toBeCloseTo(20, 12);
+    expect(controls[controls.length - 2][1]).toBeGreaterThan(0);
+    const [mx, my] = deBoor(3, knots, controls, undefined, 0.5);
+    expect(mx).toBeCloseTo(10, 9);
+    expect(my).toBeCloseTo(10, 9);
+  });
+
+  it('interpolates a closed fit-point-only SPLINE as a C2 periodic cubic through every fit point', () => {
+    // Eight fit points on a 10 mm circle; AutoCAD and ezdxf do not repeat the first one.
+    const fit = Array.from({ length: 8 }, (_, k): readonly [number, number] => [
+      10 * Math.cos((k * Math.PI) / 4), 10 * Math.sin((k * Math.PI) / 4),
+    ]);
+    const r = importDxfText(entities(
+      [0, 'SPLINE'], [70, 11], [71, 3], [72, 0], [73, 0], [74, fit.length],
+      ...fit.flatMap(([x, y]): Array<[number, number]> => [[11, x], [21, y], [31, 0]]),
+    ));
+    expect(r.regions).toHaveLength(1);
+    const nurbs = nurbsCommands(r.regions[0].commands);
+    expect(nurbs).toHaveLength(1);
+    expect(nurbs[0].degree.evaluated).toBe(3);
+    const { knots, controls } = orientedNet(nurbs[0], fit[0]);
+    expect(knots.slice(0, 4)).toEqual([0, 0, 0, 0]);
+    expect(knots.slice(-4)).toEqual([1, 1, 1, 1]);
+    // Equal chords give the parameters k / 8; the curve passes through each fit point there.
+    for (let k = 0; k <= 8; k++) {
+      const [x, y] = deBoor(3, knots, controls, undefined, k / 8);
+      expect(Math.min(...fit.map(([fx, fy]) => Math.hypot(x - fx, y - fy)))).toBeLessThan(1e-9);
+    }
+    // Periodic, so the seam is smooth: equal first derivatives at both ends of the clamped net.
+    const n = controls.length - 1;
+    const start = [0, 1].map(i => (3 * (controls[1][i] - controls[0][i])) / knots[4]);
+    const end = [0, 1].map(i => (3 * (controls[n][i] - controls[n - 1][i])) / (1 - knots[n]));
+    expect(start[0]).toBeCloseTo(end[0], 9);
+    expect(start[1]).toBeCloseTo(end[1], 9);
+    // The interpolant lies within 0.2 % of the circle area (100 pi mm²).
+    expect(Math.abs(r.regions[0].areaMm2 / (100 * Math.PI) - 1)).toBeLessThan(2e-3);
+  });
+
+  it('accepts a closed fit-point SPLINE that repeats its first fit point at the end', () => {
+    const fit = Array.from({ length: 8 }, (_, k): readonly [number, number] => [
+      10 * Math.cos((k * Math.PI) / 4), 10 * Math.sin((k * Math.PI) / 4),
+    ]);
+    const area = (points: ReadonlyArray<readonly [number, number]>) => importDxfText(entities(
+      [0, 'SPLINE'], [70, 11], [71, 3], [72, 0], [73, 0], [74, points.length],
+      ...points.flatMap(([x, y]): Array<[number, number]> => [[11, x], [21, y]]),
+    )).regions[0].areaMm2;
+    expect(area([...fit, fit[0]])).toBeCloseTo(area(fit), 9);
+  });
+
+  it('closes a fit-point SPLINE with explicit end tangents through its first fit point', () => {
+    // A 20 mm square of fit points, with both end tangents along +Y at (10, 0).
+    const r = importDxfText(entities(
+      [0, 'SPLINE'], [70, 11], [71, 3], [72, 0], [73, 0], [74, 4],
+      [12, 0], [22, 1], [32, 0], [13, 0], [23, 1], [33, 0],
+      [11, 10], [21, 0], [11, 0], [21, 10], [11, -10], [21, 0], [11, 0], [21, -10],
+    ));
+    expect(r.regions).toHaveLength(1);
+    const [nurbs] = nurbsCommands(r.regions[0].commands);
+    const { controls } = orientedNet(nurbs, [10, 0]);
+    const n = controls.length - 1;
+    expect(controls[n]).toEqual(controls[0]);
+    // Both ends leave (10, 0) along the Y axis, so the seam has no corner.
+    expect(controls[1][0]).toBeCloseTo(10, 12);
+    expect(controls[n - 1][0]).toBeCloseTo(10, 12);
+    expect(Math.sign(controls[1][1] - controls[0][1])).toBe(-Math.sign(controls[n - 1][1] - controls[n][1]));
+    expect(r.regions[0].areaMm2).toBeGreaterThan(200);
   });
 
   it('keeps a full planar ELLIPSE as four exact rational NURBS segments', () => {
@@ -108,12 +443,248 @@ describe('importDxfText — entities', () => {
     );
   });
 
-  it('refuses HATCH entities with multiple paths instead of flattening holes into separate profiles', () => {
-    expect(() => importDxfText(hatch([91, 2]))).toThrow(/2 boundary paths are not supported/);
+  it('reads a multi-path HATCH as one profile whose inner paths are holes', () => {
+    const r = importDxfText(hatch(
+      [91, 3],
+      ...polylinePath([[0, 0], [40, 0], [40, 20], [0, 20]]),
+      // Clockwise inner square: winding must not decide which loop is a hole.
+      ...polylinePath([[5, 5], [5, 15], [15, 15], [15, 5]]),
+      // r = 3 mm circle as two bulge-1 vertices.
+      ...polylinePath([[27, 10, 1], [33, 10, 1]]),
+      [75, 0], [76, 1], [98, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(800 - 100 - 9 * Math.PI, 9);
+    expect(r.regions[0].segmentCount).toBe(10);
+    expect(r.regions[0].commands.filter(c => c.kind === 'moveTo')).toHaveLength(3);
+    // The outer boundary comes first: the sketch lowering cuts every later loop from it.
+    expect(points(r.regions[0].commands)[0]).toEqual([0, 0]);
+    expect(r.regions[0].source).toBe('HATCH with 2 holes');
   });
 
-  it('refuses edge-based HATCH paths until their exact curve geometry is supported', () => {
-    expect(() => importDxfText(hatch([91, 1], [92, 1]))).toThrow(/edge-based boundary paths are not supported/);
+  it('returns an island inside a HATCH hole as its own profile under the normal style', () => {
+    const r = importDxfText(nestedHatch(0));
+    expect(r.regions.map(region => region.areaMm2)).toEqual([
+      expect.closeTo(1600 - 900, 9),
+      expect.closeTo(100, 9),
+    ]);
+    expect(r.regions.map(region => region.commands.filter(c => c.kind === 'moveTo').length)).toEqual([2, 1]);
+  });
+
+  it('honours the outer and ignore HATCH styles for nested paths', () => {
+    expect(importDxfText(nestedHatch(1)).regions.map(region => region.areaMm2)).toEqual([expect.closeTo(700, 9)]);
+    expect(importDxfText(nestedHatch(2)).regions.map(region => region.areaMm2)).toEqual([expect.closeTo(1600, 9)]);
+  });
+
+  it('decides HATCH nesting exactly when a path vertex sits inside a bulge arc', () => {
+    // The hole's corner (1, 10) is outside the outer chord polygon (x >= 2)
+    // but inside the outer boundary's left semicircle bulge.
+    const r = importDxfText(hatch(
+      [91, 2],
+      ...polylinePath([[2, 0], [22, 0], [22, 20], [2, 20, 1]]),
+      ...polylinePath([[1, 10], [6, 8], [6, 12]]),
+      [75, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(400 + 50 * Math.PI - 10, 9);
+  });
+
+  it('refuses HATCH paths that cross instead of guessing which side is filled', () => {
+    expect(() => importDxfText(hatch(
+      [91, 2],
+      ...polylinePath([[0, 0], [10, 0], [10, 10], [0, 10]]),
+      ...polylinePath([[5, 5], [15, 5], [15, 15], [5, 15]]),
+      [75, 0],
+    ))).toThrow(/boundary paths 1 and 2 cross/);
+  });
+
+  it('refuses a HATCH path count that does not match the paths present', () => {
+    expect(() => importDxfText(hatch(
+      [91, 2],
+      ...polylinePath([[0, 0], [10, 0], [10, 10], [0, 10]]),
+      [75, 0],
+    ))).toThrow(/boundary path data must start with group code 92/);
+  });
+
+  it('reads an edge-based HATCH path of lines and counter-clockwise arc edges as exact arcs', () => {
+    // 20 mm straight sides joined by two r = 10 mm semicircle arc edges.
+    const r = importDxfText(hatch(
+      [91, 1],
+      ...edgePath([
+        { line: [0, 0, 20, 0] },
+        { arc: [20, 10, 10, 270, 90, 1] },
+        { line: [20, 20, 0, 20] },
+        { arc: [0, 10, 10, 90, 270, 1] },
+      ]),
+      [75, 0], [76, 1], [98, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(400 + 100 * Math.PI, 9);
+    expect(r.regions[0].segmentCount).toBe(4);
+    expect(r.regions[0].commands.filter(c => c.kind === 'bulgeArc')).toHaveLength(2);
+  });
+
+  it('reads clockwise HATCH arc edges with the DXF complementary-angle convention', () => {
+    // Pairs written by ezdxf 1.4.5 for a 30 x 16 rectangle with an upper
+    // half-disc hole whose arc edge runs clockwise: 50 = 180, 51 = 360,
+    // 73 = 0. Reading the raw angles counter-clockwise would put the
+    // half-disc below the X axis, across the rectangle's lower edge. The
+    // closing line is written against the arc's direction of travel.
+    const r = importDxfText(hatch(
+      [91, 2],
+      ...edgePath([
+        { line: [-15, -1, 15, -1] },
+        { line: [15, -1, 15, 15] },
+        { line: [15, 15, -15, 15] },
+        { line: [-15, 15, -15, -1] },
+      ]),
+      ...edgePath([
+        { arc: [0, 0, 10, 180, 360, 0] },
+        { line: [-10, 0, 10, 0] },
+      ]),
+      [75, 0], [76, 1], [98, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(480 - 50 * Math.PI, 9);
+    expect(r.regions[0].source).toBe('HATCH with 1 hole');
+  });
+
+  it('reads a full-circle HATCH arc edge as a hole', () => {
+    const r = importDxfText(hatch(
+      [91, 2],
+      ...edgePath([
+        { line: [0, 0, 40, 0] }, { line: [40, 0, 40, 20] }, { line: [40, 20, 0, 20] }, { line: [0, 20, 0, 0] },
+      ]),
+      ...edgePath([{ arc: [20, 10, 4, 0, 360, 1] }]),
+      [75, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(800 - 16 * Math.PI, 9);
+  });
+
+  it('refuses HATCH edges that do not connect end to start', () => {
+    expect(() => importDxfText(hatch(
+      [91, 1],
+      ...edgePath([{ line: [0, 0, 10, 0] }, { line: [10, 1, 10, 10] }, { line: [10, 10, 0, 0] }]),
+      [75, 0],
+    ))).toThrow(/edge 2 does not join edge 1: edge 1 ends at \(10, 0\)/);
+  });
+
+  /** Four line edges around an axis-aligned rectangle. */
+  const rectangle = (x0: number, y0: number, x1: number, y1: number): HatchEdge[] => [
+    { line: [x0, y0, x1, y0] }, { line: [x1, y0, x1, y1] }, { line: [x1, y1, x0, y1] }, { line: [x0, y1, x0, y0] },
+  ];
+
+  it('reads a full elliptic-arc HATCH edge as an exact rational NURBS hole', () => {
+    // Semi-axes 8 and 4 (major axis (8, 0), ratio 0.5) inside a 40 x 20 plate.
+    const r = importDxfText(hatch(
+      [91, 2],
+      ...edgePath(rectangle(0, 0, 40, 20)),
+      ...edgePath([{ ellipse: [20, 10, 8, 0, 0.5, 0, 360, 1] }]),
+      [75, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].source).toBe('HATCH with 1 hole');
+    expectArea(r.regions[0].areaMm2, 800 - Math.PI * 8 * 4);
+    const arcs = nurbsCommands(r.regions[0].commands);
+    expect(arcs).toHaveLength(4);
+    expect(arcs.every(arc => arc.degree.evaluated === 2 && arc.weights?.length === 3)).toBe(true);
+    for (const [x, y] of arcs.flatMap(arc => nurbsSamples(arc))) {
+      expect(((x - 20) / 8) ** 2 + ((y - 10) / 4) ** 2).toBeCloseTo(1, 12);
+    }
+  });
+
+  it('reads a clockwise elliptic-arc HATCH edge with complementary angles', () => {
+    // 50 = 180, 51 = 360, 73 = 0 is the upper half (parameters 0 to 180).
+    // Read counter-clockwise it would be the lower half and cross y = -1.
+    const r = importDxfText(hatch(
+      [91, 2],
+      ...edgePath(rectangle(-15, -1, 15, 15)),
+      ...edgePath([{ ellipse: [0, 0, 10, 0, 0.5, 180, 360, 0] }, { line: [-10, 0, 10, 0] }]),
+      [75, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expectArea(r.regions[0].areaMm2, 480 - (Math.PI * 10 * 5) / 2);
+    const points = nurbsCommands(r.regions[0].commands).flatMap(arc => nurbsSamples(arc));
+    expect(points.every(([x, y]) => y >= -1e-12 && Math.abs((x / 10) ** 2 + (y / 5) ** 2 - 1) < 1e-12)).toBe(true);
+  });
+
+  it('decides HATCH nesting from the elliptic curve, not its chords', () => {
+    // The r = 1 hole at (12, 6) lies inside the 20 x 10 ellipse but outside
+    // the diamond through its four quadrant points.
+    const r = importDxfText(hatch(
+      [91, 2],
+      ...edgePath([{ ellipse: [0, 0, 20, 0, 0.5, 0, 360, 1] }]),
+      ...edgePath([{ arc: [12, 6, 1, 0, 360, 1] }]),
+      [75, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].source).toBe('HATCH with 1 hole');
+    expectArea(r.regions[0].areaMm2, Math.PI * 20 * 10 - Math.PI);
+  });
+
+  it('refuses an elliptic-arc HATCH edge whose end angles are not on an axis', () => {
+    // Readers disagree whether 50/51 are angles or ellipse parameters; the
+    // two readings give different curves here, so the edge is refused.
+    expect(() => importDxfText(hatch(
+      [91, 1],
+      ...edgePath([{ ellipse: [0, 0, 10, 0, 0.5, 30, 180, 1] }, { line: [-10, 0, 10, 0] }]),
+      [75, 0],
+    ))).toThrow(/elliptic-arc boundary edge from 30 to 180 degrees/);
+  });
+
+  it('reads a HATCH spline edge as an exact NURBS segment', () => {
+    // Quadratic Bezier (20, 0) -> (20, 20) -> (0, 20) closed by two lines:
+    // the triangle under the chord (200) plus 2/3 of the control triangle.
+    const r = importDxfText(hatch(
+      [91, 1],
+      ...edgePath([
+        { line: [0, 0, 20, 0] },
+        splineEdge({ degree: 2, knots: [0, 0, 0, 1, 1, 1], points: [[20, 0], [20, 20], [0, 20]] }),
+        { line: [0, 20, 0, 0] },
+      ]),
+      [75, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expectArea(r.regions[0].areaMm2, 200 + (2 / 3) * 200);
+    const [curve] = nurbsCommands(r.regions[0].commands);
+    expect(curve.degree.evaluated).toBe(2);
+    expect(curve.controlPoints.map(p => [p.x.evaluated, p.y.evaluated]).sort()).toEqual([[0, 20], [20, 0], [20, 20]].sort());
+  });
+
+  it('reads a rational HATCH spline edge, fit data and a reversed edge exactly', () => {
+    // A quarter circle of radius 20 as a rational quadratic, written from
+    // (0, 20) to (20, 0) against the direction of travel, with R2010 fit data
+    // (97 = fit count) that the next edge must not be confused with.
+    const w = Math.SQRT1_2;
+    const r = importDxfText(hatch(
+      [91, 1],
+      ...edgePath([
+        { line: [0, 0, 20, 0] },
+        splineEdge({
+          degree: 2, knots: [0, 0, 0, 1, 1, 1], points: [[0, 20], [20, 20], [20, 0]], weights: [1, w, 1],
+          tail: [[97, 2], [11, 0], [21, 20], [11, 20], [21, 0], [12, 1], [22, 0], [13, 0], [23, -1]],
+        }),
+        { line: [0, 20, 0, 0] },
+      ]),
+      [75, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expectArea(r.regions[0].areaMm2, 100 * Math.PI);
+    const [curve] = nurbsCommands(r.regions[0].commands);
+    expect(curve.weights?.map(weight => weight.evaluated)).toEqual([1, w, 1]);
+    for (const [x, y] of nurbsSamples(curve)) expect(Math.hypot(x, y)).toBeCloseTo(20, 12);
+  });
+
+  it('refuses fit-point-only HATCH spline edges', () => {
+    expect(() => importDxfText(hatch(
+      [91, 1],
+      ...edgePath([
+        { line: [0, 0, 20, 0] },
+        { spline: [[94, 3], [73, 0], [74, 0], [95, 0], [96, 0], [97, 2], [11, 20], [21, 0], [11, 0], [21, 0]] },
+      ]),
+      [75, 0],
+    ))).toThrow(/spline boundary edge has no control points/);
   });
 
   it('refuses HATCH paths outside the XY plane', () => {
@@ -192,6 +763,322 @@ describe('importDxfText — entities', () => {
     ));
     expect(r.regions).toHaveLength(1);
     expect(r.regions[0].areaMm2).toBeCloseTo(12, 9);
+  });
+});
+
+describe('importDxfText — INSERT block references', () => {
+  type P = Array<[number, string | number]>;
+  function drawing(blocks: P, ents: P): string {
+    return dxf(
+      [0, 'SECTION'], [2, 'BLOCKS'], ...blocks, [0, 'ENDSEC'],
+      [0, 'SECTION'], [2, 'ENTITIES'], ...ents, [0, 'ENDSEC'], [0, 'EOF'],
+    );
+  }
+  function block(name: string, base: [number, number], ...body: P): P {
+    return [
+      [0, 'BLOCK'], [8, '0'], [2, name], [70, 0], [10, base[0]], [20, base[1]], [30, 0], [3, name],
+      ...body, [0, 'ENDBLK'], [8, '0'],
+    ];
+  }
+  function bounds(r: ReturnType<typeof importDxfText>): { xs: number[]; ys: number[] } {
+    const all = r.regions.flatMap(region => points(region.commands));
+    const xs = all.map(([x]) => x);
+    const ys = all.map(([, y]) => y);
+    return { xs: [Math.min(...xs), Math.max(...xs)], ys: [Math.min(...ys), Math.max(...ys)] };
+  }
+  const BULGED_SQUARE: P = [
+    [0, 'LWPOLYLINE'], [90, 4], [70, 1],
+    [10, 0], [20, 0], [42, 0.5],
+    [10, 10], [20, 0],
+    [10, 10], [20, 10],
+    [10, 0], [20, 10],
+  ];
+  const theta = 4 * Math.atan(0.5);
+  const radius = 5 / Math.sin(theta / 2);
+  const BULGE_SEGMENT_AREA = (radius * radius / 2) * (theta - Math.sin(theta));
+
+  it('places block geometry at the insertion point with rotation and uniform scale', () => {
+    // (x, y) -> 2 * rot90(x, y) + (100, 50): the 10 x 5 square becomes 10 x 20.
+    const r = importDxfText(drawing(
+      block('SQ', [0, 0], ...SQUARE_10x5),
+      [[0, 'INSERT'], [2, 'SQ'], [10, 100], [20, 50], [30, 0], [41, 2], [42, 2], [43, 2], [50, 90]],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(200, 9);
+    const b = bounds(r);
+    expect(b.xs[0]).toBeCloseTo(90, 9);
+    expect(b.xs[1]).toBeCloseTo(100, 9);
+    expect(b.ys[0]).toBeCloseTo(50, 9);
+    expect(b.ys[1]).toBeCloseTo(70, 9);
+  });
+
+  it('keeps a HATCH hole inside its profile when the block is inserted with a non-uniform scale', () => {
+    const r = importDxfText(drawing(
+      block('GASKET', [0, 0],
+        [0, 'HATCH'], [100, 'AcDbEntity'], [8, '0'], [100, 'AcDbHatch'],
+        [10, 0], [20, 0], [30, 0], [210, 0], [220, 0], [230, 1], [2, 'SOLID'], [70, 1], [71, 0],
+        [91, 2],
+        ...polylinePath([[0, 0], [20, 0], [20, 10], [0, 10]]),
+        ...polylinePath([[8, 5, 1], [12, 5, 1]]),
+        [75, 0]),
+      [[0, 'INSERT'], [2, 'GASKET'], [10, 0], [20, 0], [41, 2], [42, 1]],
+    ));
+    // 40 x 10 plate minus the r = 2 hole stretched to a 4 x 2 mm semi-axis ellipse.
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(400 - 8 * Math.PI, 2);
+    expect(r.regions[0].commands.filter(c => c.kind === 'moveTo')).toHaveLength(2);
+    expect(r.regions[0].commands.some(c => c.kind === 'nurbsSegment')).toBe(true);
+  });
+
+  it('measures block geometry from the block base point', () => {
+    const r = importDxfText(drawing(
+      block('SQ', [5, 0], ...SQUARE_10x5),
+      [[0, 'INSERT'], [2, 'SQ'], [10, 0], [20, 0]],
+    ));
+    const b = bounds(r);
+    expect(b.xs[0]).toBeCloseTo(-5, 9);
+    expect(b.xs[1]).toBeCloseTo(5, 9);
+  });
+
+  it('flips the bulge direction when a negative X scale mirrors the block', () => {
+    // Without the flip the mirrored arc bows inward and the area becomes
+    // 100 - segment instead of 100 + segment.
+    const r = importDxfText(drawing(
+      block('B', [0, 0], ...BULGED_SQUARE),
+      [[0, 'INSERT'], [2, 'B'], [10, 0], [20, 0], [41, -1]],
+    ));
+    expect(r.regions[0].areaMm2).toBeCloseTo(100 + BULGE_SEGMENT_AREA, 9);
+    const b = bounds(r);
+    expect(b.xs[0]).toBeCloseTo(-10, 9);
+    expect(b.xs[1]).toBeCloseTo(0, 9);
+  });
+
+  it('stretches straight edges under a non-uniform scale', () => {
+    const r = importDxfText(drawing(
+      block('SQ', [0, 0], ...SQUARE_10x5),
+      [[0, 'INSERT'], [2, 'SQ'], [10, 0], [20, 0], [41, 3], [42, 1]],
+    ));
+    expect(r.regions[0].areaMm2).toBeCloseTo(150, 9);
+  });
+
+  it('turns a block circle under a non-uniform scale into an exact rational ellipse', () => {
+    // r = 2 at (0, 0), scaled (3, 1), rotated 30°, inserted at (10, 5): an
+    // ellipse with semi-axes 6 and 2 whose major axis points along 30°.
+    const r = importDxfText(drawing(
+      block('C', [0, 0], [0, 'CIRCLE'], [10, 0], [20, 0], [40, 2]),
+      [[0, 'INSERT'], [2, 'C'], [10, 10], [20, 5], [41, 3], [42, 1], [50, 30]],
+    ));
+    expect(r.regions).toHaveLength(1);
+    const nurbs = nurbsCommands(r.regions[0].commands);
+    expect(nurbs).toHaveLength(4);
+    expect(r.regions[0].commands.some(c => c.kind === 'bulgeArc')).toBe(false);
+    const c = Math.cos(Math.PI / 6), s = Math.sin(Math.PI / 6);
+    for (const cmd of nurbs) {
+      const controls = cmd.controlPoints.map(p => [p.x.evaluated, p.y.evaluated] as const);
+      const weights = cmd.weights!.map(w => w.evaluated);
+      const knots = cmd.knots!.map(k => k.evaluated);
+      for (let i = 0; i <= 8; i++) {
+        const [x, y] = deBoor(2, knots, controls, weights, i / 8);
+        const u = (x - 10) * c + (y - 5) * s;
+        const v = -(x - 10) * s + (y - 5) * c;
+        expect((u / 6) ** 2 + (v / 2) ** 2).toBeCloseTo(1, 12);
+      }
+    }
+    expect(r.regions[0].areaMm2).toBeCloseTo(12 * Math.PI, 2);
+  });
+
+  it('keeps a bulge arc on the stretched circle under a mirrored non-uniform scale', () => {
+    // BULGED_SQUARE scaled (-2, 3): the square becomes 20 x 30 and the bulge
+    // segment area scales by |det| = 6. A lost mirror flip bows it inward.
+    const r = importDxfText(drawing(
+      block('B', [0, 0], ...BULGED_SQUARE),
+      [[0, 'INSERT'], [2, 'B'], [10, 0], [20, 0], [41, -2], [42, 3]],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(nurbsCommands(r.regions[0].commands).length).toBeGreaterThan(0);
+    expect(r.regions[0].areaMm2).toBeCloseTo(600 + 6 * BULGE_SEGMENT_AREA, 2);
+    const b = bounds(r);
+    expect(b.xs[0]).toBeCloseTo(-20, 9);
+    expect(b.xs[1]).toBeCloseTo(0, 9);
+  });
+
+  it('keeps exact NURBS geometry when a block is rotated', () => {
+    const r = importDxfText(drawing(
+      block('Q', [0, 0],
+        ...RATIONAL_QUARTER_CIRCLE,
+        [0, 'LINE'], [10, 10], [20, 0], [11, 0], [21, 0],
+        [0, 'LINE'], [10, 0], [20, 0], [11, 0], [21, 10],
+      ),
+      [[0, 'INSERT'], [2, 'Q'], [10, 0], [20, 0], [50, 90]],
+    ));
+    const nurbs = r.regions[0].commands.find(
+      (command): command is Extract<SketchCommand, { kind: 'nurbsSegment' }> => command.kind === 'nurbsSegment',
+    );
+    const poles = nurbs?.controlPoints.map(point => [point.x.evaluated, point.y.evaluated]) ?? [];
+    for (const [x, y] of poles) {
+      expect(x).toBeLessThanOrEqual(1e-9);
+      expect(y).toBeGreaterThanOrEqual(-1e-9);
+    }
+    expect(nurbs?.weights?.map(weight => weight.evaluated)).toEqual([1, Math.SQRT1_2, 1]);
+    expect(r.regions[0].areaMm2).toBeCloseTo((Math.PI * 100) / 4, 2);
+  });
+
+  it('composes nested block references', () => {
+    // INNER at (10, 0) inside OUTER; OUTER at (0, 100) rotated 180 degrees.
+    const r = importDxfText(drawing(
+      [
+        ...block('INNER', [0, 0], ...SQUARE_10x5),
+        ...block('OUTER', [0, 0], [0, 'INSERT'], [2, 'INNER'], [10, 10], [20, 0]),
+      ],
+      [[0, 'INSERT'], [2, 'OUTER'], [10, 0], [20, 100], [50, 180]],
+    ));
+    const b = bounds(r);
+    expect(b.xs[0]).toBeCloseTo(-20, 9);
+    expect(b.xs[1]).toBeCloseTo(-10, 9);
+    expect(b.ys[0]).toBeCloseTo(95, 9);
+    expect(b.ys[1]).toBeCloseTo(100, 9);
+  });
+
+  it('refuses a block that references itself', () => {
+    const e = failure(() => importDxfText(drawing(
+      block('LOOP', [0, 0], [0, 'INSERT'], [2, 'LOOP'], [10, 1], [20, 0]),
+      [[0, 'INSERT'], [2, 'LOOP'], [10, 0], [20, 0]],
+    )));
+    expect(e.reason).toBe('malformed-entity');
+    expect(e.message).toMatch(/block "LOOP" references itself \(LOOP -> LOOP\)/);
+  });
+
+  it('expands an MINSERT column and row grid', () => {
+    const r = importDxfText(drawing(
+      block('SQ', [0, 0], ...SQUARE_10x5),
+      [[0, 'INSERT'], [2, 'SQ'], [10, 0], [20, 0], [70, 3], [71, 2], [44, 20], [45, 10]],
+    ));
+    expect(r.regions).toHaveLength(6);
+    for (const region of r.regions) expect(region.areaMm2).toBeCloseTo(50, 9);
+    const b = bounds(r);
+    expect(b.xs[1]).toBeCloseTo(50, 9);
+    expect(b.ys[1]).toBeCloseTo(15, 9);
+  });
+
+  it('mirrors an INSERT with extrusion (0, 0, -1) into world X', () => {
+    const r = importDxfText(drawing(
+      block('SQ', [0, 0], ...SQUARE_10x5),
+      [[0, 'INSERT'], [2, 'SQ'], [10, 10], [20, 0], [210, 0], [220, 0], [230, -1]],
+    ));
+    const b = bounds(r);
+    expect(b.xs[0]).toBeCloseTo(-20, 9);
+    expect(b.xs[1]).toBeCloseTo(-10, 9);
+  });
+
+  it('skips attribute values that follow an INSERT and reports block annotation', () => {
+    const r = importDxfText(drawing(
+      block('SQ', [0, 0], ...SQUARE_10x5, [0, 'TEXT'], [10, 0], [20, 0], [1, 'label']),
+      [
+        [0, 'INSERT'], [66, 1], [2, 'SQ'], [10, 0], [20, 0],
+        [0, 'ATTRIB'], [10, 0], [20, 0], [1, 'A1'], [2, 'TAG'],
+        [0, 'SEQEND'],
+      ],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.ignoredEntities).toHaveLength(2);
+    expect(r.ignoredEntities[0]).toMatch(/^TEXT \(line \d+\) in block "SQ"$/);
+    expect(r.ignoredEntities[1]).toMatch(/^ATTRIB \(line \d+\)$/);
+  });
+
+  it('refuses an external-reference block because its geometry is in another file', () => {
+    const xref: P = [[0, 'BLOCK'], [2, 'X'], [70, 4], [10, 0], [20, 0], [1, 'other.dxf'], [0, 'ENDBLK']];
+    const e = failure(() => importDxfText(drawing(xref, [[0, 'INSERT'], [2, 'X'], [10, 0], [20, 0]])));
+    expect(e.reason).toBe('unsupported-entity');
+    expect(e.message).toMatch(/^INSERT at line \d+: block "X" is an external reference/);
+  });
+});
+
+describe('importDxfText — extrusion direction (OCS)', () => {
+  // ARC, CIRCLE, LWPOLYLINE and POLYLINE coordinates are in the entity's
+  // Object Coordinate System. With extrusion direction (0, 0, -1) the
+  // arbitrary-axis algorithm gives OCS X = -WCS X, so the drawing is the
+  // mirror image of the raw numbers. CAD tools write such entities for
+  // mirrored and flipped-view geometry.
+  const NEG_Z: Array<[number, string | number]> = [[210, 0], [220, 0], [230, -1]];
+
+  it('mirrors an ARC with extrusion (0, 0, -1) into world X', () => {
+    // OCS centre (10, 0), radius 10, 0..90 deg -> WCS centre (-10, 0) from
+    // (-20, 0) to (-10, 10). The LINEs are WCS, so they close only on the
+    // mirrored arc.
+    const r = importDxfText(entities(
+      [0, 'ARC'], [10, 10], [20, 0], [40, 10], ...NEG_Z, [50, 0], [51, 90],
+      [0, 'LINE'], [10, -10], [20, 10], [11, -10], [21, 0],
+      [0, 'LINE'], [10, -10], [20, 0], [11, -20], [21, 0],
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo((Math.PI * 100) / 4, 9);
+    const xs = points(r.regions[0].commands).map(([x]) => x);
+    expect(Math.min(...xs)).toBeCloseTo(-20, 9);
+    expect(Math.max(...xs)).toBeCloseTo(-10, 9);
+  });
+
+  it('mirrors a CIRCLE centre with extrusion (0, 0, -1)', () => {
+    const r = importDxfText(entities([0, 'CIRCLE'], [10, 10], [20, 5], [40, 2], ...NEG_Z));
+    const xs = points(r.regions[0].commands).map(([x]) => x);
+    const ys = points(r.regions[0].commands).map(([, y]) => y);
+    expect(Math.min(...xs)).toBeCloseTo(-12, 9);
+    expect(Math.max(...xs)).toBeCloseTo(-8, 9);
+    expect(Math.min(...ys)).toBeCloseTo(5, 9);
+    expect(r.regions[0].areaMm2).toBeCloseTo(Math.PI * 4, 9);
+  });
+
+  it('mirrors LWPOLYLINE vertices and bulges with extrusion (0, 0, -1)', () => {
+    // The bulged edge bows outward in OCS. The mirror keeps it outward:
+    // a mirrored x without a negated bulge would cut the segment area out.
+    const r = importDxfText(entities(
+      [0, 'LWPOLYLINE'], [90, 4], [70, 1], ...NEG_Z,
+      [10, 0], [20, 0], [42, 0.5],
+      [10, 10], [20, 0],
+      [10, 10], [20, 10],
+      [10, 0], [20, 10],
+    ));
+    const theta = 4 * Math.atan(0.5);
+    const radius = 5 / Math.sin(theta / 2);
+    const segmentArea = (radius * radius / 2) * (theta - Math.sin(theta));
+    expect(r.regions[0].areaMm2).toBeCloseTo(100 + segmentArea, 9);
+    const xs = points(r.regions[0].commands).map(([x]) => x);
+    expect(Math.min(...xs)).toBeCloseTo(-10, 9);
+    expect(Math.max(...xs)).toBeCloseTo(0, 9);
+    const arc = r.regions[0].commands.find(c => c.kind === 'bulgeArc');
+    expect(arc).toBeDefined();
+  });
+
+  it('mirrors pre-R13 POLYLINE vertices with the header extrusion (0, 0, -1)', () => {
+    const r = importDxfText(entities(
+      [0, 'POLYLINE'], [70, 1], ...NEG_Z,
+      [0, 'VERTEX'], [10, 1], [20, 0],
+      [0, 'VERTEX'], [10, 5], [20, 0],
+      [0, 'VERTEX'], [10, 5], [20, 3],
+      [0, 'VERTEX'], [10, 1], [20, 3],
+      [0, 'SEQEND'],
+    ));
+    expect(r.regions[0].areaMm2).toBeCloseTo(12, 9);
+    const xs = points(r.regions[0].commands).map(([x]) => x);
+    expect(Math.min(...xs)).toBeCloseTo(-5, 9);
+    expect(Math.max(...xs)).toBeCloseTo(-1, 9);
+  });
+
+  it('keeps an explicit (0, 0, 1) extrusion unchanged', () => {
+    const r = importDxfText(entities([0, 'CIRCLE'], [10, 10], [20, 5], [40, 2], [210, 0], [220, 0], [230, 1]));
+    const xs = points(r.regions[0].commands).map(([x]) => x);
+    expect(Math.min(...xs)).toBeCloseTo(8, 9);
+  });
+
+  it('refuses an entity whose extrusion direction leaves the Z axis', () => {
+    let error: unknown;
+    try {
+      importDxfText(entities([0, 'CIRCLE'], [10, 0], [20, 0], [40, 2], [210, 1], [220, 0], [230, 0]));
+    } catch (e) {
+      error = e;
+    }
+    expect(error).toBeInstanceOf(DxfParseError);
+    expect((error as DxfParseError).reason).toBe('unsupported-entity');
+    expect((error as DxfParseError).message).toMatch(/^CIRCLE at line \d+: extrusion direction/);
   });
 });
 
@@ -295,15 +1182,6 @@ describe('importDxfText — units', () => {
 });
 
 describe('importDxfText — failure paths name what went wrong', () => {
-  function failure(fn: () => unknown): DxfParseError {
-    try {
-      fn();
-    } catch (e) {
-      expect(e).toBeInstanceOf(DxfParseError);
-      return e as DxfParseError;
-    }
-    throw new Error('expected importDxfText to throw');
-  }
 
   it('empty file', () => {
     const e = failure(() => importDxfText('   \n  '));
@@ -323,18 +1201,39 @@ describe('importDxfText — failure paths name what went wrong', () => {
     expect(e.message).toMatch(/no ENTITIES section/);
   });
 
-  it('rejects periodic SPLINE because its curve form is not represented by the path command', () => {
+  it('refuses a periodic SPLINE whose control net does not wrap instead of guessing the closure', () => {
     const e = failure(() => importDxfText(entities(
-      [0, 'SPLINE'], [70, 10], [71, 2], [72, 0], [73, 0],
+      [0, 'SPLINE'], [70, 11], [71, 3], [72, 8], [73, 4],
+      ...Array.from({ length: 8 }, (_, i): [number, number] => [40, i]),
+      ...SQUARE_NET.flatMap(([x, y]): Array<[number, number]> => [[10, x], [20, y]]),
     )));
     expect(e.reason).toBe('unsupported-entity');
     expect(e.message).toMatch(/^SPLINE at line \d+:/);
-    expect(e.message).toMatch(/periodic splines are not supported/);
+    expect(e.message).toMatch(/closed flag is set but the curve endpoints do not meet/);
   });
 
-  it('an INSERT is refused rather than dropped', () => {
-    expect(failure(() => importDxfText(entities([0, 'INSERT'], [2, 'BLK']))).message)
-      .toMatch(/INSERT \(block reference\) at line \d+:.*Explode blocks/s);
+  it('refuses a closed fit-point SPLINE with fewer than three distinct fit points', () => {
+    const e = failure(() => importDxfText(entities(
+      [0, 'SPLINE'], [70, 11], [71, 3], [72, 0], [73, 0], [74, 3],
+      [11, 0], [21, 0], [11, 10], [21, 0], [11, 0], [21, 0],
+    )));
+    expect(e.reason).toBe('malformed-entity');
+    expect(e.message).toMatch(/^SPLINE at line \d+: a closed fit-point spline needs at least 3 distinct fit points, found 2/);
+  });
+
+  it('refuses a fit-point SPLINE with repeated consecutive fit points as malformed', () => {
+    const e = failure(() => importDxfText(entities(
+      [0, 'SPLINE'], [70, 8], [71, 3], [72, 0], [73, 0], [74, 3],
+      [11, 0], [21, 0], [11, 0], [21, 0], [11, 10], [21, 0],
+    )));
+    expect(e.reason).toBe('malformed-entity');
+    expect(e.message).toMatch(/consecutive fit points coincide/);
+  });
+
+  it('an INSERT of an undefined block is refused rather than dropped', () => {
+    const e = failure(() => importDxfText(entities([0, 'INSERT'], [2, 'BLK'])));
+    expect(e.reason).toBe('malformed-entity');
+    expect(e.message).toMatch(/^INSERT at line \d+: block "BLK" is not defined in the BLOCKS section/);
   });
 
   it('rejects a zero-span ELLIPSE as malformed instead of making a degenerate profile', () => {

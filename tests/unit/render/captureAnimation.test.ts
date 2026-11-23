@@ -658,3 +658,43 @@ describe('revolute-sweep fixture (animation smoke fixture stays green)', () => {
     expect(metadata.tracks.map((t) => t.param).sort()).toEqual(['armDeg', 'slideMm']);
   });
 });
+
+describe('captureAnimation appearance tracks', () => {
+  // Appearance-only timeline on a static model: 100 ms @ 30 fps → 3 frames.
+  const APPEARANCE_FIXTURE = `
+animationView({ fps: 30, tracks: [
+  { target: 'box', channel: 'emissive', keys: [{ atMs: 0, value: '#000000' }, { atMs: 100, value: '#00ff00' }] },
+] });
+return box(10, 10, 2);
+`;
+
+  it('never re-solves the model, loads meshes once and applies per-frame colours', async () => {
+    const script = join(tmp, 'appearance.kcad.ts');
+    writeFileSync(script, APPEARANCE_FIXTURE);
+    const { deps, page } = makeDeps();
+    const result = await captureAnimation({ scriptPath: script, outPath: join(tmp, 'appearance.mp4') }, deps);
+    expect(result.ok).toBe(true);
+    expect(result.frameCount).toBe(3);
+    expect(result.durationMs).toBe(100);
+    expect(paramCtl.calls).toEqual([]);
+    expect(result.verifySkipped).toBe(true);
+    const calls = (page.evaluate as ReturnType<typeof vi.fn>).mock.calls;
+    expect(calls.filter((c) => c[0].toString().includes('loadFeatureMeshes'))).toHaveLength(1);
+    const appearance = calls.filter((c) => c[0].toString().includes('setFeatureAppearance'));
+    expect(appearance).toHaveLength(3);
+    const emissives = appearance.map((c) => (c[1] as Array<{ emissive?: string }>)[0]?.emissive);
+    expect(emissives).toEqual(['#000000', '#008000', '#00ff00']);
+  });
+
+  it('refuses an unknown target with animation.target.unknown before any browser starts', async () => {
+    const script = join(tmp, 'appearance-unknown.kcad.ts');
+    writeFileSync(script, APPEARANCE_FIXTURE.replace("target: 'box'", "target: 'led-7'"));
+    const { deps, openPage } = makeDeps();
+    const result = await captureAnimation({ scriptPath: script, outPath: join(tmp, 'x.mp4') }, deps);
+    expect(result.ok).toBe(false);
+    expect(result.failureKind).toBe('model');
+    expect(result.diagnostics.map((d) => d.code)).toContain('animation.target.unknown');
+    expect(result.diagnostics.find((d) => d.code === 'animation.target.unknown')?.message).toMatch(/'led-7'.*Available names:.*box/);
+    expect(openPage).not.toHaveBeenCalled();
+  });
+});

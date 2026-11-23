@@ -32,7 +32,7 @@ export const FEATURE_SURFACES_CODES = {
   // Edge-feature partial success (1) — M2
   'feature.edge-feature.short-edges-skipped': {
     hintTemplate:
-      'OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 × radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges.',
+      'The kernel rejected the fillet/chamfer on the full selection, so the edges shorter than 2 × radius (or distance) were skipped and only the longer edges were rounded. Edge length alone does not set the limit. To round the skipped edges too, reduce the radius or distance, scope the fillet/chamfer to a query that matches fewer edges, or change the upstream geometry.',
     nextAction: { kind: 'fix-arg', field: 'radius-or-distance' },
     defaultSeverity: 'error',
     group: 'feature',

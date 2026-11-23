@@ -75,6 +75,7 @@ jobs:
       solidcraft: ${{ steps.detect.outputs.solidcraft }}
       push_gate: ${{ steps.detect.outputs.push_gate }}
       light: ${{ steps.detect.outputs.light }}
+      catalog: ${{ steps.detect.outputs.catalog }}
     steps:
       - id: detect
         env:
@@ -89,6 +90,11 @@ jobs:
           reference_parts=true
           solidcraft=true
           push_gate=false
+          # catalog-index (the ~9 min full-catalog rebuild) is needed unless a
+          # PR touches only files that cannot reach the catalog build. Fail
+          # closed: push/merge_group/dispatch and any path not on the
+          # allow-list below keep it on.
+          catalog=true
           # Post-merge develop push: run only the gates that catch stale-base /
           # cross-PR damage (lint, build-and-checks incl. typecheck + generated
           # drift, catalog-index freshness, reference-parts scorecard). The
@@ -103,7 +109,14 @@ jobs:
             files=$(gh api --paginate "repos/${{ github.repository }}/pulls/${PR}/files" --jq '.[] | .filename, (.previous_filename // empty)')
             if [ -n "$files" ]; then
               docs_only=true
+              catalog=false
               while IFS= read -r f; do
+                case "$f" in
+                  tests/integration/catalog/*|tests/vitest.setup.ts) catalog=true ;;
+                  tests/unit/*|tests/integration/*|tests/e2e/*|eval/*) ;;
+                  README.md|CONTRIBUTING.md|CHANGELOG.md|LICENSE|RELEASE_NOTES.md|docs/*|doc/*|archive/*) ;;
+                  *) catalog=true ;;
+                esac
                 case "$f" in
                   docs/reference-parts-scorecard.md) reference_parts=true ;;
                   docs/solidcraft-ledger.md) solidcraft=true ;;
@@ -127,6 +140,7 @@ jobs:
           echo "solidcraft=$solidcraft" >> "$GITHUB_OUTPUT"
           echo "push_gate=$push_gate" >> "$GITHUB_OUTPUT"
           echo "light=$light" >> "$GITHUB_OUTPUT"
+          echo "catalog=$catalog" >> "$GITHUB_OUTPUT"
 
   reference-parts:
     runs-on: ubuntu-latest
@@ -192,24 +206,44 @@ jobs:
   catalog-index:
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.light != 'true'
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.light != 'true' && needs.changes.outputs.catalog == 'true'
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # Kits are split across 4 runners (KCAD_CATALOG_SHARD, balanced by
+        # asset count); together they cover every kit, and each checks the
+        # committed kit list and asset-id uniqueness. Keep the total in sync
+        # with the shard spec below.
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
         with:
           # HEAD^1 is the base the PR merge commit (or the develop push) is compared with.
           fetch-depth: 2
       - uses: ./.github/actions/setup-cad
-      - name: Catalog index freshness
+      - name: Catalog index freshness (shard ${{ matrix.shard }}/4)
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
+          KCAD_CATALOG_SHARD: ${{ matrix.shard }}/4
         run: npx vitest run tests/integration/catalog/catalogIndex.test.ts
+      - name: Prepare native manufacturing preview renderer
+        run: |
+          npm run build:player
+          # Playwright does not yet identify the GitHub Ubuntu 26.04 runner;
+          # the official Ubuntu 24.04 headless-shell binary is compatible.
+          echo 'PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64' >> "$GITHUB_ENV"
+          PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64 npx playwright install chromium --only-shell
       # #1416: re-render only the assets whose source or preview changed and
       # fail on a stale preview, unless catalog/preview-exceptions.json holds a
-      # reviewed exception for that exact source and preview.
-      - name: Changed-source catalog preview gate
+      # reviewed exception for that exact source and preview. Distribute the
+      # touched assets over the same four runners as the index freshness gate:
+      # 50 CAD renders take >10 minutes on one runner and used to hit the 15m
+      # timeout, canceling a required check even with every image matching.
+      - name: Changed-source catalog preview gate (shard ${{ matrix.shard }}/4)
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
+          KCAD_CATALOG_PREVIEW_SHARD: ${{ matrix.shard }}/4
         run: npx tsx scripts/checkChangedCatalogPreviews.ts --base HEAD^1
 
   # Slow modeled-thread geometry proofs (full M3–M12 helical sweep, modeled
@@ -255,6 +289,18 @@ jobs:
       # keeps this fast (~10-15s on hit).
       - name: Build CLI bundle (required by integration tests)
         run: npm run build:cli
+      # The two standard-component fidelity tests render the real authored CAD
+      # with the same publish preset as the committed 4:3 thumbnail. Only the
+      # shard containing those tests needs a browser; avoid 8 redundant downloads.
+      - name: Prepare renderer for manufacturing fidelity tests
+        run: |
+          if npx vitest list --filesOnly --shard=${{ matrix.shard }}/8 \
+              --exclude 'tests/integration/catalog/catalogIndex.test.ts' \
+              | grep -Eq '(hoseBarbFidelity|dinRailEndStopFidelity)\.test\.ts'; then
+            npm run build:player
+            echo 'PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64' >> "$GITHUB_ENV"
+            PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64 npx playwright install chromium --only-shell
+          fi
       - name: QC — vitest (shard ${{ matrix.shard }}/8)
         # `catalogIndex.test.ts` rebuilds + exports the whole catalog and runs in
         # its own `catalog-index` job (above) so no shard inherits its ~7 min.
@@ -302,7 +348,7 @@ jobs:
           fi
           # catalog-index is its own job on PRs and pushes (never in a shard), so
           # it is required whenever the heavy suite runs at all.
-          if [ "${{ needs.changes.outputs.docs_only }}" != "true" ]; then
+          if [ "${{ needs.changes.outputs.docs_only }}" != "true" ] && [ "${{ needs.changes.outputs.catalog }}" = "true" ]; then
             [ "${{ needs.catalog-index.result }}" = "success" ] || { echo "catalog-index result: ${{ needs.catalog-index.result }}"; exit 1; }
           fi
           if [ "${{ needs.changes.outputs.push_gate }}" = "true" ]; then
@@ -338,6 +384,42 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-cad
+
+      - name: Prefer the existing HTTPS Ubuntu archive for external tools
+        run: |
+          # The Azure HTTP mirror took 19 minutes for 109 MB in CI.
+          # Retain the runner's signed sources and its existing HTTPS fallback.
+          sudo python3 - <<'PY_MIRROR'
+          from pathlib import Path
+
+          def prefer_https_archive(mirror_path):
+              if not mirror_path.is_file():
+                  print("APT mirror list absent; no source configuration changed.")
+                  return 0
+              original = mirror_path.read_bytes()
+              lines = original.decode("utf-8").splitlines(keepends=True)
+              def uri(line):
+                  fields = line.split()
+                  return fields[0] if fields and not fields[0].startswith("#") else None
+              azure = {"http://azure.archive.ubuntu.com/ubuntu",
+                       "http://azure.archive.ubuntu.com/ubuntu/"}
+              official = {"https://archive.ubuntu.com/ubuntu",
+                          "https://archive.ubuntu.com/ubuntu/"}
+              targets = [i for i, line in enumerate(lines) if uri(line) in azure]
+              if not targets:
+                  print("No Azure HTTP mirror entry; source configuration unchanged.")
+                  return 0
+              if not any(uri(line) in official for line in lines):
+                  raise RuntimeError("Azure mirror found without the official HTTPS fallback; source configuration unchanged.")
+              for i in targets:
+                  lines[i] = "# " + lines[i]
+              mirror_path.write_bytes("".join(lines).encode("utf-8"))
+              print(f"Commented {len(targets)} Azure HTTP mirror entry/entries; retained the official HTTPS archive and all other lines.")
+              return len(targets)
+
+          if __name__ == "__main__":
+              prefer_https_archive(Path("/etc/apt/apt-mirrors.txt"))
+          PY_MIRROR
 
       - name: Install CalculiX (ccx), gmsh runtime libs and ffmpeg
         run: |

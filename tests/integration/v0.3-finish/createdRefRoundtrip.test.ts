@@ -14,11 +14,11 @@ async function lowerCode(code: string) {
 describe('created-ref round-trip through edgeSelection', () => {
   beforeAll(async () => { await initOcct(); });
 
-  it('hole-then-fillet-on-thruHole.entry-rim lowers without face-ref.* errors', async () => {
+  it('hole-then-fillet-on-thruHole.wall lowers without face-ref.* errors', async () => {
     const code = `
       const plate = box(40, 40, 10)
         .hole('top', { u: 0, v: 0, diameter: 6, depth: 'through', name: 'thruHole' });
-      return plate.fillet(0.2, { face: 'thruHole.entry-rim' });
+      return plate.fillet(0.2, { face: 'thruHole.wall' });
     `;
     const { diagnostics } = await lowerCode(code);
     const errors = diagnostics.filter((d) => d.code.startsWith('feature.face-ref'));

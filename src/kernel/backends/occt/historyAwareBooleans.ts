@@ -79,7 +79,7 @@ function shapeHash(_oc: ReturnType<typeof getOC>, shape: unknown): string {
  * Enumerate faces (or edges) of a shape in TopExp_Explorer order, returning
  * their hashes and subshape handles.
  */
-function collectSubshapeHashes(
+export function collectSubshapeHashes(
   oc: ReturnType<typeof getOC>,
   shape: unknown,
   shapeType: 'face' | 'edge',
@@ -164,11 +164,12 @@ export function assertBooleanSucceeded(builder: BooleanBuilderStatus, op: string
 }
 
 /**
- * Count of OCCT boolean builds run through this module. A cheap, deterministic
+ * Count of OCCT boolean builds run through this module, and of whole-result
+ * checks of exact builds (BRepCheck topology pass). A cheap, deterministic
  * cost probe: tests assert how many booleans a feature costs instead of timing
  * it (wall-clock tests are flaky; a boolean count is not).
  */
-export const booleanBuildStats = { builds: 0 };
+export const booleanBuildStats = { builds: 0, resultChecks: 0 };
 
 export type BooleanOp = 'cut' | 'fuse' | 'intersect';
 
@@ -194,6 +195,20 @@ type AttemptOutcome =
 
 const EXACT_PLAN: BooleanAttemptPlan = { strategy: 'exact', fuzzy: 0, glue: false };
 
+/** Options for one history-aware boolean. */
+export interface BooleanRunOptions {
+  /**
+   * Skip the whole-result checks of a clean exact build: the topology pass
+   * (BRepCheck) and, for a fuse, the lost-material volume test. Both cost
+   * time proportional to the whole result, so a chain of N single-tool
+   * booleans growing one body paid them N times. Only for a result whose
+   * sole consumer checks the chain's end result against every operand of the
+   * chain (see `lowerers/boolean.ts`). A build that fails, or finishes with
+   * warnings, still goes through the full recovery ladder.
+   */
+  deferResultChecks?: boolean;
+}
+
 /**
  * Run ONE BRepAlgoAPI_* boolean of `body` against every shape in `tools` and
  * return the shape + the history of every input.
@@ -215,6 +230,7 @@ function runBooleanWithHistory(
   body: OcctBackend,
   tools: readonly OcctBackend[],
   op: BooleanOp,
+  options: BooleanRunOptions = {},
 ): BooleanHistoryResult {
   // Access the underlying TopoDS_Shape via the public getReplicadShape() accessor,
   // then read the .wrapped property which is the OCCT TopoDS_Shape handle.
@@ -225,7 +241,7 @@ function runBooleanWithHistory(
   if (!bodyShape || toolShapes.length === 0 || toolShapes.some((t) => !t)) {
     throw new Error('historyAwareBooleans: could not access .wrapped on input shape');
   }
-  return booleanShapesWithHistory(bodyShape, toolShapes, op);
+  return booleanShapesWithHistory(bodyShape, toolShapes, op, options);
 }
 
 /**
@@ -237,13 +253,15 @@ export function booleanShapesWithHistory(
   bodyShape: unknown,
   toolShapes: readonly unknown[],
   op: BooleanOp,
+  options: BooleanRunOptions = {},
 ): BooleanHistoryResult {
   const oc = getOC();
   const inputs = [bodyShape, ...toolShapes];
   const merged = mergeNearCoincidentCylinders(oc, op, bodyShape, toolShapes, inputs);
   if (merged) return merged;
-  const exact = attemptBoolean(oc, op, inputs, EXACT_PLAN, []);
-  const recovered = op === 'fuse' && exact.ok ? recoverLostFuseMaterial(oc, inputs, exact.result.shape) : undefined;
+  const defer = options.deferResultChecks === true;
+  const exact = attemptBoolean(oc, op, inputs, EXACT_PLAN, [], defer);
+  const recovered = op === 'fuse' && exact.ok && !defer ? recoverLostFuseMaterial(oc, inputs, exact.result.shape) : undefined;
   if (recovered) return recovered;
   if (exact.ok) return (op === 'fuse' && mergeUnmergedFuse(oc, inputs, exact.result)) || exact.result;
 
@@ -546,6 +564,7 @@ function attemptBoolean(
   inputs: readonly unknown[],
   plan: BooleanAttemptPlan,
   inputVolumes: readonly number[],
+  deferResultChecks = false,
 ): AttemptOutcome {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const o = oc as any;
@@ -574,7 +593,7 @@ function attemptBoolean(
       ...(plan.fuzzy > 0 ? { fuzzyValue: plan.fuzzy } : {}),
     };
     return plan.strategy === 'exact'
-      ? judgeExact(oc, builder, op, result)
+      ? judgeExact(oc, builder, op, result, deferResultChecks)
       : judgeRecovered(oc, op, result, plan, inputVolumes);
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : `historyAwareBooleans: ${op} boolean threw a kernel exception.` };
@@ -595,8 +614,11 @@ function judgeExact(
   builder: any,
   op: BooleanOp,
   result: BooleanHistoryResult,
+  deferTopology = false,
 ): AttemptOutcome {
   const warned = typeof builder.HasWarnings === 'function' && builder.HasWarnings();
+  if (deferTopology && !warned) return { ok: true, result };
+  booleanBuildStats.resultChecks += 1;
   // A coincident/tangent-face boolean can return an unorientable face with no
   // builder warning. Catch that cheaply (topology only) so the recovery ladder
   // gets a chance to repair it; the full geometry check still gates recovered
@@ -749,8 +771,12 @@ function readBuilderHistory(
  * 36 serration teeth spent >90% of a part's evaluation in those 35 fuses.
  * One build with all tools intersects each pair of inputs once.
  */
-export function fuseManyWithHistory(body: OcctBackend, tools: readonly OcctBackend[]): BooleanHistoryResult {
-  return runBooleanWithHistory(body, tools, 'fuse');
+export function fuseManyWithHistory(
+  body: OcctBackend,
+  tools: readonly OcctBackend[],
+  options?: BooleanRunOptions,
+): BooleanHistoryResult {
+  return runBooleanWithHistory(body, tools, 'fuse', options);
 }
 
 /**
@@ -761,8 +787,12 @@ export function fuseManyWithHistory(body: OcctBackend, tools: readonly OcctBacke
  * earliest-input-wins fold the pairwise path produced
  * ({@link mergeBooleanHistoryMany}).
  */
-export function cutManyWithHistory(body: OcctBackend, tools: readonly OcctBackend[]): BooleanHistoryResult {
-  return runBooleanWithHistory(body, tools, 'cut');
+export function cutManyWithHistory(
+  body: OcctBackend,
+  tools: readonly OcctBackend[],
+  options?: BooleanRunOptions,
+): BooleanHistoryResult {
+  return runBooleanWithHistory(body, tools, 'cut', options);
 }
 
 export function cutWithHistory(body: OcctBackend, tool: OcctBackend): BooleanHistoryResult {

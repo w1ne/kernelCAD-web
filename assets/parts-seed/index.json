@@ -166,6 +166,193 @@
       },
       "source": "local-catalog",
       "sha256": "febd0a8c4c4dae99aaf532cae87a21b13953c250dfd3b660755308520905b5bf"
+    },
+    {
+      "id": "nema-17",
+      "name": "NEMA 17 stepper motor",
+      "category": "motor",
+      "family": "stepper-motor",
+      "tags": [
+        "motor",
+        "stepper",
+        "nema17"
+      ],
+      "attributes": {
+        "frameMm": 42.3,
+        "lengthMm": 40,
+        "boltSpacingMm": 31,
+        "boltSizeMm": 3,
+        "shaftDiameterMm": 5,
+        "shaftLengthMm": 24
+      },
+      "license": "MIT",
+      "connectors": [
+        "mounting-face",
+        "output-shaft",
+        "back-face",
+        "bolt-holes-1",
+        "bolt-holes-2",
+        "bolt-holes-3",
+        "bolt-holes-4"
+      ],
+      "sha256": "d1acf011768b049cf568313e45eba1eb61880ac9b304b00af1a9dc76a9f83547",
+      "source": "local-catalog"
+    },
+    {
+      "id": "nema-23",
+      "name": "NEMA 23 stepper motor",
+      "category": "motor",
+      "family": "stepper-motor",
+      "tags": [
+        "motor",
+        "stepper",
+        "nema23"
+      ],
+      "attributes": {
+        "frameMm": 56.4,
+        "lengthMm": 56,
+        "boltSpacingMm": 47.14,
+        "boltSizeMm": 5,
+        "shaftDiameterMm": 6.35,
+        "shaftLengthMm": 21
+      },
+      "license": "MIT",
+      "connectors": [
+        "mounting-face",
+        "output-shaft",
+        "back-face",
+        "bolt-holes-1",
+        "bolt-holes-2",
+        "bolt-holes-3",
+        "bolt-holes-4"
+      ],
+      "sha256": "7f4109823cc07df5d3d912038c0a9f72f57472e85308c9386becf92569378df6",
+      "source": "local-catalog"
+    },
+    {
+      "id": "heatset-m2-5-l5-7",
+      "name": "M2.5 heat-set insert L5.7",
+      "category": "fastener",
+      "family": "heat-set-insert",
+      "tags": [
+        "insert",
+        "heatset",
+        "metric",
+        "M2.5"
+      ],
+      "attributes": {
+        "thread": "M2.5",
+        "lengthMm": 5.7,
+        "outerDiameterMm": 3.8
+      },
+      "license": "MIT",
+      "connectors": [
+        "mating-face",
+        "inner-bore",
+        "top-face"
+      ],
+      "sha256": "e60d5b98975469fd17a675309f3db7f680c4f0f830b34097a9d0133dd75c8b03",
+      "source": "local-catalog"
+    },
+    {
+      "id": "heatset-m3-l3-8",
+      "name": "M3 heat-set insert L3.8",
+      "category": "fastener",
+      "family": "heat-set-insert",
+      "tags": [
+        "insert",
+        "heatset",
+        "metric",
+        "M3"
+      ],
+      "attributes": {
+        "thread": "M3",
+        "lengthMm": 3.8,
+        "outerDiameterMm": 4.5
+      },
+      "license": "MIT",
+      "connectors": [
+        "mating-face",
+        "inner-bore",
+        "top-face"
+      ],
+      "sha256": "b013939f6539a7612472af25de65ed3745c7c04c700e92ffc41211f4a95b672d",
+      "source": "local-catalog"
+    },
+    {
+      "id": "heatset-m3-l5-7",
+      "name": "M3 heat-set insert L5.7",
+      "category": "fastener",
+      "family": "heat-set-insert",
+      "tags": [
+        "insert",
+        "heatset",
+        "metric",
+        "M3"
+      ],
+      "attributes": {
+        "thread": "M3",
+        "lengthMm": 5.7,
+        "outerDiameterMm": 4.5
+      },
+      "license": "MIT",
+      "connectors": [
+        "mating-face",
+        "inner-bore",
+        "top-face"
+      ],
+      "sha256": "94fa0727c147c68ba569089507a4431d9b5042ae3c08352faabdc30d4c65ed6c",
+      "source": "local-catalog"
+    },
+    {
+      "id": "heatset-m4-l3-8",
+      "name": "M4 heat-set insert L3.8",
+      "category": "fastener",
+      "family": "heat-set-insert",
+      "tags": [
+        "insert",
+        "heatset",
+        "metric",
+        "M4"
+      ],
+      "attributes": {
+        "thread": "M4",
+        "lengthMm": 3.8,
+        "outerDiameterMm": 5.5
+      },
+      "license": "MIT",
+      "connectors": [
+        "mating-face",
+        "inner-bore",
+        "top-face"
+      ],
+      "sha256": "41f72309b62058a8a57a794d8b49bccc4c62a3f6c2d6d1bec842f68947608fd0",
+      "source": "local-catalog"
+    },
+    {
+      "id": "heatset-m4-l5-7",
+      "name": "M4 heat-set insert L5.7",
+      "category": "fastener",
+      "family": "heat-set-insert",
+      "tags": [
+        "insert",
+        "heatset",
+        "metric",
+        "M4"
+      ],
+      "attributes": {
+        "thread": "M4",
+        "lengthMm": 5.7,
+        "outerDiameterMm": 5.5
+      },
+      "license": "MIT",
+      "connectors": [
+        "mating-face",
+        "inner-bore",
+        "top-face"
+      ],
+      "sha256": "6f9ad890b3cfd0cd98e7b5cd10a40adf716627b4f77ab85bbf8740dee3e05f62",
+      "source": "local-catalog"
     }
   ]
 }

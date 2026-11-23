@@ -1,0 +1,17 @@
+{
+  "reviewedAt": "2026-11-22T20:02:42.076145+00:00",
+  "videoSha256": "8f0207681e9bad4d4c6745ff9757aff18540b3c552bbde3dece237db7fbff9ba",
+  "decodedFrames": {
+    "frame-1.png": "dd871797cdec2bb3b03a487e0273a406ce2de7084179989a090d3a68ef48cf28",
+    "frame-2.png": "4108dbd3180fa3e529cf5409383a72d6693d73c4ba20ecdae7479c8c1d4faf83",
+    "frame-3.png": "ddbeada5883f9b7f2a64dc0b06e0e8a2c7f90e03229cf9a5559fea31518afd24",
+    "frame-4.png": "14ec63ef4933bbf33e6ad43a535c34df2a8a804a2b50cb3a5621a3185815bb1e"
+  },
+  "findings": [
+    "All four decoded frames have readable titles, numeric results and scope captions.",
+    "Straight and stepped examples show the exact plate and screw source geometry.",
+    "The solid-web negative retains the native interpenetration warning.",
+    "The narrow breached step is on the visible front corner and the 3x inset shows the same rendered notch."
+  ],
+  "scope": "Visual review of the source-bound local MCP demo; no hosted or physical acceptance."
+}

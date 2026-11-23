@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-11-22T17:13:18.471602+00:00",
+  "videoSha256": "7b3a9e042b51bc6e620ad8adb0f93321cf07c5a7f7174112ee7b8efc8e047aa1",
+  "decodedFinalFrameSeconds": [
+    6
+  ],
+  "findings": [
+    "The video frame shows two named rectangles, with the slide touching the top of the base; both use the same millimetre scale.",
+    "The source/result captions fit within the frame and identify base X=20 mm and slide X=25 mm for the 5 mm pose.",
+    "The unchanged caption sequence distinguishes the assumed first part from the declared fixed base and the measured 0, 5 and 15 mm poses.",
+    "The final fallback caption was checked after generation and reports measured base X=5 mm.",
+    "The canonical front, right, top and isometric views show two solids in the expected contact with no stray body or visible gap.",
+    "The fixture is labeled local kinematic placement evidence, without a manufactured-guide or hardware claim."
+  ],
+  "canonicalViews": {
+    "front": "65909414af3dda3672f500f4610b435b174a08b1b79ab4d8ab498307db99bf84",
+    "right": "4373d1870d542d26279840ed68a392515f3146b1c72865be207053eda8cc5356",
+    "top": "31c3c7b36f6a11a9e06b471a4a5e824992cb8770f20244f7fc866c5a764f710b",
+    "iso": "236d44b075b36c820be560fa83fbb26cc1d78064b784462ddbb4fd4d3483747b"
+  },
+  "renderer": {
+    "existingBrowserAttach": "Both existing Chrome CDP endpoints answered Browser.getVersion but Page initialization timed out at the normal 30-second limit.",
+    "successfulRun": "The existing CLI static player and its temporary headless renderer produced the inspection bundle; user Chrome sessions were left running.",
+    "exitCode": 0
+  },
+  "localGates": {
+    "relatedTests": 435,
+    "testFiles": 38,
+    "newRootTests": 12,
+    "fullTypecheck": "pass",
+    "targetedLintErrors": 0,
+    "qualityAndCycleBaselines": "unchanged, pass",
+    "cliEvaluate": "ok, zero diagnostics"
+  }
+}

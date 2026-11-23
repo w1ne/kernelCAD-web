@@ -1,0 +1,3184 @@
+{
+  "generatedAt": "2026-11-20T13:35:04.903Z",
+  "nativeAcceptance": {
+    "status": "COMPOSITE_NATIVE_ACCEPTANCE",
+    "sha256": "ca38f030b9f7062bbaa90adc3836a8ca666c29b51e7ead7515faf14bedfb9cbd",
+    "composition": "29 unchanged accepted rows from freeze-v5 plus4 corrected skate rows; not a single new33-case execution",
+    "runs": [
+      {
+        "directory": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01",
+        "bindingSha256": "1b15f84e7cc351032b3544a72b2d2a7ff88d55ac1a72968f0abbed40ab88b5cf",
+        "resultSha256": "7ea8f376d917d3c1f6039badabe0294aa7e12d6e7d99969f8a2f3e26de685f3c",
+        "executedCases": 33,
+        "selectedCases": 29,
+        "launcherExit": 0
+      },
+      {
+        "directory": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/skate-visual-v1/run-01",
+        "bindingSha256": "9c7c4cbe95137cd22188f14546d3d77c1886a533afd3bab7344182ad5138310e",
+        "resultSha256": "2ac204bdf6671775a0078f26643fa4eea14d49293115a199cbbf9c470f5a39b5",
+        "executedCases": 4,
+        "selectedCases": 4,
+        "launcherExit": 0
+      }
+    ]
+  },
+  "canonicalRenderer": {
+    "status": "BOOTSTRAP_BLOCKED",
+    "scope": "Canonical shared browser bootstrap stopped at CDP initialization; no render inspect model run",
+    "evidence": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/canonical-inspect-environment/result.json",
+    "sha256": "cfb45b495d5ed13d3c00b896a3e2848029e061e916c27312c6141bcd15f7a451"
+  },
+  "renderer": "repository native-GLB software renderer; no new CAD evaluation",
+  "scope": "Static source geometry. Camera-filtered comparison is not a Studio interaction or mechanical-capacity test.",
+  "models": [
+    {
+      "id": "belt-magnet-separator",
+      "source": "catalog/kits/mining/belt-magnet-separator.kcad.ts",
+      "sourceSha256": "035795270e88de69d8c18a374c92c01b6edad03fc8db6c9f77708fb1a2d8dc33",
+      "originalSourceSha256": "e1b69ea3a7294ebbf0f96dace961612b1f0f5bb5ab4dfc3a79c7af07f3e3d8c4",
+      "nativeLineage": {
+        "runDirectory": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01",
+        "resultsSha256": "7ea8f376d917d3c1f6039badabe0294aa7e12d6e7d99969f8a2f3e26de685f3c",
+        "bindingSha256": "1b15f84e7cc351032b3544a72b2d2a7ff88d55ac1a72968f0abbed40ab88b5cf",
+        "unchangedFromOriginal33": true
+      },
+      "originalNativeLineage": {
+        "runDirectory": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01",
+        "resultsSha256": "7ea8f376d917d3c1f6039badabe0294aa7e12d6e7d99969f8a2f3e26de685f3c",
+        "bindingSha256": "1b15f84e7cc351032b3544a72b2d2a7ff88d55ac1a72968f0abbed40ab88b5cf",
+        "unchangedFromOriginal33": true
+      },
+      "glb": {
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01/belt-magnet-separator.default.glb",
+        "bytes": 340128,
+        "sha256": "9652025e32fe890826f6e8238333907adb430cf2a8344344e7ba172b2e22b385"
+      },
+      "originalGlb": {
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01/belt-magnet-separator.original.glb",
+        "bytes": 322216,
+        "sha256": "3a5a5c613c38ee0ac021abb2d9f846e1942154e244899ee26e73613178b09f08"
+      },
+      "preview": "/data/worktrees/kernelcad-catalog-five-connections-20261120/catalog/kits/mining/previews/belt-magnet-separator.png",
+      "comparison": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/belt-magnet-separator/comparison.png",
+      "focusNames": {
+        "before": [
+          "magnet-pulley-0",
+          "magnet-pulley-1",
+          "cleaning-belt-lower",
+          "cleaning-belt-upper",
+          "cleat-lower-0",
+          "cleat-upper-0",
+          "cleat-lower-1",
+          "cleat-upper-1",
+          "cleat-lower-2",
+          "cleat-upper-2",
+          "cleat-lower-3",
+          "cleat-upper-3",
+          "cleat-lower-4",
+          "cleat-upper-4",
+          "cleat-lower-5",
+          "cleat-upper-5",
+          "cleat-lower-6",
+          "cleat-upper-6",
+          "magnet-block",
+          "side-frame-0",
+          "side-frame-1",
+          "lifting-lug-0",
+          "chain-0",
+          "lifting-lug-1",
+          "chain-1",
+          "lifting-lug-2",
+          "chain-2",
+          "lifting-lug-3",
+          "chain-3"
+        ],
+        "after": [
+          "magnet-pulley-0",
+          "magnet-pulley-axle-0",
+          "magnet-pulley-1",
+          "magnet-pulley-axle-1",
+          "cleaning-belt-lower",
+          "cleaning-belt-upper",
+          "cleat-lower-0",
+          "cleat-upper-0",
+          "cleat-lower-1",
+          "cleat-upper-1",
+          "cleat-lower-2",
+          "cleat-upper-2",
+          "cleat-lower-3",
+          "cleat-upper-3",
+          "cleat-lower-4",
+          "cleat-upper-4",
+          "cleat-lower-5",
+          "cleat-upper-5",
+          "cleat-lower-6",
+          "cleat-upper-6",
+          "magnet-block",
+          "side-frame-0",
+          "magnet-support-0-0",
+          "magnet-support-0-1",
+          "side-frame-1",
+          "magnet-support-1-0",
+          "magnet-support-1-1",
+          "lifting-lug-0",
+          "chain-0",
+          "lifting-lug-1",
+          "chain-1",
+          "lifting-lug-2",
+          "chain-2",
+          "lifting-lug-3",
+          "chain-3"
+        ]
+      },
+      "framing": {
+        "minM": [
+          -0.9714375000000001,
+          1.6799999999999997,
+          -1.3686346435546866
+        ],
+        "maxM": [
+          0.9714375000000001,
+          3.6702092285156254,
+          1.3686346435546883
+        ]
+      },
+      "pose": {
+        "yaw": 0,
+        "pitch": 8
+      },
+      "triangles": 2180,
+      "geometry": {
+        "id": "belt-magnet-separator",
+        "partCount": 124,
+        "triangleCount": 2180,
+        "failures": [],
+        "measurements": {
+          "magnet-support-0-0-lower-clearance": 179.99999999999955,
+          "magnet-support-0-0-upper-clearance": 179.99999999999932,
+          "magnet-support-0-1-lower-clearance": 180,
+          "magnet-support-0-1-upper-clearance": 179.99999999999932,
+          "magnet-support-1-0-lower-clearance": 179.99999999999955,
+          "magnet-support-1-0-upper-clearance": 179.99999999999932,
+          "magnet-support-1-1-lower-clearance": 180,
+          "magnet-support-1-1-upper-clearance": 179.99999999999932,
+          "lifting-lug-0-belt-clearance": 10,
+          "lifting-lug-1-belt-clearance": 10,
+          "lifting-lug-2-belt-clearance": 10,
+          "lifting-lug-3-belt-clearance": 10
+        },
+        "witnesses": [
+          {
+            "label": "magnet-support-0-0-body",
+            "a": "magnet-support-0-0",
+            "b": "magnet-block",
+            "pointMm": [
+              -550,
+              -600,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "magnet-support-0-0-frame",
+            "a": "magnet-support-0-0",
+            "b": "side-frame-0",
+            "pointMm": [
+              -670,
+              -600,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "magnet-support-0-1-body",
+            "a": "magnet-support-0-1",
+            "b": "magnet-block",
+            "pointMm": [
+              -550,
+              600,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "magnet-support-0-1-frame",
+            "a": "magnet-support-0-1",
+            "b": "side-frame-0",
+            "pointMm": [
+              -670,
+              600,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-0-pulley",
+            "a": "magnet-pulley-axle-0",
+            "b": "magnet-pulley-0",
+            "pointMm": [
+              0,
+              -1050,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-0-frame-0",
+            "a": "magnet-pulley-axle-0",
+            "b": "side-frame-0",
+            "pointMm": [
+              -680,
+              -1050,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-1-pulley",
+            "a": "magnet-pulley-axle-1",
+            "b": "magnet-pulley-1",
+            "pointMm": [
+              0,
+              1050,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-1-frame-0",
+            "a": "magnet-pulley-axle-1",
+            "b": "side-frame-0",
+            "pointMm": [
+              -680,
+              1050,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "magnet-support-1-0-body",
+            "a": "magnet-support-1-0",
+            "b": "magnet-block",
+            "pointMm": [
+              550,
+              -600,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "magnet-support-1-0-frame",
+            "a": "magnet-support-1-0",
+            "b": "side-frame-1",
+            "pointMm": [
+              670,
+              -600,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "magnet-support-1-1-body",
+            "a": "magnet-support-1-1",
+            "b": "magnet-block",
+            "pointMm": [
+              550,
+              600,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "magnet-support-1-1-frame",
+            "a": "magnet-support-1-1",
+            "b": "side-frame-1",
+            "pointMm": [
+              670,
+              600,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-0-pulley",
+            "a": "magnet-pulley-axle-0",
+            "b": "magnet-pulley-0",
+            "pointMm": [
+              0,
+              -1050,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-0-frame-1",
+            "a": "magnet-pulley-axle-0",
+            "b": "side-frame-1",
+            "pointMm": [
+              680,
+              -1050,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-1-pulley",
+            "a": "magnet-pulley-axle-1",
+            "b": "magnet-pulley-1",
+            "pointMm": [
+              0,
+              1050,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-1-frame-1",
+            "a": "magnet-pulley-axle-1",
+            "b": "side-frame-1",
+            "pointMm": [
+              680,
+              1050,
+              1970
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "lifting-lug-0-frame",
+            "a": "lifting-lug-0",
+            "b": "side-frame-0",
+            "pointMm": [
+              -690,
+              -760,
+              2110
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "chain-0-lug",
+            "a": "chain-0",
+            "b": "lifting-lug-0",
+            "pointMm": [
+              -694.0325831928332,
+              -769.1508618606599,
+              2308
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "chain-0-runner",
+            "a": "chain-0",
+            "b": "gantry-runner-0",
+            "pointMm": [
+              -945.9674168071668,
+              -1340.84913813934,
+              3662
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "lifting-lug-1-frame",
+            "a": "lifting-lug-1",
+            "b": "side-frame-1",
+            "pointMm": [
+              690,
+              -760,
+              2110
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "chain-1-lug",
+            "a": "chain-1",
+            "b": "lifting-lug-1",
+            "pointMm": [
+              694.0325831928332,
+              -769.1508618606599,
+              2308
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "chain-1-runner",
+            "a": "chain-1",
+            "b": "gantry-runner-0",
+            "pointMm": [
+              945.9674168071668,
+              -1340.84913813934,
+              3662
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "lifting-lug-2-frame",
+            "a": "lifting-lug-2",
+            "b": "side-frame-0",
+            "pointMm": [
+              -690,
+              760,
+              2110
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "chain-2-lug",
+            "a": "chain-2",
+            "b": "lifting-lug-2",
+            "pointMm": [
+              -694.0325831928332,
+              769.1508618606599,
+              2308
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "chain-2-runner",
+            "a": "chain-2",
+            "b": "gantry-runner-1",
+            "pointMm": [
+              -945.9674168071668,
+              1340.84913813934,
+              3662
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "lifting-lug-3-frame",
+            "a": "lifting-lug-3",
+            "b": "side-frame-1",
+            "pointMm": [
+              690,
+              760,
+              2110
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "chain-3-lug",
+            "a": "chain-3",
+            "b": "lifting-lug-3",
+            "pointMm": [
+              694.0325831928332,
+              769.1508618606599,
+              2308
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "chain-3-runner",
+            "a": "chain-3",
+            "b": "gantry-runner-1",
+            "pointMm": [
+              945.9674168071668,
+              1340.84913813934,
+              3662
+            ],
+            "insideA": true,
+            "insideB": true
+          }
+        ]
+      },
+      "negative": {
+        "id": "belt-magnet-separator",
+        "partCount": 118,
+        "triangleCount": 2060,
+        "failures": [
+          "magnet-support-0-0-body",
+          "magnet-support-0-0-frame",
+          "magnet-support-0-0-lower-clearance",
+          "magnet-support-0-0-upper-clearance",
+          "magnet-support-0-1-body",
+          "magnet-support-0-1-frame",
+          "magnet-support-0-1-lower-clearance",
+          "magnet-support-0-1-upper-clearance",
+          "magnet-pulley-axle-0-pulley",
+          "magnet-pulley-axle-0-frame-0",
+          "magnet-pulley-axle-1-pulley",
+          "magnet-pulley-axle-1-frame-0",
+          "magnet-support-1-0-body",
+          "magnet-support-1-0-frame",
+          "magnet-support-1-0-lower-clearance",
+          "magnet-support-1-0-upper-clearance",
+          "magnet-support-1-1-body",
+          "magnet-support-1-1-frame",
+          "magnet-support-1-1-lower-clearance",
+          "magnet-support-1-1-upper-clearance",
+          "magnet-pulley-axle-0-frame-1",
+          "magnet-pulley-axle-1-frame-1",
+          "lifting-lug-0-frame",
+          "lifting-lug-0-belt-clearance",
+          "lifting-lug-0-belt-solid-overlap",
+          "chain-0-lug",
+          "lifting-lug-1-frame",
+          "lifting-lug-1-belt-clearance",
+          "lifting-lug-1-belt-solid-overlap",
+          "chain-1-lug",
+          "lifting-lug-2-frame",
+          "lifting-lug-2-belt-clearance",
+          "lifting-lug-2-belt-solid-overlap",
+          "chain-2-lug",
+          "lifting-lug-3-frame",
+          "lifting-lug-3-belt-clearance",
+          "lifting-lug-3-belt-solid-overlap",
+          "chain-3-lug"
+        ],
+        "measurements": {
+          "magnet-support-0-0-lower-clearance": null,
+          "magnet-support-0-0-upper-clearance": null,
+          "magnet-support-0-1-lower-clearance": null,
+          "magnet-support-0-1-upper-clearance": null,
+          "magnet-support-1-0-lower-clearance": null,
+          "magnet-support-1-0-upper-clearance": null,
+          "magnet-support-1-1-lower-clearance": null,
+          "magnet-support-1-1-upper-clearance": null,
+          "lifting-lug-0-belt-clearance": -120,
+          "lifting-lug-1-belt-clearance": -120,
+          "lifting-lug-2-belt-clearance": -120,
+          "lifting-lug-3-belt-clearance": -120
+        },
+        "witnesses": [
+          {
+            "label": "magnet-support-0-0-body",
+            "a": "magnet-support-0-0",
+            "b": "magnet-block",
+            "pointMm": [
+              -550,
+              -600,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "magnet-support-0-0-frame",
+            "a": "magnet-support-0-0",
+            "b": "side-frame-0",
+            "pointMm": [
+              -670,
+              -600,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "magnet-support-0-1-body",
+            "a": "magnet-support-0-1",
+            "b": "magnet-block",
+            "pointMm": [
+              -550,
+              600,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "magnet-support-0-1-frame",
+            "a": "magnet-support-0-1",
+            "b": "side-frame-0",
+            "pointMm": [
+              -670,
+              600,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-0-pulley",
+            "a": "magnet-pulley-axle-0",
+            "b": "magnet-pulley-0",
+            "pointMm": [
+              0,
+              -1050,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-0-frame-0",
+            "a": "magnet-pulley-axle-0",
+            "b": "side-frame-0",
+            "pointMm": [
+              -680,
+              -1050,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-1-pulley",
+            "a": "magnet-pulley-axle-1",
+            "b": "magnet-pulley-1",
+            "pointMm": [
+              0,
+              1050,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-1-frame-0",
+            "a": "magnet-pulley-axle-1",
+            "b": "side-frame-0",
+            "pointMm": [
+              -680,
+              1050,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "magnet-support-1-0-body",
+            "a": "magnet-support-1-0",
+            "b": "magnet-block",
+            "pointMm": [
+              550,
+              -600,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "magnet-support-1-0-frame",
+            "a": "magnet-support-1-0",
+            "b": "side-frame-1",
+            "pointMm": [
+              670,
+              -600,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "magnet-support-1-1-body",
+            "a": "magnet-support-1-1",
+            "b": "magnet-block",
+            "pointMm": [
+              550,
+              600,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "magnet-support-1-1-frame",
+            "a": "magnet-support-1-1",
+            "b": "side-frame-1",
+            "pointMm": [
+              670,
+              600,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-0-pulley",
+            "a": "magnet-pulley-axle-0",
+            "b": "magnet-pulley-0",
+            "pointMm": [
+              0,
+              -1050,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-0-frame-1",
+            "a": "magnet-pulley-axle-0",
+            "b": "side-frame-1",
+            "pointMm": [
+              680,
+              -1050,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-1-pulley",
+            "a": "magnet-pulley-axle-1",
+            "b": "magnet-pulley-1",
+            "pointMm": [
+              0,
+              1050,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "magnet-pulley-axle-1-frame-1",
+            "a": "magnet-pulley-axle-1",
+            "b": "side-frame-1",
+            "pointMm": [
+              680,
+              1050,
+              1970
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "lifting-lug-0-frame",
+            "a": "lifting-lug-0",
+            "b": "side-frame-0",
+            "pointMm": [
+              -690,
+              -760,
+              2110
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "chain-0-lug",
+            "a": "chain-0",
+            "b": "lifting-lug-0",
+            "pointMm": [
+              -694.0325831928332,
+              -769.1508618606599,
+              2308
+            ],
+            "insideA": false,
+            "insideB": false
+          },
+          {
+            "label": "chain-0-runner",
+            "a": "chain-0",
+            "b": "gantry-runner-0",
+            "pointMm": [
+              -945.9674168071668,
+              -1340.84913813934,
+              3662
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "lifting-lug-1-frame",
+            "a": "lifting-lug-1",
+            "b": "side-frame-1",
+            "pointMm": [
+              690,
+              -760,
+              2110
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "chain-1-lug",
+            "a": "chain-1",
+            "b": "lifting-lug-1",
+            "pointMm": [
+              694.0325831928332,
+              -769.1508618606599,
+              2308
+            ],
+            "insideA": false,
+            "insideB": false
+          },
+          {
+            "label": "chain-1-runner",
+            "a": "chain-1",
+            "b": "gantry-runner-0",
+            "pointMm": [
+              945.9674168071668,
+              -1340.84913813934,
+              3662
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "lifting-lug-2-frame",
+            "a": "lifting-lug-2",
+            "b": "side-frame-0",
+            "pointMm": [
+              -690,
+              760,
+              2110
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "chain-2-lug",
+            "a": "chain-2",
+            "b": "lifting-lug-2",
+            "pointMm": [
+              -694.0325831928332,
+              769.1508618606599,
+              2308
+            ],
+            "insideA": false,
+            "insideB": false
+          },
+          {
+            "label": "chain-2-runner",
+            "a": "chain-2",
+            "b": "gantry-runner-1",
+            "pointMm": [
+              -945.9674168071668,
+              1340.84913813934,
+              3662
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "lifting-lug-3-frame",
+            "a": "lifting-lug-3",
+            "b": "side-frame-1",
+            "pointMm": [
+              690,
+              760,
+              2110
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "chain-3-lug",
+            "a": "chain-3",
+            "b": "lifting-lug-3",
+            "pointMm": [
+              694.0325831928332,
+              769.1508618606599,
+              2308
+            ],
+            "insideA": false,
+            "insideB": false
+          },
+          {
+            "label": "chain-3-runner",
+            "a": "chain-3",
+            "b": "gantry-runner-1",
+            "pointMm": [
+              945.9674168071668,
+              1340.84913813934,
+              3662
+            ],
+            "insideA": true,
+            "insideB": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "inline-skate",
+      "source": "catalog/kits/sports/inline-skate.kcad.ts",
+      "sourceSha256": "c71ad16d4366159fc1afeccb856f9db9654ded6e9f3bed2ed206b903ab1cb2b5",
+      "originalSourceSha256": "d86d7131feab76efd74676fefd78edcc2e9f238ef673ae27a71b84b15612a50d",
+      "nativeLineage": {
+        "runDirectory": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/skate-visual-v1/run-01",
+        "resultsSha256": "2ac204bdf6671775a0078f26643fa4eea14d49293115a199cbbf9c470f5a39b5",
+        "bindingSha256": "9c7c4cbe95137cd22188f14546d3d77c1886a533afd3bab7344182ad5138310e",
+        "unchangedFromOriginal33": false
+      },
+      "originalNativeLineage": {
+        "runDirectory": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/skate-visual-v1/run-01",
+        "resultsSha256": "2ac204bdf6671775a0078f26643fa4eea14d49293115a199cbbf9c470f5a39b5",
+        "bindingSha256": "9c7c4cbe95137cd22188f14546d3d77c1886a533afd3bab7344182ad5138310e",
+        "unchangedFromOriginal33": false
+      },
+      "glb": {
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/skate-visual-v1/run-01/inline-skate.default.glb",
+        "bytes": 237032,
+        "sha256": "688c5f2942e2a2bfc16735311fe7718d0d74793b1dab178593d3e09a6ecafa02"
+      },
+      "originalGlb": {
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/skate-visual-v1/run-01/inline-skate.original.glb",
+        "bytes": 234336,
+        "sha256": "6c0dd75f544a21c7ab7e739537175d6a005592b476a444a39f0aa485dc5914cd"
+      },
+      "preview": "/data/worktrees/kernelcad-catalog-five-connections-20261120/catalog/kits/sports/previews/inline-skate.png",
+      "comparison": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/inline-skate/comparison.png",
+      "focusNames": {
+        "before": [
+          "frame-rail-left",
+          "frame-rail-right",
+          "frame-top-plate",
+          "wheel-1",
+          "hub-1",
+          "axle-bolt-1",
+          "wheel-2",
+          "hub-2",
+          "axle-bolt-2",
+          "wheel-3",
+          "hub-3",
+          "axle-bolt-3",
+          "wheel-4",
+          "hub-4",
+          "axle-bolt-4",
+          "brake-arm",
+          "brake-pad"
+        ],
+        "after": [
+          "frame-rail-left",
+          "frame-rail-right",
+          "frame-top-plate",
+          "wheel-1",
+          "hub-1",
+          "axle-bolt-1",
+          "wheel-2",
+          "hub-2",
+          "axle-bolt-2",
+          "wheel-3",
+          "hub-3",
+          "axle-bolt-3",
+          "wheel-4",
+          "hub-4",
+          "axle-bolt-4",
+          "brake-arm-left",
+          "brake-arm-right",
+          "brake-pad"
+        ]
+      },
+      "framing": {
+        "minM": [
+          -0.1615,
+          -1.1102230246251566e-18,
+          -0.01949999999999999
+        ],
+        "maxM": [
+          0.2155,
+          0.11800000000000001,
+          0.019500000000000017
+        ]
+      },
+      "pose": {
+        "yaw": 0,
+        "pitch": 0
+      },
+      "triangles": 1912,
+      "geometry": {
+        "id": "inline-skate",
+        "partCount": 34,
+        "triangleCount": 1912,
+        "failures": [],
+        "measurements": {
+          "wheel-1-diameter": 80,
+          "wheel-1-ground": -1.1102230246251565e-15,
+          "wheel-1-running-clearance": 1,
+          "wheel-1-rail-clearance-left": 1.9999999999999911,
+          "wheel-1-rail-clearance-right": 1.999999999999977,
+          "wheel-2-diameter": 80,
+          "wheel-2-ground": -1.1102230246251565e-15,
+          "wheel-2-running-clearance": 1,
+          "wheel-2-rail-clearance-left": 1.9999999999999911,
+          "wheel-2-rail-clearance-right": 1.999999999999977,
+          "wheel-3-diameter": 80,
+          "wheel-3-ground": -1.1102230246251565e-15,
+          "wheel-3-running-clearance": 1,
+          "wheel-3-rail-clearance-left": 1.9999999999999911,
+          "wheel-3-rail-clearance-right": 1.999999999999977,
+          "wheel-4-diameter": 80,
+          "wheel-4-ground": -1.1102230246251565e-15,
+          "wheel-4-rail-clearance-left": 1.9999999999999911,
+          "wheel-4-rail-clearance-right": 1.999999999999977,
+          "wheelbase": 243,
+          "brake-arm-left-tyre-clearance": 2.499999999999993,
+          "brake-arm-left-outer-face-step": 0.49999999999998934,
+          "brake-arm-left-inner-face-step": 0.5000000000000018,
+          "brake-arm-right-tyre-clearance": 2.499999999999986,
+          "brake-arm-right-outer-face-step": 0.49999999999999645,
+          "brake-arm-right-inner-face-step": 0.5000000000000089,
+          "brake-pad-tyre-clearance": 4
+        },
+        "witnesses": [
+          {
+            "label": "axle-1-left",
+            "a": "axle-bolt-1",
+            "b": "frame-rail-left",
+            "pointMm": [
+              -121.5,
+              -16.5,
+              40
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "axle-1-right",
+            "a": "axle-bolt-1",
+            "b": "frame-rail-right",
+            "pointMm": [
+              -121.5,
+              16.5,
+              40
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "axle-2-left",
+            "a": "axle-bolt-2",
+            "b": "frame-rail-left",
+            "pointMm": [
+              -40.5,
+              -16.5,
+              40
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "axle-2-right",
+            "a": "axle-bolt-2",
+            "b": "frame-rail-right",
+            "pointMm": [
+              -40.5,
+              16.5,
+              40
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "axle-3-left",
+            "a": "axle-bolt-3",
+            "b": "frame-rail-left",
+            "pointMm": [
+              40.5,
+              -16.5,
+              40
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "axle-3-right",
+            "a": "axle-bolt-3",
+            "b": "frame-rail-right",
+            "pointMm": [
+              40.5,
+              16.5,
+              40
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "axle-4-left",
+            "a": "axle-bolt-4",
+            "b": "frame-rail-left",
+            "pointMm": [
+              121.5,
+              -16.5,
+              40
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "axle-4-right",
+            "a": "axle-bolt-4",
+            "b": "frame-rail-right",
+            "pointMm": [
+              121.5,
+              16.5,
+              40
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "brake-arm-left-axle",
+            "a": "brake-arm-left",
+            "b": "axle-bolt-4",
+            "pointMm": [
+              123.5,
+              -16.5,
+              42
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "brake-arm-left-rail",
+            "a": "brake-arm-left",
+            "b": "frame-rail-left",
+            "pointMm": [
+              123.5,
+              -17,
+              60
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "brake-arm-left-pad",
+            "a": "brake-arm-left",
+            "b": "brake-pad",
+            "pointMm": [
+              186.5,
+              -14.75,
+              46
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "brake-arm-right-axle",
+            "a": "brake-arm-right",
+            "b": "axle-bolt-4",
+            "pointMm": [
+              123.5,
+              16.5,
+              42
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "brake-arm-right-rail",
+            "a": "brake-arm-right",
+            "b": "frame-rail-right",
+            "pointMm": [
+              123.5,
+              17,
+              60
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "brake-arm-right-pad",
+            "a": "brake-arm-right",
+            "b": "brake-pad",
+            "pointMm": [
+              186.5,
+              14.75,
+              46
+            ],
+            "insideA": true,
+            "insideB": true
+          }
+        ]
+      },
+      "negative": {
+        "id": "inline-skate",
+        "partCount": 33,
+        "triangleCount": 1892,
+        "failures": [
+          "wheel-1-running-clearance",
+          "axle-1-left",
+          "axle-1-right",
+          "wheel-1-rail-clearance-right",
+          "wheel-2-running-clearance",
+          "axle-2-left",
+          "axle-2-right",
+          "wheel-2-rail-clearance-right",
+          "wheel-3-running-clearance",
+          "axle-3-left",
+          "axle-3-right",
+          "wheel-3-rail-clearance-right",
+          "axle-4-left",
+          "axle-4-right",
+          "wheel-4-rail-clearance-right",
+          "wheelbase",
+          "brake-arm-left-axle",
+          "brake-arm-left-rail",
+          "brake-arm-left-pad",
+          "brake-arm-left-tyre-clearance",
+          "brake-arm-left-outer-face-step",
+          "brake-arm-left-inner-face-step",
+          "brake-arm-right-axle",
+          "brake-arm-right-rail",
+          "brake-arm-right-pad",
+          "brake-arm-right-tyre-clearance",
+          "brake-arm-right-outer-face-step",
+          "brake-arm-right-inner-face-step",
+          "brake-pad-tyre-clearance",
+          "middle-wheel-solid-overlap"
+        ],
+        "measurements": {
+          "wheel-1-diameter": 79.99999237060547,
+          "wheel-1-ground": -1.1102230246251565e-15,
+          "wheel-1-running-clearance": -8.719993591308594,
+          "wheel-1-rail-clearance-left": 1.9999999999999947,
+          "wheel-1-rail-clearance-right": -3.000000000000023,
+          "wheel-2-diameter": 79.99999713897705,
+          "wheel-2-ground": -1.1102230246251565e-15,
+          "wheel-2-running-clearance": -9.600000381469727,
+          "wheel-2-rail-clearance-left": 1.9999999999999947,
+          "wheel-2-rail-clearance-right": -3.000000000000023,
+          "wheel-3-diameter": 79.99999713897705,
+          "wheel-3-ground": -1.1102230246251565e-15,
+          "wheel-3-running-clearance": -8.719993591308594,
+          "wheel-3-rail-clearance-left": 1.9999999999999947,
+          "wheel-3-rail-clearance-right": -3.000000000000023,
+          "wheel-4-diameter": 79.99999237060547,
+          "wheel-4-ground": -1.1102230246251565e-15,
+          "wheel-4-rail-clearance-left": 1.9999999999999947,
+          "wheel-4-rail-clearance-right": -3.000000000000023,
+          "wheelbase": 212.95999908447266,
+          "brake-arm-left-tyre-clearance": null,
+          "brake-arm-left-outer-face-step": null,
+          "brake-arm-left-inner-face-step": null,
+          "brake-arm-right-tyre-clearance": null,
+          "brake-arm-right-outer-face-step": null,
+          "brake-arm-right-inner-face-step": null,
+          "brake-pad-tyre-clearance": 3.5200042724609375
+        },
+        "witnesses": [
+          {
+            "label": "axle-1-left",
+            "a": "axle-bolt-1",
+            "b": "frame-rail-left",
+            "pointMm": [
+              -121.5,
+              -16.5,
+              40
+            ],
+            "insideA": false,
+            "insideB": false
+          },
+          {
+            "label": "axle-1-right",
+            "a": "axle-bolt-1",
+            "b": "frame-rail-right",
+            "pointMm": [
+              -121.5,
+              16.5,
+              40
+            ],
+            "insideA": false,
+            "insideB": false
+          },
+          {
+            "label": "axle-2-left",
+            "a": "axle-bolt-2",
+            "b": "frame-rail-left",
+            "pointMm": [
+              -40.5,
+              -16.5,
+              40
+            ],
+            "insideA": true,
+            "insideB": false
+          },
+          {
+            "label": "axle-2-right",
+            "a": "axle-bolt-2",
+            "b": "frame-rail-right",
+            "pointMm": [
+              -40.5,
+              16.5,
+              40
+            ],
+            "insideA": true,
+            "insideB": false
+          },
+          {
+            "label": "axle-3-left",
+            "a": "axle-bolt-3",
+            "b": "frame-rail-left",
+            "pointMm": [
+              40.5,
+              -16.5,
+              40
+            ],
+            "insideA": true,
+            "insideB": false
+          },
+          {
+            "label": "axle-3-right",
+            "a": "axle-bolt-3",
+            "b": "frame-rail-right",
+            "pointMm": [
+              40.5,
+              16.5,
+              40
+            ],
+            "insideA": true,
+            "insideB": false
+          },
+          {
+            "label": "axle-4-left",
+            "a": "axle-bolt-4",
+            "b": "frame-rail-left",
+            "pointMm": [
+              121.5,
+              -16.5,
+              40
+            ],
+            "insideA": false,
+            "insideB": false
+          },
+          {
+            "label": "axle-4-right",
+            "a": "axle-bolt-4",
+            "b": "frame-rail-right",
+            "pointMm": [
+              121.5,
+              16.5,
+              40
+            ],
+            "insideA": false,
+            "insideB": false
+          },
+          {
+            "label": "brake-arm-left-axle",
+            "a": "brake-arm-left",
+            "b": "axle-bolt-4",
+            "pointMm": [
+              123.5,
+              -16.5,
+              42
+            ],
+            "insideA": false,
+            "insideB": false
+          },
+          {
+            "label": "brake-arm-left-rail",
+            "a": "brake-arm-left",
+            "b": "frame-rail-left",
+            "pointMm": [
+              123.5,
+              -17,
+              60
+            ],
+            "insideA": false,
+            "insideB": false
+          },
+          {
+            "label": "brake-arm-left-pad",
+            "a": "brake-arm-left",
+            "b": "brake-pad",
+            "pointMm": [
+              186.5,
+              -14.75,
+              46
+            ],
+            "insideA": false,
+            "insideB": false
+          },
+          {
+            "label": "brake-arm-right-axle",
+            "a": "brake-arm-right",
+            "b": "axle-bolt-4",
+            "pointMm": [
+              123.5,
+              16.5,
+              42
+            ],
+            "insideA": false,
+            "insideB": false
+          },
+          {
+            "label": "brake-arm-right-rail",
+            "a": "brake-arm-right",
+            "b": "frame-rail-right",
+            "pointMm": [
+              123.5,
+              17,
+              60
+            ],
+            "insideA": false,
+            "insideB": false
+          },
+          {
+            "label": "brake-arm-right-pad",
+            "a": "brake-arm-right",
+            "b": "brake-pad",
+            "pointMm": [
+              186.5,
+              14.75,
+              46
+            ],
+            "insideA": false,
+            "insideB": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "strip-light-battens",
+      "source": "catalog/kits/theatre-production/strip-light-battens.kcad.ts",
+      "sourceSha256": "2c060ae969cd9c39c9c4ec0f852a5985e99aee539ea03b3997b909e5bb416f22",
+      "originalSourceSha256": "636d6b5a2b957c21d0526e1aace8aa637658e2ecb0926c5ff165fd969292568b",
+      "nativeLineage": {
+        "runDirectory": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01",
+        "resultsSha256": "7ea8f376d917d3c1f6039badabe0294aa7e12d6e7d99969f8a2f3e26de685f3c",
+        "bindingSha256": "1b15f84e7cc351032b3544a72b2d2a7ff88d55ac1a72968f0abbed40ab88b5cf",
+        "unchangedFromOriginal33": true
+      },
+      "originalNativeLineage": {
+        "runDirectory": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01",
+        "resultsSha256": "7ea8f376d917d3c1f6039badabe0294aa7e12d6e7d99969f8a2f3e26de685f3c",
+        "bindingSha256": "1b15f84e7cc351032b3544a72b2d2a7ff88d55ac1a72968f0abbed40ab88b5cf",
+        "unchangedFromOriginal33": true
+      },
+      "glb": {
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01/strip-light-battens.default.glb",
+        "bytes": 288480,
+        "sha256": "3ac168a31754308374c0e9acd44d87893605fd2ecce86fcc91a03bc41d62c9f6"
+      },
+      "originalGlb": {
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01/strip-light-battens.original.glb",
+        "bytes": 254712,
+        "sha256": "2c3445d5c619170c19823e4c84fee0b654a1093d88b3a5356044a3dc6c86cb26"
+      },
+      "preview": "/data/worktrees/kernelcad-catalog-five-connections-20261120/catalog/kits/theatre-production/previews/strip-light-battens.png",
+      "comparison": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/strip-light-battens/comparison.png",
+      "focusNames": {
+        "before": [
+          "housing-centre",
+          "end-cap-centre-l",
+          "end-cap-centre-r",
+          "baffle-centre",
+          "runner-centre-front",
+          "runner-centre-back",
+          "cell-centre-1",
+          "cell-centre-2",
+          "cell-centre-3",
+          "cell-centre-4",
+          "cell-centre-5",
+          "cell-centre-6",
+          "cell-centre-7",
+          "cell-centre-8",
+          "connector-centre",
+          "stand-foot-centre-l",
+          "stand-upright-centre-l",
+          "pivot-knob-centre-l",
+          "stand-foot-centre-r",
+          "stand-upright-centre-r",
+          "pivot-knob-centre-r"
+        ],
+        "after": [
+          "housing-centre",
+          "end-cap-centre-l",
+          "end-cap-centre-r",
+          "baffle-centre",
+          "runner-centre-front",
+          "runner-centre-back",
+          "cell-centre-1",
+          "cell-centre-2",
+          "cell-centre-3",
+          "cell-centre-4",
+          "cell-centre-5",
+          "cell-centre-6",
+          "cell-centre-7",
+          "cell-centre-8",
+          "connector-centre",
+          "stand-foot-centre-l",
+          "stand-upright-centre-l",
+          "pivot-axle-centre-l",
+          "pivot-knob-centre-l",
+          "stand-foot-centre-r",
+          "stand-upright-centre-r",
+          "pivot-axle-centre-r",
+          "pivot-knob-centre-r"
+        ]
+      },
+      "framing": {
+        "minM": [
+          -0.582,
+          -3.552713678800501e-17,
+          -0.16
+        ],
+        "maxM": [
+          0.582,
+          0.35369894409179686,
+          0.16
+        ]
+      },
+      "pose": {
+        "yaw": 20,
+        "pitch": 15
+      },
+      "triangles": 2068,
+      "geometry": {
+        "id": "strip-light-battens",
+        "partCount": 71,
+        "triangleCount": 2068,
+        "failures": [],
+        "measurements": {},
+        "witnesses": [
+          {
+            "label": "pivot-axle-left-l-cap",
+            "a": "pivot-axle-left-l",
+            "b": "end-cap-left-l",
+            "pointMm": [
+              -1644,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-left-l-stand",
+            "a": "pivot-axle-left-l",
+            "b": "stand-upright-left-l",
+            "pointMm": [
+              -1668,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-left-l-knob",
+            "a": "pivot-axle-left-l",
+            "b": "pivot-knob-left-l",
+            "pointMm": [
+              -1679,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-left-r-cap",
+            "a": "pivot-axle-left-r",
+            "b": "end-cap-left-r",
+            "pointMm": [
+              -616,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-left-r-stand",
+            "a": "pivot-axle-left-r",
+            "b": "stand-upright-left-r",
+            "pointMm": [
+              -592,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-left-r-knob",
+            "a": "pivot-axle-left-r",
+            "b": "pivot-knob-left-r",
+            "pointMm": [
+              -581,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-centre-l-cap",
+            "a": "pivot-axle-centre-l",
+            "b": "end-cap-centre-l",
+            "pointMm": [
+              -514,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-centre-l-stand",
+            "a": "pivot-axle-centre-l",
+            "b": "stand-upright-centre-l",
+            "pointMm": [
+              -538,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-centre-l-knob",
+            "a": "pivot-axle-centre-l",
+            "b": "pivot-knob-centre-l",
+            "pointMm": [
+              -549,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-centre-r-cap",
+            "a": "pivot-axle-centre-r",
+            "b": "end-cap-centre-r",
+            "pointMm": [
+              514,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-centre-r-stand",
+            "a": "pivot-axle-centre-r",
+            "b": "stand-upright-centre-r",
+            "pointMm": [
+              538,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-centre-r-knob",
+            "a": "pivot-axle-centre-r",
+            "b": "pivot-knob-centre-r",
+            "pointMm": [
+              549,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-right-l-cap",
+            "a": "pivot-axle-right-l",
+            "b": "end-cap-right-l",
+            "pointMm": [
+              616,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-right-l-stand",
+            "a": "pivot-axle-right-l",
+            "b": "stand-upright-right-l",
+            "pointMm": [
+              592,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-right-l-knob",
+            "a": "pivot-axle-right-l",
+            "b": "pivot-knob-right-l",
+            "pointMm": [
+              581,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-right-r-cap",
+            "a": "pivot-axle-right-r",
+            "b": "end-cap-right-r",
+            "pointMm": [
+              1644,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-right-r-stand",
+            "a": "pivot-axle-right-r",
+            "b": "stand-upright-right-r",
+            "pointMm": [
+              1668,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-right-r-knob",
+            "a": "pivot-axle-right-r",
+            "b": "pivot-knob-right-r",
+            "pointMm": [
+              1679,
+              0,
+              230
+            ],
+            "insideA": true,
+            "insideB": true
+          }
+        ]
+      },
+      "negative": {
+        "id": "strip-light-battens",
+        "partCount": 65,
+        "triangleCount": 1804,
+        "failures": [
+          "pivot-axle-left-l-cap",
+          "pivot-axle-left-l-stand",
+          "pivot-axle-left-l-knob",
+          "pivot-axle-left-r-cap",
+          "pivot-axle-left-r-stand",
+          "pivot-axle-left-r-knob",
+          "pivot-axle-centre-l-cap",
+          "pivot-axle-centre-l-stand",
+          "pivot-axle-centre-l-knob",
+          "pivot-axle-centre-r-cap",
+          "pivot-axle-centre-r-stand",
+          "pivot-axle-centre-r-knob",
+          "pivot-axle-right-l-cap",
+          "pivot-axle-right-l-stand",
+          "pivot-axle-right-l-knob",
+          "pivot-axle-right-r-cap",
+          "pivot-axle-right-r-stand",
+          "pivot-axle-right-r-knob"
+        ],
+        "measurements": {},
+        "witnesses": [
+          {
+            "label": "pivot-axle-left-l-cap",
+            "a": "pivot-axle-left-l",
+            "b": "end-cap-left-l",
+            "pointMm": [
+              -1644,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-left-l-stand",
+            "a": "pivot-axle-left-l",
+            "b": "stand-upright-left-l",
+            "pointMm": [
+              -1668,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-left-l-knob",
+            "a": "pivot-axle-left-l",
+            "b": "pivot-knob-left-l",
+            "pointMm": [
+              -1679,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-left-r-cap",
+            "a": "pivot-axle-left-r",
+            "b": "end-cap-left-r",
+            "pointMm": [
+              -616,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-left-r-stand",
+            "a": "pivot-axle-left-r",
+            "b": "stand-upright-left-r",
+            "pointMm": [
+              -592,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-left-r-knob",
+            "a": "pivot-axle-left-r",
+            "b": "pivot-knob-left-r",
+            "pointMm": [
+              -581,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-centre-l-cap",
+            "a": "pivot-axle-centre-l",
+            "b": "end-cap-centre-l",
+            "pointMm": [
+              -514,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-centre-l-stand",
+            "a": "pivot-axle-centre-l",
+            "b": "stand-upright-centre-l",
+            "pointMm": [
+              -538,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-centre-l-knob",
+            "a": "pivot-axle-centre-l",
+            "b": "pivot-knob-centre-l",
+            "pointMm": [
+              -549,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-centre-r-cap",
+            "a": "pivot-axle-centre-r",
+            "b": "end-cap-centre-r",
+            "pointMm": [
+              514,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-centre-r-stand",
+            "a": "pivot-axle-centre-r",
+            "b": "stand-upright-centre-r",
+            "pointMm": [
+              538,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-centre-r-knob",
+            "a": "pivot-axle-centre-r",
+            "b": "pivot-knob-centre-r",
+            "pointMm": [
+              549,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-right-l-cap",
+            "a": "pivot-axle-right-l",
+            "b": "end-cap-right-l",
+            "pointMm": [
+              616,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-right-l-stand",
+            "a": "pivot-axle-right-l",
+            "b": "stand-upright-right-l",
+            "pointMm": [
+              592,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-right-l-knob",
+            "a": "pivot-axle-right-l",
+            "b": "pivot-knob-right-l",
+            "pointMm": [
+              581,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-right-r-cap",
+            "a": "pivot-axle-right-r",
+            "b": "end-cap-right-r",
+            "pointMm": [
+              1644,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-right-r-stand",
+            "a": "pivot-axle-right-r",
+            "b": "stand-upright-right-r",
+            "pointMm": [
+              1668,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "pivot-axle-right-r-knob",
+            "a": "pivot-axle-right-r",
+            "b": "pivot-knob-right-r",
+            "pointMm": [
+              1679,
+              0,
+              230
+            ],
+            "insideA": false,
+            "insideB": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "blackout-curtain-drive",
+      "source": "catalog/kits/hydroponics/blackout-curtain-drive.kcad.ts",
+      "sourceSha256": "a2f5d5f8fed8d0ab63acd919527f33aa965605d3b5175b7df50e721d7b89d288",
+      "originalSourceSha256": "21c4aced71da19c67732e64f1b3e9f09686e36a32ec8bae92f761bd6a76b8a23",
+      "nativeLineage": {
+        "runDirectory": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01",
+        "resultsSha256": "7ea8f376d917d3c1f6039badabe0294aa7e12d6e7d99969f8a2f3e26de685f3c",
+        "bindingSha256": "1b15f84e7cc351032b3544a72b2d2a7ff88d55ac1a72968f0abbed40ab88b5cf",
+        "unchangedFromOriginal33": true
+      },
+      "originalNativeLineage": {
+        "runDirectory": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01",
+        "resultsSha256": "7ea8f376d917d3c1f6039badabe0294aa7e12d6e7d99969f8a2f3e26de685f3c",
+        "bindingSha256": "1b15f84e7cc351032b3544a72b2d2a7ff88d55ac1a72968f0abbed40ab88b5cf",
+        "unchangedFromOriginal33": true
+      },
+      "glb": {
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01/blackout-curtain-drive.default.glb",
+        "bytes": 297136,
+        "sha256": "8eac9a9af88f6a7fd19337c569bbc72916f10bb489b71cf5a617a64b75e35fa1"
+      },
+      "originalGlb": {
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01/blackout-curtain-drive.original.glb",
+        "bytes": 269896,
+        "sha256": "88a41e8bb0dac7f578855ef1f319d066c7c3a493792392b618204d350e3daf9e"
+      },
+      "preview": "/data/worktrees/kernelcad-catalog-five-connections-20261120/catalog/kits/hydroponics/previews/blackout-curtain-drive.png",
+      "comparison": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/blackout-curtain-drive/comparison.png",
+      "focusNames": {
+        "before": [
+          "truss-bottom",
+          "drive-shaft",
+          "bearing--830",
+          "bearing-arm--830",
+          "bearing-830",
+          "bearing-arm-830",
+          "gearbox",
+          "gearbox-flange",
+          "pinion-box--500",
+          "rack--500",
+          "rack-clamp--500",
+          "pinion-box-500",
+          "rack-500",
+          "rack-clamp-500"
+        ],
+        "after": [
+          "truss-bottom",
+          "drive-shaft",
+          "bearing--830",
+          "bearing-arm--830",
+          "bearing-hanger--830",
+          "bearing-830",
+          "bearing-arm-830",
+          "bearing-hanger-830",
+          "gearbox",
+          "gearbox-mount",
+          "gearbox-flange",
+          "pinion-box--500",
+          "rack--500",
+          "rack-clamp--500",
+          "pinion-box-500",
+          "rack-500",
+          "rack-clamp-500"
+        ]
+      },
+      "framing": {
+        "minM": [
+          -0.98,
+          1.7500000000000002,
+          -1.5799999999999996
+        ],
+        "maxM": [
+          0.98,
+          2.0300000000000002,
+          0.12500000000000042
+        ]
+      },
+      "pose": {
+        "yaw": 65,
+        "pitch": 15
+      },
+      "triangles": 1944,
+      "geometry": {
+        "id": "blackout-curtain-drive",
+        "partCount": 106,
+        "triangleCount": 1944,
+        "failures": [],
+        "measurements": {
+          "rack--500-length": 1680,
+          "rack--500-leading-edge": -100.00000000000043,
+          "rack--500-box-margin": 769.9999999999999,
+          "rack-500-length": 1680,
+          "rack-500-leading-edge": -100.00000000000043,
+          "rack-500-box-margin": 769.9999999999999
+        },
+        "witnesses": [
+          {
+            "label": "bearing--830-shaft",
+            "a": "bearing--830",
+            "b": "drive-shaft",
+            "pointMm": [
+              -830,
+              740,
+              1860
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "bearing-arm--830-bearing",
+            "a": "bearing-arm--830",
+            "b": "bearing--830",
+            "pointMm": [
+              -830,
+              760,
+              1860
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "bearing-hanger--830-arm",
+            "a": "bearing-hanger--830",
+            "b": "bearing-arm--830",
+            "pointMm": [
+              -830,
+              840,
+              1860
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "bearing-hanger--830-truss",
+            "a": "bearing-hanger--830",
+            "b": "truss-bottom",
+            "pointMm": [
+              -830,
+              840,
+              1990
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "bearing-830-shaft",
+            "a": "bearing-830",
+            "b": "drive-shaft",
+            "pointMm": [
+              830,
+              740,
+              1860
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "bearing-arm-830-bearing",
+            "a": "bearing-arm-830",
+            "b": "bearing-830",
+            "pointMm": [
+              830,
+              760,
+              1860
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "bearing-hanger-830-arm",
+            "a": "bearing-hanger-830",
+            "b": "bearing-arm-830",
+            "pointMm": [
+              830,
+              840,
+              1860
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "bearing-hanger-830-truss",
+            "a": "bearing-hanger-830",
+            "b": "truss-bottom",
+            "pointMm": [
+              830,
+              840,
+              1990
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "gearbox-mount-gearbox",
+            "a": "gearbox-mount",
+            "b": "gearbox",
+            "pointMm": [
+              0,
+              810,
+              1960
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "gearbox-mount-truss",
+            "a": "gearbox-mount",
+            "b": "truss-bottom",
+            "pointMm": [
+              0,
+              840,
+              1990
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "rack--500-engagement",
+            "a": "rack--500",
+            "b": "pinion-box--500",
+            "pointMm": [
+              -500,
+              740,
+              1845
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "rack-500-engagement",
+            "a": "rack-500",
+            "b": "pinion-box-500",
+            "pointMm": [
+              500,
+              740,
+              1845
+            ],
+            "insideA": true,
+            "insideB": true
+          }
+        ]
+      },
+      "negative": {
+        "id": "blackout-curtain-drive",
+        "partCount": 93,
+        "triangleCount": 1788,
+        "failures": [
+          "bearing-arm--830-bearing",
+          "bearing-hanger--830-arm",
+          "bearing-hanger--830-truss",
+          "bearing-arm-830-bearing",
+          "bearing-hanger-830-arm",
+          "bearing-hanger-830-truss",
+          "gearbox-mount-gearbox",
+          "gearbox-mount-truss",
+          "rack--500-length",
+          "rack-500-length"
+        ],
+        "measurements": {
+          "rack--500-length": 1300,
+          "rack--500-leading-edge": -100.00000000000043,
+          "rack--500-box-margin": 389.9999999999999,
+          "rack-500-length": 1300,
+          "rack-500-leading-edge": -100.00000000000043,
+          "rack-500-box-margin": 389.9999999999999
+        },
+        "witnesses": [
+          {
+            "label": "bearing--830-shaft",
+            "a": "bearing--830",
+            "b": "drive-shaft",
+            "pointMm": [
+              -830,
+              740,
+              1860
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "bearing-arm--830-bearing",
+            "a": "bearing-arm--830",
+            "b": "bearing--830",
+            "pointMm": [
+              -830,
+              760,
+              1860
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "bearing-hanger--830-arm",
+            "a": "bearing-hanger--830",
+            "b": "bearing-arm--830",
+            "pointMm": [
+              -830,
+              840,
+              1860
+            ],
+            "insideA": false,
+            "insideB": false
+          },
+          {
+            "label": "bearing-hanger--830-truss",
+            "a": "bearing-hanger--830",
+            "b": "truss-bottom",
+            "pointMm": [
+              -830,
+              840,
+              1990
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "bearing-830-shaft",
+            "a": "bearing-830",
+            "b": "drive-shaft",
+            "pointMm": [
+              830,
+              740,
+              1860
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "bearing-arm-830-bearing",
+            "a": "bearing-arm-830",
+            "b": "bearing-830",
+            "pointMm": [
+              830,
+              760,
+              1860
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "bearing-hanger-830-arm",
+            "a": "bearing-hanger-830",
+            "b": "bearing-arm-830",
+            "pointMm": [
+              830,
+              840,
+              1860
+            ],
+            "insideA": false,
+            "insideB": false
+          },
+          {
+            "label": "bearing-hanger-830-truss",
+            "a": "bearing-hanger-830",
+            "b": "truss-bottom",
+            "pointMm": [
+              830,
+              840,
+              1990
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "gearbox-mount-gearbox",
+            "a": "gearbox-mount",
+            "b": "gearbox",
+            "pointMm": [
+              0,
+              810,
+              1960
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "gearbox-mount-truss",
+            "a": "gearbox-mount",
+            "b": "truss-bottom",
+            "pointMm": [
+              0,
+              840,
+              1990
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "rack--500-engagement",
+            "a": "rack--500",
+            "b": "pinion-box--500",
+            "pointMm": [
+              -500,
+              740,
+              1845
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "rack-500-engagement",
+            "a": "rack-500",
+            "b": "pinion-box-500",
+            "pointMm": [
+              500,
+              740,
+              1845
+            ],
+            "insideA": true,
+            "insideB": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "roll-cage-trolley",
+      "source": "catalog/kits/retail-store/roll-cage-trolley.kcad.ts",
+      "sourceSha256": "89b5c278d4eb2e68c3cfbdf0f1a412145ad2d21b6ff9b513743791b874adfb28",
+      "originalSourceSha256": "d48c6d14a8919b1d769d2f18827e5b1bc01066188dfb7fe619b0f98c02ae43c3",
+      "nativeLineage": {
+        "runDirectory": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01",
+        "resultsSha256": "7ea8f376d917d3c1f6039badabe0294aa7e12d6e7d99969f8a2f3e26de685f3c",
+        "bindingSha256": "1b15f84e7cc351032b3544a72b2d2a7ff88d55ac1a72968f0abbed40ab88b5cf",
+        "unchangedFromOriginal33": true
+      },
+      "originalNativeLineage": {
+        "runDirectory": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01",
+        "resultsSha256": "7ea8f376d917d3c1f6039badabe0294aa7e12d6e7d99969f8a2f3e26de685f3c",
+        "bindingSha256": "1b15f84e7cc351032b3544a72b2d2a7ff88d55ac1a72968f0abbed40ab88b5cf",
+        "unchangedFromOriginal33": true
+      },
+      "glb": {
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01/roll-cage-trolley.default.glb",
+        "bytes": 291576,
+        "sha256": "73b97441eff446c559278a11b953b38ea522bc0b102b4b0829c98e62aaaa8434"
+      },
+      "originalGlb": {
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01/roll-cage-trolley.original.glb",
+        "bytes": 269068,
+        "sha256": "90876787aadf95ad7a8530e87ad8d66b905891ab5bc0c5b05acfb1cb00d741b1"
+      },
+      "preview": "/data/worktrees/kernelcad-catalog-five-connections-20261120/catalog/kits/retail-store/previews/roll-cage-trolley.png",
+      "comparison": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/roll-cage-trolley/comparison.png",
+      "focusNames": {
+        "before": [
+          "castor-plate-lf",
+          "castor-swivel-lf",
+          "castor-fork-l-lf",
+          "castor-fork-r-lf",
+          "castor-wheel-lf"
+        ],
+        "after": [
+          "castor-plate-lf",
+          "castor-swivel-lf",
+          "castor-fork-l-lf",
+          "castor-fork-r-lf",
+          "castor-axle-lf",
+          "castor-wheel-lf"
+        ]
+      },
+      "framing": {
+        "minM": [
+          -0.375,
+          -6.267938777596363e-17,
+          0.21763374328613283
+        ],
+        "maxM": [
+          -0.28500000000000003,
+          0.12799999999999995,
+          0.32500000000000007
+        ]
+      },
+      "pose": {
+        "yaw": 35,
+        "pitch": 30
+      },
+      "triangles": 1872,
+      "geometry": {
+        "id": "roll-cage-trolley",
+        "partCount": 110,
+        "triangleCount": 1872,
+        "failures": [],
+        "measurements": {
+          "castor-wheel-lf-ground": -6.267938777596363e-14,
+          "castor-wheel-lf-width": 34.00000000000006,
+          "castor-wheel-rf-ground": -6.267938777596363e-14,
+          "castor-wheel-rf-width": 34.00000000000006,
+          "castor-wheel-lb-ground": 6.16655909820539e-14,
+          "castor-wheel-lb-width": 34.00000000000006,
+          "castor-wheel-rb-ground": 6.16655909820539e-14,
+          "castor-wheel-rb-width": 34.00000000000006
+        },
+        "witnesses": [
+          {
+            "label": "castor-axle-lf-wheel",
+            "a": "castor-axle-lf",
+            "b": "castor-wheel-lf",
+            "pointMm": [
+              -330,
+              -268,
+              50
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-lf-fork-l",
+            "a": "castor-axle-lf",
+            "b": "castor-fork-l-lf",
+            "pointMm": [
+              -354,
+              -268,
+              50
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-lf-fork-r",
+            "a": "castor-axle-lf",
+            "b": "castor-fork-r-lf",
+            "pointMm": [
+              -306,
+              -268,
+              50
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-rf-wheel",
+            "a": "castor-axle-rf",
+            "b": "castor-wheel-rf",
+            "pointMm": [
+              330,
+              -268,
+              50
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-rf-fork-l",
+            "a": "castor-axle-rf",
+            "b": "castor-fork-l-rf",
+            "pointMm": [
+              306,
+              -268,
+              50
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-rf-fork-r",
+            "a": "castor-axle-rf",
+            "b": "castor-fork-r-rf",
+            "pointMm": [
+              354,
+              -268,
+              50
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-lb-wheel",
+            "a": "castor-axle-lb",
+            "b": "castor-wheel-lb",
+            "pointMm": [
+              -330,
+              292,
+              50
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-lb-fork-l",
+            "a": "castor-axle-lb",
+            "b": "castor-fork-l-lb",
+            "pointMm": [
+              -354,
+              292,
+              50
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-lb-fork-r",
+            "a": "castor-axle-lb",
+            "b": "castor-fork-r-lb",
+            "pointMm": [
+              -306,
+              292,
+              50
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-rb-wheel",
+            "a": "castor-axle-rb",
+            "b": "castor-wheel-rb",
+            "pointMm": [
+              330,
+              292,
+              50
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-rb-fork-l",
+            "a": "castor-axle-rb",
+            "b": "castor-fork-l-rb",
+            "pointMm": [
+              306,
+              292,
+              50
+            ],
+            "insideA": true,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-rb-fork-r",
+            "a": "castor-axle-rb",
+            "b": "castor-fork-r-rb",
+            "pointMm": [
+              354,
+              292,
+              50
+            ],
+            "insideA": true,
+            "insideB": true
+          }
+        ]
+      },
+      "negative": {
+        "id": "roll-cage-trolley",
+        "partCount": 106,
+        "triangleCount": 1696,
+        "failures": [
+          "castor-axle-lf-wheel",
+          "castor-axle-lf-fork-l",
+          "castor-axle-lf-fork-r",
+          "castor-axle-rf-wheel",
+          "castor-axle-rf-fork-l",
+          "castor-axle-rf-fork-r",
+          "castor-axle-lb-wheel",
+          "castor-axle-lb-fork-l",
+          "castor-axle-lb-fork-r",
+          "castor-axle-rb-wheel",
+          "castor-axle-rb-fork-l",
+          "castor-axle-rb-fork-r"
+        ],
+        "measurements": {
+          "castor-wheel-lf-ground": -6.267938777596363e-14,
+          "castor-wheel-lf-width": 34.00000000000006,
+          "castor-wheel-rf-ground": -6.267938777596363e-14,
+          "castor-wheel-rf-width": 34.00000000000006,
+          "castor-wheel-lb-ground": 6.16655909820539e-14,
+          "castor-wheel-lb-width": 34.00000000000006,
+          "castor-wheel-rb-ground": 6.16655909820539e-14,
+          "castor-wheel-rb-width": 34.00000000000006
+        },
+        "witnesses": [
+          {
+            "label": "castor-axle-lf-wheel",
+            "a": "castor-axle-lf",
+            "b": "castor-wheel-lf",
+            "pointMm": [
+              -330,
+              -268,
+              50
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-lf-fork-l",
+            "a": "castor-axle-lf",
+            "b": "castor-fork-l-lf",
+            "pointMm": [
+              -354,
+              -268,
+              50
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-lf-fork-r",
+            "a": "castor-axle-lf",
+            "b": "castor-fork-r-lf",
+            "pointMm": [
+              -306,
+              -268,
+              50
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-rf-wheel",
+            "a": "castor-axle-rf",
+            "b": "castor-wheel-rf",
+            "pointMm": [
+              330,
+              -268,
+              50
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-rf-fork-l",
+            "a": "castor-axle-rf",
+            "b": "castor-fork-l-rf",
+            "pointMm": [
+              306,
+              -268,
+              50
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-rf-fork-r",
+            "a": "castor-axle-rf",
+            "b": "castor-fork-r-rf",
+            "pointMm": [
+              354,
+              -268,
+              50
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-lb-wheel",
+            "a": "castor-axle-lb",
+            "b": "castor-wheel-lb",
+            "pointMm": [
+              -330,
+              292,
+              50
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-lb-fork-l",
+            "a": "castor-axle-lb",
+            "b": "castor-fork-l-lb",
+            "pointMm": [
+              -354,
+              292,
+              50
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-lb-fork-r",
+            "a": "castor-axle-lb",
+            "b": "castor-fork-r-lb",
+            "pointMm": [
+              -306,
+              292,
+              50
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-rb-wheel",
+            "a": "castor-axle-rb",
+            "b": "castor-wheel-rb",
+            "pointMm": [
+              330,
+              292,
+              50
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-rb-fork-l",
+            "a": "castor-axle-rb",
+            "b": "castor-fork-l-rb",
+            "pointMm": [
+              306,
+              292,
+              50
+            ],
+            "insideA": false,
+            "insideB": true
+          },
+          {
+            "label": "castor-axle-rb-fork-r",
+            "a": "castor-axle-rb",
+            "b": "castor-fork-r-rb",
+            "pointMm": [
+              354,
+              292,
+              50
+            ],
+            "insideA": false,
+            "insideB": true
+          }
+        ]
+      }
+    }
+  ],
+  "branchViews": [
+    {
+      "id": "belt-magnet-separator.plateMagnet.scale-1",
+      "sourceSha256": "ca8af1fe82a176231546ca21988e86a221f3ab0360f662a8b42d8112bb559c6d",
+      "glb": {
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01/belt-magnet-separator.plateMagnet.scale-1.glb",
+        "bytes": 270800,
+        "sha256": "a26d08baf87d398af5607eabcb0bd3418b5a9a395e5f5b66acb4d1c84a815030"
+      },
+      "files": [
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/belt-magnet-separator.plateMagnet.scale-1-front.png",
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/belt-magnet-separator.plateMagnet.scale-1-right.png",
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/belt-magnet-separator.plateMagnet.scale-1-top.png",
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/belt-magnet-separator.plateMagnet.scale-1-iso.png"
+      ]
+    },
+    {
+      "id": "blackout-curtain-drive.open.scale-1",
+      "sourceSha256": "598b9cd2822501b8501408998ad8bd3dccdbb64a5e935be68879d253f98ae08a",
+      "glb": {
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01/blackout-curtain-drive.open.scale-1.glb",
+        "bytes": 280308,
+        "sha256": "36524ca630357bdc5c82611231e7dfb18f281fdc6c3cced66f5befbec8290ef6"
+      },
+      "files": [
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.open.scale-1-front.png",
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.open.scale-1-right.png",
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.open.scale-1-top.png",
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.open.scale-1-iso.png"
+      ]
+    },
+    {
+      "id": "blackout-curtain-drive.closed.scale-1",
+      "sourceSha256": "79938e8c578635f27bf9f3fbbfdad77a4f259df00030c41dbe70023512535fb4",
+      "glb": {
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01/blackout-curtain-drive.closed.scale-1.glb",
+        "bytes": 308404,
+        "sha256": "bb5c39b7469cd02d523b485db4d8c32a1d823c90dd9817ebd477abc75db86bbe"
+      },
+      "files": [
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.closed.scale-1-front.png",
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.closed.scale-1-right.png",
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.closed.scale-1-top.png",
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.closed.scale-1-iso.png"
+      ]
+    },
+    {
+      "id": "roll-cage-trolley.none.scale-1",
+      "sourceSha256": "69f5dabaa40ac03c91fb2132cb5c23c5aacedf80e004015fd14d75c111999f79",
+      "glb": {
+        "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/native/freeze-v5/run-01/roll-cage-trolley.none.scale-1.glb",
+        "bytes": 268532,
+        "sha256": "c8b3d14523df4db8885276dca43503029fc938a5d50f2aa60501562c93c90bb2"
+      },
+      "files": [
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/roll-cage-trolley.none.scale-1-front.png",
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/roll-cage-trolley.none.scale-1-right.png",
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/roll-cage-trolley.none.scale-1-top.png",
+        "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/roll-cage-trolley.none.scale-1-iso.png"
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/belt-magnet-separator/before-front.png",
+      "sha256": "5569995a7b479e1a5791171691e90ca0a423c65482f82a804558f5352f5295a7"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/belt-magnet-separator/before-right.png",
+      "sha256": "16930138c96fd5079b596ea1f86921aa8ed8f8413ed646fa9f08d5baa1cb2a9b"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/belt-magnet-separator/before-top.png",
+      "sha256": "ff59d15769799b6b0796468446a6247cb6fac728c710ab005d3c04422365829e"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/belt-magnet-separator/before-iso.png",
+      "sha256": "5372d73c4ddf49e0fb0c0ff93e4ef8417cc274dc963272ec9518d0c9d40ea750"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/belt-magnet-separator/after-front.png",
+      "sha256": "0722b746f2218236736eeb6282ea290b077ad8b4d785d288799ed2d1686e28fb"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/belt-magnet-separator/after-right.png",
+      "sha256": "fceb1459964fb35e5f33972ff67c18f87ceda1ea3d713b36a2e7adc0fc021582"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/belt-magnet-separator/after-top.png",
+      "sha256": "17ef068f7192f02ac8b7b7178387a5a7439b5427cd5341b9d23d1cec5c356117"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/belt-magnet-separator/after-iso.png",
+      "sha256": "e5b71ffa73a88feadf4fe824aa51cc128d485b3d0062ed4bc597a2ffc3b89cf1"
+    },
+    {
+      "path": "/data/worktrees/kernelcad-catalog-five-connections-20261120/catalog/kits/mining/previews/belt-magnet-separator.png",
+      "sha256": "08fb0fd0393a9c8e11b32da2a2544dafe36d72b6c8bb57ecbaa9983f3183ed39"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/belt-magnet-separator/comparison.png",
+      "sha256": "42c4f342b3a419d88b70b8589b655c2d437899913dcb7d981f201d3c7476e086"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/inline-skate/before-front.png",
+      "sha256": "54458b3761f80d1b17f7e75e9d3b8ddd9052e209e80d8245d4e69cfdfc511874"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/inline-skate/before-right.png",
+      "sha256": "fa1acd49d9c1317988d8ea4d061a328bfbe54bad68650b4090d53b257bc15dd7"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/inline-skate/before-top.png",
+      "sha256": "c55a217892b8b11e57e03c7f2d51af045ae62f8ac754331f2ddc16ef88a4c426"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/inline-skate/before-iso.png",
+      "sha256": "2ebbcc2ffdabb9fe88b170a5ac4acb59dd722aeed1460d9b4d7840b1fb8ef878"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/inline-skate/after-front.png",
+      "sha256": "3d1a03df9c14979f6df1682bf8e56c5e5fc19eb01fd826a5be991ce251cc2c09"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/inline-skate/after-right.png",
+      "sha256": "2d91b6900b1a4fe693df93f77d433c7e97c4d627cd19a362fc46a501d17ccbb9"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/inline-skate/after-top.png",
+      "sha256": "1212ee288692dfec23d0fbda5772260169b0dbbdbbf92a887136c4200776e9c4"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/inline-skate/after-iso.png",
+      "sha256": "0fbe8670a92efc3d2a686a7496b979f41c273f9f280d82e05816f43cdfabafbb"
+    },
+    {
+      "path": "/data/worktrees/kernelcad-catalog-five-connections-20261120/catalog/kits/sports/previews/inline-skate.png",
+      "sha256": "4968539c6bb0e201c1abc6b14cce158b729ad149ee03c2a5dcee87b6177259bc"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/inline-skate/comparison.png",
+      "sha256": "3b36dd03658618e861ee3c5e536ac6dff3afef235cfdfcc1bb471c74abd4f456"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/strip-light-battens/before-front.png",
+      "sha256": "f7116e1d198a7878f7737860ddbd4b858273650f0f12655ca2d8ebf92e2ee332"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/strip-light-battens/before-right.png",
+      "sha256": "9027720edbe8c8fec7cd06b526c00d2946f5510c968698e4d35e42f14942edaa"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/strip-light-battens/before-top.png",
+      "sha256": "e2918d4d37c147e896c38000b56947d2a7a1c704ccecfefe721861ec3e7e7d68"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/strip-light-battens/before-iso.png",
+      "sha256": "466a33344c129bcb5fd8d7d3aeb46c2ab1cf3149a04996b36ebfd5b7522956cd"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/strip-light-battens/after-front.png",
+      "sha256": "1dbeab4806d2970e3a812ea6d18d12857b9d27aff590159e910f996560727a58"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/strip-light-battens/after-right.png",
+      "sha256": "456607d82b1ad59bf7e945cfdebe9f1be7260ffe2799e6aad914918c1f49d1e9"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/strip-light-battens/after-top.png",
+      "sha256": "37636c620248f14b3f58de449238008786e238ae110566f3aac552e2502385e0"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/strip-light-battens/after-iso.png",
+      "sha256": "6283b8b9bac9a33adb0b89b3792d9111e13bd5ad129f35102acd848b28562945"
+    },
+    {
+      "path": "/data/worktrees/kernelcad-catalog-five-connections-20261120/catalog/kits/theatre-production/previews/strip-light-battens.png",
+      "sha256": "19b52fc7500393fa7e067f7ff787a793a63e8cbba67695b79ecd8eab3d9bc0a2"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/strip-light-battens/comparison.png",
+      "sha256": "eacb1281c68702cd1dc06bfc7958d065a7fb15a51255003c5d9d07651f68db45"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/blackout-curtain-drive/before-front.png",
+      "sha256": "2a10c772d7c5cf12fe185863032c98ea7974fb3e17b803cd5eb6c911b350cc5d"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/blackout-curtain-drive/before-right.png",
+      "sha256": "8768ad84812dc68fc25e230acae2531220072e0ff255073d359baaa0beb9ebe2"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/blackout-curtain-drive/before-top.png",
+      "sha256": "c37c65d21728750ed1bd960ccc4ee676ff36b9e66167560c6a6f6b8a8ea4b84c"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/blackout-curtain-drive/before-iso.png",
+      "sha256": "161e8e2879bfd64524627b0d14926a2f0d91b280c83aeb70db52695972832e3b"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/blackout-curtain-drive/after-front.png",
+      "sha256": "cd0726e670c7af7b4d65d4a730dd1c049e6724cbcb426c4d186339565553f954"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/blackout-curtain-drive/after-right.png",
+      "sha256": "14c07025ec068bf4a8460720fd6bcf749198786c47188797f69de949cb1af036"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/blackout-curtain-drive/after-top.png",
+      "sha256": "1a24f79d464b7eb43c829d0796e7a64529b3d81d4fbeb8e74ebc88cf4534321b"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/blackout-curtain-drive/after-iso.png",
+      "sha256": "dce85d7e5861c269b703fd0197f9bac8cb850199e8c8b8dda3bc0b06beb9c89b"
+    },
+    {
+      "path": "/data/worktrees/kernelcad-catalog-five-connections-20261120/catalog/kits/hydroponics/previews/blackout-curtain-drive.png",
+      "sha256": "71099ee6390e1c83daa514d762e401fc285fdeeab822569086938c42bb2799ff"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/blackout-curtain-drive/comparison.png",
+      "sha256": "ead20d8afb281707889eb383a88e16f0b67abe7592be8e21f2576b524dbb16ec"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/roll-cage-trolley/before-front.png",
+      "sha256": "3de7c3f4c72cc3c09678e5e0eafdda4cd3665156cd1860464f7163c918296ab4"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/roll-cage-trolley/before-right.png",
+      "sha256": "003bab1edf98eaea67654727772604ed23830866c3ed61919dd72b4763e1efcf"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/roll-cage-trolley/before-top.png",
+      "sha256": "c8d643cf06010021673b878807ea2eff248a9db427ac842c22b232e888373e7a"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/roll-cage-trolley/before-iso.png",
+      "sha256": "f55c7f09d8c657a27dc6d16c4b822757822c6a9289e339e579ca4cbc2a09c2a4"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/roll-cage-trolley/after-front.png",
+      "sha256": "6988f03ae1d46aae4f360a4fc2a6f98b0bdee3ae4f552cae440e7a46bb7e7a89"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/roll-cage-trolley/after-right.png",
+      "sha256": "eae6a7cdd5aff3e28f6cbd16c1ac43f0825f0a4c06ac68f9007f299f50eb07c8"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/roll-cage-trolley/after-top.png",
+      "sha256": "b9f4c2738d4e174de4f0c9c0f26a0fd3e0ec465f2bc7de732a2815375b8b9f67"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/roll-cage-trolley/after-iso.png",
+      "sha256": "2ae4cc1d8afdad7c17d22b2fc1dd1dc68e6d81d414109109eb5eaba22ef2a874"
+    },
+    {
+      "path": "/data/worktrees/kernelcad-catalog-five-connections-20261120/catalog/kits/retail-store/previews/roll-cage-trolley.png",
+      "sha256": "338c68992f76048497084130934350ebb36840c7161216b0599f228760b90789"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/roll-cage-trolley/comparison.png",
+      "sha256": "96bfa5d86a32ee7a040051ad587ee704cc5986fdc5a0409420789f2b701d67fd"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/belt-magnet-separator.plateMagnet.scale-1-front.png",
+      "sha256": "50019955b7bb84f471f50f8d0af01b286c7f9b9cc6a851fec1132600c26de1fa"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/belt-magnet-separator.plateMagnet.scale-1-right.png",
+      "sha256": "3cc45a7d83fe44234d4e9ef937dc3c98f8d08699bce0b960637447c1bd2f42bd"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/belt-magnet-separator.plateMagnet.scale-1-top.png",
+      "sha256": "7f40048a8da9b14ce950fae80c6fcf5c50c23a59f31faa1c9811a0945d7ebdbc"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/belt-magnet-separator.plateMagnet.scale-1-iso.png",
+      "sha256": "7b89ba856d3f4a560274f04cce241f00af3b25291208d0f89728fede724c3236"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.open.scale-1-front.png",
+      "sha256": "2742e176338c3401be2d37bd677cf1b2f33414feab96807ae95a8a9ab62b40d0"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.open.scale-1-right.png",
+      "sha256": "4d0dd838bcc704d3c4b9cc94aef7803983155a9b2215466644d80dc2361947bd"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.open.scale-1-top.png",
+      "sha256": "d006825951f76a7a67756855922d830d1dec500c7c2b9053b68a96b4bcce42e5"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.open.scale-1-iso.png",
+      "sha256": "51f3158170b596e904c39ba4f6844381da0edc8585c9bd417ba265a68e832f5c"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.closed.scale-1-front.png",
+      "sha256": "8e1828f189f7f83727bba7f925eff94755cc1707b9159e90f92a68f536f1b2a5"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.closed.scale-1-right.png",
+      "sha256": "9ed3a0e72624baebd3bf9313a6784153ebe522deab5c495881b37158237f9c5e"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.closed.scale-1-top.png",
+      "sha256": "5857526847354c5a47ce2129e980d78d39250bcbe4ba7b53beb6de5532d19cf9"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/blackout-curtain-drive.closed.scale-1-iso.png",
+      "sha256": "2856219004a294e1bd02d34940fb895eb936fb7eec63e46ea6fece71fcb93e20"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/roll-cage-trolley.none.scale-1-front.png",
+      "sha256": "f913b756cb3f1aade8dcb5015df6e508671990b8283f677ddb2521b88d549fbe"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/roll-cage-trolley.none.scale-1-right.png",
+      "sha256": "3257e916af1f0a6ad98bcb17e28eb672011e0bc82b90c5d2da4a04cbb82fa0e8"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/roll-cage-trolley.none.scale-1-top.png",
+      "sha256": "18abcbda13a9961be810f4c2dc32b03c81a8c8ae7d33e2ce5df5a8ad1510b1bb"
+    },
+    {
+      "path": "/data/qa/kernelcad-asset-parallel-20261120/lane-b/five-connection-repairs/visual/branches/roll-cage-trolley.none.scale-1-iso.png",
+      "sha256": "6868a2eeee7cbdb3b665421c51f751b5b297ecba7eaf406d3dad2c33c988481d"
+    },
+    {
+      "path": "/data/worktrees/kernelcad-catalog-five-connections-20261120/artifacts/catalog-demos/five-connection-repairs-20261120/before-after.mp4",
+      "sha256": "f83a4d0fa47ec09e63a89e20a6ba2a0595792c9646b445887f6881a22290bb70"
+    },
+    {
+      "path": "/data/worktrees/kernelcad-catalog-five-connections-20261120/artifacts/catalog-demos/five-connection-repairs-20261120/connections-contact.jpg",
+      "sha256": "f7eeafea7050687a54df08f2a99bb64d2bfb9109e74cbe5e7aac847475c05d17"
+    }
+  ],
+  "index": {
+    "beforeSha256": "ab717622015da3f7788253c4fa43a6b9f2741fddc1af121f793ea309943d857b",
+    "previousVisualIndexSha256": "e8dd7c5961a98478080cc3763bc681022b528abcc77ec31e1de252c58fe8b8a1",
+    "afterSha256": "6dd8ea2e9fa3c72005cec8679a8f08b6f356809e342129a25b5a3386780957b0",
+    "changedIds": [
+      "belt-magnet-separator",
+      "blackout-curtain-drive",
+      "inline-skate",
+      "roll-cage-trolley",
+      "strip-light-battens"
+    ],
+    "changedSinceV1": [
+      "inline-skate"
+    ]
+  },
+  "video": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1920,
+        "height": 1080,
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "17.958333"
+    }
+  }
+}

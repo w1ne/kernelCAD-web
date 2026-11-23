@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { getOC, makeVertex, type Face } from 'replicad';
+import { getOC, makeCylinder, makeVertex, type Face } from 'replicad';
 import type { BuiltModel } from '../buildModel';
 import type { Assembly } from '../capture/assembly';
 import { isSceneBackend, type SceneBackend } from '../../kernel/backends/sceneBackend';
 import { OcctBackend, analysisBodyOf } from '../../kernel/backends/occt/occtBackend';
-import { inspectCylindricalHoles, collectFullCylinders, type CylindricalHole } from '../../kernel/backends/occt/holeDetection';
+import { collectConcaveCylinderClusters, collectFullCylinders, type BoreExtent, type CylindricalHole } from '../../kernel/backends/occt/holeDetection';
 import { brepExtremaDistance } from '../../kernel/backends/occt/brepDistance';
 import { validateHashBoundConnectorManifest } from '../../shared/parts/connectorManifestSchema';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
@@ -129,19 +129,69 @@ function fullOpenBore(shape: OcctBackend, hole: CylindricalHole): boolean {
   }
   return true;
 }
+/** Join only full coaxial walls whose intervals form one continuous path.
+ * These are kernel geometry tolerances, independent of installation allowances. */
+function continuousBore(clusters: BoreExtent[]): CylindricalHole | undefined {
+  const first = clusters[0];
+  if (!first) return undefined;
+  const axis = first.dir0, origin = first.loc0;
+  const intervals: { min: number; max: number }[] = [];
+  for (const c of clusters) {
+    if (Math.abs(c.coverageRad-2*Math.PI)>1e-6) return undefined;
+    const parallel = dot(axis,c.dir0);
+    const offset = sub(c.loc0,origin);
+    if (norm(sub(c.dir0,scale(axis,parallel)))>1e-9
+      || norm(sub(offset,scale(axis,dot(offset,axis))))>1e-6) return undefined;
+    const a = dot(sub(add(c.loc0,scale(c.dir0,c.tMin)),origin),axis);
+    const b = dot(sub(add(c.loc0,scale(c.dir0,c.tMax)),origin),axis);
+    intervals.push({ min: Math.min(a,b), max: Math.max(a,b) });
+  }
+  intervals.sort((a,b)=>a.min-b.min);
+  // A gap may hide a solid web. Overlapping intervals with different radii
+  // describe multiple walls, not a proven single open bore.
+  if (intervals.some((v,i)=>i>0 && Math.abs(v.min-intervals[i-1].max)>1e-6)) return undefined;
+  return {
+    axisOrigin: [...add(origin,scale(axis,intervals[0].min))], axisDirection: axis,
+    diameterMm: 2*Math.min(...clusters.map(c=>c.radiusMm)),
+    depthMm: intervals[intervals.length-1].max-intervals[0].min,
+    faceCount: clusters.reduce((sum,c)=>sum+c.faceCount,0), kind: 'through',
+  };
+}
+/** The common minimum-radius core must be empty, including at every step.
+ * Inset only avoids coincident side faces; positive material volume rejects. */
+function clearBoreCore(shape: OcctBackend, hole: CylindricalHole): boolean {
+  const radius = hole.diameterMm/2-1e-5;
+  if (!(radius>0)) return false;
+  const core = new OcctBackend(makeCylinder(radius,hole.depthMm,[...hole.axisOrigin],[...hole.axisDirection]));
+  try { return shape.intersectionVolume(core)===0; }
+  finally { core.dispose(); }
+}
 function boreFor(shape: OcctBackend, screw: ScrewFrame, tolerance: number): CylindricalHole | undefined {
-  const inspection = inspectCylindricalHoles(shape);
-  if (inspection.holeDetection !== 'exact') return undefined;
-  const distance = (h: CylindricalHole): number => {
-    const d = sub(screw.origin,h.axisOrigin); const dir = h.axisDirection;
+  // Inspect every local cylindrical cluster, including partial ones. A remote
+  // notch must not invalidate this bore or replace a breached target.
+  const distance = (h: BoreExtent): number => {
+    const d = sub(screw.origin,h.loc0); const dir = h.dir0;
     return norm(sub(d,scale(dir,dot(d,dir))));
   };
-  const sorted = [...inspection.holes].sort((a,b) => distance(a)-distance(b));
-  const bore = sorted[0];
-  if (!bore || (sorted[1] && Math.abs(distance(sorted[1])-distance(bore)) <= tolerance)) return undefined;
-  // Only open through bores have a verified outlet. Blind/countersunk/threaded
-  // topology is intentionally unknown in this first, flat-bearing audit.
-  return fullOpenBore(shape,bore) ? bore : undefined;
+  const relevantTarget = (h: BoreExtent): boolean => {
+    if (Math.abs(h.coverageRad-2*Math.PI)<=1e-6) return true;
+    const first = dot(sub(add(h.loc0,scale(h.dir0,h.tMin)),screw.origin),screw.axis);
+    const last = dot(sub(add(h.loc0,scale(h.dir0,h.tMax)),screw.origin),screw.axis);
+    return Math.max(first,last)>1e-7;
+  };
+  // A partial head-clearance relief above the bearing is not a shank bore.
+  // Keep full bores beyond the tip so zero/short overlap is a measured failure.
+  const sorted = collectConcaveCylinderClusters(shape,'trimmed').filter(relevantTarget).sort((a,b) => distance(a)-distance(b));
+  const candidate = sorted[0];
+  if (!candidate) return undefined;
+  const nearest = sorted.filter(c=>Math.abs(distance(c)-distance(candidate))<=Math.max(tolerance,1e-6));
+  const bore = continuousBore(nearest);
+  if (!bore) return undefined;
+  // Overlapping radial envelopes still associate genuinely misaligned bores.
+  if (distance(candidate) > (bore.diameterMm + screw.diameter) / 2 + tolerance) return undefined;
+  // A stepped path additionally needs an empty common core. Blind, breached
+  // and separated cavities remain unknown even when their axes coincide.
+  return fullOpenBore(shape,bore) && (nearest.length===1 || clearBoreCore(shape,bore)) ? bore : undefined;
 }
 /** Maximum shank radial envelope over the actual bore interval. The screw
  * can accumulate tilt before it reaches a distant receiver; bore depth alone
@@ -180,8 +230,8 @@ function boreMetrics(part: string, shape: OcctBackend, screw: ScrewFrame, tol: n
   return { interval: { min,max,hole }, metrics: [
     measured(names[0],part,offset,tol,offset<=tol,'Distance of screw bearing center to measured bore axis.','Align the screw and target bore axes.'),
     measured(names[1],part,tilt,angleTol,tilt<=angleTol,'Angle between measured bore axis and catalog bearing-to-tip axis.','Rotate the screw onto the bore axis.'),
-    measured(names[2],part,hole.diameterMm,screw.diameter,hole.diameterMm+tol>=screw.diameter && maxOffset<=clearance+tol,'BREP bore diameter and conservative shank envelope at shaft-clipped bore endpoint planes, including tilt accumulated from the bearing.','Increase modeled clearance or correct offset/tilt.'),
-    measured(names[3],part,overlap,0,overlap>tol,'Axial interval overlap of measured cylindrical bore with catalog shank.','Extend or move the screw so its shank spans this target.'),
+    measured(names[2],part,hole.diameterMm,screw.diameter,hole.diameterMm+tol>=screw.diameter && maxOffset<=clearance+tol,'Minimum BREP path diameter and conservative shank envelope at shaft-clipped path endpoint planes, including tilt accumulated from the bearing.','Increase modeled clearance or correct offset/tilt.'),
+    measured(names[3],part,overlap,0,overlap>tol,'Axial interval overlap of the measured continuous bore path with catalog shank.','Extend or move the screw so its shank spans this target.'),
   ] };
 }
 function distanceToFace(point: Vec3, face: Face): number {
@@ -189,32 +239,95 @@ function distanceToFace(point: Vec3, face: Face): number {
   try { const result = brepExtremaDistance(getOC(),vertex.wrapped,face.wrapped); if (result === undefined || !Number.isFinite(result)) throw new Error('BREP face probe failed'); return result; }
   finally { vertex.delete(); }
 }
+function coaxialCircleRadii(face: Face, screw: ScrewFrame): number[] {
+  const radii: number[] = [];
+  const edges = face.edges;
+  try {
+    for (const edge of edges) {
+      if (edge.geomType !== 'CIRCLE' || !edge.isClosed) continue;
+      const startPoint = edge.pointAt(0);
+      try {
+        const oppositePoint = edge.pointAt(.5);
+        try {
+          const start = vector(startPoint);
+          const center = scale(add(start, vector(oppositePoint)), .5);
+          const offset = sub(center, screw.origin);
+          if (norm(sub(offset, scale(screw.axis, dot(offset, screw.axis)))) > .001) continue;
+          radii.push(norm(sub(start, center)));
+        }
+        finally { oppositePoint.delete(); }
+      }
+      finally { startPoint.delete(); }
+    }
+  }
+  finally { for (const edge of edges) edge.delete(); }
+  return radii;
+}
+
+interface BearingPlane {
+  faces: Face[];
+  point: Vec3;
+  normal: Vec3;
+  gap: number;
+  distance: number;
+}
+
+/** A pocket can split one bearing plane into several trimmed faces.
+ * Keep different heights and normals separate; only coplanar material joins. */
+function facingBearingPlanes(screw: ScrewFrame, targets: Map<string, OcctBackend>, head: Face, tol: number, angleTol: number): BearingPlane[] {
+  const planes: BearingPlane[] = [];
+  for (const shape of targets.values()) for (const face of shape.getReplicadShape().faces) {
+    if (face.geomType !== 'PLANE') continue;
+    const normal = unit(vector(face.normalAt()));
+    const cosine = dot(normal,screw.axis);
+    if (Math.abs(cosine)<1e-9 || cosine > -Math.cos(angleTol*Math.PI/180) + 1e-8) continue;
+    const point = vector(face.center);
+    const gap = dot(sub(point,screw.origin),normal)/cosine;
+    if (!Number.isFinite(gap) || gap < -tol || gap > screw.length+tol) continue;
+    const distance = brepExtremaDistance(getOC(),head.wrapped,face.wrapped);
+    if (distance === undefined || !Number.isFinite(distance)) throw new Error('Bearing BREP probe failed');
+    const plane = planes.find(p => dot(p.normal,normal) > 1-1e-9 && Math.abs(dot(sub(point,p.point),p.normal)) <= 1e-6);
+    if (plane) {
+      plane.faces.push(face);
+      plane.distance = Math.min(plane.distance,distance);
+    } else planes.push({ faces:[face],point,normal,gap,distance });
+  }
+  return planes;
+}
+
+function bearingSupported(screw: ScrewFrame, head: Face, plane: BearingPlane, tol: number): boolean {
+  const radii = [Math.max(screw.diameter/2+.2,screw.diameter*.65)];
+  const boundaries = [...coaxialCircleRadii(head,screw),...plane.faces.flatMap(face => coaxialCircleRadii(face,screw))].sort((a,b) => a-b);
+  for (let i=1;i<boundaries.length;i++) {
+    if (boundaries[i]-boundaries[i-1]>2*tol) radii.push((boundaries[i]+boundaries[i-1])/2);
+  }
+  const helper: Vec3 = Math.abs(screw.axis[0])<.9 ? [1,0,0] : [0,1,0];
+  const u = unit(sub(helper,scale(screw.axis,dot(helper,screw.axis))));
+  const v: Vec3 = [screw.axis[1]*u[2]-screw.axis[2]*u[1],screw.axis[2]*u[0]-screw.axis[0]*u[2],screw.axis[0]*u[1]-screw.axis[1]*u[0]];
+  return radii.some(radius => [u,scale(u,-1),v,scale(v,-1)].every(direction => {
+    const bearing = add(screw.origin,scale(direction,radius));
+    const target = add(bearing,scale(screw.axis,plane.gap));
+    return distanceToFace(bearing,head)<=tol && plane.faces.some(face => distanceToFace(target,face)<=tol);
+  }));
+}
+
 function bearingMetric(screw: ScrewFrame, targets: Map<string, OcctBackend>, tol: number, angleTol: number): InstallationMetric {
   const faces = screw.world.getReplicadShape().faces;
   const bearingFaces = faces.filter(f => f.geomType === 'PLANE' && dot(unit(vector(f.normalAt())),screw.axis) > .999999 && Math.abs(dot(sub(vector(f.center),screw.origin),screw.axis)) < .001 && f.clone().innerWires().length > 0);
   if (bearingFaces.length !== 1) return unknown('bearing-gap',null,'A unique trimmed planar annular head bearing was not found in the BREP.');
   const head = bearingFaces[0];
+  const planes = facingBearingPlanes(screw,targets,head,tol,angleTol);
   let best = Infinity;
-  for (const shape of targets.values()) for (const face of shape.getReplicadShape().faces) {
-    if (face.geomType !== 'PLANE' || dot(unit(vector(face.normalAt())),screw.axis) > -Math.cos(angleTol*Math.PI/180) + 1e-8) continue;
-    // Facing planes beyond the bearing, through its head annulus. This excludes
-    // walls that touch the shank or head sides and planes behind the head.
-    const gap = dot(sub(vector(face.center),screw.origin),screw.axis);
-    if (gap < -tol || gap > screw.length+tol) continue;
-    const distance = brepExtremaDistance(getOC(),head.wrapped,face.wrapped);
-    if (distance === undefined || !Number.isFinite(distance)) throw new Error('Bearing BREP probe failed');
-    // Verify facing trimmed material at several radial bearing locations;
-    // a single edge/side touch cannot certify an annular bearing support.
-    const radial = Math.max(screw.diameter/2+.2, screw.diameter*.65);
-    const helper: Vec3 = Math.abs(screw.axis[0])<.9 ? [1,0,0] : [0,1,0];
-    const u = unit(sub(helper,scale(screw.axis,dot(helper,screw.axis))));
-    const v: Vec3 = [screw.axis[1]*u[2]-screw.axis[2]*u[1],screw.axis[2]*u[0]-screw.axis[0]*u[2],screw.axis[0]*u[1]-screw.axis[1]*u[0]];
-    const supported = [u,scale(u,-1),v,scale(v,-1)].every(r => distanceToFace(add(add(screw.origin,scale(screw.axis,gap)),scale(r,radial)),face) <= tol);
-    if (supported && [u,scale(u,-1),v,scale(v,-1)].every(r => distanceToFace(add(screw.origin,scale(r,radial)),head)<=tol)) best = Math.min(best,distance);
+  let nearestFacing = Infinity;
+  for (const plane of planes) {
+    nearestFacing = Math.min(nearestFacing,plane.distance);
+    if (bearingSupported(screw,head,plane,tol)) best = Math.min(best,plane.distance);
   }
+  if (nearestFacing+tol<best) return unknown('bearing-gap',null,'Closer facing material has unsupported partial bearing geometry; a farther face cannot establish the head gap.');
   if (!Number.isFinite(best)) return unknown('bearing-gap',null,'No facing trimmed bearing annulus support found; side contact is insufficient.');
-  return measured('bearing-gap',null,best,tol,best<=tol,'BREP minimum distance between actual trimmed head annulus and facing target material; four radial support probes.','Seat the head on the facing washer/plate bearing surface.');
+  return measured('bearing-gap',null,best,tol,best<=tol,'BREP minimum distance between the head annulus and facing coplanar trimmed material; four support directions at geometry-derived radii.','Seat the head on the facing washer/plate bearing surface.');
 }
+
 function receiverMetrics(station: FastenerStation, interval: BoreInterval | undefined, screw: ScrewFrame, tol: number): InstallationMetric[] {
   if (!station.engagementPart) return [notApplicable('engagement'),notApplicable('tip-protrusion')];
   if (!interval) return [unknown('engagement',station.engagementPart,'Receiver bore could not be measured.'),unknown('tip-protrusion',station.engagementPart,'Receiver outlet could not be measured.')];
@@ -255,5 +368,5 @@ export function checkFastenerInstallation(model: BuiltModel, options: FastenerIn
   const counts = { requested: stations.length, measured: stations.filter(s=>s.metrics.some(m=>m.value!==null)).length, passed: stations.filter(s=>s.status==='pass').length, failed: stations.filter(s=>s.status==='fail').length, unknown: stations.filter(s=>s.metrics.some(m=>m.status==='unknown')).length };
   const status = !stations.length ? 'no-coverage' : counts.failed ? 'fail' : counts.unknown ? 'partial' : 'pass';
   return { ok: status==='pass', source: 'local', assembly: scene?.assemblyName ?? options.assembly ?? null, status, counts, stations,
-    limitations: ['Explicit stations only; unlisted fasteners are not audited.','Flat annular-bearing screws and full open cylindrical bores only; unsupported/ambiguous geometry is unknown.','Engagement is modeled axial overlap. Simplified threads cannot certify thread contact, strength, torque, preload or physical installation.','Bearing support is checked at four radial locations on facing trimmed faces; this is not a pressure/contact-area analysis.'] };
+    limitations: ['Explicit stations only; unlisted fasteners are not audited.','Flat annular-bearing screws and full open cylindrical or continuous coaxial stepped bores only; unsupported/ambiguous geometry is unknown.','Engagement is modeled axial overlap. Simplified threads cannot certify thread contact, strength, torque, preload or physical installation.','Bearing support is checked at four radial locations on facing coplanar trimmed material; this is not a pressure/contact-area analysis.'] };
 }

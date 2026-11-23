@@ -104,7 +104,7 @@ path instead of silently creating an unbounded joint.
 
 ### Per-part material and density
 
-Prefer naming a **material**: `arm.part(name, shape, { material })` seeds BOTH the part's density default (for mass / inertia) AND a default surface finish (for the render) from one word — a material name carries how the part weighs and how it looks. Materials are engineering grades: `mild-steel`, `aluminum-6061`, `pla`, `petg`, `abs`, `nylon`; `steel`, `aluminum` / `aluminium` and `pet` are aliases for the matching grade. The part records the canonical grade (the BOM name), and the same spelling works in `feaStudy({ material })`, `inspect({ of: 'mass', material })`, `verify({ check: 'load-capacity' })` materials and `.finish()`. An unknown name throws, naming the accepted spellings — never a silent water default.
+Prefer naming a **material**: `arm.part(name, shape, { material })` seeds BOTH the part's density default (for mass / inertia) AND a default surface finish (for the render) from one word — a material name carries how the part weighs and how it looks. Materials are engineering grades: `mild-steel`, `aluminum-6061`, `pla`, `petg`, `abs`, `asa`, `nylon`; `steel`, `aluminum` / `aluminium` and `pet` are aliases for the matching grade. The part records the canonical grade (the BOM name), and the same spelling works in `feaStudy({ material })`, `inspect({ of: 'mass', material })`, `verify({ check: 'load-capacity' })` materials and `.finish()`. An unknown name throws, naming the accepted spellings — never a silent water default.
 
 ```typescript
 arm.part('shoulder-bracket', bracketShape, { material: 'aluminum-6061' }); // 2700 kg/m³ + aluminium finish
@@ -158,7 +158,7 @@ interface Assembly {
     connectors?: Record<string, { origin: [number, number, number]; axis?: [number, number, number] }>;
     connect?: { connector: string; to: AssemblyConnectorRef; name?: string };
     /** Named material grade: seeds the density default AND a default finish.
-     *  mild-steel | aluminum-6061 | pla | petg | abs | nylon
+     *  mild-steel | aluminum-6061 | pla | petg | abs | asa | nylon
      *  (aliases steel, aluminum, aluminium, pet). */
     material?: string;
     /** Raw material density in kg/m^3. Default 1000 (water). Overrides the
@@ -256,7 +256,21 @@ const fused = scene.toUnion();               // antipattern; only when one solid
 
 Connector origins are in their owning **part's local frame** (URDF/physics convention). Multi-mate chains compose correctly; the FK tree-walk handles N joints.
 
-**`at` with a mate:** mates are solved outward from the first declared part. That part keeps its `at`, and every part a mate places goes where the mate puts it; its own `at` is then ignored. A part that no chain of mates links to the first declared part is not solved: the built model leaves it at its own `at` and does not apply its mates. Declare the base part first.
+**`at` with a mate:** declare a fixed base with the existing world joint:
+
+```ts
+arm.virtualJoint('world-base', { type: 'fixed', parentFrame: 'world', childLink: 'base' });
+```
+
+The named base keeps its authored `at` in `model()`, `solvedModel()` and mate review,
+even when another part was declared first. Mates place the moving parts from that
+base; a moving part's own `at` is then ignored. Multiple world-fixed bases remain
+fixed, and incompatible mates between them fail solving. A `floating` or `planar`
+virtual joint, or a fixed joint to an internal parent frame, does not ground a part.
+Without a declared fixed world root, the solver retains its first-part fallback
+and review reports `assembly.connectivity.assumed-root`. Disconnected mate
+components still solve from their own first declared part; that fallback does not
+prove that the component is attached to a declared fixed base.
 
 **Companion rule — author each part's shape in its own part-local frame, NOT in world coordinates.** A part's local frame has its origin at the joint where this part attaches to its parent (or at the world origin, for the root part). All `.translate(x, y, z)` calls on the child's shape are interpreted in this *part-local* frame.
 
@@ -946,3 +960,36 @@ Runnable repair example: `examples/fastener-installation/l-bracket-mount.kcad.ts
 Generate its four catalog envelopes with `npx tsx
 scripts/generateFastenerInstallationCatalog.ts assets/parts`, audit both screw
 stations, then change `liftedHeadMm` from 1.5 to 0 and repeat the same audit.
+
+The bore check is local to the screw station. A separate edge notch does not
+invalidate an intact target bore. The selected cylindrical wall must cover the
+full circle over its measured depth; coverage uses trimmed BREP surface area, so
+a narrow slot or a pocket through only part of the depth remains unknown.
+Coplanar trimmed faces can jointly support the head. Faces at different heights
+cannot supply one bearing plane, and a closer unsupported face prevents a farther
+face from reporting a false seated gap. Support still uses four radial locations;
+it does not establish contact pressure or full bearing area.
+
+Runnable local-feature example:
+`examples/fastener-installation/local-feature-mount.kcad.ts`. With the same catalog
+preparation, audit `{ part: 'screw', against: ['plate'] }`. The split bearing is
+seated at `liftedHeadMm = 0` and fails the gap check at 1.5 mm. The
+`remote-notch` case keeps its intact target measurable; `narrow-breach` remains
+unknown. Local measured demo:
+`docs/demos/fastener-local-features-20261122/demo.mp4`.
+
+A counterbore or stepped clearance can be measured as one path only when every
+wall has full trimmed circular coverage, all axes coincide at kernel precision,
+and consecutive axial intervals meet without overlap or a material web. The
+outer ends must be open and the common minimum-radius core must contain no
+material. Clearance uses the smallest diameter over the entire path, including
+its full span for the conservative tilted-shank envelope. Installation tolerance
+does not merge separate axes or bridge gaps. Blind holes, breached steps, partial
+continuations, and competing axes remain unknown.
+
+Runnable stepped-path example:
+`examples/fastener-installation/stepped-through-bore.kcad.ts`. After the same
+catalog preparation, audit `{ part: 'screw', against: ['plate'] }`. Both `straight`
+and `stepped` measure a 3.5 mm minimum diameter through 6.4 mm of plate. The `web`
+and `narrow-breach` cases remain partial. Source-bound local demo:
+`docs/demos/fastener-stepped-bore-20261122/demo.mp4`.

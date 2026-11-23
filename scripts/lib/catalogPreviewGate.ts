@@ -34,6 +34,21 @@ export function touchedAssets(changed: readonly string[], rows: readonly GateRow
   return out;
 }
 
+/** Deterministic, complete distribution of a preview gate across CI workers.
+ * Each asset appears in exactly one shard. No shard silently becomes a no-op
+ * if the CI matrix sends a malformed shard spec. */
+export function shardPreviewAssets<T>(assets: readonly T[], spec?: string): T[] {
+  if (spec === undefined) return [...assets];
+  const parsed = /^([1-9]\d*)\/([1-9]\d*)$/.exec(spec);
+  if (!parsed) throw new Error(`Invalid preview shard '${spec}'; expected index/count, both positive integers`);
+  const shard = Number(parsed[1]);
+  const count = Number(parsed[2]);
+  if (!Number.isSafeInteger(shard) || !Number.isSafeInteger(count) || shard > count) {
+    throw new Error(`Invalid preview shard '${spec}'; index must be within 1..count`);
+  }
+  return assets.filter((_, index) => index % count === shard - 1);
+}
+
 export interface RgbaImage {
   width: number;
   height: number;

@@ -5,7 +5,7 @@ import type { NumericPoses } from '../capture/forwardKinematics';
 import type { Vec3 } from '../../shared/intent/types';
 import type { Transform } from '../../shared/runtime/se3';
 import { expandCoupledPoses } from './coupledPoses';
-import { solveMates } from './solver';
+import { solveMates, withUnmatedPartPlacements } from './solver';
 import { parseConnectorRef } from './mate';
 import type { PhysicalUseCaseRecord } from './physicalUseCase';
 
@@ -90,11 +90,12 @@ export async function assessPhysicalUseCaseReachability(
       continue;
     }
     if (solved.status !== 'solved' && solved.status !== 'redundant-ok') continue;
-    const { solvedContacts, sampleComplete } = collectSampleContacts(arm, solved.poses, useCase, contactDistances);
+    const placements = withUnmatedPartPlacements(arm, solved.poses);
+    const { solvedContacts, sampleComplete } = collectSampleContacts(arm, placements, useCase, contactDistances);
 
     const witness = buildPoseWitness(
       poses,
-      solved.poses,
+      placements,
       solvedContacts,
       sampleComplete,
       useCase.contacts.length,

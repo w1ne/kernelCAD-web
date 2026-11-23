@@ -24,11 +24,12 @@
 
 import type { Face, Shape3D } from 'replicad';
 import type { CanonicalFace } from '../../../shared/intent/types';
+import { geometryBox } from './backendBounds';
 
 /** Tolerance (mm) for treating two cap centroids as distinct. */
 const TOL = 1e-4;
-/** Tolerance (mm) for a face centre lying on the bounding-box extreme. The
- *  OCCT bbox carries a small enlargement gap, so this is looser than TOL. */
+/** Tolerance (mm) for a face centre lying on the bounding-box extreme. Bnd_Box
+ *  bounds on curved faces are not tight, so this is looser than TOL. */
 const EXTREME_TOL = 1e-2;
 /** Slack on the |normal·axis| ≈ 1 test (≈0.8°). */
 const AXIS_SLACK = 1e-4;
@@ -151,8 +152,10 @@ export function resolveCanonicalByGeometry(
  */
 function extremePlanarFace(shape: Shape3D, planar: readonly Face[], face: CanonicalFace): Face | null {
   const spec = canonicalToAxisEnd(face);
-  const bb = shape.boundingBox.bounds as [[number, number, number], [number, number, number]];
-  const extreme = spec.end === 'max' ? bb[1][spec.axis] : bb[0][spec.axis];
+  // Geometry box, not replicad's: that one reads the triangulation once the
+  // shape is meshed, and curved faces then push it past the planar cap.
+  const bb = geometryBox(shape.wrapped);
+  const extreme = spec.end === 'max' ? bb.max[spec.axis] : bb.min[spec.axis];
   const sign = spec.end === 'max' ? 1 : -1;
   const hits = planar.filter((f) => {
     const n = normalOf(f);

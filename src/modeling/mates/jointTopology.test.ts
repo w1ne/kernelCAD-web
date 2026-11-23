@@ -20,6 +20,7 @@ function armLike(overrides: {
   parts?: unknown[];
   mates?: unknown[];
   physicalUseCases?: unknown[];
+  virtualJoints?: unknown[];
   mechanicalJointIntents?: unknown[];
   jointSupportIntents?: unknown[];
 }): Assembly {
@@ -27,6 +28,7 @@ function armLike(overrides: {
     __parts: () => overrides.parts ?? [],
     __mates: () => overrides.mates ?? [],
     __physicalUseCases: () => overrides.physicalUseCases ?? [],
+    __virtualJoints: () => overrides.virtualJoints ?? [],
     __mechanicalJointIntents: () => overrides.mechanicalJointIntents ?? [],
     __jointSupportIntents: () => overrides.jointSupportIntents ?? [],
     __tendons: () => [],

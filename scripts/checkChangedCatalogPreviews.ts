@@ -16,8 +16,9 @@ import { initOcct } from '../src/kernel/backends/occt/occtBackend';
 import { buildCatalogAssetWithGlb } from '../src/agent/catalog/buildCatalog';
 import { CatalogIndexSchema } from '../src/shared/assets/catalogSchema';
 import { glbTriangles, renderTrianglesPng } from './lib/glbSoftwareRender';
+import { renderManufacturingCatalogPreview } from './lib/manufacturingCatalogPreview';
 import {
-  exceptionApplies, pixelDiff, pixelSha256, previewMatches, previewPathFor, sha256, touchedAssets,
+  exceptionApplies, pixelDiff, pixelSha256, previewMatches, previewPathFor, sha256, shardPreviewAssets, touchedAssets,
   type PreviewExceptions, type RgbaImage,
 } from './lib/catalogPreviewGate';
 
@@ -49,8 +50,10 @@ const index = CatalogIndexSchema.parse(JSON.parse(readFileSync(join(repoRoot, 'c
 const exceptions: PreviewExceptions = existsSync(join(repoRoot, EXCEPTIONS_FILE))
   ? JSON.parse(readFileSync(join(repoRoot, EXCEPTIONS_FILE), 'utf8'))
   : {};
-const touched = touchedAssets(changed, index.assets).filter((t) => existsSync(join(repoRoot, t.row.source)));
-console.log(`catalog preview gate: ${touched.length} touched asset(s) against ${base}`);
+const candidates = touchedAssets(changed, index.assets).filter((t) => existsSync(join(repoRoot, t.row.source)));
+const shard = process.env.KCAD_CATALOG_PREVIEW_SHARD;
+const touched = shardPreviewAssets(candidates, shard);
+console.log(`catalog preview gate: ${touched.length}/${candidates.length} touched asset(s) against ${base}` + (shard ? ` (shard ${shard})` : ''));
 
 const started = Date.now();
 let initialized = false;
@@ -76,8 +79,14 @@ for (const { row, sourceChanged } of touched) {
   }
   let fresh: RgbaImage;
   try {
-    const { asset, glb } = await buildCatalogAssetWithGlb(repoRoot, row.source);
-    fresh = await decode(await renderTrianglesPng(await glbTriangles(glb), { label: `${asset.title} · ${asset.stats.triangles} tris` }));
+    const isManufacturingCard = row.kit === 'standard-components';
+    const built = isManufacturingCard ? undefined : await buildCatalogAssetWithGlb(repoRoot, row.source);
+    const png = isManufacturingCard
+      ? await renderManufacturingCatalogPreview(join(repoRoot, row.source))
+      : await renderTrianglesPng(await glbTriangles(built!.glb), {
+        label: `${built!.asset.title} · ${built!.asset.stats.triangles} tris`,
+      });
+    fresh = await decode(png);
   } catch (err) {
     failures.push(`${row.id}: build failed: ${err instanceof Error ? err.message : String(err)}`);
     continue;

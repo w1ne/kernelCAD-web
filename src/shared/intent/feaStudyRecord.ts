@@ -17,6 +17,7 @@
 import type { FaceQuery } from './queryTypes';
 import type { MotionPartLoadSample } from './motionLoadRecord';
 import type { FeatureId } from './types';
+import type { Editable } from '../runtime/paramRef';
 
 /** How a study names faces. Either a `FaceQuery` (the same selector object
  *  `list_faces` / `.shell()` / `.hole()` take) or a string: a `@kc[...]`
@@ -24,6 +25,17 @@ import type { FeatureId } from './types';
  *  which must match exactly one face, or an `@kcq[...]` Query, which binds
  *  every face it selects. */
 export type FeaFaceSelector = FaceQuery | string;
+
+/** A value whose numbers may be `param()` refs, at any depth. */
+type EditableNumbers<T> = T extends number
+  ? Editable<number>
+  : T extends object ? { [K in keyof T]: EditableNumbers<T[K]> } : T;
+
+/** The author-facing form of {@link FeaFaceSelector}: a `FaceQuery` number
+ *  (`atZ`, `near`, `boundingBoxIn.zMax`, ...) may be a `param()` ref. The
+ *  record keeps the ref symbolic; `resolveStudyParams` replaces it with the
+ *  current value before the faces are bound. */
+export type FeaFaceSelectorInput = EditableNumbers<FaceQuery> | string;
 
 /** Explicit material properties, for a grade outside the named table.
  *  Units are the kernelCAD solver units: mm / N / MPa. */
@@ -39,7 +51,7 @@ export interface FeaMaterialProps {
 export interface FeaLoadSpec {
   /** Faces the force is applied to. The force is distributed over every
    *  mesh node on those faces. */
-  faces: FeaFaceSelector;
+  faces: FeaFaceSelectorInput;
   /** Total force vector [Fx, Fy, Fz] in newtons, applied to `faces` as a
    *  whole (NOT per node). */
   force: readonly [number, number, number];
@@ -71,15 +83,15 @@ export interface FeaLoadsFromMotionSpec {
   pose?: Readonly<Record<string, number>>;
   /** Faces that distribute the remote wrench. Default: a query containing
    *  the joint origin. */
-  faces?: FeaFaceSelector;
+  faces?: FeaFaceSelectorInput;
 }
 
 export interface FeaStudySpec {
   /** A named material (`mild-steel`, `aluminum-6061`, `pla`, `petg`, `abs`,
-   *  `nylon`) or explicit `{ E, nu, yield }`. */
+   *  `asa`, `nylon`) or explicit `{ E, nu, yield }`. */
   material: string | FeaMaterialProps;
   /** Faces held fully fixed (all three translations zeroed). */
-  fixed: FeaFaceSelector;
+  fixed: FeaFaceSelectorInput;
   /** One or more applied loads. Either `loads` or `loadsFrom` is required —
    *  a study with no load reports nothing. */
   loads?: readonly FeaLoadSpec[];

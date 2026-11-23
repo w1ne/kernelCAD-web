@@ -33,6 +33,7 @@
 
 import { getOC } from 'replicad';
 import type { Vec3 } from '../../shared/intent/types';
+import { integrateVolumeProperties } from '../backends/occt/volumeIntegration';
 
 /** An axis in shape-local mm: a point on the axis plus a direction (need not be unit). */
 export interface GyrationAxis {
@@ -96,11 +97,9 @@ export function computeMassProperties(
   const oc = getOC() as any;
 
   const props = new oc.GProp_GProps_1();
-  // VolumeProperties_1(S, VProps, OnlyClosed, SkipShared, UseTriangulation).
-  // OnlyClosed=false so open shells still contribute volume integration;
-  // SkipShared/UseTriangulation=false matches the LinearProperties call in
-  // curve3dEval.ts.
-  oc.BRepGProp.VolumeProperties_1(occtShape, props, false, false, false);
+  // Adaptive integration: the fixed-order call is 0.86 % off on rational
+  // B-spline faces (backends/occt/volumeIntegration.ts).
+  integrateVolumeProperties(occtShape, props);
 
   const volumeMm3 = props.Mass();
   const massKg = volumeMm3 * MM3_TO_M3 * density;
