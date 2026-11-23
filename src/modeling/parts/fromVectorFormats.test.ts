@@ -624,6 +624,32 @@ describe('lib.fromSVG — round trip to a solid', () => {
     expect(types.filter(type => type === 'EXTRUSION_SURFACE')).toHaveLength(2 + 4);
     expect(types.filter(type => type === 'PLANE')).toHaveLength(3 + 2);
   });
+
+  it('imports <ellipse>, non-circular A arcs and stretched circles as exact curved faces', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: process.cwd() });
+
+    const [outline, ...holes] = await api.lib.fromSVG('examples/interoperability/svg-ellipse/ellipse-gasket.svg');
+    expect(holes).toHaveLength(2);
+    let solid = outline.extrude(3);
+    for (const hole of holes) solid = solid.subtract(hole.extrude(3));
+    const backend = await lower(session, solid.id);
+    const shape = backend.getReplicadShape();
+    expect(isValidShape(getOC(), shape.wrapped)).toBe(true);
+    // Half-ellipse crown (30 x 20) on a 60 x 20 base, less a rotated 8 x 4
+    // ellipse and an r = 3 circle stretched 1.5 x 1.
+    const exact = (1200 + (300 - 32 - 13.5) * Math.PI) * 3;
+    expect(Math.abs(backend.volume() - exact) / exact).toBeLessThan(1e-6);
+    expect(backend.boundingBox()).toMatchObject({
+      min: [expect.closeTo(0, 6), expect.closeTo(0, 6), expect.closeTo(0, 6)],
+      max: [expect.closeTo(60, 6), expect.closeTo(40, 6), expect.closeTo(3, 6)],
+    });
+    // Two quarter-ellipse crown walls and four quarter walls per hole are
+    // smooth swept surfaces; the rest are three straight sides and two caps.
+    const types = shape.faces.map(face => face.geomType);
+    expect(types.filter(type => type === 'PLANE')).toHaveLength(3 + 2);
+    expect(types).toHaveLength(2 + 4 + 4 + 3 + 2);
+  });
 });
 
 describe('lib.fromDXF / lib.fromSVG — failures surface as actionable KernelErrors', () => {

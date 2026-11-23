@@ -206,8 +206,10 @@ const DXF_HINTS: Record<string, string> = {
  *
  * Lines, circular arcs and cubic and quadratic Béziers (`C`/`S`/`Q`/`T`) are
  * exact; each Bézier becomes one NURBS segment, also under a non-uniform
- * transform. True ellipses (`<ellipse>`, non-circular `A` arcs) are
- * subdivided into chords within `opts.curveTolerance` mm (default 0.01).
+ * transform. True ellipses (`<ellipse>`, non-circular `A` arcs, elliptical
+ * `<rect>` corners, circles under a non-uniform transform) are exact too, as
+ * rational quadratic NURBS quarter arcs. `opts.curveTolerance` is still
+ * validated but no longer changes SVG geometry.
  *
  * Returns `Sketch[]`, largest region first. See the module header.
  */
