@@ -9,9 +9,12 @@
 // The importer runs under the `node` vitest environment, in the CLI, and in
 // the worker; none of those has a parser. So this module scans tags directly.
 // It reads element names, attributes and nesting, which is all a profile
-// import needs — it deliberately does NOT implement CSS, `<use>` expansion,
-// `<style>`, markers or clipping, and it refuses documents that depend on
-// them rather than rendering a subset and calling it the drawing.
+// import needs — it deliberately does NOT implement CSS, `<style>`, markers
+// or clipping, and it refuses documents that depend on them rather than
+// rendering a subset and calling it the drawing. Same-document `<use>`
+// references ARE expanded (see `expandUse` in importSvgWalk.ts), because
+// Inkscape clones and Illustrator symbols are how repeated holes and slots
+// usually arrive.
 //
 // THE Y AXIS
 // ----------
@@ -64,13 +67,11 @@ import { conicArcSegments } from './dxfEllipse';
 import { MM_PER_UNIT, isLengthUnit, LENGTH_UNIT_NAMES, type LengthUnit } from './lengthUnits';
 import {
   SvgParseError,
-  IDENTITY,
   apply,
+  attrNum,
   det,
   isSimilarity,
   lengthToMm,
-  mul,
-  parseTransform,
   parseViewBox,
   scanNumberAt,
   scanTags,
@@ -78,6 +79,7 @@ import {
   type Tag,
   type ViewBox,
 } from './importSvgParsing';
+import { emitSvgElements } from './importSvgWalk';
 
 export type { SvgParseFailure } from './importSvgParsing';
 export { SvgParseError } from './importSvgParsing';
@@ -113,27 +115,6 @@ export interface SvgImportResult {
 
 export const DEFAULT_SVG_TOLERANCE = 1e-3;
 export const DEFAULT_CURVE_TOLERANCE = 0.01;
-
-function attrNum(tag: Tag, name: string, fallback: number | null): number {
-  const raw = tag.attrs[name];
-  if (raw === undefined || raw.trim() === '') {
-    if (fallback === null) {
-      throw new SvgParseError(
-        'malformed-attribute',
-        `<${tag.name}> at offset ${tag.offset}: required attribute '${name}' is missing.`,
-      );
-    }
-    return fallback;
-  }
-  const v = Number(raw.trim());
-  if (!Number.isFinite(v)) {
-    throw new SvgParseError(
-      'malformed-attribute',
-      `<${tag.name}> at offset ${tag.offset}: attribute ${name}='${raw}' is not a number.`,
-    );
-  }
-  return v;
-}
 
 // ---------------------------------------------------------------------------
 // Path `d` scanning
@@ -389,8 +370,6 @@ function arcToCenter(
 // ---------------------------------------------------------------------------
 
 /** Elements that render nothing and can be skipped without losing profile geometry. */
-const NON_RENDERING = new Set(['defs', 'title', 'desc', 'metadata', 'style', 'script', 'clippath', 'mask', 'marker', 'symbol', 'lineargradient', 'radialgradient', 'pattern', 'filter', 'namedview', 'sodipodi', 'switch', 'animate', 'animatetransform', 'set']);
-
 /** Bulge of a quarter turn: tan(90° / 4). */
 const QUARTER_BULGE = Math.tan(Math.PI / 8);
 
@@ -832,7 +811,7 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
 
   const sink: ElementSink = { closed: [], open: [] };
   const ignoredElements: string[] = [];
-  emitSvgElements(tags, rootMatrix, sink, ignoredElements);
+  emitSvgElements(tags, rootMatrix, (name, tag, m) => emitGeometryElement(name, tag, m, sink), ignoredElements);
 
   const assembled = assembleSvgRegions(sink, opts);
 
@@ -859,51 +838,6 @@ function validateImportRequest(text: string, opts: ImportSvgOptions): void {
       'bad-units',
       `opts.units '${String(opts.units)}' is not a known length unit (${LENGTH_UNIT_NAMES.join(', ')}).`,
     );
-  }
-}
-
-/** Walk the element stream once, maintaining the transform stack and the
- *  non-rendering skip depth, and hand each geometry element to the emitter. */
-function emitSvgElements(
-  tags: Tag[],
-  rootMatrix: Matrix,
-  sink: ElementSink,
-  ignoredElements: string[],
-): void {
-  const stack: Matrix[] = [rootMatrix];
-  let skipDepth = 0;
-
-  for (const tag of tags) {
-    if (tag.name === 'svg') continue;
-
-    const lower = tag.name.toLowerCase();
-
-    if (skipDepth > 0) {
-      skipDepth = advanceSkipDepth(tag, skipDepth);
-      continue;
-    }
-
-    if (tag.closing) {
-      closeOpenGroup(lower, stack);
-      continue;
-    }
-
-    if (NON_RENDERING.has(lower)) {
-      ignoredElements.push(`<${tag.name}> at offset ${tag.offset}`);
-      if (!tag.selfClosing) skipDepth = 1;
-      continue;
-    }
-
-    const parent = stack[stack.length - 1];
-    const local = localTransform(tag);
-    const m = mul(parent, local);
-
-    if (lower === 'g') {
-      // A self-closing <g> holds nothing; only push for a real subtree.
-      if (!tag.selfClosing) stack.push(m);
-    } else {
-      emitGeometryElement(lower, tag, m, sink);
-    }
   }
 }
 
@@ -972,23 +906,6 @@ function buildRootMatrix(scale: number, viewBox: ViewBox | null, flipAbout: numb
   ];
 }
 
-function localTransform(tag: Tag): Matrix {
-  return tag.attrs.transform !== undefined
-    ? parseTransform(tag.attrs.transform, `<${tag.name}> at offset ${tag.offset}`)
-    : IDENTITY;
-}
-
-/** Inside a non-rendering subtree: track nesting so `</defs>` ends it. */
-function advanceSkipDepth(tag: Tag, skipDepth: number): number {
-  if (!tag.closing && !tag.selfClosing) return skipDepth + 1;
-  if (tag.closing) return skipDepth - 1;
-  return skipDepth;
-}
-
-function closeOpenGroup(lower: string, stack: Matrix[]): void {
-  if (lower === 'g' && stack.length > 1) stack.pop();
-}
-
 /** Emit one geometry element into the sink; throws for elements kernelCAD
  *  cannot resolve. Group (`<g>`) handling stays in the caller. */
 function emitGeometryElement(
@@ -1012,7 +929,6 @@ function emitGeometryElement(
     case 'polygon': emitPolyish(tag, m, sink, true); break;
     case 'polyline': emitPolyish(tag, m, sink, false); break;
     case 'line': emitLine(tag, m, sink); break;
-    case 'use':
     case 'text':
     case 'tspan':
     case 'image':
@@ -1020,7 +936,7 @@ function emitGeometryElement(
       throw new SvgParseError(
         'unsupported-element',
         `<${tag.name}> at offset ${tag.offset}: this element carries geometry kernelCAD cannot ` +
-          'resolve here (references, glyph outlines or raster content), and skipping it would leave ' +
+          'resolve here (glyph outlines or raster content), and skipping it would leave ' +
           'the profile silently incomplete. Convert it to paths in the source tool ' +
           '(Inkscape: Path > Object to Path; Illustrator: Create Outlines / Expand).',
       );
@@ -1028,7 +944,7 @@ function emitGeometryElement(
       throw new SvgParseError(
         'unsupported-element',
         `<${tag.name}> at offset ${tag.offset}: unrecognised SVG element. kernelCAD reads ` +
-          'path, rect, circle, ellipse, polygon, polyline, line and g.',
+          'path, rect, circle, ellipse, polygon, polyline, line, g and use.',
       );
   }
 }

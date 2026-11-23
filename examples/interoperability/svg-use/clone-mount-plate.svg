@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Mounting plate whose repeated features are <use> clones, as Inkscape
+     (Edit > Clone) and Illustrator (symbols) write them, for lib.fromSVG.
+     Plate: 80 x 50 mm.
+     Holes: one r 1.6 mm circle in <defs>, placed by four xlink:href clones
+       at the corners and by a nested clone of the group "pair" (two more
+       holes, at x 20 and 60 on the bottom edge row).
+     Slots: one 20 x 4 mm fully-rounded slot in a translated <g>, drawn in
+       place and cloned 12 mm above and below it with SVG 2 href.
+     Vents: a viewBox-free <symbol> (3 x 8 mm rect) used twice.
+     Area: 4000 - 6 (2.56 pi) - 3 (64 + 4 pi) - 2 (24)
+         = 3760 - 27.36 pi mm^2. -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="80mm" height="50mm" viewBox="0 0 80 50">
+  <defs>
+    <circle id="m3" r="1.6" fill="#fff"/>
+    <g id="pair">
+      <use xlink:href="#m3" x="20" y="6"/>
+      <use xlink:href="#m3" x="60" y="6"/>
+    </g>
+    <symbol id="vent">
+      <rect x="0" y="0" width="3" height="8" fill="#fff"/>
+    </symbol>
+  </defs>
+  <rect x="0" y="0" width="80" height="50" fill="#888"/>
+  <use xlink:href="#m3" x="6" y="6"/>
+  <use xlink:href="#m3" x="74" y="6"/>
+  <use xlink:href="#m3" x="6" y="44"/>
+  <use xlink:href="#m3" transform="translate(74 44)"/>
+  <use href="#pair" y="38"/>
+  <g id="slot" transform="translate(40 25)">
+    <rect x="-10" y="-2" width="20" height="4" rx="2" fill="#fff"/>
+  </g>
+  <use href="#slot" y="-12"/>
+  <use href="#slot" y="12"/>
+  <use href="#vent" x="10" y="21"/>
+  <use href="#vent" x="67" y="21"/>
+</svg>

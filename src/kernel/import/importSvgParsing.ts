@@ -310,3 +310,28 @@ export function parseViewBox(raw: string | undefined): ViewBox | null {
   }
   return { minX: parts[0], minY: parts[1], width: parts[2], height: parts[3] };
 }
+
+// ---------------------------------------------------------------------------
+// Attributes
+// ---------------------------------------------------------------------------
+
+export function attrNum(tag: Tag, name: string, fallback: number | null): number {
+  const raw = tag.attrs[name];
+  if (raw === undefined || raw.trim() === '') {
+    if (fallback === null) {
+      throw new SvgParseError(
+        'malformed-attribute',
+        `<${tag.name}> at offset ${tag.offset}: required attribute '${name}' is missing.`,
+      );
+    }
+    return fallback;
+  }
+  const v = Number(raw.trim());
+  if (!Number.isFinite(v)) {
+    throw new SvgParseError(
+      'malformed-attribute',
+      `<${tag.name}> at offset ${tag.offset}: attribute ${name}='${raw}' is not a number.`,
+    );
+  }
+  return v;
+}

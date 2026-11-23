@@ -190,9 +190,11 @@ const DXF_HINTS: Record<string, string> = {
  *
  * Reads `<path>` (M/L/H/V/C/S/Q/T/A/Z, absolute and relative), `<rect>`,
  * `<circle>`, `<ellipse>`, `<polygon>`, `<polyline>`, `<line>` and `<g>`
- * nesting with `translate`/`scale`/`rotate`/`matrix` transforms. `<use>`,
- * `<text>` and `<image>` are REFUSED — they reference geometry this importer
- * will not silently omit.
+ * nesting with `translate`/`scale`/`rotate`/`matrix` transforms, and expands
+ * same-document `<use>` references (clones and viewBox-free symbols).
+ * `<text>`, `<image>`, external `<use>` references and viewport-establishing
+ * `<use>` targets are REFUSED — they carry geometry this importer will not
+ * silently omit.
  *
  * Y AXIS: SVG's Y points down, kernelCAD's points up. Every point is
  * reflected about the top of the `viewBox` (or the `height` when there is no

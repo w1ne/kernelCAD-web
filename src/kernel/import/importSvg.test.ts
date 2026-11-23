@@ -268,6 +268,60 @@ describe('importSvgText — elements', () => {
   });
 });
 
+describe('importSvgText — <use> references', () => {
+  function extent(commands: readonly SketchCommand[]): [number, number, number, number] {
+    const pts = points(commands);
+    const xs = pts.map(p => p[0]);
+    const ys = pts.map(p => p[1]);
+    return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)].map(v => Math.round(v * 1e9) / 1e9) as
+      [number, number, number, number];
+  }
+
+  it('draws a <defs> target under the use transform, then translate(x, y)', () => {
+    const r = importSvgText(svg(
+      '<defs><rect id="r" x="0" y="0" width="10" height="5"/></defs>' +
+      '<use href="#r" x="20" y="10" transform="scale(2)"/>',
+    ));
+    expect(r.regions).toHaveLength(1);
+    expect(r.regions[0].areaMm2).toBeCloseTo(200, 9);
+    // scale(2) applies AFTER translate(20, 10): SVG x 40..60, y 20..30,
+    // which is Y 10..20 after the flip about 40. The reverse order would
+    // land at x 20..40.
+    expect(extent(r.regions[0].commands)).toEqual([40, 10, 60, 20]);
+  });
+
+  it('applies the target transform but not its ancestors, and draws the original too', () => {
+    const r = importSvgText(svg(
+      '<g transform="translate(50 0)"><rect id="r" transform="translate(5 0)" x="0" y="0" width="10" height="5"/></g>' +
+      '<use xlink:href="#r" y="20"/>',
+    ));
+    expect(r.regions.map(x => extent(x.commands))).toEqual([[55, 35, 65, 40], [5, 15, 15, 20]]);
+  });
+
+  it('expands a <g>, a viewBox-free <symbol> and a <use> of a <use>', () => {
+    const r = importSvgText(svg(
+      '<defs><circle id="c" r="2"/><use id="u" href="#c" x="10"/>' +
+      '<g id="pair" transform="translate(0 5)"><use href="#c"/><use href="#c" x="6"/></g>' +
+      '<symbol id="s"><rect width="4" height="3"/></symbol></defs>' +
+      '<use href="#u" y="20"/><use href="#pair" x="30" y="10"/><use href="#s" x="60" y="30"/>',
+    ));
+    // A circle's commands hold only its two arc ends, (cx ± r, cy), so
+    // compare the centres of each extent.
+    const centres = r.regions.map(x => {
+      const [x0, y0, x1, y1] = extent(x.commands);
+      return [(x0 + x1) / 2, (y0 + y1) / 2];
+    });
+    expect(r.regions.map(x => x.areaMm2)).toEqual([
+      expect.closeTo(Math.PI * 4, 9), expect.closeTo(Math.PI * 4, 9), expect.closeTo(Math.PI * 4, 9),
+      expect.closeTo(12, 9),
+    ]);
+    // #u -> (10, 20); #pair -> (30, 15) and (36, 15); #s -> 60..64 x 30..33,
+    // all reflected about Y = 40.
+    expect(centres).toEqual(expect.arrayContaining([[10, 20], [30, 25], [36, 25], [62, 8.5]]));
+    expect(centres).toHaveLength(4);
+  });
+});
+
 describe('importSvgText — path data', () => {
   it('handles relative commands, H/V, and implicit repeats', () => {
     const abs = importSvgText(svg('<path d="M 0 0 L 20 0 L 20 10 L 0 10 Z"/>'));
@@ -451,10 +505,34 @@ describe('importSvgText — failure paths name what went wrong', () => {
     expect(e.message).toMatch(/Object to Path/);
   });
 
-  it('<use> is refused rather than resolved to nothing', () => {
+  it('a <use> of a missing id is refused rather than resolved to nothing', () => {
     const e = failure(() => importSvgText(svg('<use href="#part"/>')));
+    expect(e.reason).toBe('malformed-attribute');
+    expect(e.message).toMatch(/^<use> at offset \d+: references '#part', but no element in the document has id='part'\.$/);
+  });
+
+  it('a <use> pointing at another file is refused', () => {
+    const e = failure(() => importSvgText(svg('<use xlink:href="parts.svg#hole"/>')));
     expect(e.reason).toBe('unsupported-element');
-    expect(e.message).toMatch(/^<use> at offset \d+:/);
+    expect(e.message).toMatch(/href='parts\.svg#hole' points outside this document/);
+  });
+
+  it('a circular <use> chain names the loop', () => {
+    const e = failure(() => importSvgText(svg(
+      '<defs><use id="a" href="#b"/><use id="b" href="#a"/></defs><use href="#a"/>',
+    )));
+    expect(e.message).toMatch(/circular reference #a -> #b -> #a\.$/);
+    const self = failure(() => importSvgText(svg('<g id="g"><use href="#g"/></g>')));
+    expect(self.message).toMatch(/circular reference #g -> #g\.$/);
+  });
+
+  it('a <use> of a <symbol> with its own viewBox is refused, not rescaled by guess', () => {
+    const e = failure(() => importSvgText(svg(
+      '<defs><symbol id="s" viewBox="0 0 1 1"><rect width="1" height="1"/></symbol></defs>' +
+      '<use href="#s" width="10" height="10"/>',
+    )));
+    expect(e.reason).toBe('unsupported-element');
+    expect(e.message).toMatch(/^<symbol> at offset \d+ \(via <use> at offset \d+\): .*own viewport/);
   });
 
   it('an unrecognised element is refused, not skipped', () => {
