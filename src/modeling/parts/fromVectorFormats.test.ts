@@ -650,6 +650,27 @@ describe('lib.fromSVG — round trip to a solid', () => {
     expect(types.filter(type => type === 'PLANE')).toHaveLength(3 + 2);
     expect(types).toHaveLength(2 + 4 + 4 + 3 + 2);
   });
+
+  it('expands <use> clones, nested clones and symbols into real holes', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: process.cwd() });
+
+    const [outline, ...holes] = await api.lib.fromSVG('examples/interoperability/svg-use/clone-mount-plate.svg');
+    // Six cloned M3 holes, the slot plus two clones, and two symbol vents.
+    expect(holes).toHaveLength(6 + 3 + 2);
+    let solid = outline.extrude(3);
+    for (const hole of holes) solid = solid.subtract(hole.extrude(3));
+    const backend = await lower(session, solid.id);
+    expect(isValidShape(getOC(), backend.getReplicadShape().wrapped)).toBe(true);
+    // 80 x 50 plate less six r 1.6 holes, three 20 x 4 rounded slots and
+    // two 3 x 8 vents.
+    const exact = (3760 - 27.36 * Math.PI) * 3;
+    expect(Math.abs(backend.volume() - exact) / exact).toBeLessThan(1e-9);
+    expect(backend.boundingBox()).toMatchObject({
+      min: [expect.closeTo(0, 6), expect.closeTo(0, 6), expect.closeTo(0, 6)],
+      max: [expect.closeTo(80, 6), expect.closeTo(50, 6), expect.closeTo(3, 6)],
+    });
+  });
 });
 
 describe('lib.fromDXF / lib.fromSVG — failures surface as actionable KernelErrors', () => {
