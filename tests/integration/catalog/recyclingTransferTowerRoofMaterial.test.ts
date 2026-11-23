@@ -18,7 +18,9 @@ describe('recycling-facility/conveyor-transfer-tower roof material', () => {
   it('keeps the sheet roof on cladding and the access steel on structure', async () => {
     const { asset, glb } = await buildCatalogAssetWithGlb(repoRoot, source);
 
-    expect(asset.stats.triangles).toBe(2054);
+    // Export cleanup removes redundant coplanar rows. Geometry envelope,
+    // part inventory, and editable material assignments are checked below.
+    expect(asset.stats.triangles).toBe(1958);
     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBudget);
     [17.83, 6.8, 3.902507].forEach((expected, axis) => {
       expect(asset.stats.sizeM[axis]).toBeCloseTo(expected, 5);

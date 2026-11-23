@@ -18,7 +18,9 @@ describe('recycling-facility/glass-breaker-screen flail materials', () => {
   it('keeps all chain flails on the editable wear-steel control', async () => {
     const { asset, glb } = await buildCatalogAssetWithGlb(repoRoot, source);
 
-    expect(asset.stats.triangles).toBe(2988);
+    // Export cleanup removes redundant coplanar rows. Geometry envelope,
+    // part inventory, and editable material assignments are checked below.
+    expect(asset.stats.triangles).toBe(2936);
     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBudget);
     expect(asset.params.filter((param) => param.type === 'color').map((param) => param.name)).toEqual([
       'housing', 'wearSteel', 'glass', 'labels',
