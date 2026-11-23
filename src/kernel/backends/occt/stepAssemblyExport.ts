@@ -48,7 +48,18 @@ export interface StepWriteOptions {
    * every STEP reader rebuilds pcurves from them.
    */
   surfaceCurves?: boolean;
+  /**
+   * Length unit declared in the file. Model geometry is in millimetres; OCCT
+   * rescales the written coordinates to this unit. Default `mm`.
+   */
+  unit?: StepLengthUnit;
 }
+
+/** STEP file length units the writer supports. */
+export type StepLengthUnit = 'mm' | 'cm' | 'in';
+
+/** OCCT `write.step.unit` enum value for each supported unit. */
+const OCCT_STEP_UNIT: Record<StepLengthUnit, string> = { mm: 'MM', cm: 'CM', in: 'INCH' };
 
 /** One placed use of a {@link StepAssemblyProduct}. */
 export interface StepAssemblyInstance {
@@ -201,7 +212,7 @@ function addProductTree(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function writeDocument(oc: any, docHandle: any, filename: string, surfaceCurves: boolean): boolean {
+function writeDocument(oc: any, docHandle: any, filename: string, opts: StepWriteOptions): boolean {
   return withScope((track) => {
     // Order matters on teardown (reverse): writer, then the session handle
     // that frees the session. The raw session is never deleted directly.
@@ -212,10 +223,15 @@ function writeDocument(oc: any, docHandle: any, filename: string, surfaceCurves:
     writer.SetNameMode(true);
     // The STEP writer statics are process-global, and replicad's single-shape
     // `blobSTEP()` inherits whatever is set here (it only pins the schema).
-    // Restore the pcurve mode so a pcurve-free heal/repair write cannot
-    // silently change the next export.
+    // Restore the pcurve mode and length unit so a pcurve-free heal/repair
+    // write or an inch export cannot silently change the next export. The
+    // writer above initialised the statics, so the unit enum exists.
+    const occtUnit = OCCT_STEP_UNIT[opts.unit ?? 'mm'];
+    if (occtUnit === undefined) throw new Error(`Unsupported STEP length unit '${String(opts.unit)}'; use mm, cm or in.`);
+    const previousUnit = oc.Interface_Static.CVal('write.step.unit');
     const previousSurfaceCurves = oc.Interface_Static.IVal('write.surfacecurve.mode');
-    oc.Interface_Static.SetIVal('write.surfacecurve.mode', surfaceCurves ? true : 0);
+    oc.Interface_Static.SetCVal('write.step.unit', occtUnit);
+    oc.Interface_Static.SetIVal('write.surfacecurve.mode', opts.surfaceCurves !== false ? true : 0);
     oc.Interface_Static.SetIVal('write.precision.mode', 0);
     oc.Interface_Static.SetIVal('write.step.assembly', 2);
     oc.Interface_Static.SetIVal('write.step.schema', 5);
@@ -225,6 +241,7 @@ function writeDocument(oc: any, docHandle: any, filename: string, surfaceCurves:
       return writer.Write(filename) === oc.IFSelect_ReturnStatus.IFSelect_RetDone;
     } finally {
       oc.Interface_Static.SetIVal('write.surfacecurve.mode', previousSurfaceCurves);
+      oc.Interface_Static.SetCVal('write.step.unit', previousUnit);
     }
   });
 }
@@ -248,7 +265,7 @@ function writeStepDocument(populate: (oc: any, docHandle: any) => void, opts: St
     const docHandle = track(new oc.Handle_TDocStd_Document_2(new oc.TDocStd_Document(format)));
     oc.XCAFDoc_ShapeTool.SetAutoNaming(false);
     populate(oc, docHandle);
-    if (!writeDocument(oc, docHandle, filename, opts.surfaceCurves !== false)) throw new Error('WRITE STEP FILE FAILED.');
+    if (!writeDocument(oc, docHandle, filename, opts)) throw new Error('WRITE STEP FILE FAILED.');
     const bytes = oc.FS.readFile('/' + filename) as Uint8Array;
     oc.FS.unlink('/' + filename);
     return reproducibleOcctStep(oc, bytes);
