@@ -1,0 +1,122 @@
+{
+  "id": "knife-gate-valve-assembly",
+  "kit": "water-treatment",
+  "title": "Knife gate valve assembly",
+  "description": "Process valve with a coated square gate body, a stainless rising stem, a handwheel and two stainless pipe stubs on the pipe run axis. Parameters: overall scale and coated equipment steel, structural steel, stainless steel, safety amber; weathered and highVisibility presets.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "water treatment",
+    "water utility",
+    "infrastructure",
+    "low poly",
+    "scene prop"
+  ],
+  "compat": [
+    "water-treatment",
+    "utility",
+    "industrial",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/water-treatment/knife-gate-valve-assembly.kcad.ts",
+  "preview": "/assets/water-treatment-knife-gate-valve-assembly.png",
+  "sourceSha256": "7c7c67683acb031952687a97d36b2eb4d94b657dff14d6153629623addbdab0b",
+  "triangleBudget": 2200,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "coatedSteel",
+      "type": "color",
+      "default": "#3d8589",
+      "label": "Coated equipment steel"
+    },
+    {
+      "name": "structuralSteel",
+      "type": "color",
+      "default": "#68777b",
+      "label": "Structural steel"
+    },
+    {
+      "name": "stainlessSteel",
+      "type": "color",
+      "default": "#b5c0c0",
+      "label": "Stainless steel"
+    },
+    {
+      "name": "warningAmber",
+      "type": "color",
+      "default": "#e8a936",
+      "label": "Safety amber"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "coatedSteel": "#687b78",
+      "structuralSteel": "#6e6b63",
+      "stainlessSteel": "#9ca7a6",
+      "warningAmber": "#c28e34"
+    },
+    "highVisibility": {
+      "coatedSteel": "#e5682d",
+      "structuralSteel": "#505b60",
+      "stainlessSteel": "#e1ddd0",
+      "warningAmber": "#ffd138"
+    }
+  },
+  "stats": {
+    "triangles": 356,
+    "sizeM": [
+      0.38,
+      0.685,
+      0.64
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "coatedSteel",
+      "color": "#3d8589",
+      "parts": [
+        "gate-body",
+        "bonnet"
+      ],
+      "param": "coatedSteel"
+    },
+    {
+      "name": "stainlessSteel",
+      "color": "#b5c0c0",
+      "parts": [
+        "pipe-left",
+        "pipe-right",
+        "stem"
+      ],
+      "param": "stainlessSteel"
+    },
+    {
+      "name": "warningAmber",
+      "color": "#e8a936",
+      "parts": [
+        "handwheel"
+      ],
+      "param": "warningAmber"
+    },
+    {
+      "name": "structuralSteel",
+      "color": "#68777b",
+      "parts": [
+        "mount-foot"
+      ],
+      "param": "structuralSteel"
+    }
+  ]
+}

@@ -3,7 +3,7 @@ meta({
   name: "substation-transformer-radiator-bank",
   license: "CC0-1.0",
   title: "Transformer radiator bank",
-  description: "Fin bank with header rails and end manifolds for a transformer cooling scene. Material controls: transformer enamel, stainless steel, copper; finish presets: weathered and maintenance.",
+  description: "Fin bank with header rails and steel oil manifolds for a transformer cooling scene. Material controls: transformer enamel and stainless steel; finish presets: weathered and maintenance.",
   tags: ["grid substation", "electrical infrastructure", "utility yard", "low poly", "CC0", "transformer bay and auxiliaries"],
   kit: "grid-substation",
   category: "prop",
@@ -15,9 +15,8 @@ meta({
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
 const transformerEnamel = param('transformerEnamel', '#557052', { label: 'Transformer enamel' });
 const stainlessSteel = param('stainlessSteel', '#b5c0c0', { label: 'Stainless steel' });
-const copper = param('copper', '#b87545', { label: 'Copper' });
 presets({
-  weathered: { transformerEnamel: '#5a6c53', stainlessSteel: '#9da4a0', copper: '#9f704a' },
+  weathered: { transformerEnamel: '#5a6c53', stainlessSteel: '#9da4a0' },
   maintenance: { transformerEnamel: '#9a7040' },
 });
 const p = assembly("substation-transformer-radiator-bank");
@@ -41,7 +40,7 @@ p.part("radiator-fin-7", box(95, 612, 2090, true).translate(1478.40, 0, 1225).sc
 p.part("radiator-fin-8", box(95, 612, 2090, true).translate(1900.80, 0, 1225).scale(scale).color(stainlessSteel));
 p.part("radiator-fin-9", box(95, 612, 2090, true).translate(2323.20, 0, 1225).scale(scale).color(stainlessSteel));
 p.part("radiator-fin-10", box(95, 612, 2090, true).translate(2745.60, 0, 1225).scale(scale).color(stainlessSteel));
-p.part("inlet-manifold", box(220, 225, 1837.50, true).translate(-1090, 0, 1098.75).scale(scale).color(copper));
-p.part("outlet-manifold", box(220, 225, 1837.50, true).translate(1090, 0, 1098.75).scale(scale).color(copper));
+p.part("inlet-manifold", box(220, 225, 1837.50, true).translate(-1090, 0, 1098.75).scale(scale).color(stainlessSteel));
+p.part("outlet-manifold", box(220, 225, 1837.50, true).translate(1090, 0, 1098.75).scale(scale).color(stainlessSteel));
 
 return p.model();

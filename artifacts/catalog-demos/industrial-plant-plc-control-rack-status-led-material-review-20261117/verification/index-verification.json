@@ -1,0 +1,20 @@
+{
+  "target": "industrial-plant/plc-control-rack",
+  "baselineSourceSha256": "9057fee69824c4770e30388643dd5409dee0fc036437b89f12b7298db5745f1b",
+  "baselineIndexSourceSha256": "9057fee69824c4770e30388643dd5409dee0fc036437b89f12b7298db5745f1b",
+  "afterSourceSha256": "2681dc24139979918ff90d6a2a710b8fda2b5f00f615d09041f9447d671dda73",
+  "afterIndexSourceSha256": "2681dc24139979918ff90d6a2a710b8fda2b5f00f615d09041f9447d671dda73",
+  "baselineSourceHashMatchesIndex": true,
+  "afterSourceHashMatchesIndex": true,
+  "previewPath": "/assets/industrial-plant-plc-control-rack.png",
+  "previewExists": true,
+  "triangleCount": 384,
+  "baselineAssetCount": 2402,
+  "afterAssetCount": 2402,
+  "baselineKitCount": 50,
+  "afterKitCount": 50,
+  "changedRows": [
+    "industrial-plant/plc-control-rack"
+  ],
+  "onlyTargetRowChanged": true
+}

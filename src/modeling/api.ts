@@ -159,9 +159,10 @@ export interface PartsLib {
    * SVG's Y axis points down and is reflected about the viewBox top so the
    * profile lands upright in positive Y. Scale comes from `viewBox` plus a
    * physically-dimensioned `width`; without one a user unit is a CSS pixel
-   * (1/96 in). Béziers and SVG `<ellipse>` elements are chord-approximated
-   * within `opts.curveTolerance` mm; lines and circular arcs are exact. DXF
-   * planar ELLIPSE entities use exact rational NURBS geometry.
+   * (1/96 in). Lines, circular arcs, Béziers and ellipses (`<ellipse>`,
+   * non-circular `A` arcs, elliptical `<rect>` corners) are exact; nothing is
+   * chord-approximated. DXF planar ELLIPSE entities also use exact rational
+   * NURBS geometry.
    */
   fromSVG(path: string, opts?: FromSVGOptions): Promise<Sketch[]>;
   findPart(query: string, opts?: FindPartOpts): Promise<FindPartResult>;

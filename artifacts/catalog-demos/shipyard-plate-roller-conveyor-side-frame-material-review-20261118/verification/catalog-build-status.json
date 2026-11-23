@@ -1,0 +1,4 @@
+{
+  "command": "npx tsx scripts/buildAssetCatalog.ts",
+  "exitCode": 0
+}

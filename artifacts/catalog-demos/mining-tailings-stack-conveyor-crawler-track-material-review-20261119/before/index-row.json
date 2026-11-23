@@ -1,0 +1,359 @@
+{
+  "id": "tailings-stack-conveyor",
+  "kit": "mining",
+  "title": "Tailings stack conveyor",
+  "description": "Crawler-mounted dry-stack tailings stacker at about real size: 22 m tubular lattice boom with chords, verticals and diagonals rising at 16 degrees from a pinned tail skid, troughed belt carrying filter cake on three-roll idlers, square feed hopper over the tail pulley, head pulley under a discharge hood with gearbox and motor, side walkway with handrails, A-frame struts and a luffing ram down to a crawler carrier with two tracked undercarriages, grousers, sprockets and a diesel power pack with exhaust, and a terraced dry stack of tailings benched in lifts under the head. Stack choice (terraced, none) and load choice (loaded, empty). Material controls: boom paint, crawler steel, belt rubber and tailings. weathered, ironTailings and coalReject presets.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "mining",
+    "tailings",
+    "dry stack",
+    "stacker",
+    "conveyor",
+    "crawler",
+    "mineral processing"
+  ],
+  "compat": [
+    "mining",
+    "mineral-processing",
+    "industrial",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/mining/tailings-stack-conveyor.kcad.ts",
+  "preview": "/assets/mining-tailings-stack-conveyor.png",
+  "sourceSha256": "f69ef7d71f976babdfaa9397672ebcbc817eca1fd0b5b31e8463ce321ba266d1",
+  "triangleBudget": 5000,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "stack",
+      "type": "choice",
+      "default": "terraced",
+      "label": "Tailings stack",
+      "choices": [
+        "terraced",
+        "none"
+      ]
+    },
+    {
+      "name": "load",
+      "type": "choice",
+      "default": "loaded",
+      "label": "Belt load",
+      "choices": [
+        "loaded",
+        "empty"
+      ]
+    },
+    {
+      "name": "boomPaint",
+      "type": "color",
+      "default": "#e2b12a",
+      "label": "Boom and frame paint"
+    },
+    {
+      "name": "crawlerSteel",
+      "type": "color",
+      "default": "#3a3f44",
+      "label": "Crawler steel"
+    },
+    {
+      "name": "beltRubber",
+      "type": "color",
+      "default": "#25282a",
+      "label": "Belt rubber"
+    },
+    {
+      "name": "tailings",
+      "type": "color",
+      "default": "#b9ab92",
+      "label": "Filtered tailings"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "boomPaint": "#a88a4a",
+      "crawlerSteel": "#4a4a46",
+      "beltRubber": "#34322f",
+      "tailings": "#a39a88"
+    },
+    "ironTailings": {
+      "boomPaint": "#e2b12a",
+      "crawlerSteel": "#3a3f44",
+      "beltRubber": "#26292b",
+      "tailings": "#9a5a3e"
+    },
+    "coalReject": {
+      "boomPaint": "#d9d9d2",
+      "crawlerSteel": "#2e3236",
+      "beltRubber": "#1f2123",
+      "tailings": "#3a3a3a"
+    }
+  },
+  "stats": {
+    "triangles": 3792,
+    "sizeM": [
+      31.303732,
+      8.344869,
+      16.150847
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "boomPaint",
+      "color": "#e2b12a",
+      "parts": [
+        "top-chord-0",
+        "bottom-chord-0",
+        "vertical-0-0",
+        "diagonal-0-0",
+        "vertical-0-1",
+        "diagonal-0-1",
+        "vertical-0-2",
+        "diagonal-0-2",
+        "vertical-0-3",
+        "diagonal-0-3",
+        "vertical-0-4",
+        "diagonal-0-4",
+        "vertical-0-5",
+        "diagonal-0-5",
+        "vertical-0-6",
+        "diagonal-0-6",
+        "vertical-0-7",
+        "diagonal-0-7",
+        "vertical-0-8",
+        "diagonal-0-8",
+        "vertical-0-9",
+        "diagonal-0-9",
+        "vertical-0-10",
+        "top-chord-1",
+        "bottom-chord-1",
+        "vertical-1-0",
+        "diagonal-1-0",
+        "vertical-1-1",
+        "diagonal-1-1",
+        "vertical-1-2",
+        "diagonal-1-2",
+        "vertical-1-3",
+        "diagonal-1-3",
+        "vertical-1-4",
+        "diagonal-1-4",
+        "vertical-1-5",
+        "diagonal-1-5",
+        "vertical-1-6",
+        "diagonal-1-6",
+        "vertical-1-7",
+        "diagonal-1-7",
+        "vertical-1-8",
+        "diagonal-1-8",
+        "vertical-1-9",
+        "diagonal-1-9",
+        "vertical-1-10",
+        "bottom-tie-0",
+        "bottom-tie-1",
+        "bottom-tie-2",
+        "bottom-tie-3",
+        "bottom-tie-4",
+        "bottom-tie-5",
+        "bottom-tie-6",
+        "bottom-tie-7",
+        "bottom-tie-8",
+        "bottom-tie-9",
+        "bottom-tie-10",
+        "idler-0-frame",
+        "idler-1-frame",
+        "idler-2-frame",
+        "idler-3-frame",
+        "idler-4-frame",
+        "idler-5-frame",
+        "idler-6-frame",
+        "idler-7-frame",
+        "idler-8-frame",
+        "idler-9-frame",
+        "idler-10-frame",
+        "idler-11-frame",
+        "idler-12-frame",
+        "idler-13-frame",
+        "feed-hopper",
+        "discharge-hood",
+        "hood-skirt",
+        "walkway-bracket-0",
+        "walkway-bracket-1",
+        "walkway-bracket-2",
+        "walkway-bracket-3",
+        "walkway-bracket-4",
+        "walkway-bracket-5",
+        "walkway-bracket-6",
+        "tail-pedestal",
+        "carrier-deck",
+        "power-pack",
+        "a-frame-front-0",
+        "a-frame-rear-0",
+        "a-frame-front-1",
+        "a-frame-rear-1"
+      ],
+      "param": "boomPaint"
+    },
+    {
+      "name": "beltRubber",
+      "color": "#25282a",
+      "parts": [
+        "belt-carry",
+        "head-pulley",
+        "track-0",
+        "grouser-0-0",
+        "grouser-0-1",
+        "grouser-0-2",
+        "grouser-0-3",
+        "grouser-0-4",
+        "grouser-0-5",
+        "grouser-0-6",
+        "grouser-0-7",
+        "grouser-0-8",
+        "track-1",
+        "grouser-1-0",
+        "grouser-1-1",
+        "grouser-1-2",
+        "grouser-1-3",
+        "grouser-1-4",
+        "grouser-1-5",
+        "grouser-1-6",
+        "grouser-1-7",
+        "grouser-1-8"
+      ],
+      "param": "beltRubber"
+    },
+    {
+      "name": "tailings",
+      "color": "#b9ab92",
+      "parts": [
+        "cake-load",
+        "feed-hopper-cake",
+        "dry-stack",
+        "cake-stream"
+      ],
+      "param": "tailings"
+    },
+    {
+      "name": "crawlerSteel",
+      "color": "#3a3f44",
+      "parts": [
+        "tail-pulley",
+        "feed-hopper-rim",
+        "gearbox",
+        "walkway",
+        "tail-skid",
+        "track-frame-0",
+        "sprocket-0",
+        "track-frame-1",
+        "sprocket-1",
+        "power-pack-grille",
+        "exhaust-stack",
+        "luffing-ram-barrel"
+      ],
+      "param": "crawlerSteel"
+    },
+    {
+      "name": "head-shaft",
+      "color": "#9aa2a6",
+      "parts": [
+        "head-shaft",
+        "tail-pivot-pin",
+        "luffing-ram-rod"
+      ]
+    },
+    {
+      "name": "idler-0-centre",
+      "color": "#6a7176",
+      "parts": [
+        "idler-0-centre",
+        "idler-0-wing-0",
+        "idler-0-wing-1",
+        "idler-1-centre",
+        "idler-1-wing-0",
+        "idler-1-wing-1",
+        "idler-2-centre",
+        "idler-2-wing-0",
+        "idler-2-wing-1",
+        "idler-3-centre",
+        "idler-3-wing-0",
+        "idler-3-wing-1",
+        "idler-4-centre",
+        "idler-4-wing-0",
+        "idler-4-wing-1",
+        "idler-5-centre",
+        "idler-5-wing-0",
+        "idler-5-wing-1",
+        "idler-6-centre",
+        "idler-6-wing-0",
+        "idler-6-wing-1",
+        "idler-7-centre",
+        "idler-7-wing-0",
+        "idler-7-wing-1",
+        "idler-8-centre",
+        "idler-8-wing-0",
+        "idler-8-wing-1",
+        "idler-9-centre",
+        "idler-9-wing-0",
+        "idler-9-wing-1",
+        "idler-10-centre",
+        "idler-10-wing-0",
+        "idler-10-wing-1",
+        "idler-11-centre",
+        "idler-11-wing-0",
+        "idler-11-wing-1",
+        "idler-12-centre",
+        "idler-12-wing-0",
+        "idler-12-wing-1",
+        "idler-13-centre",
+        "idler-13-wing-0",
+        "idler-13-wing-1"
+      ]
+    },
+    {
+      "name": "motor",
+      "color": "#3d6f9a",
+      "parts": [
+        "motor"
+      ]
+    },
+    {
+      "name": "handrail-0",
+      "color": "#e8c21e",
+      "parts": [
+        "handrail-0",
+        "handrail-1",
+        "handrail-post-0",
+        "handrail-post-1",
+        "handrail-post-2",
+        "handrail-post-3",
+        "handrail-post-4",
+        "handrail-post-5",
+        "handrail-post-6",
+        "handrail-post-7",
+        "handrail-post-8",
+        "handrail-post-9",
+        "handrail-post-10"
+      ]
+    },
+    {
+      "name": "stack-toe",
+      "color": "#8c8270",
+      "parts": [
+        "stack-toe"
+      ]
+    }
+  ]
+}

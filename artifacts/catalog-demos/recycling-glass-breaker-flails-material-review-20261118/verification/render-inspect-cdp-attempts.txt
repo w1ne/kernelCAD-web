@@ -1,0 +1,9 @@
+Command family:
+
+  PW_CDP_URL=http://127.0.0.1:9222 node --import tsx src/agent/cli/index.ts render inspect catalog/kits/recycling-facility/glass-breaker-screen.kcad.ts <bundle>/inspection/flail-rotor-close --base-url https://app.kernelcad.com --views iso --channels rgb,mask --focus <rotor-shaft,rotor-discs,16 flails>
+  PW_CDP_URL=http://127.0.0.1:9223 node --import tsx src/agent/cli/index.ts render inspect catalog/kits/recycling-facility/glass-breaker-screen.kcad.ts <bundle>/inspection/flail-rotor-close --base-url https://app.kernelcad.com --views iso --channels rgb,mask --focus <rotor-shaft,rotor-discs,16 flails>
+
+Both existing Chrome CDP sessions reported a WebSocket connection followed by
+`browserType.connectOverCDP: Timeout 30000ms exceeded`. No fresh browser was
+started. The user-owned Chrome processes remain running. The successful local
+catalog preview and same-view exported-GLB close-up are retained separately.

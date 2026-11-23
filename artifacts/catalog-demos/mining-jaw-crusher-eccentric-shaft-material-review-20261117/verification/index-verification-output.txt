@@ -1,0 +1,10 @@
+{
+  "assetRows": 2402,
+  "changedRows": [
+    "mining/jaw-crusher-module"
+  ],
+  "sourceSha256": "326fbd9459b9dbc1dd5a0e681cc43230752863a4cc67bb8fd161aa7fcc96efe1",
+  "sourceHashMatches": true,
+  "preview": "/assets/mining-jaw-crusher-module.png",
+  "previewExists": true
+}

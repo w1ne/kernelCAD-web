@@ -1,0 +1,24 @@
+Baseline failure:
+npx vitest run tests/integration/catalog/cableTrayBridgeMaterial.test.ts
+
+Preview:
+npx tsx scripts/renderCatalogPreviews.ts cable-tray-bridge
+
+Index:
+npx tsx scripts/buildAssetCatalog.ts
+
+Lint:
+npx eslint catalog/kits/industrial-plant/ tests/integration/catalog/cableTrayBridgeMaterial.test.ts
+
+Quality gates:
+python scripts/checkCatalogQuality.py --kit industrial-plant
+python scripts/checkCatalogQuality.py
+
+Focused regression after correction:
+npx vitest run tests/integration/catalog/cableTrayBridgeMaterial.test.ts
+
+Full catalog integration suite:
+npx vitest run tests/integration/catalog/
+
+Freshness check:
+npx tsx scripts/buildAssetCatalog.ts --check

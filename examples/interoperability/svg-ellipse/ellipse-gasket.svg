@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Gasket with elliptical edges for lib.fromSVG exactness tests.
+     Outer: a 60 x 20 mm base under a half-ellipse crown, drawn with a
+     non-circular A arc (rx 30, ry 20).
+     Hole 1: an <ellipse> (rx 8, ry 4) rotated 30 degrees.
+     Hole 2: a <circle> (r 3) stretched 1.5 x 1 by a group transform.
+     An ellipse stays an ellipse under any affine map, so all three must
+     import as exact rational curves, not chords.
+     Area: 1200 + 300 pi - 32 pi - 13.5 pi = 1200 + 254.5 pi mm^2. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="60mm" height="40mm" viewBox="0 0 60 40">
+  <path d="M 0 40 L 60 40 L 60 20 A 30 20 0 0 0 0 20 Z" fill="#888"/>
+  <ellipse cx="30" cy="22" rx="8" ry="4" transform="rotate(30 30 22)" fill="#fff"/>
+  <g transform="translate(12 32) scale(1.5 1)">
+    <circle r="3" fill="#fff"/>
+  </g>
+</svg>

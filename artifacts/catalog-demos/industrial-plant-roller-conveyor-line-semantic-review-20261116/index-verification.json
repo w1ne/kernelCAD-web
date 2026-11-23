@@ -1,0 +1,31 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/industrial-plant-roller-conveyor-line-semantic-review-20261116/verify_asset_index.py",
+  "assetCountBefore": 2402,
+  "assetCountAfter": 2402,
+  "assetIdsUnchanged": true,
+  "changedIndexRows": [
+    "industrial-plant/roller-conveyor-line"
+  ],
+  "sourceShaMismatches": [],
+  "badPreviewPaths": [],
+  "missingPreviewFiles": [],
+  "changedAsset": {
+    "id": "industrial-plant/roller-conveyor-line",
+    "sourceSha256": "73f08e9078e5b1d312ad85d13a375f8115c928c4530270126886aef7c167d430",
+    "previewSha256": "1e4a923ef541fad09015ff664800289c566d1092c2b2d96f1d95aece498300f2",
+    "preview": "/assets/industrial-plant-roller-conveyor-line.png",
+    "triangles": 652,
+    "triangleBudget": 1400,
+    "params": [
+      "scale",
+      "steel",
+      "rollerSteel",
+      "safetyPaint"
+    ],
+    "presets": [
+      "highVisibility",
+      "weathered"
+    ]
+  },
+  "pass": true
+}

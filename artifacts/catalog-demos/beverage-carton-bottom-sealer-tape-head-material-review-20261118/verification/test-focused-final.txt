@@ -1,0 +1,5 @@
+Command: npx vitest run tests/integration/catalog/cartonBottomSealerTapeHeadMaterial.test.ts --reporter=verbose
+Result: PASS
+Test Files  1 passed (1)
+Tests       1 passed (1)
+Checks: 176 triangles under the 2,200 budget; stainlessSteel controls tape-head; foodPolymer controls tape-roll; powderCoat still controls base-frame.

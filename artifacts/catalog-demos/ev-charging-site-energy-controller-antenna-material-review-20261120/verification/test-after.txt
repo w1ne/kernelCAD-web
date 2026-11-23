@@ -1,0 +1,12 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/siteEnergyControllerAntennaMaterial.test.ts (1 test) 1232ms
+     ✓ draws polymer antennas on steel connectors, a rear wall plate and a seated status button  571ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  01:27:55
+   Duration  14.66s (transform 10.90s, setup 83ms, import 13.17s, tests 1.23s, environment 0ms)
+
+exit 0

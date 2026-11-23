@@ -1,0 +1,1 @@
+construction-equipment/road-reclaimer: 816 tris

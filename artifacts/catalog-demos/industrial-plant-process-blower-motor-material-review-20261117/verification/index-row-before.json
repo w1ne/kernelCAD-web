@@ -1,0 +1,95 @@
+{
+  "id": "process-blower",
+  "kit": "industrial-plant",
+  "title": "Process blower",
+  "description": "Industrial process blower with a broad intake housing, drive motor and raised discharge duct. Controls: overall scale, steel, safety paint.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "industrial plant",
+    "factory",
+    "process equipment",
+    "low poly",
+    "CC0"
+  ],
+  "compat": [
+    "industrial-plant",
+    "factory",
+    "manufacturing",
+    "industrial-scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/industrial-plant/process-blower.kcad.ts",
+  "preview": "/assets/industrial-plant-process-blower.png",
+  "sourceSha256": "e69029a4fdf281874072e57b61e98c12305c677642c74934868f379006221723",
+  "triangleBudget": 1400,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "steel",
+      "type": "color",
+      "default": "#697d86",
+      "label": "Structural steel"
+    },
+    {
+      "name": "safetyPaint",
+      "type": "color",
+      "default": "#dfa744",
+      "label": "Safety paint"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "steel": "#575851",
+      "safetyPaint": "#9e722f"
+    },
+    "highVisibility": {
+      "safetyPaint": "#f5c640"
+    }
+  },
+  "stats": {
+    "triangles": 292,
+    "sizeM": [
+      0.7003,
+      0.5244,
+      0.418
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "safetyPaint",
+      "color": "#dfa744",
+      "parts": [
+        "base",
+        "inlet-flange",
+        "outlet-stack",
+        "drive-motor"
+      ],
+      "param": "safetyPaint"
+    },
+    {
+      "name": "steel",
+      "color": "#697d86",
+      "parts": [
+        "volute-housing",
+        "inlet",
+        "coupler",
+        "anchor-0",
+        "anchor-1",
+        "anchor-2",
+        "anchor-3"
+      ],
+      "param": "steel"
+    }
+  ]
+}

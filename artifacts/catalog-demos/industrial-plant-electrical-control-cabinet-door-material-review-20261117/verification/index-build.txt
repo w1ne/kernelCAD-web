@@ -1,0 +1,2 @@
+Command: npx tsx scripts/buildAssetCatalog.ts
+Result: rebuilt catalog/index.json from source. The command completed successfully after processing the full catalog.

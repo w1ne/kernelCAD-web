@@ -1,0 +1,36 @@
+{
+  "checkedAt": "2026-11-18T02:35:34Z",
+  "scope": "recycling-facility preview audit and selected asset glass-breaker-screen",
+  "selectedAsset": "glass-breaker-screen",
+  "auditedAssets": [
+    "bale-ejector",
+    "belt-conveyor-head",
+    "biofilter-bed",
+    "glass-breaker-screen",
+    "mobile-compactor"
+  ],
+  "overlapCheck": {
+    "openIssueTitleAndBodySearch": "no exact matches for the five asset IDs",
+    "openPullRequestTitleAndBodySearch": "no exact matches for the five asset IDs",
+    "openPullRequestChangedPaths": "no recycling-facility overlap for the selected IDs",
+    "knownRelatedFixes": {
+      "1298": "substation cable ladder; no overlap",
+      "1305": "sanitary lobe pump; no overlap",
+      "1307": "data-center storage-array chassis; no overlap",
+      "1308": "standard-components split shaft collar; no overlap"
+    }
+  },
+  "catalogFeaturePullRequest": {
+    "number": 1258,
+    "state": "merged",
+    "ci": "all reported checks successful",
+    "review": "no review submitted"
+  },
+  "branchPullRequestAtSelection": {
+    "number": 1507,
+    "state": "open draft",
+    "ci": "applicable checks successful",
+    "selectedKitOverlap": false,
+    "note": "At selection time this existing draft PR did not change recycling-facility; this review was subsequently pushed to that same PR."
+  }
+}

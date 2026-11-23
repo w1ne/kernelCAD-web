@@ -1,0 +1,1 @@
+shipyard/ship-lift-cradle: 396 tris

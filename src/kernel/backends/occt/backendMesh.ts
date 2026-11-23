@@ -4,6 +4,7 @@
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import { stitchCracks, dropDegenerateTriangles } from './meshHeal';
+import { cleanupExportMesh } from './meshCleanup';
 
 /**
  * Tessellation tolerances for {@link meshShapeForExport}, honoured by both
@@ -437,5 +438,10 @@ function weldVertices(
   // fallback-face seams. No-op (0 splits) on conformal meshes.
   stitchCracks(welded, 0.05);
   welded.triangles = dropDegenerateTriangles(welded.triangles);
+  // Remove coplanar triangle rows and caps. Both are valid geometry but
+  // fail float-precision self-intersection tests (open3d `is_watertight`)
+  // once the STL rounds vertices to float32. Surface moves by < 1 micron;
+  // a mesh that is not closed and manifold is left untouched.
+  cleanupExportMesh(welded);
   return welded;
 }

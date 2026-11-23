@@ -1,0 +1,299 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/miningGrizzlySpringMaterials.test.ts (1 test) 5381ms
+     ✓ renders the coil springs as support steel and keeps the vibrator covers safety yellow  4741ms
+ ✓ tests/integration/catalog/glassCrusherMotorMaterial.test.ts (1 test) 5638ms
+     ✓ keeps the motor on the painted-steel finish, separate from the mill enamel  4707ms
+ ✓ tests/integration/catalog/longwallShearerPickMaterials.test.ts (1 test) 6271ms
+     ✓ assigns all cutter picks to the existing drum-and-pick steel control  5340ms
+ ✓ tests/integration/catalog/storageArrayFidelity.test.ts (2 tests) 6449ms
+     ✓ is visibly distinct from the 8-bay compute chassis and includes 24 front carriers  2108ms
+     ✓ keeps the drive and service-module identities at both supported scale limits  3301ms
+ ✓ tests/integration/catalog/hpgrPressCylinderMaterials.test.ts (1 test) 6521ms
+     ✓ paints the press-cylinder barrels and keeps only the piston rods chrome  5570ms
+ ✓ tests/integration/catalog/dinRailFidelity.test.ts (4 tests) 6669ms
+     ✓ has one connected top-hat section, 35 x 7.5 mm cross-section, 3 actual oblong slots  2469ms
+     ✓ detects solid rather than drilled crown  771ms
+     ✓ detects underside filled by a solid bar  825ms
+     ✓ preserves slots and open hat profile at both size variants  1576ms
+ ✓ tests/integration/catalog/dinRailEndStopFidelity.test.ts (5 tests) 6694ms
+     ✓ committed gallery preview matches actual evaluated source render  3124ms
+     ✓ has under-lip geometry, actual open channel, transverse stop and separate slotted screw  721ms
+     ✓ rejects a solid foot presented as a clip  398ms
+     ✓ preserves rail envelope features across both scale presets  1037ms
+ ✓ tests/integration/catalog/shaftHeadframeSkipMaterial.test.ts (1 test) 6914ms
+     ✓ paints the ore skip as steel, not as winder-house cladding  5804ms
+ ✓ tests/integration/catalog/doorHingeFidelity.test.ts (3 tests) 7190ms
+     ✓ standard: open pivot and mounting bores, connected leaves, separate pin  1596ms
+     ✓ compact: open pivot and mounting bores, connected leaves, separate pin  3074ms
+     ✓ large: open pivot and mounting bores, connected leaves, separate pin  1812ms
+ ✓ tests/integration/catalog/pipeSaddleClampFidelity.test.ts (4 tests) 8050ms
+     ✓ standard: open horizontal pipe bore, separate cap/liners, four foot holes and real bolt passages  2761ms
+     ✓ compact: open horizontal pipe bore, separate cap/liners, four foot holes and real bolt passages  3051ms
+     ✓ large: open horizontal pipe bore, separate cap/liners, four foot holes and real bolt passages  1284ms
+ ✓ tests/integration/catalog/beamCouplingFidelity.test.ts (2 tests) 10356ms
+     ✓ builds one valid 18×18×30 mm solid and preserves all three size choices  7268ms
+     ✓ has a material-removing helix and two real radial hub bores  2450ms
+ ✓ tests/integration/catalog/standardComponentInterfaces.test.ts (4 tests) 10506ms
+     ✓ caster-wheel: connected supports and open interfaces at default and both size limits  2750ms
+     ✓ pillow-block-housing: connected supports and open interfaces at default and both size limits  1363ms
+     ✓ piano-hinge: connected supports and open interfaces at default and both size limits  4857ms
+     ✓ t-slot-angle-bracket: connected supports and open interfaces at default and both size limits  648ms
+ ✓ tests/integration/catalog/transitMixerWheelMaterial.test.ts (1 test) 3631ms
+     ✓ keeps the six steel wheel rims on the structural-steel control  3157ms
+ ✓ tests/integration/catalog/twoRamBalerMotorMaterials.test.ts (1 test) 2805ms
+     ✓ paints the power-pack motors separately from the hydraulic cylinder steel  1884ms
+ ✓ tests/integration/catalog/tankWagonBogieSpringMaterial.test.ts (1 test) 3113ms
+     ✓ gives the freight-bogie springs the running-gear steel, not the stainless fittings finish  2676ms
+ ✓ tests/integration/catalog/retainingRingFidelity.test.ts (4 tests) 3309ms
+     ✓ standard: one continuous ring, both plier holes through, clear gap  752ms
+     ✓ compact: one continuous ring, both plier holes through, clear gap  382ms
+     ✓ large: one continuous ring, both plier holes through, clear gap  923ms
+ ✓ tests/integration/catalog/jawCrusherEccentricShaftMaterial.test.ts (1 test) 3633ms
+     ✓ keeps the eccentric shaft steel and reserves manganese for the jaw liners  3013ms
+ ✓ tests/integration/catalog/substationCenterBreakDisconnectorFidelity.test.ts (1 test) 4992ms
+     ✓ seats paired aluminum arms on porcelain supports and exposes a real open/closed center gap  4284ms
+ ✓ tests/integration/catalog/bridgeCraneHoistMotorMaterial.test.ts (1 test) 3772ms
+     ✓ uses the hoist machinery control for the hoist motor  2920ms
+ ✓ tests/integration/catalog/recyclingFrictionWasherSprayHeaderMaterial.test.ts (1 test) 4524ms
+     ✓ makes the spray-water header pipe stainless like the washer tube  3487ms
+ ✓ tests/integration/catalog/glassScreeningDeckMotorCapMaterial.test.ts (1 test) 4589ms
+     ✓ keeps motor end caps with the motor enamel, separate from polyurethane panels  3907ms
+ ✓ tests/integration/catalog/pelletizerAirKnifeMaterial.test.ts (1 test) 3615ms
+     ✓ gives the strand air knife bath steel, not the safety trim  2414ms
+ ✓ tests/integration/catalog/panelClampFidelity.test.ts (4 tests) 957ms
+     ✓ exports three separate functional bodies, a bored bridge and a real open throat  320ms
+ ✓ tests/integration/catalog/floorGrinderFidelity.test.ts (2 tests) 1912ms
+     ✓ exports a circular open-bottom shroud, floor-contact disc and two rear wheels  495ms
+     ✓ retains floor contact, cavity, handle and wheel clearance at both scale limits  847ms
+ ✓ tests/integration/catalog/fireHoseNozzleFidelity.test.ts (5 tests) 2244ms
+     ✓ committed thumbnail is rendered from current CAD source with exact canonical caption  847ms
+     ✓ scale 0.7 has connected bore, two supported accessory bodies  375ms
+ ✓ tests/integration/catalog/linearGuideRailFidelity.test.ts (4 tests) 2025ms
+     ✓ standard: four through passages, preserved continuous rail and foot  653ms
+     ✓ compact: four through passages, preserved continuous rail and foot  508ms
+     ✓ large: four through passages, preserved continuous rail and foot  348ms
+ ✓ tests/integration/catalog/miningSeparatorWashHeaderMaterial.test.ts (1 test) 2108ms
+     ✓ makes the wash-water riser the same frame steel as the spray pipe it feeds  1444ms
+ ✓ tests/integration/catalog/hoseBarbFidelity.test.ts (5 tests) 2723ms
+     ✓ committed gallery preview matches native evaluated source with canonical title  921ms
+     ✓ compact: three tapered retention lips, one through-bored connected body and hex wrench  387ms
+ ✓ tests/integration/catalog/splitShaftCollarFidelity.test.ts (2 tests) 2927ms
+     ✓ has an open bore, split radial notch, two clamp lugs and a separate screw body  1298ms
+     ✓ retains the bore, split and screw over all size presets  795ms
+ ✓ tests/integration/catalog/microwaveDishElevationNutMaterial.test.ts (1 test) 1653ms
+     ✓ keeps the elevation nut with the galvanized mount, not the radio-unit powder coat  903ms
+ ✓ tests/integration/catalog/jawCouplingFidelity.test.ts (3 tests) 2293ms
+     ✓ retains 6 metal jaws and 6 spider lobes without any material overlap  931ms
+     ✓ detects all 6 collisions when the former co-rotated spider layout is restored  304ms
+ ✓ tests/integration/catalog/reverseOsmosisSkidMaterials.test.ts (1 test) 2540ms
+     ✓ keeps FRP vessel shells distinct from stainless process piping  1607ms
+ ✓ tests/integration/catalog/eddyCurrentSeparatorShellMaterials.test.ts (1 test) 2401ms
+     ✓ assigns the nonconductive composite finish to the outer head shell  1611ms
+ ✓ tests/integration/catalog/positiveDisplacementPumpFidelity.test.ts (1 test) 1315ms
+     ✓ exports a recognizable gear-pump package with both ports, service cover and relief bypass  848ms
+ ✓ tests/integration/catalog/blastDustCollectorFilterMediaMaterial.test.ts (1 test) 779ms
+     ✓ keeps exposed filter media separate from the painted steel collector  372ms
+ ✓ tests/integration/catalog/pipeUnionFidelity.test.ts (2 tests) 1235ms
+     ✓ has four actual separate bodies, open bore and a six-sided coupling nut  494ms
+     ✓ retains distinct interfaces for both size limits  343ms
+ ✓ tests/integration/catalog/processBlowerMotorMaterial.test.ts (1 test) 1069ms
+     ✓ keeps motor enamel distinct from safety paint on the base and outlet  476ms
+ ✓ tests/integration/catalog/caseCheckweigherBeltMaterial.test.ts (1 test) 1449ms
+     ✓ keeps the three polymer belts separate from the stainless support beds  796ms
+ ✓ tests/integration/catalog/linearGuideCarriageFidelity.test.ts (4 tests) 2248ms
+     ✓ standard: open end-to-end rail channel with connected body and retained walls  756ms
+     ✓ compact: open end-to-end rail channel with connected body and retained walls  406ms
+     ✓ large: open end-to-end rail channel with connected body and retained walls  327ms
+ ✓ tests/integration/catalog/rockBreakerBoomFidelity.test.ts (1 test) 2076ms
+     ✓ bolts both warning posts onto the top face of the grizzly wall  1499ms
+ ✓ tests/integration/catalog/coldAisleRoofPanelMaterial.test.ts (1 test) 1394ms
+     ✓ makes every containment roof panel from the polymer, not one panel of five  520ms
+ ✓ tests/integration/catalog/mineSkipCappelMaterials.test.ts (1 test) 2412ms
+     ✓ assigns the steel rope termination to the structural-steel control  1724ms
+ ✓ tests/integration/catalog/sanitaryFilterHousingMaterials.test.ts (1 test) 1095ms
+     ✓ keeps the sanitary cartridge housings in stainless steel, not skid powder coat  432ms
+ ✓ tests/integration/catalog/plcControlRackStatusLedsMaterial.test.ts (1 test) 1332ms
+     ✓ uses separate channel, RUN, and ERROR lens colors and steel module housings  683ms
+ ✓ tests/integration/catalog/inductionConveyorBeltMaterial.test.ts (1 test) 1455ms
+     ✓ draws the induction belt as dark belt rubber, not painted steel  713ms
+ ✓ tests/integration/catalog/solarCarportChargerCableMaterial.test.ts (1 test) 2398ms
+     ✓ draws the EV charging cable as a polymer jacket, not galvanized steel  1876ms
+ ✓ tests/integration/catalog/motorControlCenterBayMaterials.test.ts (1 test) 708ms
+     ✓ keeps all cabinet bays on steel and the plinth and operator panels on safety paint  330ms
+ ✓ tests/integration/catalog/windOilCoolerHeaderMaterial.test.ts (1 test) 1522ms
+     ✓ makes the oil headers aluminium like the brazed core, not the copper pipework  1016ms
+ ✓ tests/integration/catalog/gussetBracketFidelity.test.ts (2 tests) 1203ms
+     ✓ exports a connected-looking right-angle assembly with 4 real bores at the default size  342ms
+     ✓ preserves bores and touching plate envelope at both declared size extremes  372ms
+ ✓ tests/integration/catalog/sludgeThickenerDriveMaterials.test.ts (1 test) 847ms
+     ✓ exposes the cast-iron center drive above the well and uses steel for the scraper arm  470ms
+ ✓ tests/integration/catalog/substationHvTerminationClampMaterial.test.ts (1 test) 1597ms
+     ✓ makes the cable clamp galvanized steel hardware, not cable jacket  1233ms
+ ✓ tests/integration/catalog/processReactorVesselRingsMaterial.test.ts (1 test) 915ms
+     ✓ keeps the welded shell rings on the steel finish  495ms
+ ✓ tests/integration/catalog/airRinseExhaustMaterial.test.ts (1 test) 916ms
+     ✓ renders the extraction stack as stainless ducting, not corrugated board  506ms
+ ✓ tests/integration/catalog/capElevatorSemantic.test.ts (1 test) 1251ms
+     ✓ keeps its belt flights visible in the generated catalog preview  863ms
+ ✓ tests/integration/catalog/substationCableLadderFidelity.test.ts (2 tests) 1306ms
+     ✓ preserves every rung and its rail envelope at both supported scale limits  475ms
+ ✓ tests/integration/catalog/postageMeterPaperMaterial.test.ts (1 test) 1191ms
+     ✓ draws the label tape roll as paper, not painted steel  683ms
+ ✓ tests/integration/catalog/diverterBeltMaterial.test.ts (1 test) 1466ms
+     ✓ draws the diverter belt as dark belt rubber, not painted steel  990ms
+ ✓ tests/integration/catalog/shaftCollarFidelity.test.ts (3 tests) 1190ms
+     ✓ exports a drilled, open shaft collar and separate contacting screw  419ms
+ ✓ tests/integration/catalog/abrasiveBlastPotMaterials.test.ts (1 test) 779ms
+     ✓ uses structural steel for the rigid hose outlet and elastomer for both wheels  408ms
+ ✓ tests/integration/catalog/bucketElevatorSemantic.test.ts (1 test) 1768ms
+     ✓ keeps the bucket loop inside the casing and exposes distinct material controls  1243ms
+ ✓ tests/integration/catalog/evaporativeCoolingTowerFidelity.test.ts (1 test) 966ms
+     ✓ exports eight broad, separately named fan blades around the two top-deck hubs  448ms
+ ✓ tests/integration/catalog/sleeveShrinkTunnelPassage.test.ts (1 test) 890ms
+     ✓ opens a bottle passage through the shell and carries sleeved bottles on the bed  471ms
+ ✓ tests/integration/catalog/chlorineDosingSkidTankMaterials.test.ts (1 test) 768ms
+     ✓ assigns the chemical day tank to polyethylene without changing geometry  336ms
+ ✓ tests/integration/catalog/palletizerRobotCellFloorMaterial.test.ts (1 test) 1019ms
+     ✓ keeps the concrete floor distinct from structural steel and safety paint  497ms
+ ✓ tests/integration/catalog/coolingTowerAccessDoorMaterial.test.ts (1 test) 1567ms
+     ✓ keeps the molded FRP door with the casing finish, separate from the fan stack  1135ms
+ ✓ tests/integration/catalog/electricChainHoistMaterials.test.ts (1 test) 783ms
+     ✓ uses steel for the load chain and preserves the current size and mesh budget  358ms
+ ✓ tests/integration/catalog/batteryQuarantineDrumMaterials.test.ts (1 test) 1747ms
+     ✓ keeps the vermiculite sack kraft beige and separate from the alarm paint  1195ms
+ ✓ tests/integration/catalog/shipLiftCradleRailMaterial.test.ts (1 test) 1332ms
+     ✓ uses the same yard finish on both paired guide rails  739ms
+ ✓ tests/integration/catalog/labelReelStandReelMaterial.test.ts (1 test) 1070ms
+ ✓ tests/integration/catalog/sanitaryLobePumpFidelity.test.ts (2 tests) 1792ms
+     ✓ has four actual cap-nut bodies on the visible removable cover  787ms
+     ✓ keeps all four fasteners on the cover when port orientation changes  587ms
+ ✓ tests/integration/catalog/bottleDateCoderScreenMaterial.test.ts (1 test) 819ms
+     ✓ renders the touchscreen as display glass, not stainless steel  326ms
+ ✓ tests/integration/catalog/cableClampFidelity.test.ts (4 tests) 2512ms
+     ✓ has two real mounting bores, connected frame, separate liner and clear cable bore  739ms
+     ✓ preserves mount, steel arch and liner across compact and large variants  745ms
+ ✓ tests/integration/catalog/cycloneSeparatorMaterials.test.ts (1 test) 829ms
+     ✓ uses steel for the whole process shell and preserves the current size and mesh budget  311ms
+ ✓ tests/integration/catalog/flangeBearingHousingFidelity.test.ts (1 test) 981ms
+     ✓ has a through-shaft path, clear fastener bores and separate plain sleeve at all sizes  543ms
+ ✓ tests/integration/catalog/hullBlockFabricationJigBaseRailMaterial.test.ts (1 test) 1021ms
+     ✓ keeps the equivalent base rails on the same yard finish  582ms
+ ✓ tests/integration/catalog/scissorLiftTableMaterial.test.ts (1 test) 854ms
+     ✓ uses the structural-steel finish for all four scissor arms  404ms
+ ✓ tests/integration/catalog/substationCvtInsulationMaterials.test.ts (1 test) 607ms
+ ✓ tests/integration/catalog/cartonRollerConveyorFrameMaterial.test.ts (1 test) 803ms
+     ✓ runs the rollers across the frame and paints the crossbars with the frame  357ms
+ ✓ tests/integration/catalog/solarPadMountTransformerRadiatorMaterial.test.ts (1 test) 1089ms
+     ✓ paints the radiator fins with the tank powder coat and keeps stainless steel on the bushing hardware  602ms
+ ✓ tests/integration/catalog/weldInspectionLightLensMaterial.test.ts (1 test) 858ms
+     ✓ gives the lamp lenses their own lens finish, distinct from the yellow lamp housings  341ms
+ ✓ tests/integration/catalog/uBracketPinEngagement.test.ts (3 tests) 1167ms
+ ✓ tests/integration/catalog/asphaltDistributorSprayBarMaterial.test.ts (1 test) 1075ms
+     ✓ keeps the rear spray bar and nozzles in bare steel, separate from the enamel tank and cab  628ms
+ ✓ tests/integration/catalog/inlineFlowMeterFlangeMaterial.test.ts (1 test) 876ms
+     ✓ keeps both process flanges on the same steel finish as the pipe run  325ms
+ ✓ tests/integration/catalog/cartridgeFilterNozzleMaterials.test.ts (1 test) 830ms
+     ✓ keeps the inlet and outlet nozzles in the same steel as the shell and flange  353ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 34765ms
+     ✓ nature/pine-tree opens with its five knobs at their defaults  1444ms
+     ✓ characters/block-figure opens with its own knobs, not the first asset in the index  736ms
+     ✓ a kit-representative sample opens with exactly the knobs its index row lists  30385ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  831ms
+ ✓ tests/integration/catalog/cipValveManifoldDrainLegMaterial.test.ts (1 test) 822ms
+     ✓ keeps the wetted drain leg stainless and the mounting feet powder-coated  307ms
+ ✓ tests/integration/catalog/pipeTeeFidelity.test.ts (2 tests) 1396ms
+     ✓ has two run ports, one side port and a closed back wall in actual exported geometry  501ms
+     ✓ preserves all three openings and closed fourth side at both size limits  359ms
+ ✓ tests/integration/catalog/horizontalPressureVesselMaterials.test.ts (1 test) 1018ms
+     ✓ uses steel for the heads and carbon-steel nozzle necks  455ms
+ ✓ tests/integration/catalog/capDeliveryChuteMaterial.test.ts (1 test) 730ms
+ ✓ tests/integration/catalog/steamHeaderManifoldBranchMaterial.test.ts (1 test) 601ms
+     ✓ keeps branch pipe bodies steel while retaining safety-painted handles and skid  334ms
+ ✓ tests/integration/catalog/electricalControlCabinetMaterials.test.ts (1 test) 715ms
+ ✓ tests/integration/catalog/weldingCurtainVinylMaterial.test.ts (1 test) 799ms
+     ✓ draws the curtain panels as tinted welding vinyl, not a yard paint finish  320ms
+ ✓ tests/integration/catalog/caseLabelerLabelRollMaterial.test.ts (1 test) 707ms
+ ✓ tests/integration/catalog/maintenancePlatformFidelity.test.ts (1 test) 1030ms
+     ✓ keeps the platform guarded and connects its three-riser stair to the deck  617ms
+ ✓ tests/integration/catalog/valveManifoldFlangeFinish.test.ts (1 test) 693ms
+ ✓ tests/integration/catalog/dataCenterDayFuelTankMaterials.test.ts (1 test) 680ms
+ ✓ tests/integration/catalog/compressedAirReceiverMaterials.test.ts (1 test) 743ms
+     ✓ keeps the vessel heads and nozzle necks on the pressure-shell steel palette  363ms
+ ✓ tests/integration/catalog/rollerConveyorLineFidelity.test.ts (1 test) 924ms
+     ✓ exports an open bed of crosswise steel rollers on supported side rails  496ms
+ ✓ tests/integration/catalog/rotaryCapperHeadMaterial.test.ts (1 test) 863ms
+     ✓ renders the torque capping heads as stainless steel, not food-grade polymer  410ms
+ ✓ tests/integration/catalog/caseTaperTapeRollMaterial.test.ts (1 test) 781ms
+     ✓ renders the tape roll as packing tape, not food-grade polymer  334ms
+ ✓ tests/integration/catalog/pressureSandFilterVesselFidelity.test.ts (1 test) 936ms
+     ✓ exports two stainless side nozzles entering the vessel at separate heights  469ms
+ ✓ tests/integration/catalog/windConverterCabinetMaterials.test.ts (1 test) 789ms
+     ✓ keeps the doors powder-coated and limits safety paint to warning labels  344ms
+ ✓ tests/integration/catalog/pipeElbow45Fidelity.test.ts (1 test) 1044ms
+     ✓ has a continuous hollow centerline, actual annular walls and open terminal ports  664ms
+ ✓ tests/integration/catalog/baghouseDustCollectorFidelity.test.ts (1 test) 859ms
+     ✓ keeps filter media inside the plenum and tapers the dust hopper to its outlet  448ms
+ ✓ tests/integration/catalog/slidingShoeSorterRailMaterial.test.ts (1 test) 1033ms
+     ✓ finishes the shoe guide rail as stainless steel, not the safety-amber marking  619ms
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 1059ms
+ ✓ tests/integration/catalog/hullPanelTurnoverCradleMaterials.test.ts (1 test) 973ms
+     ✓ keeps the matching end frames on the same yard-finish control  436ms
+ ✓ tests/integration/catalog/postalCrossbeltSorterMaterial.test.ts (1 test) 1403ms
+     ✓ keeps rubber belt surfaces separate from the molded-polymer carriers  796ms
+ ✓ tests/integration/catalog/dualPortAcPedestalCableMaterial.test.ts (1 test) 645ms
+ ✓ tests/integration/catalog/dataCenterCondenserPumpSkidMaterials.test.ts (1 test) 734ms
+ ✓ tests/integration/catalog/groundingBusbarCopper.test.ts (1 test) 846ms
+ ✓ tests/integration/catalog/corrugatedCaseStackMaterial.test.ts (1 test) 989ms
+     ✓ renders the corrugated cases as board, not stainless steel  488ms
+ ✓ tests/integration/catalog/handwheelFidelity.test.ts (4 tests) 1078ms
+     ✓ standard: exactly three radial spokes join the hub and rim  307ms
+ ✓ tests/integration/catalog/gritClassifierFidelity.test.ts (1 test) 993ms
+     ✓ renders the inclined extraction screw between the trough and raised outlet  625ms
+ ✓ tests/integration/catalog/catalogFreshShapes.test.ts (1 test) 42774ms
+   ✓ no catalogue model derives several copies from one shape handle  42765ms
+ ✓ tests/integration/catalog/caseLayerPalletizerPalletTimberMaterials.test.ts (1 test) 928ms
+     ✓ uses a pallet-timber control for the pallet deck and preserves the model envelope  382ms
+ ✓ tests/integration/catalog/substationConservatorNozzleMaterials.test.ts (1 test) 504ms
+ ✓ tests/integration/catalog/windFarmPadMountTransformerMaterials.test.ts (1 test) 763ms
+     ✓ uses the coated-steel control for all radiator fins and keeps ceramic bushings separate  383ms
+ ✓ tests/integration/catalog/rearDoorHeatExchangerCopperMaterial.test.ts (1 test) 725ms
+ ✓ tests/integration/catalog/compressedAirReceiverGaugeMaterial.test.ts (1 test) 706ms
+     ✓ renders the pressure gauge as a steel case with a glass lens, not a solid glass body  309ms
+ ✓ tests/integration/catalog/fiberDomeClosureShellMaterial.test.ts (1 test) 720ms
+ ✓ tests/integration/catalog/packedScrubberWettedPartsMaterial.test.ts (1 test) 813ms
+     ✓ keeps the sump and process nozzles in the vessel finish while retaining safety paint on access parts  440ms
+ ✓ tests/integration/catalog/rooftopAirHandlerCabinetFinish.test.ts (1 test) 745ms
+     ✓ keeps service casing and access doors on the steel finish  413ms
+ ✓ tests/integration/catalog/utilityInverterStationPlinthMaterial.test.ts (1 test) 833ms
+     ✓ renders the cable plinth as concrete, not stainless steel  434ms
+ ✓ tests/integration/catalog/vBeltPulleyFidelity.test.ts (4 tests) 1076ms
+ ✓ tests/integration/catalog/pressureSensitiveLabelerRollMaterial.test.ts (1 test) 801ms
+     ✓ renders the label rolls as paper label stock, not stainless steel  379ms
+ ✓ tests/integration/catalog/grainCartAugerMaterial.test.ts (1 test) 866ms
+     ✓ paints the unloading auger with the cart, not the exposed-steel hub finish  330ms
+ ✓ tests/integration/catalog/railBogieWheelMaterial.test.ts (1 test) 760ms
+ ✓ tests/integration/catalog/liftPumpCableMaterial.test.ts (1 test) 914ms
+     ✓ draws the power cable tail as a rubber jacket, not coated steel  487ms
+ ✓ tests/integration/catalog/wraparoundLabelerRollMaterial.test.ts (1 test) 761ms
+ ✓ tests/integration/catalog/orchardSprayerTankMaterial.test.ts (1 test) 707ms
+ ✓ tests/integration/catalog/fiberSpliceClosureShellMaterial.test.ts (1 test) 570ms
+ ✓ tests/integration/catalog/cleanroomFanFilterMedia.test.ts (1 test) 720ms
+     ✓ shows a HEPA media face inside the steel flange instead of a solid steel plate  372ms
+ ✓ tests/integration/catalog/overheadPantographContactCopper.test.ts (1 test) 507ms
+ ✓ tests/integration/catalog/shellAndTubeExchangerMaterials.test.ts (1 test) 491ms
+ ✓ tests/integration/catalog/labGasManifoldHeaderMaterial.test.ts (1 test) 566ms
+ ✓ tests/integration/catalog/emptyBottleDividerTrayMaterial.test.ts (1 test) 586ms
+ ✓ tests/integration/catalog/pushbackTugMaterials.test.ts (1 test) 520ms
+ ✓ tests/integration/catalog/petBlowMolderEnclosureMaterial.test.ts (1 test) 528ms
+ ✓ tests/integration/catalog/fillLevelInspectionLampDiffuserMaterial.test.ts (1 test) 518ms
+ ✓ tests/integration/catalog/shipyardGasTrolleyValveMaterial.test.ts (1 test) 554ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 343ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 631267ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  630421ms
+
+ Test Files  143 passed (143)
+      Tests  213 passed (213)
+   Start at  13:13:28
+   Duration  640.64s (transform 100.12s, setup 7.02s, import 402.00s, tests 964.79s, environment 17ms)

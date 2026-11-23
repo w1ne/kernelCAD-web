@@ -1,0 +1,2 @@
+Command: npx eslint catalog/kits/mining/ tests/integration/catalog/assaySampleDividerContainerMaterial.test.ts
+Exit code: 0

@@ -148,6 +148,13 @@ bezier(points: [number, number, number][]): Curve3D;
 // selectEdges returns a ShapeList: still an EdgeSegment[] (fillet/chamfer accept
 // it directly), plus the selector algebra described under "Selector algebra" below.
 selectEdges(shape: Shape, query?: EdgeQuery): Promise<ShapeList<EdgeSegment>>;
+// EdgeQuery keys: atZ / atX / atY (edge midpoint height), near (sort by distance), within (region),
+// parallel / perpendicular (edge direction: { parallel: 'Z' } is every vertical edge), ofCurveType,
+// convex / concave / minAngle / maxAngle (dihedral), and ofFace: the edges that border the faces a
+// FaceQuery matches — { ofFace: { byNormal: 'Z', extreme: 'Z' } } is the edges of the highest face.
+// FaceQuery keys add byNormal, parallelTo, inPlane, ofSurfaceType, containsPoint, minArea / maxArea,
+// boundingBoxIn and extreme: of the faces that match the other keys, keep the one(s) furthest along a
+// direction ('Z' highest, '-X' furthest toward -X). param() values work inside a query like numbers.
 selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if zero or multiple match
 
 // Selector algebra — wrap ANY array of topology query results (face summaries,
@@ -448,7 +455,7 @@ shape, not a copy.
 
 ```typescript
 // Transforms (return a new Shape; the receiver is unchanged; chain freely):
-.translate(x: Editable<number>, y: Editable<number>, z: Editable<number>): Shape
+.translate(x: Editable<number>, y: Editable<number>, z: Editable<number>): Shape  // or one [x, y, z] array: .translate([x, y, z])
 .rotate(
   axis: [Editable<number>, Editable<number>, Editable<number>],
   degrees: Editable<number>,
@@ -583,7 +590,7 @@ shape, not a copy.
 // Mechanical patterns:
 .patternLinear({ count, direction, spacing }: { count: number; direction: [number, number, number]; spacing: number }): Shape
 .patternGrid({ x, y }: { x: { count: number; direction: [number, number, number]; spacing: number }; y: { count: number; direction: [number, number, number]; spacing: number } }): Shape
-.patternCircular({ count, axis, angleDeg? }: { count: number; axis: [number, number, number]; angleDeg?: number }): Shape
+.patternCircular({ count, axis, angleDeg? }: { count: number; axis: [number, number, number] | 'X' | 'Y' | 'Z' | '-X' | '-Y' | '-Z'; angleDeg?: number }): Shape  // copies rotate about the world ORIGIN: build the source at its radius first, e.g. peg.translate(20, 0, 0).patternCircular({ count: 6, axis: 'Z' })
 
 // Apply an SE(3) Transform (returned by SolvedKinematics.transform()) to a shape.
 // Decomposes to translate + rotate via the existing transform pipes; no rebake.
@@ -794,6 +801,7 @@ const blade = root.loft(tip, {
 .bezierTo(c1: [Editable<number>, Editable<number>], c2: [Editable<number>, Editable<number>], end: [Editable<number>, Editable<number>]): PathBuilder  // Exact cubic Bezier (SVG C) from the pen.
 .quadraticTo(c: [Editable<number>, Editable<number>], end: [Editable<number>, Editable<number>]): PathBuilder  // Exact quadratic Bezier (SVG Q) from the pen.
 .ellipseArc(x: number, y: number, rx: number, ry: number, opts?: { rotationDeg?: number; largeArc?: boolean; clockwise?: boolean }): PathBuilder  // Exact elliptical arc (SVG A, Y up) from the pen. Default: the arc of 180° or less, counterclockwise. Plain numbers only. 2:1 tank head: path().moveTo(0, 0).lineTo(40, 0).ellipseArc(0, 20, 40, 20).close().revolve()
+.slot(cx: Editable<number>, cy: Editable<number>, opts: { width: Editable<number>; centerDistance?: Editable<number>; length?: Editable<number>; angleDeg?: number }): Sketch  // Closed slot (stadium), terminal like circle(). width = diameter of the round ends; give centerDistance (between arc centres) OR length (overall, end to end), never both; angleDeg turns the long axis from +X. plate.cutout(path().slot(0, 0, { width: 10, centerDistance: 20 }), { face: 'top', depth: 'through' })
 .ellipse(cx: Editable<number>, cy: Editable<number>, rx: Editable<number>, ry: Editable<number>, opts?: { rotationDeg?: number }): Sketch  // Exact closed ellipse (area π·rx·ry). Terminal, like circle(). Sketch.offset, sketch booleans and cutout() do not take it; for an elliptical hole subtract path().ellipse(...).extrude(d).
 .hermiteG2(a: HermiteEndpoint2D, b: HermiteEndpoint2D): PathBuilder  // (Slice D) 2D quintic-Hermite G2 transition. See kernelcad-nurbs.
 .tangentCircle(entities: TangentEntity2D[], opts?: { radius?: Editable<number>; near?: [Editable<number>, Editable<number>] }): Sketch  // Circle TANGENT to other geometry. 2 entities + opts.radius = sketch-fillet; 3 entities, no radius = through-three. Terminal, like circle().

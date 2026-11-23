@@ -65,7 +65,7 @@ for (let k = 0; k < 9; k++) {
   add(`rib-side-${k}`, blk(-TH - 15, c, 200, 30, 50, 3300).color(cladding));
 }
 // Mono-pitch roof, roof vent and louvre band.
-add("roof", box(2 * TH + 400, 2 * TH + 400, 120, true).rotateX(-6).translate(0, 0, TZ + 160).color(structure));
+add("roof", box(2 * TH + 400, 2 * TH + 400, 120, true).rotateX(-6).translate(0, 0, TZ + 160).color(cladding));
 add("roof-vent", cylinder(500, 260, 14).translate(400, 300, TZ + 150).color(cladding));
 add("roof-vent-cap", cylinder(80, 380, 14).translate(400, 300, TZ + 720).color(structure));
 for (const s of [-1, 1]) add(`roof-vent-stay-${s < 0 ? 'a' : 'b'}`, blk(400 + s * 250, 300, TZ + 640, 30, 30, 90).color(structure));
@@ -87,7 +87,7 @@ for (let k = 0; k < 7; k++) {
 add("gallery-collar", blk(-TH - 80, 0, GZ1 - GH / 2 - 150, 160, GW + 300, GH + 300).color(structure));
 // Tail house at the low end.
 add("tail-house", blk(GX0 - 500, 0, 0, 1600, GW + 300, GZ0 + GH / 2 + 200).color(cladding));
-add("tail-house-roof", blk(GX0 - 500, 0, GZ0 + GH / 2 + 200, 1800, GW + 500, 100).color(structure));
+add("tail-house-roof", blk(GX0 - 500, 0, GZ0 + GH / 2 + 200, 1800, GW + 500, 100).color(cladding));
 add("tail-house-door", blk(GX0 - 600, -GW / 2 - 156, 0, 900, 12, 2100).color(gallery));
 // Braced trestle under the middle of the gallery.
 const TX = -5200, TZt = under(TX);

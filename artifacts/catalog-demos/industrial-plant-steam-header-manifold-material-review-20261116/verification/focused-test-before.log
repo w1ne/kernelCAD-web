@@ -1,0 +1,2 @@
+$ npx vitest run tests/integration/catalog/steamHeaderManifoldBranchMaterial.test.ts
+Before source edit: 1 test failed as expected at branch-0 should be steel; this confirmed the regression check detects the original safety-paint assignment.

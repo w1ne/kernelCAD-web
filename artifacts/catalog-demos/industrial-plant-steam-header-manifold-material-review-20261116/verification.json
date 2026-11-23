@@ -1,0 +1,45 @@
+{
+  "verificationDate": "2026-11-17",
+  "invocation": "Commands listed in README.md; results captured after the 2026-11-16 preview review.",
+  "targetChecksPass": true,
+  "assetIdsAndCountsUnchanged": true,
+  "asset": {
+    "id": "industrial-plant/steam-header-manifold",
+    "changedParts": ["branch-0", "branch-1", "branch-2", "branch-3", "branch-4"],
+    "materialChange": {"from": "safetyPaint", "to": "steel"},
+    "geometryChanged": false,
+    "triangles": 980,
+    "triangleBudget": 1400,
+    "params": ["scale", "steel", "safetyPaint", "gaugeGlass"],
+    "presets": ["weathered", "highVisibility"]
+  },
+  "kitQuality": {
+    "passing": 60,
+    "total": 60,
+    "rate": "100.00%",
+    "command": "python3 scripts/checkCatalogQuality.py --kit industrial-plant",
+    "exitCode": 0
+  },
+  "catalogQuality": {
+    "passing": 2398,
+    "total": 2402,
+    "rate": "99.83%",
+    "remainingThin": 4,
+    "remainingKit": "standard-components",
+    "command": "python3 scripts/checkCatalogQuality.py",
+    "exitCode": 1
+  },
+  "checks": {
+    "focusedTest": "passed (1 test)",
+    "integration": "passed (127 files / 197 tests; includes full 2,402-asset index rebuild)",
+    "eslint": "passed",
+    "index": "passed (2,402 rows; IDs and count unchanged; target source hash, preview and palette mapping current)",
+    "localPage": "passed (current controls, presets and preview)",
+    "hostedStaticGeometry": "passed with mechanism check skipped; default check reports static branch/header intersections"
+  },
+  "limits": [
+    "The feature branch is not deployed; the public page remains on the pre-edit preview.",
+    "The support skid is separated from the header in the rendered preview; recorded as a geometry follow-up and unchanged in this material-only pass.",
+    "Hosted evaluation is not motion simulation, engineering acceptance, manufacturing validation, or hardware acceptance."
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "id": "substation-yard-barrier-section",
+  "kit": "grid-substation",
+  "title": "Yard barrier section",
+  "description": "Removable tubular barrier panel with two end feet and a high visibility rail silhouette. Material controls: galvanized steel, safety yellow, concrete; finish presets: weathered and maintenance.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "grid substation",
+    "electrical infrastructure",
+    "utility yard",
+    "low poly",
+    "CC0",
+    "maintenance and safety"
+  ],
+  "compat": [
+    "grid-substation",
+    "utility-substation",
+    "electrical-infrastructure"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/grid-substation/substation-yard-barrier-section.kcad.ts",
+  "preview": "/assets/grid-substation-substation-yard-barrier-section.png",
+  "sourceSha256": "3522a8e37a142cb5585dea87b7fe83a007d1e43ac6cd9e86243bef19ec21acbd",
+  "triangleBudget": 1800,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "galvanizedSteel",
+      "type": "color",
+      "default": "#7f8c92",
+      "label": "Galvanized steel"
+    },
+    {
+      "name": "safetyYellow",
+      "type": "color",
+      "default": "#efbd32",
+      "label": "Safety yellow"
+    },
+    {
+      "name": "concrete",
+      "type": "color",
+      "default": "#92938b",
+      "label": "Concrete"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "galvanizedSteel": "#778080",
+      "safetyYellow": "#c6a23d",
+      "concrete": "#88887f"
+    },
+    "maintenance": {
+      "safetyYellow": "#ffd64a"
+    }
+  },
+  "stats": {
+    "triangles": 124,
+    "sizeM": [
+      2.6,
+      0.943,
+      0.42
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "galvanizedSteel",
+      "color": "#7f8c92",
+      "parts": [
+        "lower-rail",
+        "upright-1",
+        "upright-2",
+        "upright-3",
+        "upright-4",
+        "diagonal-safety-brace"
+      ],
+      "param": "galvanizedSteel"
+    },
+    {
+      "name": "safetyYellow",
+      "color": "#efbd32",
+      "parts": [
+        "upper-rail"
+      ],
+      "param": "safetyYellow"
+    },
+    {
+      "name": "concrete",
+      "color": "#92938b",
+      "parts": [
+        "foot",
+        "foot-2"
+      ],
+      "param": "concrete"
+    }
+  ]
+}

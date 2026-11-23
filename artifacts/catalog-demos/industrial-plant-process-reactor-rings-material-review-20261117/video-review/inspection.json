@@ -1,0 +1,17 @@
+{
+  "video": "industrial-plant-process-reactor-rings-material-review.mp4",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "frameRate": "30/1",
+  "durationSeconds": 15.0,
+  "decodedReviewFrames": [
+    "decoded-01.png",
+    "decoded-02.png",
+    "decoded-03.png",
+    "decoded-04.png",
+    "decoded-05.png"
+  ],
+  "visualInspection": "Contact sheet contains audit, baseline, source assignment, updated render and verification slides.",
+  "claimLimit": "Local source/render and software checks only; no deployment, simulation, fabrication or hardware acceptance."
+}

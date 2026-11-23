@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: CC0-1.0
-// Palletizing robot cell with a six-axis arm, pallet table, access gate and safety fence.
+// Palletizing robot cell with a concrete floor slab, six-axis arm, pallet table, access gate and safety fence.
 meta({
   name: 'palletizer-robot-cell',
   license: 'CC0-1.0',
   title: 'Palletizer robot cell',
-  description: 'Palletizing robot cell with a six-axis arm, pallet table, access gate and safety fence. Controls: overall scale, steel, safety paint.',
+  description: 'Palletizing robot cell with a concrete floor slab, six-axis arm, pallet table, access gate and safety fence. Controls: overall scale, concrete, steel, safety paint.',
   tags: ['industrial plant', 'factory', 'process equipment', 'low poly', 'CC0'],
   kit: 'industrial-plant',
   category: 'structure',
@@ -16,12 +16,13 @@ meta({
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const steel = param('steel', '#6b7d84', { label: 'Structural steel' });
 const safetyPaint = param('safetyPaint', '#e9a43b', { label: 'Safety paint' });
+const concrete = param('concrete', '#8a8e89', { label: 'Concrete floor' });
 presets({
-  weathered: { steel: '#575851', safetyPaint: '#9e722f' },
-  highVisibility: { safetyPaint: '#f5c640' },
+  weathered: { concrete: '#777a75', steel: '#575851', safetyPaint: '#9e722f' },
+  highVisibility: { concrete: '#b5b8b3', safetyPaint: '#f5c640' },
 });
 const p = assembly('palletizer-robot-cell');
-p.part('cell-floor', box(860, 740, 28, true).translate(0, 0, 14).scale(scale).color(safetyPaint));
+p.part('cell-floor', box(860, 740, 28, true).translate(0, 0, 14).scale(scale).color(concrete));
 p.part('pallet-table', box(301, 259, 170, true).translate(-232.2, 148, 100).scale(scale).color(steel));
 p.part('fence-post--1', box(24, 24, 744.8, true).translate(-387, 273.8, 382.2).scale(scale).color(safetyPaint));
 p.part('fence-panel--1', box(16, 407, 607.6, true).translate(-387, 0, 421.4).scale(scale).color(steel));

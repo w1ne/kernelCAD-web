@@ -1,0 +1,35 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/valveManifoldFlangeFinish.test.ts (1 test | 1 failed) 481ms
+     × uses the steel finish on branch flanges and retains safety paint on the support frame 216ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/valveManifoldFlangeFinish.test.ts > industrial-plant/valve-manifold-station flange finish > uses the steel finish on branch flanges and retains safety paint on the support frame
+AssertionError: flange-0 should use the steel finish: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/integration/catalog/valveManifoldFlangeFinish.test.ts:52:87
+     50|       const colors = colorsFor(name);
+     51|       expect(colors.length, `${name} should render`).toBeGreaterThan(0…
+     52|       expect(colors.every(matches('#6c7e85')), `${name} should use the…
+       |                                                                                       ^
+     53|     }
+     54|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  05:29:26
+   Duration  5.96s (transform 4.27s, setup 88ms, import 5.29s, tests 481ms, environment 0ms)
+
+
+Expected baseline failure confirmed (exit 1).

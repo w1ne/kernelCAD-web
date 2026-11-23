@@ -1,0 +1,26 @@
+{
+  "video": "industrial-plant-rooftop-air-handler-material-review.mp4",
+  "probe": {
+    "codec_name": "h264",
+    "width": 1280,
+    "height": 720,
+    "pix_fmt": "yuv420p",
+    "r_frame_rate": "30/1",
+    "duration": "12.000000",
+    "nb_frames": "360"
+  },
+  "sampledSeconds": [
+    1,
+    4,
+    7,
+    10
+  ],
+  "decodedFrames": [
+    "video-review/decoded-frames/01s.png",
+    "video-review/decoded-frames/04s.png",
+    "video-review/decoded-frames/07s.png",
+    "video-review/decoded-frames/10s.png"
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "inspection": "Decoded MP4 frames checked for readability, preview legibility, and truthful local-only claims."
+}

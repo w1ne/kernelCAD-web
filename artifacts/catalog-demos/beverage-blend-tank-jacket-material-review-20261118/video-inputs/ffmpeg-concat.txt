@@ -1,0 +1,11 @@
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/beverage-blend-tank-jacket-material-review-20261118/video-inputs/slide-01-five-preview-audit.png'
+duration 3
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/beverage-blend-tank-jacket-material-review-20261118/video-inputs/slide-02-before-after.png'
+duration 3
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/beverage-blend-tank-jacket-material-review-20261118/video-inputs/slide-03-material-map.png'
+duration 3
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/beverage-blend-tank-jacket-material-review-20261118/video-inputs/slide-04-regression.png'
+duration 3
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/beverage-blend-tank-jacket-material-review-20261118/video-inputs/slide-05-verification.png'
+duration 3
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/beverage-blend-tank-jacket-material-review-20261118/video-inputs/slide-05-verification.png'

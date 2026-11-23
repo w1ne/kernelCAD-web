@@ -1,0 +1,12 @@
+     ✓ uses steel for the whole process shell and preserves the current size and mesh budget  585ms
+ ✓ tests/integration/catalog/fiberDomeClosureShellMaterial.test.ts (1 test) 1250ms
+     ✓ renders the dome housing as moulded thermoplastic, not powder-coated steel  543ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 880152ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  879695ms
+
+ Test Files  179 passed (179)
+      Tests  249 passed (249)
+   Start at  02:24:58
+   Duration  890.45s (transform 35.01s, setup 5.66s, import 318.05s, tests 1165.42s, environment 28ms)
+
+exit 0

@@ -1,0 +1,24 @@
+# PR #1258 was checked first; its saved status shows it merged.
+# Active PR #1507 status at the audit base commit 49fcb5ad9 is saved in pr-1507-before-audit.json (build-and-checks was still in progress; the other non-skipped checks had passed).
+# Open issue/PR searches for the five IDs are in open-target-check.txt.
+
+# Regression: run the new test once against the pre-fix source; it fails at the first changed value (depth 1.31 m, expected 0.595 m).
+npx vitest run tests/integration/catalog/recyclingVehicleBarrierGatePhotoEyePlacement.test.ts
+# Apply the correction and rerun; 1 test passes.
+npx vitest run tests/integration/catalog/recyclingVehicleBarrierGatePhotoEyePlacement.test.ts
+
+# Re-render only the named target and regenerate the generated index.
+npx tsx scripts/checkCatalogAsset.ts catalog/kits/recycling-facility/vehicle-barrier-gate.kcad.ts
+PLAYWRIGHT_BROWSERS_PATH=~/.cache/ms-playwright npx tsx scripts/renderCatalogPreviews.ts vehicle-barrier-gate
+npx tsx scripts/buildAssetCatalog.ts
+PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/recycling-vehicle-barrier-gate-photo-eye-placement-review-20261119/verify_index_row.py
+
+# Required checks.
+npx eslint catalog/kits/recycling-facility/ tests/integration/catalog/recyclingVehicleBarrierGatePhotoEyePlacement.test.ts
+python3 scripts/checkCatalogQuality.py --kit recycling-facility
+python3 scripts/checkCatalogQuality.py
+npx vitest run tests/integration/catalog/ --maxWorkers=2
+
+# Demo generation and inspection.
+PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/recycling-vehicle-barrier-gate-photo-eye-placement-review-20261119/make_demo.py
+PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/recycling-vehicle-barrier-gate-photo-eye-placement-review-20261119/inspect_video.py

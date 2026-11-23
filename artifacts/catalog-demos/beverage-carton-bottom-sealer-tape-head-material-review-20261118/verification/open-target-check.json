@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-11-18",
+  "featurePr1258": {
+    "state": "MERGED",
+    "submittedReviews": 0,
+    "reportedChecks": 17,
+    "failedChecks": 0
+  },
+  "currentOpenPr1507": {
+    "state": "OPEN",
+    "head": "0b9387b1f3f30e03c893bda9ec8026e16978e761",
+    "submittedReviews": 0,
+    "reportedNonSkippedChecks": "all successful",
+    "selectedSourcePathMatches": []
+  },
+  "otherOpenPullRequests": [
+    { "number": 1400, "catalogPaths": [] },
+    { "number": 1309, "catalogPaths": [] },
+    { "number": 1253, "catalogPaths": ["catalog/kits/city-street/mailbox.kcad.ts"] },
+    { "number": 1094, "catalogPaths": [] }
+  ],
+  "openIssueExactNameMatches": [],
+  "selectedAssets": [
+    "beverage-bottling-line/cap-feed-hopper",
+    "beverage-bottling-line/slip-sheet-dispenser",
+    "beverage-bottling-line/stretch-wrapper",
+    "beverage-bottling-line/wraparound-labeler",
+    "beverage-bottling-line/carton-bottom-sealer"
+  ]
+}

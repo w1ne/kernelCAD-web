@@ -1,0 +1,2 @@
+$ npx tsx scripts/renderCatalogPreviews.ts steam-header-manifold
+industrial-plant/steam-header-manifold: 980 tris

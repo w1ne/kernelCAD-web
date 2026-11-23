@@ -1,0 +1,75 @@
+{
+  "checkedAtUtc": "2026-11-17",
+  "manifestGeneratedAt": "2026-11-17T02:12:36.567Z",
+  "assets": [
+    {
+      "id": "pallet-rack-bay",
+      "detailUrl": "https://kernelcad.com/catalog/industrial-plant/pallet-rack-bay/",
+      "detailHttpStatus": 200,
+      "previewUrl": "https://kernelcad.com/assets/industrial-plant-pallet-rack-bay.png",
+      "previewHttpStatus": 200,
+      "manifestPreview": "/assets/industrial-plant-pallet-rack-bay.png",
+      "localBaselinePreviewSha256": "acbbceba583683da5f9f22baa218aa168a00a4cda48c3f9dae878f7dd2c2b509",
+      "localAfterPreviewSha256": "acbbceba583683da5f9f22baa218aa168a00a4cda48c3f9dae878f7dd2c2b509",
+      "liveBaselinePreviewSha256": "acbbceba583683da5f9f22baa218aa168a00a4cda48c3f9dae878f7dd2c2b509",
+      "liveMatchesBaseline": true,
+      "liveMatchesAfter": true
+    },
+    {
+      "id": "plc-control-rack",
+      "detailUrl": "https://kernelcad.com/catalog/industrial-plant/plc-control-rack/",
+      "detailHttpStatus": 200,
+      "previewUrl": "https://kernelcad.com/assets/industrial-plant-plc-control-rack.png",
+      "previewHttpStatus": 200,
+      "manifestPreview": "/assets/industrial-plant-plc-control-rack.png",
+      "localBaselinePreviewSha256": "35696b50002b8ab21d9ce5202cfcd92e0e397a538777af9456a2afd0418b51ef",
+      "localAfterPreviewSha256": "570b145afcba76d6c51b26e03f524484ccdbd7109d3a944d7f993e7854345e25",
+      "liveBaselinePreviewSha256": "35696b50002b8ab21d9ce5202cfcd92e0e397a538777af9456a2afd0418b51ef",
+      "liveMatchesBaseline": true,
+      "liveMatchesAfter": false
+    },
+    {
+      "id": "electric-pallet-jack",
+      "detailUrl": "https://kernelcad.com/catalog/industrial-plant/electric-pallet-jack/",
+      "detailHttpStatus": 200,
+      "previewUrl": "https://kernelcad.com/assets/industrial-plant-electric-pallet-jack.png",
+      "previewHttpStatus": 200,
+      "manifestPreview": "/assets/industrial-plant-electric-pallet-jack.png",
+      "localBaselinePreviewSha256": "ae121d67f04cde187e5b00b8de81787ca06ceb6c7edd18376b964810fad9faa4",
+      "localAfterPreviewSha256": "ae121d67f04cde187e5b00b8de81787ca06ceb6c7edd18376b964810fad9faa4",
+      "liveBaselinePreviewSha256": "ae121d67f04cde187e5b00b8de81787ca06ceb6c7edd18376b964810fad9faa4",
+      "liveMatchesBaseline": true,
+      "liveMatchesAfter": true
+    },
+    {
+      "id": "vertical-storage-tank",
+      "detailUrl": "https://kernelcad.com/catalog/industrial-plant/vertical-storage-tank/",
+      "detailHttpStatus": 200,
+      "previewUrl": "https://kernelcad.com/assets/industrial-plant-vertical-storage-tank.png",
+      "previewHttpStatus": 200,
+      "manifestPreview": "/assets/industrial-plant-vertical-storage-tank.png",
+      "localBaselinePreviewSha256": "ce4ea8d31750d102c78754866f2cbc9c84771213a2eff43636fe09607f64971c",
+      "localAfterPreviewSha256": "ce4ea8d31750d102c78754866f2cbc9c84771213a2eff43636fe09607f64971c",
+      "liveBaselinePreviewSha256": "ce4ea8d31750d102c78754866f2cbc9c84771213a2eff43636fe09607f64971c",
+      "liveMatchesBaseline": true,
+      "liveMatchesAfter": true
+    },
+    {
+      "id": "diesel-generator-set",
+      "detailUrl": "https://kernelcad.com/catalog/industrial-plant/diesel-generator-set/",
+      "detailHttpStatus": 200,
+      "previewUrl": "https://kernelcad.com/assets/industrial-plant-diesel-generator-set.png",
+      "previewHttpStatus": 200,
+      "manifestPreview": "/assets/industrial-plant-diesel-generator-set.png",
+      "localBaselinePreviewSha256": "0110d3e71efcb5984a44446043cb1a22d7beea1906444014f80c935b7ac55d0a",
+      "localAfterPreviewSha256": "0110d3e71efcb5984a44446043cb1a22d7beea1906444014f80c935b7ac55d0a",
+      "liveBaselinePreviewSha256": "0110d3e71efcb5984a44446043cb1a22d7beea1906444014f80c935b7ac55d0a",
+      "liveMatchesBaseline": true,
+      "liveMatchesAfter": true
+    }
+  ],
+  "allHttp200": true,
+  "allLivePreviewsMatchBaseline": true,
+  "targetAfterPreviewDiffersFromLiveBaseline": true,
+  "deployed": false
+}

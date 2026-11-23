@@ -1,0 +1,271 @@
+{
+  "baselineCommit": "0f0f994523a6f14fb1b64d6325a24214f7886266",
+  "baselineAssets": 2402,
+  "currentAssets": 2402,
+  "baselineKits": 50,
+  "currentKits": 50,
+  "changedRows": [
+    "industrial-plant/air-compressor"
+  ],
+  "targetRow": {
+    "id": "air-compressor",
+    "kit": "industrial-plant",
+    "title": "Industrial air compressor",
+    "description": "Horizontal receiver compressor package with a saddled pressure tank, skid frame, belt-driven motor, finned pump heads, intake filter, pressure gauge, safety valve and drain. Receiver capacity and pump arrangement change the model. Material controls: receiver steel, cast iron, motor paint and rubber. plant, weathered and highVisibility presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "industrial plant",
+      "air compressor",
+      "reciprocating compressor",
+      "receiver tank",
+      "belt drive",
+      "factory",
+      "process equipment",
+      "low poly",
+      "CC0"
+    ],
+    "compat": [
+      "industrial-plant",
+      "factory",
+      "manufacturing",
+      "industrial-scene"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/industrial-plant/air-compressor.kcad.ts",
+    "preview": "/assets/industrial-plant-air-compressor.png",
+    "sourceSha256": "552252cf26ea0ffcf5ca21654da2544a24481fdaf229ea733c61477b0d8bd098",
+    "triangleBudget": 5200,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "receiverCapacity",
+        "type": "choice",
+        "default": "120-gallon",
+        "label": "Receiver capacity",
+        "choices": [
+          "80-gallon",
+          "120-gallon"
+        ]
+      },
+      {
+        "name": "pumpArrangement",
+        "type": "choice",
+        "default": "twin",
+        "label": "Pump arrangement",
+        "choices": [
+          "single",
+          "twin"
+        ]
+      },
+      {
+        "name": "receiverSteel",
+        "type": "color",
+        "default": "#657c87",
+        "label": "Receiver steel"
+      },
+      {
+        "name": "pumpIron",
+        "type": "color",
+        "default": "#444b50",
+        "label": "Pump cast iron"
+      },
+      {
+        "name": "motorPaint",
+        "type": "color",
+        "default": "#e1a72f",
+        "label": "Motor paint"
+      },
+      {
+        "name": "rubber",
+        "type": "color",
+        "default": "#282d30",
+        "label": "Belt and feet rubber"
+      }
+    ],
+    "presets": {
+      "plant": {
+        "receiverSteel": "#657c87",
+        "pumpIron": "#444b50",
+        "motorPaint": "#e1a72f",
+        "rubber": "#282d30"
+      },
+      "weathered": {
+        "receiverSteel": "#59605f",
+        "pumpIron": "#383b3c",
+        "motorPaint": "#a77a32",
+        "rubber": "#353534"
+      },
+      "highVisibility": {
+        "receiverSteel": "#c5cbcd",
+        "pumpIron": "#48535a",
+        "motorPaint": "#e65d27",
+        "rubber": "#282d30"
+      }
+    },
+    "stats": {
+      "triangles": 4594,
+      "sizeM": [
+        1,
+        0.896,
+        0.372
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "motorPaint",
+        "color": "#e1a72f",
+        "parts": [
+          "skid-rail--150",
+          "rail-foot-0--150",
+          "rail-foot-1--150",
+          "skid-rail-150",
+          "rail-foot-0-150",
+          "rail-foot-1-150",
+          "skid-crossmember-0",
+          "skid-crossmember-1",
+          "receiver-saddle-0",
+          "receiver-saddle-1",
+          "inspection-cover",
+          "drain-handle",
+          "drive-deck",
+          "motor-body",
+          "motor-terminal-box",
+          "belt-guard-open-frame",
+          "pressure-switch",
+          "relief-cap"
+        ],
+        "param": "motorPaint"
+      },
+      {
+        "name": "rubber",
+        "color": "#282d30",
+        "parts": [
+          "isolation-pad-0--150",
+          "isolation-pad-1--150",
+          "isolation-pad-0-150",
+          "isolation-pad-1-150",
+          "belt-loop",
+          "intake-filter"
+        ],
+        "param": "rubber"
+      },
+      {
+        "name": "receiverSteel",
+        "color": "#657c87",
+        "parts": [
+          "horizontal-receiver",
+          "receiver-weld-band-0",
+          "saddle-cap-0",
+          "receiver-weld-band-1",
+          "saddle-cap-1",
+          "inspection-boss",
+          "receiver-drain",
+          "motor-mount-left",
+          "motor-mount-right",
+          "motor-cooling-fin-0",
+          "motor-cooling-fin-1",
+          "motor-cooling-fin-2",
+          "motor-cooling-fin-3",
+          "motor-cooling-fin-4",
+          "motor-cooling-fin-5",
+          "motor-cooling-fin-6",
+          "motor-cooling-fin-7",
+          "motor-cooling-fin-8",
+          "head-bolt-0--28",
+          "head-bolt-0-28",
+          "head-bolt-1--28",
+          "head-bolt-1-28",
+          "intake-neck",
+          "aftercooler-riser",
+          "aftercooler-run",
+          "receiver-manifold",
+          "manifold-riser",
+          "relief-valve",
+          "outlet-elbow"
+        ],
+        "param": "receiverSteel"
+      },
+      {
+        "name": "pumpIron",
+        "color": "#444b50",
+        "parts": [
+          "drain-valve",
+          "motor-fan-cover",
+          "pump-crankcase",
+          "pump-crankcase-end",
+          "pump-barrel-0",
+          "pump-fin-0-0",
+          "pump-fin-0-1",
+          "pump-fin-0-2",
+          "pump-fin-0-3",
+          "pump-fin-0-4",
+          "pump-fin-0-5",
+          "pump-head-0",
+          "head-cap-0",
+          "pump-barrel-1",
+          "pump-fin-1-0",
+          "pump-fin-1-1",
+          "pump-fin-1-2",
+          "pump-fin-1-3",
+          "pump-fin-1-4",
+          "pump-fin-1-5",
+          "pump-head-1",
+          "head-cap-1",
+          "motor-pulley",
+          "pump-pulley",
+          "guard-vent-slot-0",
+          "guard-vent-slot-1",
+          "guard-vent-slot-2",
+          "guard-vent-slot-3",
+          "pressure-switch-cap",
+          "gauge-body",
+          "outlet-coupling"
+        ],
+        "param": "pumpIron"
+      },
+      {
+        "name": "gauge-face",
+        "color": "#d9e0dc",
+        "parts": [
+          "gauge-face"
+        ]
+      },
+      {
+        "name": "gauge-pointer",
+        "color": "#bd4738",
+        "parts": [
+          "gauge-pointer",
+          "indicator-red"
+        ]
+      },
+      {
+        "name": "warning-label",
+        "color": "#ece7d8",
+        "parts": [
+          "warning-label"
+        ]
+      },
+      {
+        "name": "indicator-green",
+        "color": "#4c9c68",
+        "parts": [
+          "indicator-green"
+        ]
+      }
+    ]
+  },
+  "sourceSha256MatchesIndex": true,
+  "previewPathExists": true,
+  "previewPath": "catalog/kits/industrial-plant/previews/air-compressor.png"
+}

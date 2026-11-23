@@ -1,0 +1,9 @@
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/data-center-infrastructure-overhead-power-busway-joint-material-review-20261119/video-inputs/slide-01-five-preview-audit.png'
+duration 4
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/data-center-infrastructure-overhead-power-busway-joint-material-review-20261119/video-inputs/slide-02-before-after.png'
+duration 4
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/data-center-infrastructure-overhead-power-busway-joint-material-review-20261119/video-inputs/slide-03-material-map.png'
+duration 4
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/data-center-infrastructure-overhead-power-busway-joint-material-review-20261119/video-inputs/slide-04-verification.png'
+duration 4
+file '/data/worktrees/legacy-migrated/kernelcad-catalog-2000/artifacts/catalog-demos/data-center-infrastructure-overhead-power-busway-joint-material-review-20261119/video-inputs/slide-04-verification.png'

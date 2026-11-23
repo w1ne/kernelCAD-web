@@ -1,0 +1,103 @@
+{
+  "id": "plate-roller-conveyor",
+  "kit": "shipyard",
+  "title": "Plate roller conveyor",
+  "description": "Section of plate feed line with a heavy frame, transverse rollers, side guides, and adjustable feet. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "shipyard",
+    "shipbuilding",
+    "drydock",
+    "refit",
+    "low poly",
+    "CC0",
+    "plate",
+    "roller",
+    "conveyor"
+  ],
+  "compat": [
+    "shipyard",
+    "marine",
+    "drydock",
+    "ship-repair"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/shipyard/plate-roller-conveyor.kcad.ts",
+  "preview": "/assets/shipyard-plate-roller-conveyor.png",
+  "sourceSha256": "94b253163ea5ad023865617f53c52832892e15c2b0f3b02f1000be5aa7c6d615",
+  "triangleBudget": 1800,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "yardPaint",
+      "type": "color",
+      "default": "#78847e",
+      "label": "Yard finish"
+    },
+    {
+      "name": "structuralSteel",
+      "type": "color",
+      "default": "#b6c1c4",
+      "label": "Structural steel"
+    }
+  ],
+  "presets": {
+    "fresh-coat": {
+      "yardPaint": "#909a95",
+      "structuralSteel": "#d0d7d8"
+    },
+    "weathered-yard": {
+      "yardPaint": "#646e69",
+      "structuralSteel": "#828d91"
+    }
+  },
+  "stats": {
+    "triangles": 440,
+    "sizeM": [
+      2.55,
+      0.575,
+      1.54
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "yardPaint",
+      "color": "#78847e",
+      "parts": [
+        "side-frame-0",
+        "side-frame-1"
+      ],
+      "param": "yardPaint"
+    },
+    {
+      "name": "structuralSteel",
+      "color": "#b6c1c4",
+      "parts": [
+        "feed-roller-0",
+        "feed-roller-1",
+        "feed-roller-2",
+        "feed-roller-3",
+        "feed-roller-4",
+        "feed-roller-5",
+        "guide-rail-0",
+        "guide-rail-1",
+        "leveling-foot-0",
+        "leveling-foot-1",
+        "leveling-foot-2",
+        "leveling-foot-3"
+      ],
+      "param": "structuralSteel"
+    }
+  ]
+}

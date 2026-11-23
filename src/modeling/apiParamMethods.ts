@@ -128,14 +128,31 @@ export function makeParamMethods(
     },
     selectEdges: async (shape, query = {}) => {
       const lowered = await shape.lower();
-      return select(selectEdgesBackend(lowered, query));
+      return select(selectEdgesBackend(lowered, resolveQueryParams(query)));
     },
     select,
     selectEdge: async (shape, query) => {
       const lowered = await shape.lower();
-      return selectEdgeBackend(lowered, query);
+      return selectEdgeBackend(lowered, resolveQueryParams(query));
     },
   };
+}
+
+/**
+ * A selector query is resolved against the geometry as built right now, so a
+ * numeric param() inside it reads as its current value, the same as in plain
+ * JS math (`r + 4`): the coercion marks the param, and an edit to it re-runs
+ * the script. Everything else in the query passes through untouched.
+ */
+function resolveQueryParams<T>(value: T): T {
+  if (isParamRef(value) && value._type === 'number') return Number(value) as unknown as T;
+  if (Array.isArray(value)) return value.map(resolveQueryParams) as unknown as T;
+  // Plain object from any realm: a script's literals come from its sandbox, so
+  // the prototype is that realm's Object.prototype, whose own prototype is null.
+  if (typeof value === 'object' && value !== null && Object.getPrototypeOf(Object.getPrototypeOf(value) ?? {}) === null) {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, resolveQueryParams(v)])) as T;
+  }
+  return value;
 }
 
 function declareParam(

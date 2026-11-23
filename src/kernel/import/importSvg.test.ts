@@ -13,6 +13,32 @@ import { describe, it, expect } from 'vitest';
 import { importSvgText, SvgParseError } from './importSvg';
 import type { SketchCommand } from '../../shared/capture/sketchCommand';
 
+type Nurbs = Extract<SketchCommand, { kind: 'nurbsSegment' }>;
+
+function nurbsOf(commands: readonly SketchCommand[]): Nurbs[] {
+  return commands.filter((c): c is Nurbs => c.kind === 'nurbsSegment');
+}
+
+/** Poles rounded to 1e-9 so exact values compare cleanly. */
+function poles(c: Nurbs): Array<[number, number]> {
+  return c.controlPoints.map(p => [Math.round(p.x.evaluated * 1e9) / 1e9, Math.round(p.y.evaluated * 1e9) / 1e9]);
+}
+
+/** Curve point at u = 1/2 of a rational quadratic: (P0 + 2wP1 + P2) / (2 + 2w). */
+function rationalMid(c: Nurbs): [number, number] {
+  const [p0, p1, p2] = c.controlPoints.map(p => [p.x.evaluated, p.y.evaluated]);
+  const w = c.weights?.[1].evaluated ?? 1;
+  return [0, 1].map(i => (p0[i] + 2 * w * p1[i] + p2[i]) / (2 + 2 * w)) as [number, number];
+}
+
+/**
+ * `areaMm2` integrates NURBS edges from samples (the B-rep stays exact), so
+ * area checks on curved regions use a relative bound, not digits.
+ */
+function expectAreaNear(actual: number, exact: number): void {
+  expect(Math.abs(actual - exact) / exact).toBeLessThan(1e-4);
+}
+
 function points(commands: readonly SketchCommand[]): Array<[number, number]> {
   return commands
     .filter((c): c is Extract<SketchCommand, { x: unknown; y: unknown }> => 'x' in c && 'y' in c)
@@ -140,9 +166,19 @@ describe('importSvgText — elements', () => {
     expect(r.regions[0].areaMm2).toBeCloseTo(40 * 20 - (4 - Math.PI) * 25, 9);
   });
 
-  it('<rect> with unequal rx/ry is refused, because the corners are elliptical', () => {
-    expect(() => importSvgText(svg('<rect x="0" y="0" width="40" height="20" rx="5" ry="2"/>')))
-      .toThrowError(/corners are elliptical/);
+  it('<rect> with unequal rx/ry keeps its elliptical corners exact', () => {
+    const r = importSvgText(svg('<rect x="0" y="0" width="40" height="20" rx="5" ry="2"/>'));
+    const corners = nurbsOf(r.regions[0].commands);
+    expect(corners).toHaveLength(4);
+    expect(r.regions[0].segmentCount).toBe(8);
+    expectAreaNear(r.regions[0].areaMm2, 40 * 20 - (4 - Math.PI) * 5 * 2);
+    // Each corner passes through its quarter-ellipse midpoint exactly.
+    for (const q of corners) {
+      const [x, y] = rationalMid(q);
+      const cx = x < 20 ? 5 : 35;
+      const cy = y < 30 ? 22 : 38;
+      expect(((x - cx) / 5) ** 2 + ((y - cy) / 2) ** 2).toBeCloseTo(1, 12);
+    }
   });
 
   it('<circle> becomes two exact semicircular arcs', () => {
@@ -151,20 +187,22 @@ describe('importSvgText — elements', () => {
     expect(r.regions[0].areaMm2).toBeCloseTo(Math.PI * 400, 9);
   });
 
-  it('<ellipse> is chord-approximated within curveTolerance', () => {
-    const exact = Math.PI * 20 * 10;
-    const coarse = importSvgText(
-      svg('<ellipse cx="50" cy="50" rx="20" ry="10"/>', 'width="100mm" viewBox="0 0 100 100"'),
-      { curveTolerance: 0.5 },
-    );
-    const fine = importSvgText(
-      svg('<ellipse cx="50" cy="50" rx="20" ry="10"/>', 'width="100mm" viewBox="0 0 100 100"'),
-      { curveTolerance: 0.001 },
-    );
-    // An inscribed polygon always under-reports, and refining must close the gap.
-    expect(coarse.regions[0].areaMm2).toBeLessThan(exact);
-    expect(fine.regions[0].segmentCount).toBeGreaterThan(coarse.regions[0].segmentCount);
-    expect(fine.regions[0].areaMm2).toBeCloseTo(exact, 1);
+  it('<ellipse> becomes four exact rational quarter arcs, whatever curveTolerance says', () => {
+    const el = svg('<ellipse cx="50" cy="50" rx="20" ry="10"/>', 'width="100mm" viewBox="0 0 100 100"');
+    const coarse = importSvgText(el, { curveTolerance: 0.5 });
+    const fine = importSvgText(el, { curveTolerance: 0.0005 });
+    expect(fine.regions[0].commands).toEqual(coarse.regions[0].commands);
+    const quarters = nurbsOf(coarse.regions[0].commands);
+    expect(coarse.regions[0].segmentCount).toBe(4);
+    expect(quarters).toHaveLength(4);
+    for (const q of quarters) {
+      expect(q.degree.evaluated).toBe(2);
+      expect(q.weights?.map(w => w.evaluated)).toEqual([1, expect.closeTo(Math.SQRT1_2, 12), 1]);
+    }
+    // The first quarter runs from (70, 50) through the box corner (70, 40)
+    // to (50, 40) in SVG — (70, 50), (70, 60), (50, 60) after the Y flip.
+    expect(poles(quarters[0]).map(p => p.join(','))).toEqual(['70,50', '70,60', '50,60']);
+    expectAreaNear(coarse.regions[0].areaMm2, Math.PI * 200);
   });
 
   it('<polygon> closes itself; <polyline> and <line> chain with each other', () => {
@@ -193,19 +231,30 @@ describe('importSvgText — elements', () => {
     expect(Math.max(...xs)).toBeCloseTo(30, 9);
   });
 
-  it('flattens arcs when a non-uniform transform makes them elliptical', () => {
-    const r = importSvgText(svg(
+  it('keeps a circle exact as a rational ellipse under a non-uniform or sheared transform', () => {
+    const stretched = importSvgText(svg(
       '<g transform="scale(2,1)"><circle cx="20" cy="20" r="10"/></g>',
       'width="100mm" viewBox="0 0 100 100"',
     ));
-    // No exact arc survives — an ellipse has no bulge form — and the area is
-    // that of the transformed ellipse, not the original circle.
-    expect(r.regions[0].commands.some(c => c.kind === 'bulgeArc')).toBe(false);
-    // Chord sampling was sized in the circle's own frame and then stretched
-    // 2x in X, so the inscribed polygon is a little under the true ellipse.
-    const exact = Math.PI * 20 * 10;
-    expect(r.regions[0].areaMm2).toBeLessThan(exact);
-    expect(r.regions[0].areaMm2).toBeGreaterThan(exact * 0.998);
+    // No bulge survives — an ellipse has no bulge form — but the curve is
+    // the exact image of the circle, not chords.
+    const cmds = stretched.regions[0].commands;
+    expect(cmds.some(c => c.kind === 'bulgeArc' || c.kind === 'lineTo')).toBe(false);
+    expect(nurbsOf(cmds)).toHaveLength(4);
+    expectAreaNear(stretched.regions[0].areaMm2, Math.PI * 20 * 10);
+    for (const q of nurbsOf(cmds)) {
+      const [x, y] = rationalMid(q);
+      expect(((x - 40) / 20) ** 2 + ((y - 80) / 10) ** 2).toBeCloseTo(1, 12);
+    }
+
+    // A shear keeps the conjugate diameters, not the axes, so the area is
+    // still pi r^2 times the determinant.
+    const sheared = importSvgText(svg(
+      '<g transform="matrix(1 0 0.5 1 0 0)"><circle cx="20" cy="20" r="10"/></g>',
+      'width="100mm" viewBox="0 0 100 100"',
+    ));
+    expect(nurbsOf(sheared.regions[0].commands)).toHaveLength(4);
+    expectAreaNear(sheared.regions[0].areaMm2, Math.PI * 100);
   });
 
   it('skips non-rendering subtrees and reports them', () => {
@@ -267,31 +316,68 @@ describe('importSvgText — path data', () => {
     expect(minor.regions[0].commands.filter(c => c.kind === 'bulgeArc')).toHaveLength(1);
   });
 
-  it('flattens C/S/Q/T Béziers within curveTolerance', () => {
-    // The cubic is the standard 4/3·(√2−1) approximation of the quarter
-    // circle of radius 10 centred on (0, 10), so the closed region is the
-    // triangle (0,0)-(10,10)-(10,0) plus the circular segment cut off by the
-    // chord: 50 + r²/2·(π/2 − 1). Refining the tolerance must converge on
-    // that, not wander off it.
+  it('keeps a non-circular, rotated A arc exact and lands on its endpoint', () => {
+    // Half of a 20 x 10 ellipse whose major axis is turned 30 degrees.
+    const r = importSvgText(svg(
+      '<path d="M 0 0 A 20 10 30 0 1 34.64101615137755 20 Z"/>',
+      'width="100mm" viewBox="0 0 100 100"',
+    ), { curveTolerance: 0.5 });
+    const curves = nurbsOf(r.regions[0].commands);
+    expect(curves).toHaveLength(2);
+    expect(r.regions[0].segmentCount).toBe(3);
+    expectAreaNear(r.regions[0].areaMm2, (Math.PI * 200) / 2);
+    // The arc ends on the exact pen position the file named (either end of
+    // a curve, because assembly may reverse the loop to run CCW).
+    const ends = curves.flatMap(c => [c.controlPoints[0], c.controlPoints[2]])
+      .map(p => `${p.x.evaluated},${p.y.evaluated}`);
+    expect(ends).toContain('34.64101615137755,80');
+  });
+
+  it('keeps C/S/Q/T Béziers exact as NURBS segments, whatever curveTolerance says', () => {
+    // One cubic and one closing line: two segments at any tolerance, and the
+    // cubic's poles are the SVG control points after the Y flip (y -> 40 - y).
     const d = '<path d="M0 0 C 0 5.5228 4.4772 10 10 10 L 10 0 Z"/>';
-    const exact = 50 + (100 / 2) * (Math.PI / 2 - 1);
     const coarse = importSvgText(svg(d), { curveTolerance: 0.5 });
     const fine = importSvgText(svg(d), { curveTolerance: 0.0005 });
-    expect(fine.regions[0].segmentCount).toBeGreaterThan(coarse.regions[0].segmentCount);
-    // Tolerance 1 decimal, not more: the residual ~0.02 mm² is the CUBIC's
-    // own error against a true quarter circle (the 0.5523 handle constant is
-    // itself an approximation), not the flattener's. Tightening
-    // curveTolerance cannot remove it.
-    expect(fine.regions[0].areaMm2).toBeCloseTo(exact, 1);
-    expect(Math.abs(coarse.regions[0].areaMm2 - exact))
-      .toBeGreaterThan(Math.abs(fine.regions[0].areaMm2 - exact));
+    expect(coarse.regions[0].segmentCount).toBe(3);
+    expect(fine.regions[0].commands).toEqual(coarse.regions[0].commands);
+    const [cubic] = nurbsOf(coarse.regions[0].commands);
+    expect(cubic.degree.evaluated).toBe(3);
+    expect(cubic.knots?.map(k => k.evaluated)).toEqual([0, 0, 0, 0, 1, 1, 1, 1]);
+    expect(cubic.weights).toBeUndefined();
+    expect(new Set(poles(cubic).map(p => p.join(',')))).toEqual(
+      new Set([[0, 40], [0, 34.4772], [4.4772, 30], [10, 30]].map(p => p.join(','))),
+    );
 
-    // S and T must reflect the previous control point, i.e. produce a curve
-    // that is NOT the straight-line chord.
+    // S reflects the previous cubic control point through the pen:
+    // (5, 10) about (10, 10) is (15, 10).
     const smooth = importSvgText(svg('<path d="M0 0 C 0 5 5 10 10 10 S 20 5 20 0 Z"/>'));
-    expect(smooth.regions[0].segmentCount).toBeGreaterThan(4);
+    const smoothCurves = nurbsOf(smooth.regions[0].commands);
+    expect(smoothCurves).toHaveLength(2);
+    expect(smoothCurves.flatMap(poles).map(p => p.join(','))).toContain('15,30');
+
+    // Q is kept as an exact quadratic; T reflects its control: (5, 10)
+    // about (10, 10) is (15, 10).
     const quadT = importSvgText(svg('<path d="M0 0 Q 5 10 10 10 T 20 0 Z"/>'));
-    expect(quadT.regions[0].segmentCount).toBeGreaterThan(4);
+    const quads = nurbsOf(quadT.regions[0].commands);
+    expect(quads).toHaveLength(2);
+    expect(quads.every(q => q.degree.evaluated === 2 && q.controlPoints.length === 3)).toBe(true);
+    expect(quads.flatMap(poles).map(p => p.join(','))).toContain('15,30');
+  });
+
+  it('keeps a Bézier exact under a non-uniform transform', () => {
+    // An affine map sends a Bézier to the Bézier of the mapped poles, so a
+    // stretched group still imports as one cubic, not chords.
+    const r = importSvgText(svg('<g transform="scale(2 0.5)"><path d="M0 0 C 0 10 10 10 10 0 Z"/></g>'));
+    const curves = r.regions[0].commands.filter(c => c.kind === 'nurbsSegment');
+    expect(curves).toHaveLength(1);
+    expect(r.regions[0].segmentCount).toBe(2);
+  });
+
+  it('drops a Bézier whose poles all coincide instead of emitting a zero-length curve', () => {
+    const r = importSvgText(svg('<path d="M0 0 C 0 0 0 0 0 0 L 10 0 L 10 10 Z"/>'));
+    expect(r.regions[0].commands.some(c => c.kind === 'nurbsSegment')).toBe(false);
+    expect(r.regions[0].areaMm2).toBeCloseTo(50, 9);
   });
 });
 

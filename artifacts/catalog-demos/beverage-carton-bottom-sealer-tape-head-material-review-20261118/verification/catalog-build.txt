@@ -1,0 +1,3 @@
+npx tsx scripts/buildAssetCatalog.ts
+exit code: 0
+wrote catalog/index.json

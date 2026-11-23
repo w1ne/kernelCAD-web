@@ -1,0 +1,21 @@
+{
+  "created": "2026-11-19",
+  "output": "review-demo.mp4",
+  "resolution": "1280x720",
+  "frameRate": 24,
+  "plannedSlideDurationSeconds": 4,
+  "slides": [
+    "Five rendered data-center electrical previews",
+    "Before and after overhead-power-busway previews",
+    "Repeated joint-cover material mapping",
+    "Local verification and evidence scope"
+  ],
+  "sourceImages": [
+    "samples/previews/*.png",
+    "before/overhead-power-busway.png",
+    "after/overhead-power-busway.png"
+  ],
+  "generationCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/data-center-infrastructure-overhead-power-busway-joint-material-review-20261119/make_demo.py",
+  "inspectionCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/data-center-infrastructure-overhead-power-busway-joint-material-review-20261119/inspect_video.py",
+  "claimScope": "Local source, software-rendered catalog preview, and exported-GLB material regression only; no deployment, simulation, electrical test, or hardware acceptance."
+}

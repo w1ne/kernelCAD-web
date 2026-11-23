@@ -1,5 +1,16 @@
 # Unreleased
 
+- `lib.fromSVG` imports elliptical geometry exactly: `<ellipse>`, non-circular `A` arcs, `<rect>` corners with unequal `rx`/`ry` and circles under a non-uniform transform become rational NURBS quarter arcs, so an extruded elliptical wall is one smooth face. Before, they were chord-flattened (the `ellipse-gasket.svg` fixture extruded with 4.96e-5 relative volume error; now below 1e-6), and a `<rect>` with unequal radii was refused. `curveTolerance` is still validated but no longer changes SVG geometry.
+- `lib.fromSVG` imports cubic and quadratic Béziers (`C`/`S`/`Q`/`T`) exactly: each one is a single NURBS segment, also under a non-uniform `<g transform>`, so an extruded Bézier wall is one smooth face instead of chord facets. Before, they were flattened within `curveTolerance`; the fixture `examples/interoperability/svg-bezier/bezier-cam-plate.svg` extruded with 4.4e-5 relative volume error and now matches the analytic 6007.5 mm³ within 1e-6. `<ellipse>` and non-circular `A` arcs are still chord-approximated.
+- `usd-isaac` export: each `meshes/<link>.usda` mesh layer now authors face-varying `primvars:normals` with a 30° crease split, as the `usd` export does. Before, the layers had no normals, so a reader that computes smooth normals (three.js `USDLoader`) shaded every sharp CAD edge as a bevel. Points, indices and the root stage are unchanged; the layers grow as ASCII text. Demo: `docs/demos/usd-isaac-normals/`.
+- `lookup_api({ query })` now declares its `query` input, answers names an author reaches for (`cboreHole`, `polarArray`, `arcTo`, `workplane`, `">Z"`) with an `idioms` hint naming the kernelCAD call, and drops prose-only noise once a name matches.
+- A call to a name that does not exist (`x.arcTo is not a function`, `polarArray is not defined`) fails with the replacement, or the nearest real method, in the hint.
+- `path().slot(cx, cy, { width, centerDistance | length, angleDeg? })`: closed slot profile.
+- `FaceQuery.extreme` picks the face furthest along a direction (`{ byNormal: 'Z', extreme: 'Z' }` is the highest up-facing face); `EdgeQuery.ofFace` selects the edges of faces a FaceQuery matches.
+- `param()` values work inside `selectEdges` / `selectEdge` queries; `translate([x, y, z])` and `patternCircular({ axis: 'Z' })` accept the vector and axis-name forms.
+- Clearer diagnostics: cutout profile frame (face centre), `holes()` with a diameter per position, FaceQuery keys on an EdgeQuery, ambiguous `'top'` after a union.
+- New example `examples/selection-by-extent-and-slot.kcad.ts` and cookbook snippet `housing-select-drill-chamfer-by-extent`.
+
 - `examples/kinematic/tendon-finger.kcad.ts` now passes `evaluate_script`
   with `ok: true` and `mechanism: real`; before, it returned 5 errors. Each
   phalanx is 2 mm narrower than the fork that holds it, the three pins are on

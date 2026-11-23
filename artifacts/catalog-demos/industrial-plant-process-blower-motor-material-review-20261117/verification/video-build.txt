@@ -1,0 +1,2 @@
+Invocation: bash artifacts/catalog-demos/industrial-plant-process-blower-motor-material-review-20261117/make_demo.sh
+Exit status: 0

@@ -1,0 +1,1 @@
+shipyard/hull-block-spreader-beam: 380 tris

@@ -1,0 +1,1 @@
+industrial-plant/scissor-lift-table: 196 tris

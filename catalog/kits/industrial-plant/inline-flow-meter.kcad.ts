@@ -23,8 +23,8 @@ presets({
 });
 const p = assembly('inline-flow-meter');
 p.part('pipe-run', cylinder(520, 63.3, 10).rotate([0, 1, 0], 90).translate(-260, 0, 225).translate(0, 0, -110).scale(scale).color(steel));
-p.part('flange--1', cylinder(24, 115, 10).rotate([0, 1, 0], 90).translate(-235.6, 0, 225).translate(0, 0, -110).scale(scale).color(safetyPaint));
-p.part('flange-1', cylinder(24, 115, 10).rotate([0, 1, 0], 90).translate(211.6, 0, 225).translate(0, 0, -110).scale(scale).color(safetyPaint));
+p.part('flange--1', cylinder(24, 115, 10).rotate([0, 1, 0], 90).translate(-235.6, 0, 225).translate(0, 0, -110).scale(scale).color(steel));
+p.part('flange-1', cylinder(24, 115, 10).rotate([0, 1, 0], 90).translate(211.6, 0, 225).translate(0, 0, -110).scale(scale).color(steel));
 p.part('meter-housing', box(172.5, 138, 210.8, true).translate(0, 0, 305.5).translate(0, 0, -110).scale(scale).color(safetyPaint));
 p.part('display', box(94.3, 18, 91.8, true).translate(0, -73.6, 311.2).translate(0, 0, -110).scale(scale).color(gaugeGlass));
 p.part('cable-gland', box(46, 48, 55, true).translate(51.8, 0, 374.5).translate(0, 0, -110).scale(scale).color(steel));

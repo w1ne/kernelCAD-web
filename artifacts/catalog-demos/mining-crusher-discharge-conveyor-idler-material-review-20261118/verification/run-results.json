@@ -1,0 +1,11 @@
+{
+  "focusedTest": "PASS \u00b7 1 test",
+  "lint": "PASS \u00b7 eslint clean",
+  "catalogIntegration": "PASS \u00b7 149 files / 219 tests",
+  "kitQuality": "PASS \u00b7 50/50 (100%)",
+  "globalQuality": "WARN \u00b7 2398/2402 (99.83%) \u00b7 4 thin",
+  "indexCheck": "PASS \u00b7 2402 source hashes; full index test fresh",
+  "changedPreview": "PASS \u00b7 fresh render matches committed PNG",
+  "pr1258": "MERGED \u00b7 17 checks succeeded",
+  "pr1507": "OPEN \u00b7 updated by this change"
+}

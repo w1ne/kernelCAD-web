@@ -44,11 +44,15 @@
 // EXACT VS FLATTENED
 // ------------------
 // Straight lines and CIRCULAR arcs are exact — the latter ride as bulge
-// factors in the sketch IR. Cubic/quadratic Béziers and true ellipses have no
-// exact form in that IR, so they are subdivided into chords under an explicit
-// `curveTolerance` (max deviation in mm, default 0.01). That is an
-// approximation and is named as one; it is not a fallback, because there is
-// no exact path being silently skipped.
+// factors in the sketch IR. Cubic and quadratic Béziers (C/S/Q/T) are exact
+// too: a Bézier is the clamped NURBS of its poles, and an affine transform
+// maps it to the Bézier of the mapped poles, so each one becomes a single
+// `nurbsSegment` under any transform. True ellipses (non-circular arcs,
+// `<ellipse>`, elliptical `<rect>` corners, a circle under a non-uniform
+// transform) are exact as well: each quarter turn is one rational quadratic
+// `nurbsSegment`, and the affine image of a rational Bézier is the rational
+// Bézier of the mapped poles with the same weights. Nothing is flattened, so
+// `curveTolerance` is validated but no longer changes the geometry.
 
 import {
   assembleRegions,
@@ -56,6 +60,7 @@ import {
   type ImportSegment,
   type ImportedRegion,
 } from './contourAssembly';
+import { conicArcSegments } from './dxfEllipse';
 import { MM_PER_UNIT, isLengthUnit, LENGTH_UNIT_NAMES, type LengthUnit } from './lengthUnits';
 import {
   SvgParseError,
@@ -67,7 +72,6 @@ import {
   mul,
   parseTransform,
   parseViewBox,
-  scaleOf,
   scanNumberAt,
   scanTags,
   type Matrix,
@@ -84,11 +88,9 @@ export interface ImportSvgOptions {
   /** Endpoint-matching / gap-closing distance in mm. Default 1e-3. */
   tolerance?: number;
   /**
-   * Maximum chord deviation in mm when subdividing a Bézier or a true
-   * ellipse. Default 0.01 mm — an order of magnitude below a typical FDM
-   * layer and below any mill's positioning error, so the approximation
-   * disappears into manufacturing tolerance while keeping segment counts
-   * modest.
+   * Accepted for compatibility and must be > 0. Every supported SVG curve
+   * now imports exactly, so no curve is subdivided and this value does not
+   * change the geometry.
    */
   curveTolerance?: number;
 }
@@ -221,41 +223,10 @@ class PathScanner {
 }
 
 // ---------------------------------------------------------------------------
-// Curve flattening
+// Points
 // ---------------------------------------------------------------------------
 
 type Pt = [number, number];
-
-/**
- * Adaptive cubic subdivision. Operates on ALREADY-TRANSFORMED control points
- * (Béziers are affine-invariant, so transforming the hull first lets the
- * tolerance be a real millimetre number instead of a user-unit guess).
- */
-function flattenCubic(p0: Pt, p1: Pt, p2: Pt, p3: Pt, tol: number, out: Pt[], depth = 0): void {
-  // Flatness = how far the interior control points stray from the chord.
-  const dx = p3[0] - p0[0];
-  const dy = p3[1] - p0[1];
-  const chord = Math.hypot(dx, dy);
-  const dev = chord < 1e-12
-    ? Math.max(Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), Math.hypot(p2[0] - p0[0], p2[1] - p0[1]))
-    : Math.max(
-        Math.abs((p1[0] - p0[0]) * dy - (p1[1] - p0[1]) * dx) / chord,
-        Math.abs((p2[0] - p0[0]) * dy - (p2[1] - p0[1]) * dx) / chord,
-      );
-  // Depth cap: a cusp can keep the deviation above tolerance forever. 20
-  // levels is a million chords — far past any real profile — and stopping
-  // there bounds the work without changing the answer for sane input.
-  if (dev <= tol || depth >= 20) {
-    out.push(p3);
-    return;
-  }
-  const mid = (a: Pt, b: Pt): Pt => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-  const p01 = mid(p0, p1), p12 = mid(p1, p2), p23 = mid(p2, p3);
-  const p012 = mid(p01, p12), p123 = mid(p12, p23);
-  const m = mid(p012, p123);
-  flattenCubic(p0, p01, p012, m, tol, out, depth + 1);
-  flattenCubic(m, p123, p23, p3, tol, out, depth + 1);
-}
 
 // ---------------------------------------------------------------------------
 // Sub-path accumulation
@@ -308,6 +279,53 @@ class ContourBuilder {
       x0: this.cur[0], y0: this.cur[1], x1: p[0], y1: p[1], bulge, source: this.source,
     });
     this.cur = p;
+  }
+
+  /**
+   * Bézier through MILLIMETRE-space poles, after the pen: an exact clamped
+   * NURBS of degree `poles.length`. A curve whose poles all sit on the pen
+   * has no extent and is dropped.
+   */
+  bezierToMm(poles: readonly Pt[]): void {
+    const end = poles[poles.length - 1];
+    if (poles.every(p => p[0] === this.cur[0] && p[1] === this.cur[1])) return;
+    const degree = poles.length;
+    this.segments.push({
+      x0: this.cur[0], y0: this.cur[1], x1: end[0], y1: end[1], source: this.source,
+      nurbs: {
+        degree,
+        controlPoints: [this.cur, ...poles],
+        knots: [...new Array<number>(degree + 1).fill(0), ...new Array<number>(degree + 1).fill(1)],
+      },
+    });
+    this.cur = end;
+  }
+
+  /**
+   * Elliptical arc `c + u cos(t) + v sin(t)` given in USER space, after the
+   * pen: exact rational quadratic segments in millimetre space. The first
+   * segment starts on the pen and the last ends on `endUser`, so the arc
+   * joins its neighbours without a float gap.
+   */
+  ellipseToUser(arc: ArcCenter, endUser: Pt): void {
+    const cosP = Math.cos(arc.phi), sinP = Math.sin(arc.phi);
+    const origin = apply(this.m, 0, 0);
+    const linear = (x: number, y: number): Pt => {
+      const p = apply(this.m, x, y);
+      return [p[0] - origin[0], p[1] - origin[1]];
+    };
+    const end = apply(this.m, endUser[0], endUser[1]);
+    this.segments.push(...conicArcSegments({
+      center: apply(this.m, arc.cx, arc.cy),
+      u: linear(arc.rx * cosP, arc.rx * sinP),
+      v: linear(-arc.ry * sinP, arc.ry * cosP),
+      startParameter: arc.theta0,
+      endParameter: arc.theta0 + arc.sweep,
+      startPoint: this.cur,
+      endPoint: end,
+      source: this.source,
+    }));
+    this.cur = end;
   }
 
   /** Close back onto the sub-path's first point with a straight line. */
@@ -364,22 +382,6 @@ function arcToCenter(
   if (!sweepFlag && delta > 0) delta -= 2 * Math.PI;
   if (sweepFlag && delta < 0) delta += 2 * Math.PI;
   return { cx, cy, rx: ax, ry: ay, phi, theta0, sweep: delta };
-}
-
-function sampleEllipse(arc: ArcCenter, tolMm: number, mmScale: number): Array<Pt> {
-  const rMax = Math.max(arc.rx, arc.ry) * mmScale;
-  // Sagitta of a chord subtending dθ on radius r is r(1 − cos(dθ/2)).
-  const dTheta = rMax <= tolMm ? Math.PI / 2 : 2 * Math.acos(Math.max(-1, 1 - tolMm / rMax));
-  const steps = Math.max(2, Math.ceil(Math.abs(arc.sweep) / dTheta));
-  const cosP = Math.cos(arc.phi), sinP = Math.sin(arc.phi);
-  const out: Pt[] = [];
-  for (let i = 1; i <= steps; i++) {
-    const t = arc.theta0 + (arc.sweep * i) / steps;
-    const ex = arc.rx * Math.cos(t);
-    const ey = arc.ry * Math.sin(t);
-    out.push([arc.cx + cosP * ex - sinP * ey, arc.cy + sinP * ex + cosP * ey]);
-  }
-  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -447,18 +449,25 @@ function emitRect(tag: Tag, m: Matrix, sink: ElementSink): void {
     b.lineToUser(x, y + ry);
     b.bulgeToUser(x + rx, y, QUARTER_BULGE);
   } else {
-    throw new SvgParseError(
-      'unsupported-element',
-      `${where}: rx=${rx} and ry=${ry} differ (or the element carries a non-uniform transform), so the ` +
-        'corners are elliptical. Elliptical corners have no exact sketch-command form; ' +
-        'give the rect equal rx/ry, or convert it to a <path> in the source tool.',
-    );
+    // Unequal radii, or a non-uniform transform: each corner is an exact
+    // quarter ellipse, traversed with increasing angle like the arcs above.
+    const corner = (cx: number, cy: number, theta0: number, end: Pt): void => {
+      b.ellipseToUser({ cx, cy, rx, ry, phi: 0, theta0, sweep: Math.PI / 2 }, end);
+    };
+    b.lineToUser(x + w - rx, y);
+    corner(x + w - rx, y + ry, -Math.PI / 2, [x + w, y + ry]);
+    b.lineToUser(x + w, y + h - ry);
+    corner(x + w - rx, y + h - ry, 0, [x + w - rx, y + h]);
+    b.lineToUser(x + rx, y + h);
+    corner(x + rx, y + h - ry, Math.PI / 2, [x, y + h - ry]);
+    b.lineToUser(x, y + ry);
+    corner(x + rx, y + ry, Math.PI, [x + rx, y]);
   }
   b.closeWithLine();
   sink.closed.push(b.segments);
 }
 
-function emitCircle(tag: Tag, m: Matrix, sink: ElementSink, tolMm: number): void {
+function emitCircle(tag: Tag, m: Matrix, sink: ElementSink): void {
   const where = `<circle> at offset ${tag.offset}`;
   const cx = attrNum(tag, 'cx', 0);
   const cy = attrNum(tag, 'cy', 0);
@@ -473,21 +482,18 @@ function emitCircle(tag: Tag, m: Matrix, sink: ElementSink, tolMm: number): void
     sink.closed.push(b.segments);
     return;
   }
-  emitEllipse(m, sink, tolMm, cx, cy, r, r, where);
+  emitEllipse(m, sink, cx, cy, r, r, where);
 }
 
 function emitEllipse(
-  m: Matrix, sink: ElementSink, tolMm: number,
+  m: Matrix, sink: ElementSink,
   cx: number, cy: number, rx: number, ry: number, where: string,
 ): void {
   if (rx <= 0 || ry <= 0) {
     throw new SvgParseError('malformed-attribute', `${where}: rx and ry must be > 0, got ${rx} x ${ry}.`);
   }
-  const arc: ArcCenter = { cx, cy, rx, ry, phi: 0, theta0: 0, sweep: 2 * Math.PI };
-  const pts = sampleEllipse(arc, tolMm, scaleOf(m));
   const b = new ContourBuilder([cx + rx, cy], m, where);
-  for (const p of pts) b.lineToUser(p[0], p[1]);
-  b.closeWithLine();
+  b.ellipseToUser({ cx, cy, rx, ry, phi: 0, theta0: 0, sweep: 2 * Math.PI }, [cx + rx, cy]);
   sink.closed.push(b.segments);
 }
 
@@ -567,7 +573,6 @@ function emitCubicPathCommand(
   ux: number,
   uy: number,
   lastCubicCtrl: Pt | null,
-  tolMm: number,
 ): { ux: number; uy: number; lastCubicCtrl: Pt } {
   let c1x: number, c1y: number;
   if (up === 'C') {
@@ -586,14 +591,12 @@ function emitCubicPathCommand(
   const a3 = scanner.number(), b3 = scanner.number();
   const ex = rel ? ux + a3 : a3;
   const ey = rel ? uy + b3 : b3;
-  const pts: Pt[] = [];
-  flattenCubic(b.position, b.toMm(c1x, c1y), b.toMm(c2x, c2y), b.toMm(ex, ey), tolMm, pts);
-  for (const p of pts) b.lineToMm(p);
+  b.bezierToMm([b.toMm(c1x, c1y), b.toMm(c2x, c2y), b.toMm(ex, ey)]);
   return { ux: ex, uy: ey, lastCubicCtrl: [c2x, c2y] };
 }
 
-/** Q / T: quadratic Bézier, exactly elevated to cubic before the same
- *  subdivision. Returns the new pen position and the next `T` reflection. */
+/** Q / T: quadratic Bézier with optional smooth-control reflection. Returns
+ *  the new pen position and the control point the next `T` reflects. */
 function emitQuadraticPathCommand(
   up: string,
   scanner: PathScanner,
@@ -602,7 +605,6 @@ function emitQuadraticPathCommand(
   ux: number,
   uy: number,
   lastQuadCtrl: Pt | null,
-  tolMm: number,
 ): { ux: number; uy: number; lastQuadCtrl: Pt } {
   let qx: number, qy: number;
   if (up === 'Q') {
@@ -617,19 +619,13 @@ function emitQuadraticPathCommand(
   const a2 = scanner.number(), b2 = scanner.number();
   const ex = rel ? ux + a2 : a2;
   const ey = rel ? uy + b2 : b2;
-  // Exact quadratic -> cubic elevation, then the same subdivision.
-  const c1x = ux + (2 / 3) * (qx - ux);
-  const c1y = uy + (2 / 3) * (qy - uy);
-  const c2x = ex + (2 / 3) * (qx - ex);
-  const c2y = ey + (2 / 3) * (qy - ey);
-  const pts: Pt[] = [];
-  flattenCubic(b.position, b.toMm(c1x, c1y), b.toMm(c2x, c2y), b.toMm(ex, ey), tolMm, pts);
-  for (const p of pts) b.lineToMm(p);
+  b.bezierToMm([b.toMm(qx, qy), b.toMm(ex, ey)]);
   return { ux: ex, uy: ey, lastQuadCtrl: [qx, qy] };
 }
 
 /** A: elliptical arc — exact bulge under a similarity for the circular case,
- *  chord-flattened otherwise. Returns the new user-space pen position. */
+ *  exact rational quadratic segments otherwise. Returns the new user-space
+ *  pen position. */
 function emitArcPathCommand(
   scanner: PathScanner,
   rel: boolean,
@@ -637,8 +633,6 @@ function emitArcPathCommand(
   ux: number,
   uy: number,
   similarity: boolean,
-  tolMm: number,
-  mmScale: number,
 ): { ux: number; uy: number } {
   const rx = Math.abs(scanner.number());
   const ry = Math.abs(scanner.number());
@@ -673,7 +667,7 @@ function emitArcPathCommand(
       last.y1 = target[1];
     }
   } else {
-    for (const p of sampleEllipse(arc, tolMm, mmScale)) b.lineToUser(p[0], p[1]);
+    b.ellipseToUser(arc, [ex, ey]);
   }
   return { ux: ex, uy: ey };
 }
@@ -691,8 +685,6 @@ function emitPathCommand(
   lastCubicCtrl: Pt | null,
   lastQuadCtrl: Pt | null,
   similarity: boolean,
-  tolMm: number,
-  mmScale: number,
   where: string,
 ): { ux: number; uy: number; lastCubicCtrl: Pt | null; lastQuadCtrl: Pt | null } {
   switch (up) {
@@ -704,16 +696,16 @@ function emitPathCommand(
     }
     case 'C':
     case 'S': {
-      const res = emitCubicPathCommand(up, scanner, rel, b, ux, uy, lastCubicCtrl, tolMm);
+      const res = emitCubicPathCommand(up, scanner, rel, b, ux, uy, lastCubicCtrl);
       return { ux: res.ux, uy: res.uy, lastCubicCtrl: res.lastCubicCtrl, lastQuadCtrl: null };
     }
     case 'Q':
     case 'T': {
-      const res = emitQuadraticPathCommand(up, scanner, rel, b, ux, uy, lastQuadCtrl, tolMm);
+      const res = emitQuadraticPathCommand(up, scanner, rel, b, ux, uy, lastQuadCtrl);
       return { ux: res.ux, uy: res.uy, lastCubicCtrl: null, lastQuadCtrl: res.lastQuadCtrl };
     }
     case 'A': {
-      const res = emitArcPathCommand(scanner, rel, b, ux, uy, similarity, tolMm, mmScale);
+      const res = emitArcPathCommand(scanner, rel, b, ux, uy, similarity);
       return { ux: res.ux, uy: res.uy, lastCubicCtrl: null, lastQuadCtrl: null };
     }
     default:
@@ -724,7 +716,7 @@ function emitPathCommand(
   }
 }
 
-function emitPath(tag: Tag, m: Matrix, sink: ElementSink, tolMm: number): void {
+function emitPath(tag: Tag, m: Matrix, sink: ElementSink): void {
   const d = tag.attrs.d;
   if (d === undefined || d.trim() === '') {
     throw new SvgParseError(
@@ -735,7 +727,6 @@ function emitPath(tag: Tag, m: Matrix, sink: ElementSink, tolMm: number): void {
   const where = `<path> at offset ${tag.offset}`;
   const scanner = new PathScanner(d, where);
   const similarity = isSimilarity(m);
-  const mmScale = scaleOf(m);
 
   let builder: ContourBuilder | null = null;
   let subpathIndex = 0;
@@ -796,7 +787,7 @@ function emitPath(tag: Tag, m: Matrix, sink: ElementSink, tolMm: number): void {
 
     const b = need();
     const res = emitPathCommand(
-      cmd, up, scanner, rel, b, ux, uy, lastCubicCtrl, lastQuadCtrl, similarity, tolMm, mmScale, where,
+      cmd, up, scanner, rel, b, ux, uy, lastCubicCtrl, lastQuadCtrl, similarity, where,
     );
     ux = res.ux; uy = res.uy;
     lastCubicCtrl = res.lastCubicCtrl; lastQuadCtrl = res.lastQuadCtrl;
@@ -832,6 +823,8 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
   const flipAbout = resolveFlipAbout(root, viewBox);
   const rootMatrix = buildRootMatrix(scale, viewBox, flipAbout);
 
+  // Validated for compatibility; every supported curve is exact, so the
+  // value no longer reaches the geometry.
   const tolMm = opts.curveTolerance ?? DEFAULT_CURVE_TOLERANCE;
   if (!(tolMm > 0)) {
     throw new SvgParseError('bad-units', `opts.curveTolerance must be > 0, got ${tolMm}.`);
@@ -839,7 +832,7 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
 
   const sink: ElementSink = { closed: [], open: [] };
   const ignoredElements: string[] = [];
-  emitSvgElements(tags, rootMatrix, tolMm, sink, ignoredElements);
+  emitSvgElements(tags, rootMatrix, sink, ignoredElements);
 
   const assembled = assembleSvgRegions(sink, opts);
 
@@ -874,7 +867,6 @@ function validateImportRequest(text: string, opts: ImportSvgOptions): void {
 function emitSvgElements(
   tags: Tag[],
   rootMatrix: Matrix,
-  tolMm: number,
   sink: ElementSink,
   ignoredElements: string[],
 ): void {
@@ -910,7 +902,7 @@ function emitSvgElements(
       // A self-closing <g> holds nothing; only push for a real subtree.
       if (!tag.selfClosing) stack.push(m);
     } else {
-      emitGeometryElement(lower, tag, m, sink, tolMm);
+      emitGeometryElement(lower, tag, m, sink);
     }
   }
 }
@@ -1004,15 +996,14 @@ function emitGeometryElement(
   tag: Tag,
   m: Matrix,
   sink: ElementSink,
-  tolMm: number,
 ): void {
   switch (lower) {
-    case 'path': emitPath(tag, m, sink, tolMm); break;
+    case 'path': emitPath(tag, m, sink); break;
     case 'rect': emitRect(tag, m, sink); break;
-    case 'circle': emitCircle(tag, m, sink, tolMm); break;
+    case 'circle': emitCircle(tag, m, sink); break;
     case 'ellipse':
       emitEllipse(
-        m, sink, tolMm,
+        m, sink,
         attrNum(tag, 'cx', 0), attrNum(tag, 'cy', 0),
         attrNum(tag, 'rx', null), attrNum(tag, 'ry', null),
         `<ellipse> at offset ${tag.offset}`,

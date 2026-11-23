@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: CC0-1.0
-// Anchored core-drilling rig with guide column, sliding carriage and base plate.
+// Anchored core-drilling rig with guide column, sliding carriage, steel core barrel and base plate.
 meta({
   name: "portable-core-drill-stand",
   license: 'CC0-1.0',
   title: "Portable core drill stand",
-  description: "Anchored core-drilling rig with guide column, sliding carriage and base plate. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+  description: "Anchored core-drilling rig with guide column, sliding carriage and base plate. Material controls: equipment enamel for the stand, exposed structural steel for the carriage, feed handle and metal core-bit barrel; weathered and highVisibility presets.",
   tags: ['construction equipment', 'roadworks', 'jobsite', 'low poly', 'CC0'],
   kit: 'construction-equipment',
   category: 'prop',
@@ -25,7 +25,7 @@ const add = (name, shape, finish = equipmentPaintColor) => p.part(name, shape.sc
 add('drill-base', box(486, 400, 55, true).translate(0, 0, 27.5), equipmentPaintColor);
 add('guide-column', box(60, 60, 1049.6, true).translate(0, 0, 579.8), equipmentPaintColor);
 add('drill-carriage', box(172.8, 160, 200, true).translate(0, 0, 740), structuralSteelColor);
-add('core-bit', cylinder(435.2, 48, 10).translate(0, 0, 256), equipmentPaintColor);
+add('core-bit', cylinder(435.2, 48, 10).translate(0, 0, 256), structuralSteelColor);
 add('feed-handle', box(226.8, 35, 35, true).translate(-205.2, 0, 631.9), structuralSteelColor);
 
 return p.model();

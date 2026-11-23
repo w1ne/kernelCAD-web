@@ -171,6 +171,18 @@ export function resolveHoleOpts(opts: EditableHoleOpts, table: ParamTable): Hole
 }
 
 export function resolveHolesOpts(opts: EditableHolesOpts, table: ParamTable): HolesOpts {
+  // A size written on each position is one call per size here; say so before
+  // the positions are reduced to { u, v } and the size is lost.
+  if (opts.diameter === undefined && Array.isArray(opts.positions)
+      && opts.positions.some((p) => p !== null && typeof p === 'object' && ('diameter' in p || 'd' in p))) {
+    invalidArgs({
+      api: 'holes(face, { diameter })',
+      path: 'opts.diameter',
+      gotText: 'a diameter on each position and none on the call',
+      requires: 'one diameter for all positions: holes() takes ONE diameter per call. For different sizes call holes() once per size (or hole() per position)',
+      example: HOLES_EXAMPLE,
+    });
+  }
   const out: HolesOpts = {
     positions: opts.positions.map((p) => ({
       u: currentValue(p.u, table),

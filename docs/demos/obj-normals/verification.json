@@ -1,0 +1,15 @@
+{
+  "part": "docs/demos/obj-normals/part.kcad.ts",
+  "export": "runAndExport({ format: 'obj' }), model.obj from the zip",
+  "reader": "three.js OBJLoader (node_modules/three/examples/jsm/loaders/OBJLoader.js), headless Chromium",
+  "files": {
+    "before/model.obj": { "source": "origin/develop 27356234b", "bytes": 109030, "sha256_16": "53f7ed8563efd087", "vnLines": 0 },
+    "after/model.obj": { "source": "this branch", "bytes": 166387, "sha256_16": "ea6c474760a9c86b", "vnLines": 659 }
+  },
+  "loaderStats": "loader-stats.json",
+  "cylinderProbe": {
+    "code": "return cylinder(10, 20);",
+    "before": { "flatSideTriangles": "504 of 504", "meanSideNormalDeviationFromRadialDeg": 0.7143 },
+    "after": { "flatSideTriangles": "0 of 504", "meanSideNormalDeviationFromRadialDeg": 0.1647 }
+  }
+}

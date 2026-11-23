@@ -1,0 +1,121 @@
+{
+  "id": "steam-header-manifold",
+  "kit": "industrial-plant",
+  "title": "Steam header manifold",
+  "description": "Steam distribution header with five branch risers, isolation wheels and a raised pressure gauge. Controls: overall scale, steel, safety paint, gauge glass.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "industrial plant",
+    "factory",
+    "process equipment",
+    "low poly",
+    "CC0"
+  ],
+  "compat": [
+    "industrial-plant",
+    "factory",
+    "manufacturing",
+    "industrial-scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/industrial-plant/steam-header-manifold.kcad.ts",
+  "preview": "/assets/industrial-plant-steam-header-manifold.png",
+  "sourceSha256": "ac4a01d15da76f47ec6e3f27326d2a9dafb55942615660702245ef5ea4a059f8",
+  "triangleBudget": 1400,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "steel",
+      "type": "color",
+      "default": "#6e7d84",
+      "label": "Structural steel"
+    },
+    {
+      "name": "safetyPaint",
+      "type": "color",
+      "default": "#dfa945",
+      "label": "Safety paint"
+    },
+    {
+      "name": "gaugeGlass",
+      "type": "color",
+      "default": "#91c6c8",
+      "label": "Gauge glass"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "steel": "#575851",
+      "safetyPaint": "#9e722f",
+      "gaugeGlass": "#78989b"
+    },
+    "highVisibility": {
+      "safetyPaint": "#f5c640"
+    }
+  },
+  "stats": {
+    "triangles": 980,
+    "sizeM": [
+      0.92,
+      0.3738,
+      0.31
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "safetyPaint",
+      "color": "#dfa945",
+      "parts": [
+        "support-skid",
+        "branch-0",
+        "valve-handle-0",
+        "branch-1",
+        "valve-handle-1",
+        "branch-2",
+        "valve-handle-2",
+        "branch-3",
+        "valve-handle-3",
+        "branch-4",
+        "valve-handle-4"
+      ],
+      "param": "safetyPaint"
+    },
+    {
+      "name": "steel",
+      "color": "#6e7d84",
+      "parts": [
+        "main-header",
+        "branch-flange-0",
+        "valve-body-0",
+        "branch-flange-1",
+        "valve-body-1",
+        "branch-flange-2",
+        "valve-body-2",
+        "branch-flange-3",
+        "valve-body-3",
+        "branch-flange-4",
+        "valve-body-4"
+      ],
+      "param": "steel"
+    },
+    {
+      "name": "gaugeGlass",
+      "color": "#91c6c8",
+      "parts": [
+        "header-gauge"
+      ],
+      "param": "gaugeGlass"
+    }
+  ]
+}

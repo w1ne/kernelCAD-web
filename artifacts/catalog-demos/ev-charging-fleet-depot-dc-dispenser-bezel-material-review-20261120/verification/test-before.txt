@@ -1,0 +1,3 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ 'cableElastomer', …(3) ] to deeply equal [ 'bezelPolymer', …(4) ]
+      Tests  1 failed (1)

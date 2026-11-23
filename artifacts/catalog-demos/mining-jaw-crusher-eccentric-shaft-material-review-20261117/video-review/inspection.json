@@ -1,0 +1,42 @@
+{
+  "video": "mining-jaw-crusher-eccentric-shaft-material-review.mp4",
+  "sha256": "657cde77b6e709057720e55dac1bce9f85eacff67f47a0b97c9762727d8094e7",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "frameRate": "25/1",
+  "durationSeconds": 16.8,
+  "samples": [
+    {
+      "seconds": 0.5,
+      "path": "frame-0.png",
+      "sha256": "3b48b41b6061dde4f1dfdb8a83a63861215e68a725aff4a72a133cd7d4e838b9"
+    },
+    {
+      "seconds": 3.3,
+      "path": "frame-1.png",
+      "sha256": "c479c65773c330c0019559b4ff808d60fef55a29eb4057b3414e9a238d3c51c1"
+    },
+    {
+      "seconds": 6.1,
+      "path": "frame-2.png",
+      "sha256": "85c7876040c89b5b85078d636435926a43ed978837616f3a6fa05375d42a84ee"
+    },
+    {
+      "seconds": 8.9,
+      "path": "frame-3.png",
+      "sha256": "239022852523c362ec3467dac54a1c45b0e32c4d64cd5bd1cd6e913030664846"
+    },
+    {
+      "seconds": 11.7,
+      "path": "frame-4.png",
+      "sha256": "e62d60a3eedcf365d544c87982ef2adb33140e6d2af21fa447725d7694202db5"
+    },
+    {
+      "seconds": 14.5,
+      "path": "frame-5.png",
+      "sha256": "899a5449baa350f3d33bf34337499930bfbcbdf950c3f97297253adf2bda9e15"
+    }
+  ],
+  "visualReview": "Manually checked the contact sheet, before/after detail crop, and local-only status caption; the object remains recognizable and the material change is legible."
+}

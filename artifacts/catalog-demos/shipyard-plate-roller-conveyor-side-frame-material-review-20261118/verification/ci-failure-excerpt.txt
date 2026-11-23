@@ -1,0 +1,27 @@
+9276-test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:06:35.1216930Z  [32m✓[39m tests/unit/capture/shapeAlongAxis.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+9277:test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:06:36.4349072Z  [31m❯[39m tests/unit/scripts/qualityRatchet.test.ts [2m([22m[2m8 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 20726[2mms[22m[39m
+9278-test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:06:36.4358202Z      [32m✓[39m reports complexity and function length with symbol names[32m 118[2mms[22m[39m
+--
+9506-test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:09:36.0970641Z
+9507:test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:09:36.0974282Z [41m[1m FAIL [22m[49m tests/unit/scripts/qualityRatchet.test.ts[2m > [22mquality ratchet (real tree)[2m > [22msrc/** has no complexity/size findings beyond scripts/lib/qualityBaseline.json
+9508:test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:09:36.0982209Z [31m[1mAssertionError[22m: NEW      src/modeling/capture/proxy.ts (file) (max-lines=820) — split it or reduce below the threshold: expected false to be true // Object.is equality[39m
+9509-test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:09:36.0983089Z
+--
+9515-test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:09:36.1008655Z
+9516:test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:09:36.1009275Z [36m [2m❯[22m tests/unit/scripts/qualityRatchet.test.ts:[2m101:23[22m[39m
+9517-test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:09:36.1048771Z     [90m 99| [39m      ...r.stale.map((f) => `STALE    ${fmt(f)} — run: npx tsx scripts…
+--
+9526-test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:09:36.1067593Z
+9527:test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:09:36.1068993Z [2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m185 passed[39m[22m[2m | [22m[33m2 skipped[39m[90m (188)[39m
+9528:test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:09:36.1074670Z [2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1570 passed[39m[22m[2m | [22m[33m4 skipped[39m[90m (1575)[39m
+9529-test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:09:36.1075834Z [2m   Start at [22m 23:03:28
+--
+9532-test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:09:36.1113895Z
+9533:test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:09:36.1141378Z ##[error]AssertionError: NEW      src/modeling/capture/proxy.ts (file) (max-lines=820) — split it or reduce below the threshold: expected false to be true // Object.is equality
+9534-test-shard (3)	QC — vitest (shard 3/8)
+--
+9540-test-shard (3)	QC — vitest (shard 3/8)
+9541:test-shard (3)	QC — vitest (shard 3/8)	 ❯ tests/unit/scripts/qualityRatchet.test.ts:101:23
+9542-test-shard (3)	QC — vitest (shard 3/8)
+9543-test-shard (3)	QC — vitest (shard 3/8)
+9544:test-shard (3)	QC — vitest (shard 3/8)	2026-11-18T23:09:36.3027347Z ##[error]Process completed with exit code 1.

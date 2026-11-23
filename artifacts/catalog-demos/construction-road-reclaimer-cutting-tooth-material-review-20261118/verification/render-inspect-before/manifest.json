@@ -1,0 +1,17 @@
+{
+  "source": "artifacts/catalog-demos/construction-road-reclaimer-cutting-tooth-material-review-20261118/before/road-reclaimer.kcad.ts",
+  "sourceSha256": "d489cacb502fee8bb1b364a43f94acaa13f29e9ff58aba0118d74345f1b0ae82",
+  "tool": "kernelCAD render_preview",
+  "serverBuild": "0.1.0+57581243f726@2026-11-18T05:44:54.960Z",
+  "view": "iso",
+  "focus": ["cutter-drum", "cutting-tooth-0", "cutting-tooth-1", "cutting-tooth-2", "cutting-tooth-3", "cutting-tooth-4", "cutting-tooth-5", "cutting-tooth-6"],
+  "width": 800,
+  "height": 800,
+  "autosave": false,
+  "no_mechanism_check": true,
+  "mechanism": "unverified",
+  "boundsMm": { "min": [-718, -610.5, 0.02777976170182228], "max": [823.5, 478.5, 1004] },
+  "sceneSummary": { "valid": true, "volumeMm3": 551766026.2745941, "faceCount": 123, "sizeMm": [1541.5, 1089, 1003.972220237587] },
+  "renderMs": 7655,
+  "image": "channels/rgb/iso.png"
+}

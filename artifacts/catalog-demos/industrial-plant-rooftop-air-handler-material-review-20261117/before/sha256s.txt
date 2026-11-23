@@ -1,0 +1,13 @@
+d5d28fc4ad5ae69b80801ff3e643d18982beb68cb7e4d000924caef82636d880  artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/samples/bulk-loading-spout.png
+5436cf1c57b24b532e26bde09b837f97adaf33d005b4fb03f92b6d053f533d1a  artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/samples/burner-management-skid.png
+6af5a0e3a525bfb2cdd5618818f219a2aabdf9a51b4c839cdf410560dfd55d20  artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/samples/mobile-tool-cart.png
+f67e850000aede8df2d30dcbc783e93e7ac6e29d42dab2c66653d46109a768c2  artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/samples/rooftop-air-handler.png
+5f0c4ff79a1ed87a36f283ae486300324910a551352f16bc042d77dac57ba0fc  artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/samples/vacuum-pump-unit.png
+6ce898ac634e944fa38094e9d3c9397a2bdc08609ff165b4da3b4a2b5da10bb2  artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/sources/reviewed/bulk-loading-spout.kcad.ts
+af50a383da28bfb1e64627eff7d9319308636edc0d672878a1fdb15613dcebec  artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/sources/reviewed/burner-management-skid.kcad.ts
+0e5447acfea51783e79126ddfc9829ca6b7038c4db9b23b149695facad7daed5  artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/sources/reviewed/mobile-tool-cart.kcad.ts
+0323c46e69c1f236a452586124191306d2c6792d9340a39114c54bc7a9edbc08  artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/sources/reviewed/rooftop-air-handler.kcad.ts
+16e8e66be9c14280a767536e69e2a0dc38f549c09f91e8fafc972b9bdd19f261  artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/sources/reviewed/vacuum-pump-unit.kcad.ts
+0323c46e69c1f236a452586124191306d2c6792d9340a39114c54bc7a9edbc08  artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/before/rooftop-air-handler.kcad.ts
+f67e850000aede8df2d30dcbc783e93e7ac6e29d42dab2c66653d46109a768c2  artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/before/rooftop-air-handler.png
+f67e850000aede8df2d30dcbc783e93e7ac6e29d42dab2c66653d46109a768c2  artifacts/catalog-demos/industrial-plant-rooftop-air-handler-material-review-20261117/before/public-preview.png

@@ -1,0 +1,24 @@
+# PR #1258 was checked first; its saved status shows it merged.
+# Active PR #1507 status at the audit base commit 47044ace4 is saved in pr-1507-before-audit.json (changes, lint, changed-tests and test (draft-light) had passed; build-and-checks was in progress).
+# Open issue/PR searches for each of the five IDs are in open-target-check.txt (per ID: open issues, open PRs, count in the #1507 diff). No ID returns an open issue, an open PR or a path in the #1507 diff. No earlier ledger under artifacts/catalog-demos/ names any of the five.
+
+# Regression: run the new test once against the pre-fix source; it fails at the first changed value (no bezelPolymer control).
+npx vitest run tests/integration/catalog/chargerStatusDisplayPostBezelMaterial.test.ts
+# Apply the correction and rerun; 1 test passes.
+npx vitest run tests/integration/catalog/chargerStatusDisplayPostBezelMaterial.test.ts
+
+# Re-render only the named target and regenerate the generated index.
+npx tsx scripts/checkCatalogAsset.ts catalog/kits/ev-charging-infrastructure/charger-status-display-post.kcad.ts
+PLAYWRIGHT_BROWSERS_PATH=~/.cache/ms-playwright npx tsx scripts/renderCatalogPreviews.ts charger-status-display-post
+npx tsx scripts/buildAssetCatalog.ts
+PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/ev-charging-status-display-post-bezel-material-review-20261120/verify_index_row.py
+
+# Required checks.
+npx eslint catalog/kits/ev-charging-infrastructure/ tests/integration/catalog/chargerStatusDisplayPostBezelMaterial.test.ts
+python3 scripts/checkCatalogQuality.py --kit ev-charging-infrastructure
+python3 scripts/checkCatalogQuality.py
+npx vitest run tests/integration/catalog/ --maxWorkers=2
+
+# Demo.
+PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/ev-charging-status-display-post-bezel-material-review-20261120/make_demo.py
+PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/ev-charging-status-display-post-bezel-material-review-20261120/inspect_video.py

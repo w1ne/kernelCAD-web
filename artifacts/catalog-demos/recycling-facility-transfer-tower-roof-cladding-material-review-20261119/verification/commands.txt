@@ -1,0 +1,28 @@
+# Selection and live baseline
+python3 artifacts/catalog-demos/recycling-facility-transfer-tower-roof-cladding-material-review-20261119/verification/check_open_targets.py
+python3 artifacts/catalog-demos/recycling-facility-transfer-tower-roof-cladding-material-review-20261119/verification/capture_baseline.py
+
+# Regression: the recorded pre-fix run failed on the roof palette; run again after the source fix
+npx vitest run tests/integration/catalog/recyclingTransferTowerRoofMaterial.test.ts
+npx eslint catalog/kits/recycling-facility/ tests/integration/catalog/recyclingTransferTowerRoofMaterial.test.ts
+
+# Refresh the recycling-facility kit previews, then render the final target after both roof sheets use cladding
+# The exact kit refresh used this loop; 153 source assets were passed.
+asset_ids=()
+for source_file in catalog/kits/recycling-facility/*.kcad.ts; do
+  asset_id=${source_file##*/}
+  asset_ids+=("${asset_id%.kcad.ts}")
+done
+npx tsx scripts/renderCatalogPreviews.ts "${asset_ids[@]}"
+npx tsx scripts/renderCatalogPreviews.ts conveyor-transfer-tower
+npx tsx scripts/buildAssetCatalog.ts
+python3 artifacts/catalog-demos/recycling-facility-transfer-tower-roof-cladding-material-review-20261119/verification/verify_index_row.py
+
+# Full required validation
+npx vitest run tests/integration/catalog/
+python3 scripts/checkCatalogQuality.py
+
+# Local MP4 generation and visual inspection
+python3 artifacts/catalog-demos/recycling-facility-transfer-tower-roof-cladding-material-review-20261119/make_demo.py
+ffprobe -v error -show_streams -show_format -of json artifacts/catalog-demos/recycling-facility-transfer-tower-roof-cladding-material-review-20261119/review-demo.mp4
+python3 artifacts/catalog-demos/recycling-facility-transfer-tower-roof-cladding-material-review-20261119/inspect_video.py

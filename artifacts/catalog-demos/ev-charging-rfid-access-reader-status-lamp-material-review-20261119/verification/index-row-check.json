@@ -1,0 +1,24 @@
+{
+  "asset": "rfid-access-reader-pedestal",
+  "sourceSha256": "ecf66af57248163d7a068d6845e7ee01ea0a128ece659de040dc906f3ce82609",
+  "preview": "/assets/ev-charging-infrastructure-rfid-access-reader-pedestal.png",
+  "changedIndexRows": [
+    "rfid-access-reader-pedestal"
+  ],
+  "triangleCount": 104,
+  "boundsM": [
+    0.36,
+    0.98,
+    0.36
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountUnchanged": true,
+    "boundsUnchanged": true,
+    "indicatorPolymerControlListed": true
+  },
+  "passed": true
+}

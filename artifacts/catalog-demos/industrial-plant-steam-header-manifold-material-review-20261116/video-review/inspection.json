@@ -1,0 +1,24 @@
+{
+  "video": "industrial-plant-steam-header-manifold-material-review.mp4",
+  "decodedOn": "2026-11-17",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "durationSeconds": 15.0,
+  "sampleTimesSeconds": [
+    0,
+    3,
+    6,
+    9,
+    12
+  ],
+  "decodedFrames": 5,
+  "sampleSha256": [
+    "50c41f08b77074f59494afb9c79f076a6764f299ee7f84da826fe1dd590821db",
+    "9ecde988fb9db2fc726d6690c63791db08f243c3c403e17da55c0bfd00ee9d03",
+    "9145c0b7a78c223160847b4a0a01a81dcae80a5180d92763ee983de6fa8947e1",
+    "e3c80c9eaf85e9a620caf9eed9e66e4cc7dd442574fa1f1e26a2f954c87f0b85",
+    "3479bf29d8e89e1ce7de79d496282553fa9b09ebaa582a44645fc3cb54997469"
+  ],
+  "manualReview": "Visually inspected the decoded contact sheet: five workflow frames are present, the before/after pipe colors are clear, text is readable, and no frame is black."
+}

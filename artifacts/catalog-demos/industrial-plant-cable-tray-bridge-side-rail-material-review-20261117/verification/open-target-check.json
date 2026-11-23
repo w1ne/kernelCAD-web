@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-11-17T18:48:01Z",
+  "candidates": [
+    "industrial-plant/cyclone-separator",
+    "industrial-plant/cable-tray-bridge",
+    "industrial-plant/horizontal-pressure-vessel",
+    "industrial-plant/vibratory-feeder",
+    "industrial-plant/electric-chain-hoist"
+  ],
+  "openIssueSearches": {
+    "cyclone-separator": [],
+    "cable-tray-bridge": [],
+    "horizontal-pressure-vessel": [],
+    "vibratory-feeder": [],
+    "electric-chain-hoist": []
+  },
+  "catalogPullRequest": {
+    "number": 1507,
+    "state": "OPEN",
+    "head": "feat/catalog-2000",
+    "reviewDecision": "",
+    "formalReviews": [],
+    "checks": "changes, lint, build-and-checks, changed-tests and test (draft-light) succeeded; reference-parts, solidcraft-ledger, catalog-index, geometry-proofs, test-shard and external-tools were skipped",
+    "selectionCheck": "The candidate source paths were absent from the open branch diff origin/develop...HEAD. PR #1507 was the only open catalog PR in the open-PR list."
+  },
+  "priorCatalogPullRequest": {
+    "number": 1258,
+    "state": "MERGED",
+    "checks": "All 17 reported CI checks succeeded",
+    "formalReviews": []
+  },
+  "otherOpenPullRequests": "The open-PR list contained no other catalog PR."
+}

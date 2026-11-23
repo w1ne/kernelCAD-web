@@ -1,0 +1,374 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/legacy-migrated/kernelcad-catalog-2000[39m
+
+ [32m✓[39m tests/integration/catalog/catalogStudioLink.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 47092[2mms[22m[39m
+     [33m[2m✓[22m[39m nature/pine-tree opens with its five knobs at their defaults [33m 955[2mms[22m[39m
+     [33m[2m✓[22m[39m characters/block-figure opens with its own knobs, not the first asset in the index [33m 690[2mms[22m[39m
+     [33m[2m✓[22m[39m a kit-representative sample opens with exactly the knobs its index row lists [33m 42805[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses refs that do not name a catalog row, and sources that no longer match the index [33m 1003[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/catalogFreshShapes.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 79056[2mms[22m[39m
+   [33m[2m✓[22m[39m no catalogue model derives several copies from one shape handle [33m 79051[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/beamCouplingFidelity.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 14942[2mms[22m[39m
+     [33m[2m✓[22m[39m builds one valid 18×18×30 mm solid and preserves all three size choices [33m 9798[2mms[22m[39m
+     [33m[2m✓[22m[39m has a material-removing helix and two real radial hub bores [33m 4425[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/standardComponentInterfaces.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 10682[2mms[22m[39m
+     [33m[2m✓[22m[39m caster-wheel: connected supports and open interfaces at default and both size limits [33m 2767[2mms[22m[39m
+     [33m[2m✓[22m[39m pillow-block-housing: connected supports and open interfaces at default and both size limits [33m 1011[2mms[22m[39m
+     [33m[2m✓[22m[39m piano-hinge: connected supports and open interfaces at default and both size limits [33m 5785[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/assaySampleDividerContainerMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 7941[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps rotary sample buckets on the stainless-steel palette [33m 7336[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/dinRailEndStopFidelity.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 4822[2mms[22m[39m
+     [33m[2m✓[22m[39m committed gallery preview matches actual evaluated source render [33m 1760[2mms[22m[39m
+     [33m[2m✓[22m[39m has under-lip geometry, actual open channel, transverse stop and separate slotted screw [33m 604[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a solid foot presented as a clip [33m 448[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects missing opposite retaining hooks [33m 368[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves rail envelope features across both scale presets [33m 1076[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/doorHingeFidelity.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 6355[2mms[22m[39m
+     [33m[2m✓[22m[39m standard: open pivot and mounting bores, connected leaves, separate pin [33m 1948[2mms[22m[39m
+     [33m[2m✓[22m[39m compact: open pivot and mounting bores, connected leaves, separate pin [33m 2422[2mms[22m[39m
+     [33m[2m✓[22m[39m large: open pivot and mounting bores, connected leaves, separate pin [33m 1532[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/pipeSaddleClampFidelity.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 5895[2mms[22m[39m
+     [33m[2m✓[22m[39m standard: open horizontal pipe bore, separate cap/liners, four foot holes and real bolt passages [33m 2022[2mms[22m[39m
+     [33m[2m✓[22m[39m compact: open horizontal pipe bore, separate cap/liners, four foot holes and real bolt passages [33m 1902[2mms[22m[39m
+     [33m[2m✓[22m[39m large: open horizontal pipe bore, separate cap/liners, four foot holes and real bolt passages [33m 1140[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/hpgrPressCylinderMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 3874[2mms[22m[39m
+     [33m[2m✓[22m[39m paints the press-cylinder barrels and keeps only the piston rods chrome [33m 3172[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/storageArrayFidelity.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 5311[2mms[22m[39m
+     [33m[2m✓[22m[39m is visibly distinct from the 8-bay compute chassis and includes 24 front carriers [33m 1954[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the drive and service-module identities at both supported scale limits [33m 2583[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/dinRailFidelity.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 5757[2mms[22m[39m
+     [33m[2m✓[22m[39m has one connected top-hat section, 35 x 7.5 mm cross-section, 3 actual oblong slots [33m 1820[2mms[22m[39m
+     [33m[2m✓[22m[39m detects solid rather than drilled crown [33m 660[2mms[22m[39m
+     [33m[2m✓[22m[39m detects underside filled by a solid bar [33m 879[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves slots and open hat profile at both size variants [33m 1549[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/linearGuideRailFidelity.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 3642[2mms[22m[39m
+     [33m[2m✓[22m[39m standard: four through passages, preserved continuous rail and foot [33m 698[2mms[22m[39m
+     [33m[2m✓[22m[39m compact: four through passages, preserved continuous rail and foot [33m 1333[2mms[22m[39m
+     [33m[2m✓[22m[39m large: four through passages, preserved continuous rail and foot [33m 844[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/miningTailingsCrawlerTrackMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 3998[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps steel track bodies and grousers on the crawler-steel palette [33m 3561[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/reverseOsmosisSkidMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 3148[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps FRP vessel shells distinct from stainless process piping [33m 2538[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/shaftHeadframeSkipMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 5602[2mms[22m[39m
+     [33m[2m✓[22m[39m paints the ore skip as steel, not as winder-house cladding [33m 4785[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/glassScreeningDeckMotorCapMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 4667[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps motor end caps with the motor enamel, separate from polyurethane panels [33m 3746[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/transitMixerWheelMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 3192[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the six steel wheel rims on the structural-steel control [33m 2400[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/retainingRingFidelity.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 3214[2mms[22m[39m
+     [33m[2m✓[22m[39m standard: one continuous ring, both plier holes through, clear gap [33m 649[2mms[22m[39m
+     [33m[2m✓[22m[39m compact: one continuous ring, both plier holes through, clear gap [33m 686[2mms[22m[39m
+     [33m[2m✓[22m[39m large: one continuous ring, both plier holes through, clear gap [33m 870[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/twoRamBalerMotorMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2627[2mms[22m[39m
+     [33m[2m✓[22m[39m paints the power-pack motors separately from the hydraulic cylinder steel [33m 1857[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/crusherDischargeConveyorIdlerMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 3786[2mms[22m[39m
+     [33m[2m✓[22m[39m uses frame steel for troughing and return rollers while keeping drive paint on equipment [33m 3277[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/fireHoseNozzleFidelity.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 2517[2mms[22m[39m
+     [33m[2m✓[22m[39m committed thumbnail is rendered from current CAD source with exact canonical caption [33m 959[2mms[22m[39m
+     [33m[2m✓[22m[39m scale 0.7 has connected bore, two supported accessory bodies [33m 376[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/bucketElevatorSemantic.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2236[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the bucket loop inside the casing and exposes distinct material controls [33m 1747[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/miningGrizzlySpringMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 4649[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the coil springs as support steel and keeps the vibrator covers safety yellow [33m 4040[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/packedScrubberWettedPartsMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1240[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the sump and process nozzles in the vessel finish while retaining safety paint on access parts [33m 694[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/longwallShearerPickMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 3164[2mms[22m[39m
+     [33m[2m✓[22m[39m assigns all cutter picks to the existing drum-and-pick steel control [33m 2711[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/panelClampFidelity.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 1335[2mms[22m[39m
+     [33m[2m✓[22m[39m exports three separate functional bodies, a bored bridge and a real open throat [33m 429[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/jawCrusherEccentricShaftMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 4150[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the eccentric shaft steel and reserves manganese for the jaw liners [33m 3581[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/pelletizerAirKnifeMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 3224[2mms[22m[39m
+     [33m[2m✓[22m[39m gives the strand air knife bath steel, not the safety trim [33m 2566[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/pipeUnionFidelity.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 2041[2mms[22m[39m
+     [33m[2m✓[22m[39m has four actual separate bodies, open bore and a six-sided coupling nut [33m 481[2mms[22m[39m
+     [33m[2m✓[22m[39m retains distinct interfaces for both size limits [33m 1106[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/glassBreakerFlailsMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 3184[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps all chain flails on the editable wear-steel control [33m 2569[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/shipyardPanelLineStrongbackRailMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1329[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps both longitudinal rails on the shared yard finish [33m 837[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/substationCenterBreakDisconnectorFidelity.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 4246[2mms[22m[39m
+     [33m[2m✓[22m[39m seats paired aluminum arms on porcelain supports and exposes a real open/closed center gap [33m 3540[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/pipeTeeFidelity.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 2537[2mms[22m[39m
+     [33m[2m✓[22m[39m has two run ports, one side port and a closed back wall in actual exported geometry [33m 1319[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves all three openings and closed fourth side at both size limits [33m 579[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/rockBreakerBoomFidelity.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2966[2mms[22m[39m
+     [33m[2m✓[22m[39m bolts both warning posts onto the top face of the grizzly wall [33m 2418[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/batteryQuarantineDrumMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1341[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the vermiculite sack kraft beige and separate from the alarm paint [33m 928[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/tankWagonBogieSpringMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2568[2mms[22m[39m
+     [33m[2m✓[22m[39m gives the freight-bogie springs the running-gear steel, not the stainless fittings finish [33m 1962[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/substationHvTerminationClampMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1878[2mms[22m[39m
+     [33m[2m✓[22m[39m makes the cable clamp galvanized steel hardware, not cable jacket [33m 1340[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/glassCrusherMotorMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2422[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the motor on the painted-steel finish, separate from the mill enamel [33m 1905[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/bridgeCraneHoistMotorMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2488[2mms[22m[39m
+     [33m[2m✓[22m[39m uses the hoist machinery control for the hoist motor [33m 1900[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/recyclingTransferTowerRoofMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 3967[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the sheet roof on cladding and the access steel on structure [33m 3361[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/recyclingFrictionWasherSprayHeaderMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 3516[2mms[22m[39m
+     [33m[2m✓[22m[39m makes the spray-water header pipe stainless like the washer tube [33m 3022[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/windOilCoolerHeaderMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1589[2mms[22m[39m
+     [33m[2m✓[22m[39m makes the oil headers aluminium like the brazed core, not the copper pipework [33m 1072[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/maintenancePlatformFidelity.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1186[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the platform guarded and connects its three-riser stair to the deck [33m 776[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/splitShaftCollarFidelity.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1356[2mms[22m[39m
+     [33m[2m✓[22m[39m has an open bore, split radial notch, two clamp lugs and a separate screw body [33m 434[2mms[22m[39m
+     [33m[2m✓[22m[39m retains the bore, split and screw over all size presets [33m 561[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/airCompressorPumpFinMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1461[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the finned pump cylinders and heads on the cast-iron palette [33m 1077[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/solarCarportChargerCableMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1244[2mms[22m[39m
+     [33m[2m✓[22m[39m draws the EV charging cable as a polymer jacket, not galvanized steel [33m 946[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/coolingTowerAccessDoorMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1476[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the molded FRP door with the casing finish, separate from the fan stack [33m 1076[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/substationCableLadderFidelity.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1174[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves every rung and its rail envelope at both supported scale limits [33m 437[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/mineSkipCappelMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1787[2mms[22m[39m
+     [33m[2m✓[22m[39m assigns the steel rope termination to the structural-steel control [33m 1160[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/gussetBracketFidelity.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1486[2mms[22m[39m
+     [33m[2m✓[22m[39m exports a connected-looking right-angle assembly with 4 real bores at the default size [33m 505[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves bores and touching plate envelope at both declared size extremes [33m 491[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/diverterBeltMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1588[2mms[22m[39m
+     [33m[2m✓[22m[39m draws the diverter belt as dark belt rubber, not painted steel [33m 1015[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/inductionConveyorBeltMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1426[2mms[22m[39m
+     [33m[2m✓[22m[39m draws the induction belt as dark belt rubber, not painted steel [33m 837[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/slidingShoeSorterRailMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1168[2mms[22m[39m
+     [33m[2m✓[22m[39m finishes the shoe guide rail as stainless steel, not the safety-amber marking [33m 643[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/sleeveShrinkTunnelPassage.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 937[2mms[22m[39m
+     [33m[2m✓[22m[39m opens a bottle passage through the shell and carries sleeved bottles on the bed [33m 497[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/roadReclaimerCuttingToothMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 870[2mms[22m[39m
+     [33m[2m✓[22m[39m uses structural steel for the cutter teeth while keeping the machine paint separate [33m 511[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/caseLayerPalletizerPalletTimberMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 735[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/labGasManifoldHeaderMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 837[2mms[22m[39m
+     [33m[2m✓[22m[39m makes the gas header pipe stainless like the valve risers [33m 406[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/hoseBarbFidelity.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 1471[2mms[22m[39m
+     [33m[2m✓[22m[39m committed gallery preview matches native evaluated source with canonical title [33m 511[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/flangeBearingHousingFidelity.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1008[2mms[22m[39m
+     [33m[2m✓[22m[39m has a through-shaft path, clear fastener bores and separate plain sleeve at all sizes [33m 504[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/evaporativeCoolingTowerFidelity.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1200[2mms[22m[39m
+     [33m[2m✓[22m[39m exports eight broad, separately named fan blades around the two top-deck hubs [33m 599[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/linearGuideCarriageFidelity.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 2000[2mms[22m[39m
+     [33m[2m✓[22m[39m standard: open end-to-end rail channel with connected body and retained walls [33m 493[2mms[22m[39m
+     [33m[2m✓[22m[39m compact: open end-to-end rail channel with connected body and retained walls [33m 557[2mms[22m[39m
+     [33m[2m✓[22m[39m large: open end-to-end rail channel with connected body and retained walls [33m 411[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/liftPumpCableMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 894[2mms[22m[39m
+     [33m[2m✓[22m[39m draws the power cable tail as a rubber jacket, not coated steel [33m 402[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/floorGrinderFidelity.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1563[2mms[22m[39m
+     [33m[2m✓[22m[39m exports a circular open-bottom shroud, floor-contact disc and two rear wheels [33m 466[2mms[22m[39m
+     [33m[2m✓[22m[39m retains floor contact, cavity, handle and wheel clearance at both scale limits [33m 669[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/plcControlRackStatusLedsMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1137[2mms[22m[39m
+     [33m[2m✓[22m[39m uses separate channel, RUN, and ERROR lens colors and steel module housings [33m 671[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/fillLevelInspectionLampDiffuserMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 618[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/windFarmPadMountTransformerMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 639[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/solarPadMountTransformerRadiatorMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1108[2mms[22m[39m
+     [33m[2m✓[22m[39m paints the radiator fins with the tank powder coat and keeps stainless steel on the bushing hardware [33m 579[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/pressureSensitiveLabelerRollMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 973[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the label rolls as paper label stock, not stainless steel [33m 451[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/mobileHullAccessPlatformDescription.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1375[2mms[22m[39m
+     [33m[2m✓[22m[39m describes the fixed support posts without claiming a height adjustment [33m 706[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/utilityInverterStationPlinthMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1005[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the cable plinth as concrete, not stainless steel [33m 409[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/sludgeThickenerDriveMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 816[2mms[22m[39m
+     [33m[2m✓[22m[39m exposes the cast-iron center drive above the well and uses steel for the scraper arm [33m 443[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/grainCartAugerMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 825[2mms[22m[39m
+     [33m[2m✓[22m[39m paints the unloading auger with the cart, not the exposed-steel hub finish [33m 359[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/abrasiveBlastPotMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 994[2mms[22m[39m
+     [33m[2m✓[22m[39m uses structural steel for the rigid hose outlet and elastomer for both wheels [33m 484[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/microwaveDishElevationNutMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1231[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the elevation nut with the galvanized mount, not the radio-unit powder coat [33m 708[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/cleanroomFanFilterMedia.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1196[2mms[22m[39m
+     [33m[2m✓[22m[39m shows a HEPA media face inside the steel flange instead of a solid steel plate [33m 618[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/sanitaryLobePumpFidelity.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 2304[2mms[22m[39m
+     [33m[2m✓[22m[39m has four actual cap-nut bodies on the visible removable cover [33m 951[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps all four fasteners on the cover when port orientation changes [33m 497[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/pipeRackBayCrossbeamMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1353[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the structural frame steel while retaining safety paint on the marked utility line [33m 565[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/assetModule.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 1620[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/postageMeterPaperMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1123[2mms[22m[39m
+     [33m[2m✓[22m[39m draws the label tape roll as paper, not painted steel [33m 607[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/pressureSandFilterVesselFidelity.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 872[2mms[22m[39m
+     [33m[2m✓[22m[39m exports two stainless side nozzles entering the vessel at separate heights [33m 408[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/rollerConveyorLineFidelity.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 933[2mms[22m[39m
+     [33m[2m✓[22m[39m exports an open bed of crosswise steel rollers on supported side rails [33m 518[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/asphaltDistributorSprayBarMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 926[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the rear spray bar and nozzles in bare steel, separate from the enamel tank and cab [33m 464[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/electricChainHoistMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 757[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/handwheelFidelity.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 972[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/miningSeparatorWashHeaderMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1500[2mms[22m[39m
+     [33m[2m✓[22m[39m makes the wash-water riser the same frame steel as the spray pipe it feeds [33m 984[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/eddyCurrentSeparatorShellMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 3154[2mms[22m[39m
+     [33m[2m✓[22m[39m assigns the nonconductive composite finish to the outer head shell [33m 2503[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/positiveDisplacementPumpFidelity.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1247[2mms[22m[39m
+     [33m[2m✓[22m[39m exports a recognizable gear-pump package with both ports, service cover and relief bypass [33m 706[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/processBlowerMotorMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1411[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps motor enamel distinct from safety paint on the base and outlet [33m 506[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/uBracketPinEngagement.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 1583[2mms[22m[39m
+     [33m[2m✓[22m[39m has an X-axis GLB pin engaging both perforated ears [33m 512[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves open bores and pin overlap across size extremes [33m 354[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/caseCheckweigherBeltMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1024[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the three polymer belts separate from the stainless support beds [33m 523[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/jawCouplingFidelity.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 2747[2mms[22m[39m
+     [33m[2m✓[22m[39m retains 6 metal jaws and 6 spider lobes without any material overlap [33m 979[2mms[22m[39m
+     [33m[2m✓[22m[39m detects all 6 collisions when the former co-rotated spider layout is restored [33m 405[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the cleared interfaces in both scaled variants [33m 910[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/cartridgeFilterNozzleMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1417[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the inlet and outlet nozzles in the same steel as the shell and flange [33m 604[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/capElevatorSemantic.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1331[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps its belt flights visible in the generated catalog preview [33m 896[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/cartonRollerConveyorFrameMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1614[2mms[22m[39m
+     [33m[2m✓[22m[39m runs the rollers across the frame and paints the crossbars with the frame [33m 1036[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/dataCenterOverheadCableLadderHangerCapMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1175[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps both hanger caps on the shared engineering polymer [33m 612[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/gritClassifierFidelity.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1227[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the inclined extraction screw between the trough and raised outlet [33m 737[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/capDeliveryChuteMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 852[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the clear side slot as polycarbonate between stainless wall strips [33m 321[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/substationTransformerRadiatorBankManifoldMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 956[2mms[22m[39m
+     [33m[2m✓[22m[39m uses the radiator steel finish for both oil manifolds and keeps the source controls live [33m 395[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/hullBlockSpreaderContactPadMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1060[2mms[22m[39m
+     [33m[2m✓[22m[39m exports all four soft-contact shoes with their editable elastomer finish [33m 516[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/equalizationBasinFloorMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 751[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/shaftCollarFidelity.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 1089[2mms[22m[39m
+     [33m[2m✓[22m[39m exports a drilled, open shaft collar and separate contacting screw [33m 335[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/substationConservatorNozzleMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 884[2mms[22m[39m
+     [33m[2m✓[22m[39m uses the vessel finish and meets the shell roof [33m 369[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/cableClampFidelity.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 2543[2mms[22m[39m
+     [33m[2m✓[22m[39m has two real mounting bores, connected frame, separate liner and clear cable bore [33m 732[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a closed solid arch that plugs the cable path [33m 380[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves mount, steel arch and liner across compact and large variants [33m 572[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/recyclingVehicleBarrierGatePhotoEyePlacement.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1394[2mms[22m[39m
+     [33m[2m✓[22m[39m stands the photo-eye pair either side of the lane with the beam across it [33m 895[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/dataCenterCondenserPumpSkidMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 991[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the fabricated base skid as steel, not engineering polymer [33m 421[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/vBeltPulleyFidelity.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 1377[2mms[22m[39m
+     [33m[2m✓[22m[39m standard: two genuine tapered V grooves and coaxial open bore [33m 305[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/postalCrossbeltSorterMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1243[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps rubber belt surfaces separate from the molded-polymer carriers [33m 828[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/plateRollerConveyorSideFrameMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1003[2mms[22m[39m
+     [33m[2m✓[22m[39m uses one painted-steel finish for both mirrored side frames [33m 541[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/chlorineDosingSkidTankMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 903[2mms[22m[39m
+     [33m[2m✓[22m[39m assigns the chemical day tank to polyethylene without changing geometry [33m 373[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/cableTrayBridgeMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 938[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps both tray rails on the same steel finish as its rungs [33m 485[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/processReactorVesselRingsMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1517[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the welded shell rings on the steel finish [33m 867[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/labCleanroomSingleDoorPushPlateMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 699[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/cipValveManifoldDrainLegMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 844[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the wetted drain leg stainless and the mounting feet powder-coated [33m 379[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/wraparoundLabelerRollMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 880[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the label roll as paper label stock, not food-grade polymer [33m 361[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/labelReelStandReelMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 879[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the unwind and rewind reels as paper label stock, not stainless steel [33m 376[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/portableCoreDrillStandMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 632[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/horizontalPressureVesselMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 607[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/evChargingRfidAccessReaderStatusLampMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 586[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/pipeElbow45Fidelity.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 668[2mms[22m[39m
+     [33m[2m✓[22m[39m has a continuous hollow centerline, actual annular walls and open terminal ports [33m 333[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/valveManifoldFlangeFinish.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 657[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/hullBlockFabricationJigBaseRailMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1394[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the equivalent base rails on the same yard finish [33m 897[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/shipyardHullProfileTemplateRackDividerMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 998[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the five identical bay dividers on the shared structural steel finish [33m 481[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/weldingCurtainVinylMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1245[2mms[22m[39m
+     [33m[2m✓[22m[39m draws the curtain panels as tinted welding vinyl, not a yard paint finish [33m 584[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/dualPortAcPedestalCableMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1234[2mms[22m[39m
+     [33m[2m✓[22m[39m gives the hanging cable leads a cable-elastomer finish, distinct from the powder-coated enclosure [33m 662[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/hullPanelTurnoverCradleMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1775[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the matching end frames on the same yard-finish control [33m 1146[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/cartonBottomSealerTapeHeadMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1624[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the steel taping head separate from the polymer tape roll [33m 846[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/inlineFlowMeterFlangeMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1436[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps both process flanges on the same steel finish as the pipe run [33m 373[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/gridSubstationYardBarrierFootMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1526[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps both end feet on the shared concrete finish [33m 592[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/motorControlCenterBayMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1906[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps all cabinet bays on steel and the plinth and operator panels on safety paint [33m 958[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/shipLiftCradleRailMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2592[2mms[22m[39m
+     [33m[2m✓[22m[39m uses the same yard finish on both paired guide rails [33m 1392[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/baghouseDustCollectorFidelity.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2115[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps filter media inside the plenum and tapers the dust hopper to its outlet [33m 968[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/corrugatedCaseStackMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1665[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the corrugated cases as board, not stainless steel [33m 1063[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/rooftopAirHandlerCabinetFinish.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1392[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps service casing and access doors on the steel finish [33m 631[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/blastDustCollectorFilterMediaMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1663[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps exposed filter media separate from the painted steel collector [33m 861[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/overheadPantographContactCopper.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1610[2mms[22m[39m
+     [33m[2m✓[22m[39m colours the current-carrying contact rail as copper, not engineering polymer [33m 798[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/steamHeaderManifoldBranchMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2323[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps branch pipe bodies steel while retaining safety-painted handles and skid [33m 1025[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/emptyBottleDividerTrayMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1674[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the moulded tray shell as food-grade polymer, not stainless or powder-coated steel [33m 820[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/processWaterSiloNozzleMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2225[2mms[22m[39m
+     [33m[2m✓[22m[39m uses the steel finish on visible wetted parts and keeps safety paint on the shell band [33m 1434[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/pushbackTugMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1802[2mms[22m[39m
+     [33m[2m✓[22m[39m uses steel for the rigid nose-wheel cradle and rubber only for the four tyres [33m 791[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/airRinseExhaustMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1910[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the extraction stack as stainless ducting, not corrugated board [33m 917[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/petBlowMolderEnclosureMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2015[2mms[22m[39m
+     [33m[2m✓[22m[39m separates the light enclosure finish from stainless tooling and the powder-coated base [33m 1090[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/shellAndTubeExchangerMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1208[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps exposed tube sheets, nozzles and supports on a metal palette [33m 573[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/fiberSpliceClosureShellMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2066[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the closure shell and lid as moulded thermoplastic, not powder-coated steel [33m 869[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/windTowerSectionShellMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1593[2mms[22m[39m
+     [33m[2m✓[22m[39m draws a tapered painted shell between steel flanges [33m 820[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/scissorLiftTableMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2806[2mms[22m[39m
+     [33m[2m✓[22m[39m uses the structural-steel finish for all four scissor arms [33m 1308[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/bottleDateCoderScreenMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2214[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the touchscreen as display glass, not stainless steel [33m 1138[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/electricalControlCabinetMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1970[2mms[22m[39m
+     [33m[2m✓[22m[39m uses the same steel finish on both cabinet doors [33m 655[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/compressedAirReceiverMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1452[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the vessel heads and nozzle necks on the pressure-shell steel palette [33m 622[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/windConverterCabinetMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1348[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the doors powder-coated and limits safety paint to warning labels [33m 732[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/dataCenterOverheadPowerBuswayMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2039[2mms[22m[39m
+     [33m[2m✓[22m[39m gives all four repeated sheet-steel joint covers the same finish [33m 1039[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/rotaryCapperHeadMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1290[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the torque capping heads as stainless steel, not food-grade polymer [33m 590[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/sanitaryFilterHousingMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 927[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the sanitary cartridge housings in stainless steel, not skid powder coat [33m 395[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/substationCvtInsulationMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1060[2mms[22m[39m
+     [33m[2m✓[22m[39m colors the divider stack as porcelain and keeps the steel zones separate [33m 450[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/caseTaperTapeRollMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1372[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the packing tape roll and metal tape head in their material roles [33m 564[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/orchardSprayerTankMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1712[2mms[22m[39m
+     [33m[2m✓[22m[39m gives the polyethylene tank its own material control without changing geometry [33m 873[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/groundingBusbarCopper.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1351[2mms[22m[39m
+     [33m[2m✓[22m[39m colours the busbar as copper and the terminal studs as stainless steel [33m 420[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/coldAisleRoofPanelMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1407[2mms[22m[39m
+     [33m[2m✓[22m[39m makes every containment roof panel from the polymer, not one panel of five [33m 697[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/caseLabelerLabelRollMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1173[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the label supply roll as paper label stock, not food-grade polymer [33m 460[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/compressedAirReceiverGaugeMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1029[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the pressure gauge as a steel case with a glass lens, not a solid glass body [33m 579[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/railBogieWheelMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1108[2mms[22m[39m
+     [33m[2m✓[22m[39m runs the transformer bogie on steel rail wheels, not rubber tyres [33m 336[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/weldInspectionLightLensMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 890[2mms[22m[39m
+     [33m[2m✓[22m[39m gives the lamp lenses their own lens finish, distinct from the yellow lamp housings [33m 445[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/shipyardGasTrolleyValveMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1685[2mms[22m[39m
+     [33m[2m✓[22m[39m makes the cylinder valves brass, not the trolley frame steel [33m 1097[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/palletizerRobotCellFloorMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 974[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the concrete floor distinct from structural steel and safety paint [33m 341[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/rearDoorHeatExchangerCopperMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 899[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the copper coil runs separate from the painted frame and polymer outlet [33m 335[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/cycloneSeparatorMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 879[2mms[22m[39m
+     [33m[2m✓[22m[39m uses steel for the whole process shell and preserves the current size and mesh budget [33m 462[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/dataCenterEmergencyPowerOffActuatorMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 768[2mms[22m[39m
+     [33m[2m✓[22m[39m draws a red actuator that faces the operator on a yellow collar [33m 352[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/dataCenterDayFuelTankMaterials.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 669[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/beverageBlendTankJacketMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1020[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the sanitary vessel and jacket stainless while the legs stay powder-coated [33m 481[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/fiberDomeClosureShellMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 863[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the dome housing as moulded thermoplastic, not powder-coated steel [33m 380[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/assetCatalogTools.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 398[2mms[22m[39m
+ [32m✓[39m tests/integration/catalog/catalogIndex.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1141672[2mms[22m[39m
+     [33m[2m✓[22m[39m every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh [33m 1140582[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m171 passed[39m[22m[90m (171)[39m
+[2m      Tests [22m [1m[32m241 passed[39m[22m[90m (241)[39m
+[2m   Start at [22m 20:42:58
+[2m   Duration [22m 1158.27s[2m (transform 40.62s, setup 6.63s, import 388.93s, tests 1593.18s, environment 25ms)[22m
+
+exit 0

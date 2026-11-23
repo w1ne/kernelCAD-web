@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/substationTransformerRadiatorBankManifoldMaterial.test.ts > grid-substation/substation-transformer-radiator-bank manifolds > uses the radiator steel finish for both oil manifolds and keeps the source controls live 648ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  19:54:04
+   Duration  16.87s (transform 12.07s, setup 580ms, import 14.85s, tests 1.17s, environment 0ms)
+

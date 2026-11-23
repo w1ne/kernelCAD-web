@@ -1,0 +1,1 @@
+telecom-infrastructure/gnss-timing-antenna: 594 tris

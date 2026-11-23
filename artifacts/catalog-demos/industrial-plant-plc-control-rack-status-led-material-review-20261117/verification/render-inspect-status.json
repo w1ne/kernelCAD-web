@@ -1,0 +1,20 @@
+{
+  "command": "kernelcad render inspect catalog/kits/industrial-plant/plc-control-rack.kcad.ts <bundle>/verification/render-inspection --width 768 --height 768 --channels rgb --screenshot-timeout 45000 --no-watermark",
+  "attempts": [
+    {
+      "existingCdpEndpoint": "http://127.0.0.1:9222",
+      "timeoutSeconds": 30,
+      "result": "failed",
+      "reason": "Playwright connectOverCDP timed out after WebSocket reported connected."
+    },
+    {
+      "existingCdpEndpoint": "http://127.0.0.1:9223",
+      "timeoutSeconds": 30,
+      "result": "failed",
+      "reason": "Playwright connectOverCDP timed out after WebSocket reported connected."
+    }
+  ],
+  "newBrowserLaunched": false,
+  "inspectionBundleProduced": false,
+  "fallbackEvidence": "The named catalog software preview, five-preview sheet, and extracted MP4 frames were visually inspected."
+}

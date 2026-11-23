@@ -1,0 +1,18 @@
+{
+  "asset": "mining/tailings-stack-conveyor",
+  "sourceSha256": "698b5d0c099438386b880d2397f5b9ce7d399177a1626acaa4d47861a0c9ec9f",
+  "preview": "/assets/mining-tailings-stack-conveyor.png",
+  "previewExists": true,
+  "triangles": 3792,
+  "sizeM": [
+    31.303732,
+    8.344869,
+    16.150847
+  ],
+  "triangleBudget": 5000,
+  "catalogAssets": 2402,
+  "changedIndexRows": [
+    "mining/tailings-stack-conveyor"
+  ],
+  "nonTargetRowsUnchanged": true
+}

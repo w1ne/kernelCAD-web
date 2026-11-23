@@ -75,7 +75,7 @@ const c = (name: string, h: number, r: number, sides: number, at: [number, numbe
 };
 
 p.part("side-rail-0", b("side-rail-0", [3000, 220, 260], [0, -740, 190]).color(yardPaint));
-p.part("side-rail-1", b("side-rail-1", [3000, 220, 260], [0, 740, 190]).color(structuralSteel));
+p.part("side-rail-1", b("side-rail-1", [3000, 220, 260], [0, 740, 190]).color(yardPaint));
 p.part("cross-tie-0", b("cross-tie-0", [180, 1430, 130], [-1100, 0, 105]).color(structuralSteel));
 p.part("cross-tie-1", b("cross-tie-1", [180, 1430, 130], [0, 0, 105]).color(structuralSteel));
 p.part("cross-tie-2", b("cross-tie-2", [180, 1430, 130], [1100, 0, 105]).color(structuralSteel));

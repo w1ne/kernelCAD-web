@@ -466,6 +466,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     type: 'object',
     properties: {
       ok: { type: 'boolean' },
+      idioms: { type: 'array', items: { type: 'object', additionalProperties: true } },
       globals: { type: 'array', items: { type: 'object', additionalProperties: true } },
       shapeMethods: { type: 'array', items: { type: 'object', additionalProperties: true } },
       shapeListMethods: { type: 'array', items: { type: 'object', additionalProperties: true } },

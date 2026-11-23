@@ -1,0 +1,34 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/dataCenterOverheadPowerBuswayMaterial.test.ts (1 test | 1 failed) 1230ms
+     × gives all four repeated sheet-steel joint covers the same finish 540ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/dataCenterOverheadPowerBuswayMaterial.test.ts > data-center-infrastructure/overhead-power-busway joint-cover material > gives all four repeated sheet-steel joint covers the same finish
+AssertionError: cover-joint-0 should use the shared steel joint-cover finish: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/integration/catalog/dataCenterOverheadPowerBuswayMaterial.test.ts:53:95
+     51|       const colors = colorsFor(part);
+     52|       expect(colors.length, `expected exported colors for ${part}`).to…
+     53|       expect(colors.every(matches), `${part} should use the shared ste…
+       |                                                                                               ^
+     54|     }
+     55|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  05:25:28
+   Duration  14.13s (transform 10.14s, setup 169ms, import 12.53s, tests 1.23s, environment 0ms)
+
+exit_code=1

@@ -1,0 +1,4 @@
+{
+  "command": "python3 scripts/checkCatalogQuality.py --kit shipyard",
+  "exitCode": 0
+}

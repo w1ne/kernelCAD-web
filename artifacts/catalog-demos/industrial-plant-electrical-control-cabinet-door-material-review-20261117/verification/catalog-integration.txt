@@ -1,0 +1,4 @@
+Command: npx vitest run tests/integration/catalog/
+Result: passed (138 test files, 208 tests).
+The suite includes the all-catalog source build/export/triangle-budget and committed-index freshness check.
+Elapsed: 780.31 seconds.

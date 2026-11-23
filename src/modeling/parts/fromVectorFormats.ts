@@ -204,10 +204,12 @@ const DXF_HINTS: Record<string, string> = {
  * the sketch metadata as `unitSource` and can be overridden with
  * `opts.units`.
  *
- * Béziers and SVG `<ellipse>` elements have no exact form in the sketch
- * command set and are subdivided into chords within `opts.curveTolerance` mm
- * (default 0.01); lines and circular arcs are exact. Full planar DXF ellipses
- * use exact rational NURBS geometry.
+ * Lines, circular arcs and cubic and quadratic Béziers (`C`/`S`/`Q`/`T`) are
+ * exact; each Bézier becomes one NURBS segment, also under a non-uniform
+ * transform. True ellipses (`<ellipse>`, non-circular `A` arcs, elliptical
+ * `<rect>` corners, circles under a non-uniform transform) are exact too, as
+ * rational quadratic NURBS quarter arcs. `opts.curveTolerance` is still
+ * validated but no longer changes SVG geometry.
  *
  * Returns `Sketch[]`, largest region first. See the module header.
  */

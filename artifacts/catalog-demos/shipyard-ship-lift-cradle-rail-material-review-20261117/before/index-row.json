@@ -1,0 +1,117 @@
+{
+  "id": "ship-lift-cradle",
+  "kit": "shipyard",
+  "title": "Ship lift cradle",
+  "description": "Transfer cradle with paired guide rails, cross ties, adjustable hull pads, and four guide rollers. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "shipyard",
+    "shipbuilding",
+    "drydock",
+    "refit",
+    "low poly",
+    "CC0",
+    "ship",
+    "lift",
+    "cradle"
+  ],
+  "compat": [
+    "shipyard",
+    "marine",
+    "drydock",
+    "ship-repair"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/shipyard/ship-lift-cradle.kcad.ts",
+  "preview": "/assets/shipyard-ship-lift-cradle.png",
+  "sourceSha256": "4a05b8d44f7bc47c87144b57d0af57416e7b28c909d38c81f54ccf415597b2c8",
+  "triangleBudget": 1800,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.65,
+      "max": 1.35,
+      "step": 0.05
+    },
+    {
+      "name": "yardPaint",
+      "type": "color",
+      "default": "#76847b",
+      "label": "Yard finish"
+    },
+    {
+      "name": "structuralSteel",
+      "type": "color",
+      "default": "#b6c1c4",
+      "label": "Structural steel"
+    },
+    {
+      "name": "elastomer",
+      "type": "color",
+      "default": "#30383b",
+      "label": "Elastomer"
+    }
+  ],
+  "presets": {
+    "fresh-coat": {
+      "yardPaint": "#8f9a93",
+      "structuralSteel": "#d0d7d8",
+      "elastomer": "#3a4245"
+    },
+    "weathered-yard": {
+      "yardPaint": "#626e66",
+      "structuralSteel": "#828d91",
+      "elastomer": "#252b2d"
+    }
+  },
+  "stats": {
+    "triangles": 396,
+    "sizeM": [
+      3,
+      0.78,
+      1.83
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "yardPaint",
+      "color": "#76847b",
+      "parts": [
+        "side-rail-0"
+      ],
+      "param": "yardPaint"
+    },
+    {
+      "name": "structuralSteel",
+      "color": "#b6c1c4",
+      "parts": [
+        "side-rail-1",
+        "cross-tie-0",
+        "cross-tie-1",
+        "cross-tie-2",
+        "guide-roller-0",
+        "guide-roller-1",
+        "guide-roller-2",
+        "guide-roller-3"
+      ],
+      "param": "structuralSteel"
+    },
+    {
+      "name": "elastomer",
+      "color": "#30383b",
+      "parts": [
+        "hull-pad-0",
+        "hull-pad-1",
+        "hull-pad-2",
+        "hull-pad-3"
+      ],
+      "param": "elastomer"
+    }
+  ]
+}

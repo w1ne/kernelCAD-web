@@ -21,7 +21,7 @@ import type { EdgeQuery, FaceQuery } from './queryTypes';
 export const EDGE_QUERY_KEYS: ReadonlyArray<keyof EdgeQuery> = [
   'atZ', 'atX', 'atY', 'near', 'within', 'parallel', 'parallelTo',
   'perpendicular', 'perpendicularTo', 'convex', 'concave', 'minAngle', 'maxAngle', 'ofCurveType',
-  'tolerance', 'angleTolerance',
+  'tolerance', 'angleTolerance', 'ofFace',
 ];
 
 // Compile-time exhaustiveness: if a future rc adds `EdgeQuery.spiralRate`
@@ -34,7 +34,7 @@ void _edgeKeysExhaustive;
 export const FACE_QUERY_KEYS: ReadonlyArray<keyof FaceQuery> = [
   'atZ', 'atX', 'atY', 'parallelTo', 'parallel', 'inPlane', 'ofSurfaceType',
   'containsPoint', 'near', 'tolerance',
-  'byNormal', 'minArea', 'maxArea', 'boundingBoxIn',
+  'byNormal', 'minArea', 'maxArea', 'boundingBoxIn', 'extreme',
 ];
 
 type _FaceQueryKeysMissing = Exclude<keyof FaceQuery, typeof FACE_QUERY_KEYS[number]>;

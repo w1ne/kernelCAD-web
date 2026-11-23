@@ -1,0 +1,9 @@
+npx tsx scripts/renderCatalogPreviews.ts scissor-lift-table
+npx tsx scripts/buildAssetCatalog.ts
+npx eslint catalog/kits/industrial-plant/ tests/integration/catalog/scissorLiftTableMaterial.test.ts
+npx vitest run tests/integration/catalog/scissorLiftTableMaterial.test.ts
+python3 scripts/checkCatalogQuality.py --kit industrial-plant
+python3 scripts/checkCatalogQuality.py
+npx vitest run tests/integration/catalog/
+bash artifacts/catalog-demos/industrial-plant-scissor-lift-table-arm-material-review-20261117/make_demo.sh
+python3 artifacts/catalog-demos/industrial-plant-scissor-lift-table-arm-material-review-20261117/video-review/inspect_video.py

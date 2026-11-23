@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/glassBreakerFlailsMaterial.test.ts (1 test) 1496ms
+     ✓ keeps all chain flails on the editable wear-steel control  1233ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  02:23:33
+   Duration  6.23s (transform 3.66s, setup 103ms, import 4.50s, tests 1.50s, environment 0ms)

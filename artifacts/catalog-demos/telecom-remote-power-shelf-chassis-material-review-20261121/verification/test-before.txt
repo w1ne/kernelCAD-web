@@ -1,0 +1,1 @@
+before (original source): FAIL - the shelf should have no galvanized body finish: expected [ 'galvanizedSteel', 'powderCoat' ] to deeply equal [ 'aluminium', 'polymer', ...(2) ]

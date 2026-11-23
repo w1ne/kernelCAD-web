@@ -1,0 +1,5 @@
+Command: npx tsx scripts/buildAssetCatalog.ts
+Output: wrote /data/worktrees/legacy-migrated/kernelcad-catalog-2000/catalog/index.json
+Exit status: 0
+
+`index-row-check.json` records the generated source SHA-256 matching the edited source, the retained preview path, 364 triangles under the 2,200-triangle budget, the three material color params, and both presets.

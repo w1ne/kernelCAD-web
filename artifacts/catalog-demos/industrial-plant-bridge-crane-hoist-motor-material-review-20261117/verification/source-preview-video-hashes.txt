@@ -1,0 +1,6 @@
+3c1f349d038b6300b3620175cca8fbef308463d986758aa8db8daf064308c238  catalog/kits/industrial-plant/bridge-crane.kcad.ts
+e13f976e1201f2f848197420d6f88f769c6e02d0e0bfcbd6fc0b5d0bdc3731c7  catalog/kits/industrial-plant/previews/bridge-crane.png
+ddaac172ae63d37ed2001555eb81e2b34cae565e47912f01bc77e110dae0ff6c  tests/integration/catalog/bridgeCraneHoistMotorMaterial.test.ts
+f562df67d4011fd9fd334dbd30b6899afda213a22d3696612df2e724cd1ca028  artifacts/catalog-demos/industrial-plant-bridge-crane-hoist-motor-material-review-20261117/previews/before/bridge-crane.png
+e13f976e1201f2f848197420d6f88f769c6e02d0e0bfcbd6fc0b5d0bdc3731c7  artifacts/catalog-demos/industrial-plant-bridge-crane-hoist-motor-material-review-20261117/previews/after/bridge-crane.png
+6a9ef08c0fa6f2eee584fbfb2919f3976d585eeec920fcdf9a8cbf7cbc6a4d8c  artifacts/catalog-demos/industrial-plant-bridge-crane-hoist-motor-material-review-20261117/industrial-plant-bridge-crane-hoist-motor-material-review.mp4

@@ -1,0 +1,64 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/airCompressorPumpFinMaterial.test.ts (1 test | 1 failed) 2313ms
+     × keeps the finned pump cylinders and heads on the cast-iron palette 1693ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/airCompressorPumpFinMaterial.test.ts > industrial-plant/air-compressor pump-fin materials > keeps the finned pump cylinders and heads on the cast-iron palette
+AssertionError: expected [ 'drain-valve', …(18) ] to deeply equal ArrayContaining{…}
+
+- Expected
++ Received
+
+- ArrayContaining [
+-   "pump-fin-0-0",
+-   "pump-fin-0-1",
+-   "pump-fin-0-2",
+-   "pump-fin-0-3",
+-   "pump-fin-0-4",
+-   "pump-fin-0-5",
+-   "pump-fin-1-0",
+-   "pump-fin-1-1",
+-   "pump-fin-1-2",
+-   "pump-fin-1-3",
+-   "pump-fin-1-4",
+-   "pump-fin-1-5",
++ [
++   "drain-valve",
++   "motor-fan-cover",
++   "pump-crankcase",
++   "pump-crankcase-end",
+    "pump-barrel-0",
+    "pump-head-0",
++   "head-cap-0",
+    "pump-barrel-1",
+    "pump-head-1",
++   "head-cap-1",
++   "motor-pulley",
++   "pump-pulley",
++   "guard-vent-slot-0",
++   "guard-vent-slot-1",
++   "guard-vent-slot-2",
++   "guard-vent-slot-3",
++   "pressure-switch-cap",
++   "gauge-body",
++   "outlet-coupling",
+  ]
+
+ ❯ tests/integration/catalog/airCompressorPumpFinMaterial.test.ts:36:27
+     34|
+     35|     const pumpIronParts = asset.palette.find((zone) => zone.name === '…
+     36|     expect(pumpIronParts).toEqual(expect.arrayContaining([
+       |                           ^
+     37|       ...finParts,
+     38|       'pump-barrel-0', 'pump-head-0', 'pump-barrel-1', 'pump-head-1',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  00:26:35
+   Duration  35.78s (transform 28.29s, setup 668ms, import 32.16s, tests 2.31s, environment 0ms)

@@ -21,10 +21,11 @@ presets({
   highVisibility: { safetyPaint: '#f5c640' },
 });
 const p = assembly('cable-tray-bridge');
-p.part('side-rail--1', box(940, 26, 42, true).translate(0, -165, 320).scale(scale).color(safetyPaint));
+// Both tray rails and their crossbars are structural steel; the feet remain safety painted.
+p.part('side-rail--1', box(940, 26, 42, true).translate(0, -165, 320).scale(scale).color(steel));
 p.part('support-upright--1', box(30, 30, 320, true).translate(0, -165, 160).scale(scale).color(steel));
 p.part('foot--1', box(110, 60, 20, true).translate(0, -165, 10).scale(scale).color(safetyPaint));
-p.part('side-rail-1', box(940, 26, 42, true).translate(0, 165, 320).scale(scale).color(safetyPaint));
+p.part('side-rail-1', box(940, 26, 42, true).translate(0, 165, 320).scale(scale).color(steel));
 p.part('support-upright-1', box(30, 30, 320, true).translate(0, 165, 160).scale(scale).color(steel));
 p.part('foot-1', box(110, 60, 20, true).translate(0, 165, 10).scale(scale).color(safetyPaint));
 p.part('tray-rung-0', box(26, 330, 14, true).translate(-432.4, 0, 320).scale(scale).color(steel));

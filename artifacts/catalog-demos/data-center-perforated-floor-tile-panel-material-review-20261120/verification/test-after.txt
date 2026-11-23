@@ -1,0 +1,5 @@
+ ✓ tests/integration/catalog/perforatedFloorTileMaterial.test.ts (1 test) 797ms
+     ✓ builds a painted-steel tile panel with polymer edge trim that sits on its pedestals  359ms
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Duration  10.55s (transform 7.81s, setup 114ms, import 9.48s, tests 797ms, environment 0ms)

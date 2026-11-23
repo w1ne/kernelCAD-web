@@ -7,6 +7,7 @@ import { KernelError } from '../../shared/intent/kernelError';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
 import { trackFullLower } from './fullLowerTracker';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
+import { axisNameToVec } from '../../shared/intent/queryNormalize';
 import { assertEmbossTextOptions } from './authoringFeatureRecords';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
@@ -184,8 +185,13 @@ export class Shape {
     });
   }
 
-  translate(x: Editable<number>, y: Editable<number>, z: Editable<number>): Shape {
-    const vector: EditableVec3 = [x, y, z];
+  translate(x: Editable<number>, y: Editable<number>, z: Editable<number>): Shape;
+  /** A single `[x, y, z]` vector is the same call. */
+  translate(vector: EditableVec3): Shape;
+  translate(x: Editable<number> | EditableVec3, y?: Editable<number>, z?: Editable<number>): Shape {
+    const vector: EditableVec3 = Array.isArray(x) && y === undefined && z === undefined
+      ? (x as EditableVec3)
+      : [x as Editable<number>, y as Editable<number>, z as Editable<number>];
     const issues = invalidEditableVec3Components(vector, this.session.paramTable);
     if (!isValidEditableVec3(vector) || issues.length > 0) {
       throw invalidTransformVec3Error('translate', 'Translate vector', vector, this.recordId, this.session.paramTable);
@@ -807,9 +813,22 @@ export class Shape {
     return this.session.patternFeature(this, pattern);
   }
 
-  patternCircular(opts: { count: number; axis: [number, number, number]; angleDeg?: number }): Shape {
-    const angleDeg = validateCircularPatternOpts(opts, this.id);
-    const pattern: PatternSpec = { kind: 'circular', count: opts.count, axis: opts.axis, angleDeg };
+  patternCircular(opts: { count: number; axis: [number, number, number] | 'X' | 'Y' | 'Z' | '-X' | '-Y' | '-Z'; angleDeg?: number }): Shape {
+    // An axis name ('Z', '-X') is the unit vector it names, as in every selector.
+    const axisVec = typeof opts?.axis === 'string' ? axisNameToVec(opts.axis) : undefined;
+    if (typeof opts?.axis === 'string' && axisVec === undefined) {
+      invalidArgs({
+        api: 'patternCircular({ axis })',
+        path: 'axis',
+        got: opts.axis,
+        requires: "an axis name 'X' | 'Y' | 'Z' (optionally signed, e.g. '-Z') or a 3-element array [x, y, z]: the rotation axis through the world origin",
+        example: "plate.patternCircular({ count: 6, axis: 'Z' })",
+        featureId: this.id,
+      });
+    }
+    const resolved = axisVec === undefined ? (opts as { count: number; axis: [number, number, number]; angleDeg?: number }) : { ...opts, axis: axisVec };
+    const angleDeg = validateCircularPatternOpts(resolved, this.id);
+    const pattern: PatternSpec = { kind: 'circular', count: resolved.count, axis: resolved.axis, angleDeg };
     return this.session.patternFeature(this, pattern);
   }
 

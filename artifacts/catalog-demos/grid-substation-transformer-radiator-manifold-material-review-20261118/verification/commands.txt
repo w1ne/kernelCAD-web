@@ -1,0 +1,17 @@
+# Selection and baseline capture
+python3 artifacts/catalog-demos/grid-substation-transformer-radiator-manifold-material-review-20261118/check_open_targets.py
+curl -sS -L -o /tmp/kernelcad-radiator-bank-live.html -w '%{http_code} %{size_download}\n' --max-time 20 https://kernelcad.com/catalog/grid-substation/substation-transformer-radiator-bank/
+curl -sS -L -o /tmp/kernelcad-radiator-bank-live.png -w '%{http_code} %{size_download}\n' --max-time 20 https://kernelcad.com/assets/grid-substation-substation-transformer-radiator-bank.png
+
+# Regression and source change
+npx vitest run tests/integration/catalog/substationTransformerRadiatorBankManifoldMaterial.test.ts
+npx tsx scripts/renderCatalogPreviews.ts substation-transformer-radiator-bank
+npx tsx scripts/buildAssetCatalog.ts
+python3 artifacts/catalog-demos/grid-substation-transformer-radiator-manifold-material-review-20261118/check_index_row.py
+python3 scripts/checkCatalogQuality.py --kit grid-substation
+npx eslint catalog/kits/grid-substation/ tests/integration/catalog/substationTransformerRadiatorBankManifoldMaterial.test.ts
+npx vitest run tests/integration/catalog/
+
+# Review demo bundle
+python3 artifacts/catalog-demos/grid-substation-transformer-radiator-manifold-material-review-20261118/make_demo.py
+ffprobe -v error -show_streams -show_format -of json artifacts/catalog-demos/grid-substation-transformer-radiator-manifold-material-review-20261118/review-demo.mp4

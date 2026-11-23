@@ -1,0 +1,2 @@
+b80a6a83670cdb4587db403f314a0f5cc01c0938407a112546760d1c40eda571  catalog/kits/industrial-plant/process-reactor-vessel.kcad.ts
+61480bb5c4f5016046905e24f861f82e6ee854839b3e9468d78b093dcd853be4  catalog/kits/industrial-plant/previews/process-reactor-vessel.png

@@ -1,0 +1,4 @@
+ ✓ tests/integration/catalog/raisedFloorTileMaterial.test.ts (1 test) 510ms
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Duration  6.90s (transform 5.04s, setup 94ms, import 6.18s, tests 510ms, environment 0ms)

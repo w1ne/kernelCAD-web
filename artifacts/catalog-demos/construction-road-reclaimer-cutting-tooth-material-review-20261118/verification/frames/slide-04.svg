@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<rect width="1280" height="720" fill="#edf2f6"/>
+<text x="54" y="49" font-family="DejaVu Sans" font-size="17" font-weight="700" letter-spacing="1.2" fill="#287e79">LOCAL VERIFICATION</text>
+<text x="54" y="91" font-family="DejaVu Sans" font-size="34" font-weight="700" fill="#1f3548">Material regression and catalog checks</text>
+<path d="M54 112 H1226" stroke="#b7c7d1" stroke-width="2"/>
+<text x="54" y="692" font-family="DejaVu Sans" font-size="16" fill="#496273">Local software preview and source regression · no deployment or hardware acceptance</text>
+<rect x="52" y="146" width="1176" height="484" rx="13" fill="white" stroke="#c8d5dd" stroke-width="2"/>
+<text x="88" y="190" font-family="DejaVu Sans" font-size="20" fill="#1f3548">• Focused GLB regression passed: all 7 tooth nodes use #89969a; 4 representative painted parts</text>
+<text x="88" y="219" font-family="DejaVu Sans" font-size="20" fill="#1f3548">retain #e1a31b.</text>
+<text x="88" y="258" font-family="DejaVu Sans" font-size="20" fill="#1f3548">• Construction-equipment ESLint passed; kit quality gate: 60/60 assets (100%).</text>
+<text x="88" y="297" font-family="DejaVu Sans" font-size="20" fill="#1f3548">• Generated index rebuild passed; source SHA matches and the existing preview path is present.</text>
+<text x="88" y="336" font-family="DejaVu Sans" font-size="20" fill="#1f3548">• Full catalog integration passed: 151 files and 221 tests, including index freshness.</text>
+<text x="88" y="375" font-family="DejaVu Sans" font-size="20" fill="#1f3548">• Global quality gate reports 2,398/2,402 assets (99.83%); 4 thin assets remain in</text>
+<text x="88" y="404" font-family="DejaVu Sans" font-size="20" fill="#1f3548">standard-components.</text>
+<text x="88" y="576" font-family="DejaVu Sans" font-size="18" font-weight="700" fill="#496273">816 triangles unchanged · default preview unchanged because the teeth are occluded</text>
+</svg>

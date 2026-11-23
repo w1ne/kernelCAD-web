@@ -1,0 +1,897 @@
+[
+  {
+    "id": "air-compressor",
+    "kit": "industrial-plant",
+    "title": "Industrial air compressor",
+    "description": "Horizontal receiver compressor package with a saddled pressure tank, skid frame, belt-driven motor, finned pump heads, intake filter, pressure gauge, safety valve and drain. Receiver capacity and pump arrangement change the model. Material controls: receiver steel, cast iron, motor paint and rubber. plant, weathered and highVisibility presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "industrial plant",
+      "air compressor",
+      "reciprocating compressor",
+      "receiver tank",
+      "belt drive",
+      "factory",
+      "process equipment",
+      "low poly",
+      "CC0"
+    ],
+    "compat": [
+      "industrial-plant",
+      "factory",
+      "manufacturing",
+      "industrial-scene"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/industrial-plant/air-compressor.kcad.ts",
+    "preview": "/assets/industrial-plant-air-compressor.png",
+    "sourceSha256": "573901ca9935afe44dee9ae23c5ecd736996a6ac3bfb06cc3c77bd9a3bf93b08",
+    "triangleBudget": 5200,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "receiverCapacity",
+        "type": "choice",
+        "default": "120-gallon",
+        "label": "Receiver capacity",
+        "choices": [
+          "80-gallon",
+          "120-gallon"
+        ]
+      },
+      {
+        "name": "pumpArrangement",
+        "type": "choice",
+        "default": "twin",
+        "label": "Pump arrangement",
+        "choices": [
+          "single",
+          "twin"
+        ]
+      },
+      {
+        "name": "receiverSteel",
+        "type": "color",
+        "default": "#657c87",
+        "label": "Receiver steel"
+      },
+      {
+        "name": "pumpIron",
+        "type": "color",
+        "default": "#444b50",
+        "label": "Pump cast iron"
+      },
+      {
+        "name": "motorPaint",
+        "type": "color",
+        "default": "#e1a72f",
+        "label": "Motor paint"
+      },
+      {
+        "name": "rubber",
+        "type": "color",
+        "default": "#282d30",
+        "label": "Belt and feet rubber"
+      }
+    ],
+    "presets": {
+      "plant": {
+        "receiverSteel": "#657c87",
+        "pumpIron": "#444b50",
+        "motorPaint": "#e1a72f",
+        "rubber": "#282d30"
+      },
+      "weathered": {
+        "receiverSteel": "#59605f",
+        "pumpIron": "#383b3c",
+        "motorPaint": "#a77a32",
+        "rubber": "#353534"
+      },
+      "highVisibility": {
+        "receiverSteel": "#c5cbcd",
+        "pumpIron": "#48535a",
+        "motorPaint": "#e65d27",
+        "rubber": "#282d30"
+      }
+    },
+    "stats": {
+      "triangles": 4594,
+      "sizeM": [
+        1,
+        0.896,
+        0.372
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "motorPaint",
+        "color": "#e1a72f",
+        "parts": [
+          "skid-rail--150",
+          "rail-foot-0--150",
+          "rail-foot-1--150",
+          "skid-rail-150",
+          "rail-foot-0-150",
+          "rail-foot-1-150",
+          "skid-crossmember-0",
+          "skid-crossmember-1",
+          "receiver-saddle-0",
+          "receiver-saddle-1",
+          "inspection-cover",
+          "drain-handle",
+          "drive-deck",
+          "motor-body",
+          "motor-terminal-box",
+          "belt-guard-open-frame",
+          "pressure-switch",
+          "relief-cap"
+        ],
+        "param": "motorPaint"
+      },
+      {
+        "name": "rubber",
+        "color": "#282d30",
+        "parts": [
+          "isolation-pad-0--150",
+          "isolation-pad-1--150",
+          "isolation-pad-0-150",
+          "isolation-pad-1-150",
+          "belt-loop",
+          "intake-filter"
+        ],
+        "param": "rubber"
+      },
+      {
+        "name": "receiverSteel",
+        "color": "#657c87",
+        "parts": [
+          "horizontal-receiver",
+          "receiver-weld-band-0",
+          "saddle-cap-0",
+          "receiver-weld-band-1",
+          "saddle-cap-1",
+          "inspection-boss",
+          "receiver-drain",
+          "motor-mount-left",
+          "motor-mount-right",
+          "motor-cooling-fin-0",
+          "motor-cooling-fin-1",
+          "motor-cooling-fin-2",
+          "motor-cooling-fin-3",
+          "motor-cooling-fin-4",
+          "motor-cooling-fin-5",
+          "motor-cooling-fin-6",
+          "motor-cooling-fin-7",
+          "motor-cooling-fin-8",
+          "pump-fin-0-0",
+          "pump-fin-0-1",
+          "pump-fin-0-2",
+          "pump-fin-0-3",
+          "pump-fin-0-4",
+          "pump-fin-0-5",
+          "head-bolt-0--28",
+          "head-bolt-0-28",
+          "pump-fin-1-0",
+          "pump-fin-1-1",
+          "pump-fin-1-2",
+          "pump-fin-1-3",
+          "pump-fin-1-4",
+          "pump-fin-1-5",
+          "head-bolt-1--28",
+          "head-bolt-1-28",
+          "intake-neck",
+          "aftercooler-riser",
+          "aftercooler-run",
+          "receiver-manifold",
+          "manifold-riser",
+          "relief-valve",
+          "outlet-elbow"
+        ],
+        "param": "receiverSteel"
+      },
+      {
+        "name": "pumpIron",
+        "color": "#444b50",
+        "parts": [
+          "drain-valve",
+          "motor-fan-cover",
+          "pump-crankcase",
+          "pump-crankcase-end",
+          "pump-barrel-0",
+          "pump-head-0",
+          "head-cap-0",
+          "pump-barrel-1",
+          "pump-head-1",
+          "head-cap-1",
+          "motor-pulley",
+          "pump-pulley",
+          "guard-vent-slot-0",
+          "guard-vent-slot-1",
+          "guard-vent-slot-2",
+          "guard-vent-slot-3",
+          "pressure-switch-cap",
+          "gauge-body",
+          "outlet-coupling"
+        ],
+        "param": "pumpIron"
+      },
+      {
+        "name": "gauge-face",
+        "color": "#d9e0dc",
+        "parts": [
+          "gauge-face"
+        ]
+      },
+      {
+        "name": "gauge-pointer",
+        "color": "#bd4738",
+        "parts": [
+          "gauge-pointer",
+          "indicator-red"
+        ]
+      },
+      {
+        "name": "warning-label",
+        "color": "#ece7d8",
+        "parts": [
+          "warning-label"
+        ]
+      },
+      {
+        "name": "indicator-green",
+        "color": "#4c9c68",
+        "parts": [
+          "indicator-green"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "baghouse-dust-collector",
+    "kit": "industrial-plant",
+    "title": "Baghouse dust collector",
+    "description": "Baghouse collector with enclosed filter media, a tapered dust hopper and outlet, supported plenum, service walkway and induced-draft fan. Controls: scale, steel and safety paint.",
+    "category": "structure",
+    "origin": "base",
+    "tags": [
+      "industrial plant",
+      "factory",
+      "process equipment",
+      "low poly",
+      "CC0"
+    ],
+    "compat": [
+      "industrial-plant",
+      "factory",
+      "manufacturing",
+      "industrial-scene"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/industrial-plant/baghouse-dust-collector.kcad.ts",
+    "preview": "/assets/industrial-plant-baghouse-dust-collector.png",
+    "sourceSha256": "a54575dda8981eb2aeb208056a1618a5150d81df5f2edd79f1c926f66f65d02d",
+    "triangleBudget": 1400,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "steel",
+        "type": "color",
+        "default": "#748088",
+        "label": "Structural steel"
+      },
+      {
+        "name": "safetyPaint",
+        "type": "color",
+        "default": "#dfa344",
+        "label": "Safety paint"
+      }
+    ],
+    "presets": {
+      "weathered": {
+        "steel": "#575851",
+        "safetyPaint": "#9e722f"
+      },
+      "highVisibility": {
+        "safetyPaint": "#f5c640"
+      }
+    },
+    "stats": {
+      "triangles": 552,
+      "sizeM": [
+        0.9301,
+        0.8632,
+        0.439
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "steel",
+        "color": "#748088",
+        "parts": [
+          "collector-plenum",
+          "hopper-front",
+          "hopper-back",
+          "hopper-left",
+          "hopper-right",
+          "hopper-discharge",
+          "dust-outlet",
+          "fan-motor",
+          "walkway-rail"
+        ],
+        "param": "steel"
+      },
+      {
+        "name": "safetyPaint",
+        "color": "#dfa344",
+        "parts": [
+          "access-roof",
+          "support-leg--320--120",
+          "support-leg--320-120",
+          "support-leg-320--120",
+          "support-leg-320-120",
+          "fan-duct",
+          "service-walkway"
+        ],
+        "param": "safetyPaint"
+      },
+      {
+        "name": "filter-bag-0",
+        "color": "#c3b280",
+        "parts": [
+          "filter-bag-0",
+          "filter-bag-1",
+          "filter-bag-2",
+          "filter-bag-3",
+          "filter-bag-4",
+          "filter-bag-5"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bucket-elevator",
+    "kit": "industrial-plant",
+    "title": "Bucket elevator",
+    "description": "Bucket elevator with a tall casing, visible enclosed bucket belt, boot housing, head pulley cover and service ladder. Controls: overall scale, structural steel, safety paint, belt rubber, bucket polymer.",
+    "category": "structure",
+    "origin": "base",
+    "tags": [
+      "industrial plant",
+      "factory",
+      "process equipment",
+      "low poly",
+      "CC0"
+    ],
+    "compat": [
+      "industrial-plant",
+      "factory",
+      "manufacturing",
+      "industrial-scene"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/industrial-plant/bucket-elevator.kcad.ts",
+    "preview": "/assets/industrial-plant-bucket-elevator.png",
+    "sourceSha256": "547c3bb07b3fb18b992a828db9162a6518f38e4887a89a446928686846dfe67d",
+    "triangleBudget": 1400,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "steel",
+        "type": "color",
+        "default": "#718087",
+        "label": "Structural steel"
+      },
+      {
+        "name": "safetyPaint",
+        "type": "color",
+        "default": "#dfa747",
+        "label": "Safety paint"
+      },
+      {
+        "name": "beltRubber",
+        "type": "color",
+        "default": "#283238",
+        "label": "Belt rubber"
+      },
+      {
+        "name": "bucketPolymer",
+        "type": "color",
+        "default": "#d6982d",
+        "label": "Bucket polymer"
+      }
+    ],
+    "presets": {
+      "weathered": {
+        "steel": "#575851",
+        "safetyPaint": "#9e722f",
+        "beltRubber": "#202629",
+        "bucketPolymer": "#89643a"
+      },
+      "highVisibility": {
+        "steel": "#718087",
+        "safetyPaint": "#f5c640",
+        "beltRubber": "#30373b",
+        "bucketPolymer": "#e2a52d"
+      }
+    },
+    "stats": {
+      "triangles": 780,
+      "sizeM": [
+        0.465,
+        1.0836,
+        0.39
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "steel",
+        "color": "#718087",
+        "parts": [
+          "casing-back-panel",
+          "casing-side-left",
+          "casing-side-right",
+          "casing-front-left",
+          "casing-front-right",
+          "inspection-panel-lower",
+          "inspection-panel-upper",
+          "inspection-frame-left",
+          "inspection-frame-right",
+          "inspection-sill",
+          "inspection-header",
+          "bucket-head-pulley",
+          "bucket-boot-pulley",
+          "head-shaft",
+          "ladder-rung-0",
+          "ladder-rung-1",
+          "ladder-rung-2",
+          "ladder-rung-3",
+          "ladder-rung-4",
+          "ladder-rung-5",
+          "ladder-rung-6"
+        ],
+        "param": "steel"
+      },
+      {
+        "name": "beltRubber",
+        "color": "#283238",
+        "parts": [
+          "bucket-belt-rising",
+          "bucket-belt-return"
+        ],
+        "param": "beltRubber"
+      },
+      {
+        "name": "bucketPolymer",
+        "color": "#d6982d",
+        "parts": [
+          "bucket-0-back",
+          "bucket-0-floor",
+          "bucket-0-left-cheek",
+          "bucket-0-right-cheek",
+          "bucket-0-front-lip",
+          "bucket-1-back",
+          "bucket-1-floor",
+          "bucket-1-left-cheek",
+          "bucket-1-right-cheek",
+          "bucket-1-front-lip",
+          "bucket-2-back",
+          "bucket-2-floor",
+          "bucket-2-left-cheek",
+          "bucket-2-right-cheek",
+          "bucket-2-front-lip",
+          "bucket-3-back",
+          "bucket-3-floor",
+          "bucket-3-left-cheek",
+          "bucket-3-right-cheek",
+          "bucket-3-front-lip",
+          "bucket-4-back",
+          "bucket-4-floor",
+          "bucket-4-left-cheek",
+          "bucket-4-right-cheek",
+          "bucket-4-front-lip",
+          "bucket-5-back",
+          "bucket-5-floor",
+          "bucket-5-left-cheek",
+          "bucket-5-right-cheek",
+          "bucket-5-front-lip"
+        ],
+        "param": "bucketPolymer"
+      },
+      {
+        "name": "safetyPaint",
+        "color": "#dfa747",
+        "parts": [
+          "boot",
+          "head-house",
+          "service-ladder-left",
+          "service-ladder-right"
+        ],
+        "param": "safetyPaint"
+      }
+    ]
+  },
+  {
+    "id": "forklift-truck",
+    "kit": "industrial-plant",
+    "title": "Forklift truck",
+    "description": "Counterbalance LPG forklift at about real size: rounded cast counterweight over steer wheels, drive tyres, two-stage mast with lift and tilt cylinders, fork carriage with load backrest and L-shaped tines, overhead guard with slatted roof and beacon, seat, steering column, step pods and a strapped LPG bottle. Material controls: body paint, mast and guard steel, tyres and seat, bottle and fittings; weathered, highVisibility and electric-blue presets.",
+    "category": "vehicle",
+    "origin": "base",
+    "tags": [
+      "industrial plant",
+      "factory",
+      "warehouse",
+      "forklift",
+      "lift truck",
+      "counterbalance",
+      "material handling",
+      "vehicle",
+      "CC0"
+    ],
+    "compat": [
+      "industrial-plant",
+      "factory",
+      "manufacturing",
+      "industrial-scene",
+      "warehouse"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/industrial-plant/forklift-truck.kcad.ts",
+    "preview": "/assets/industrial-plant-forklift-truck.png",
+    "sourceSha256": "2b3513bf26b526d5f017469e6d1cf6013e9f063a60e8b866df502277bc22ebfe",
+    "triangleBudget": 5000,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "body",
+        "type": "color",
+        "default": "#e3a51c",
+        "label": "Body and counterweight paint"
+      },
+      {
+        "name": "frame",
+        "type": "color",
+        "default": "#2c3135",
+        "label": "Mast, guard and forks steel"
+      },
+      {
+        "name": "rubber",
+        "type": "color",
+        "default": "#1c1e20",
+        "label": "Tyres, seat and floor mat"
+      },
+      {
+        "name": "fittings",
+        "type": "color",
+        "default": "#c9ccc8",
+        "label": "LPG bottle, hubs and chains"
+      }
+    ],
+    "presets": {
+      "weathered": {
+        "body": "#a87b2c",
+        "frame": "#3b3a36",
+        "rubber": "#2a2a28",
+        "fittings": "#9a9688"
+      },
+      "highVisibility": {
+        "body": "#f5c640",
+        "frame": "#1f2326"
+      },
+      "electric-blue": {
+        "body": "#2a5f9e",
+        "frame": "#2b2f33",
+        "fittings": "#e8e8e2"
+      }
+    },
+    "stats": {
+      "triangles": 3388,
+      "sizeM": [
+        3.11,
+        2.35,
+        1.14
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "rubber",
+        "color": "#1c1e20",
+        "parts": [
+          "drive--1-tyre",
+          "steer--1-tyre",
+          "drive-1-tyre",
+          "steer-1-tyre",
+          "floor-plate",
+          "seat-cushion",
+          "seat-back",
+          "steering-wheel",
+          "steering-knob",
+          "lever-knob-0",
+          "lever-knob-1",
+          "lever-knob-2"
+        ],
+        "param": "rubber"
+      },
+      {
+        "name": "fittings",
+        "color": "#c9ccc8",
+        "parts": [
+          "drive--1-rim",
+          "steer--1-rim",
+          "drive-1-rim",
+          "steer-1-rim",
+          "lpg-bottle",
+          "lpg-valve-guard",
+          "mast-roller--1",
+          "tilt-rod--1",
+          "lift-chain--1",
+          "mast-roller-1",
+          "tilt-rod-1",
+          "lift-chain-1",
+          "lift-ram"
+        ],
+        "param": "fittings"
+      },
+      {
+        "name": "frame",
+        "color": "#2c3135",
+        "parts": [
+          "drive--1-hub",
+          "steer--1-hub",
+          "drive-1-hub",
+          "steer-1-hub",
+          "chassis-tub",
+          "step-tread--1",
+          "step-tread-1",
+          "tow-pin-housing",
+          "dash-top",
+          "steering-column",
+          "hydraulic-lever-0",
+          "hydraulic-lever-1",
+          "hydraulic-lever-2",
+          "guard-post-front--1",
+          "guard-post-rear--1",
+          "guard-side-rail--1",
+          "guard-post-front-1",
+          "guard-post-rear-1",
+          "guard-side-rail-1",
+          "guard-end-rail--830",
+          "guard-end-rail-160",
+          "guard-slat-0",
+          "guard-slat-1",
+          "guard-slat-2",
+          "guard-slat-3",
+          "guard-slat-4",
+          "guard-slat-5",
+          "guard-slat-6",
+          "beacon-base",
+          "lpg-valve",
+          "lpg-cradle",
+          "lpg-strap--260",
+          "lpg-strap-260",
+          "mast-outer--1",
+          "mast-inner--1",
+          "tilt-cylinder--1",
+          "mast-outer-1",
+          "mast-inner-1",
+          "tilt-cylinder-1",
+          "mast-crosshead-180",
+          "mast-crosshead-1200",
+          "mast-crosshead-2160",
+          "lift-cylinder",
+          "chain-sheave",
+          "sheave-beam",
+          "carriage-bar-240",
+          "carriage-bar-600",
+          "carriage-side--1",
+          "carriage-side-1",
+          "backrest-top",
+          "backrest-bar-0",
+          "backrest-bar-1",
+          "backrest-bar-2",
+          "backrest-bar-3",
+          "backrest-bar-4",
+          "backrest-bar-5",
+          "backrest-bar-6",
+          "fork--1",
+          "fork-hook--1",
+          "fork-1",
+          "fork-hook-1"
+        ],
+        "param": "frame"
+      },
+      {
+        "name": "body",
+        "color": "#e3a51c",
+        "parts": [
+          "step-pod--1",
+          "front-wing--1",
+          "step-pod-1",
+          "front-wing-1",
+          "counterweight-lower",
+          "counterweight-upper",
+          "engine-hood",
+          "cowl"
+        ],
+        "param": "body"
+      },
+      {
+        "name": "tail-lamp--1",
+        "color": "#b3261e",
+        "parts": [
+          "tail-lamp--1",
+          "tail-lamp-1"
+        ]
+      },
+      {
+        "name": "beacon",
+        "color": "#f08c00",
+        "parts": [
+          "beacon"
+        ]
+      },
+      {
+        "name": "work-light--1",
+        "color": "#f1efe2",
+        "parts": [
+          "work-light--1",
+          "work-light-1",
+          "headlight--1",
+          "headlight-1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "weigh-hopper",
+    "kit": "industrial-plant",
+    "title": "Weigh hopper",
+    "description": "Batch weigh hopper with a broad upper bin, load-cell supports, tapered rectangular discharge chute and outlet gate. Controls: overall scale, steel, safety paint, wear liner.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "industrial plant",
+      "factory",
+      "process equipment",
+      "low poly",
+      "CC0"
+    ],
+    "compat": [
+      "industrial-plant",
+      "factory",
+      "manufacturing",
+      "industrial-scene"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/industrial-plant/weigh-hopper.kcad.ts",
+    "preview": "/assets/industrial-plant-weigh-hopper.png",
+    "sourceSha256": "1152aa7679f9a191514232a46ac0ca622de12f3dd76c1320187de18c655065de",
+    "triangleBudget": 1400,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "steel",
+        "type": "color",
+        "default": "#748089",
+        "label": "Structural steel"
+      },
+      {
+        "name": "safetyPaint",
+        "type": "color",
+        "default": "#e0a747",
+        "label": "Safety paint"
+      },
+      {
+        "name": "liner",
+        "type": "color",
+        "default": "#50666b",
+        "label": "Wear liner"
+      }
+    ],
+    "presets": {
+      "weathered": {
+        "steel": "#575851",
+        "safetyPaint": "#9e722f",
+        "liner": "#3f5054"
+      },
+      "highVisibility": {
+        "safetyPaint": "#f5c640"
+      }
+    },
+    "stats": {
+      "triangles": 236,
+      "sizeM": [
+        0.5616,
+        0.5813,
+        0.4752
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "steel",
+        "color": "#748089",
+        "parts": [
+          "upper-bin",
+          "support-leg-0",
+          "support-leg-1",
+          "support-leg-2",
+          "support-leg-3"
+        ],
+        "param": "steel"
+      },
+      {
+        "name": "safetyPaint",
+        "color": "#e0a747",
+        "parts": [
+          "top-rim",
+          "outlet",
+          "foot-0",
+          "foot-1",
+          "foot-2",
+          "foot-3",
+          "slide-gate"
+        ],
+        "param": "safetyPaint"
+      },
+      {
+        "name": "liner",
+        "color": "#50666b",
+        "parts": [
+          "hopper-transition"
+        ],
+        "param": "liner"
+      }
+    ]
+  }
+]

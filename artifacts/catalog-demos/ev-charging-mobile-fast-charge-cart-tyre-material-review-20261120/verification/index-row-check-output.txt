@@ -1,0 +1,26 @@
+{
+  "asset": "mobile-fast-charge-cart",
+  "sourceSha256": "4a69a1e32b2214f00f51e122dcaf253673afade8a4b197ba846f2c5fdcff791b",
+  "preview": "/assets/ev-charging-infrastructure-mobile-fast-charge-cart.png",
+  "changedIndexRows": [
+    "mobile-fast-charge-cart"
+  ],
+  "triangleCount": 672,
+  "boundsM": [
+    0.956,
+    1.182,
+    1.05
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountRecorded": true,
+    "triangleCountWithinBudget": true,
+    "boundsRecorded": true,
+    "tyreControlAdded": true,
+    "descriptionNamesTyreRubber": true
+  },
+  "passed": true
+}

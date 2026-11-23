@@ -1,0 +1,6 @@
+npx tsx scripts/renderCatalogPreviews.ts mobile-hull-access-platform
+npx tsx scripts/buildAssetCatalog.ts
+npx eslint catalog/kits/shipyard/ tests/integration/catalog/mobileHullAccessPlatformDescription.test.ts artifacts/catalog-demos/shipyard-mobile-hull-platform-claim-review-20261117/verification/check_local_page.ts
+npx vitest run tests/integration/catalog/mobileHullAccessPlatformDescription.test.ts
+npx tsx artifacts/catalog-demos/shipyard-mobile-hull-platform-claim-review-20261117/verification/check_local_page.ts
+bash artifacts/catalog-demos/shipyard-mobile-hull-platform-claim-review-20261117/make_demo.sh

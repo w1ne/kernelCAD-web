@@ -104,15 +104,17 @@ if (load.value === 'loaded') {
 }
 
 // ---- Idlers ----
+// Roller shells share the frame-steel finish; drive paint stays on painted
+// equipment such as the gearbox, chute and belt covers.
 const idlerSet = (name, x, gap) => {
-  add(`${name}-centre`, tilt(latheY([[65, -195], [65, 195]], x, -130, 10)).color(drivePaint));
-  for (const [k, s] of [-1, 1].entries()) add(`${name}-wing-${k}`, tilt(tube([x, s * 215, -130], [x, s * 560, 115], 65, 10)).color(drivePaint));
+  add(`${name}-centre`, tilt(latheY([[65, -195], [65, 195]], x, -130, 10)).color(frameSteel));
+  for (const [k, s] of [-1, 1].entries()) add(`${name}-wing-${k}`, tilt(tube([x, s * 215, -130], [x, s * 560, 115], 65, 10)).color(frameSteel));
   if (!gap) add(`${name}-frame`, tilt(blk(x - 45, -SY, -330, x + 45, SY, -260)).color(frameSteel));
 };
 for (let x = 500, i = 0; x <= 3000; x += 500, i++) idlerSet(`impact-idler-${i}`, x, false);
 for (let x = 4200, i = 0; x <= L - 600; x += 1300, i++) idlerSet(`carry-idler-${i}`, x, false);
 for (let x = 2000, i = 0; x <= L - 1000; x += 3000, i++) {
-  add(`return-idler-${i}`, tilt(latheY([[70, -BW - 30], [70, BW + 30]], x, -2 * RP - 150, 10)).color(drivePaint));
+  add(`return-idler-${i}`, tilt(latheY([[70, -BW - 30], [70, BW + 30]], x, -2 * RP - 150, 10)).color(frameSteel));
   for (const [k, s] of [-1, 1].entries()) add(`return-hanger-${i}-${k}`, tilt(blk(x - 30, s * (BW + 70) - 25, -2 * RP - 200, x + 30, s * (BW + 70) + 25, -300)).color(frameSteel));
 }
 

@@ -1,0 +1,29 @@
+{
+  "checkedAt": "2026-11-17T04:07:00Z",
+  "scope": "Open issue/PR title and body searches for each selected asset, plus open PR changed paths against origin/develop",
+  "assets": [
+    "bulk-loading-spout",
+    "burner-management-skid",
+    "mobile-tool-cart",
+    "rooftop-air-handler",
+    "vacuum-pump-unit"
+  ],
+  "openIssueCount": 8,
+  "openPullRequestCount": 13,
+  "issueHits": [],
+  "pullRequestTitleOrBodyHits": [],
+  "changedPathHits": [],
+  "currentCatalogPR": {
+    "number": 1507,
+    "headSha": "197d69e32020ad36c0efb449c1c5217b61b78db5",
+    "candidatePathsChanged": false
+  },
+  "catalogFeaturePR": {
+    "number": 1258,
+    "state": "MERGED",
+    "mergedAt": "2026-11-14T23:12:38Z",
+    "reportedChecks": 17,
+    "successfulChecks": 17,
+    "submittedReviews": 0
+  }
+}

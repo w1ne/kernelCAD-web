@@ -1,0 +1,12 @@
+{
+  "rows": 2402,
+  "target": "industrial-plant/process-reactor-vessel",
+  "indexedSourceSha256": "10ffab3c05bd64c6f74f42cc0b36561fe8b92270d04f98a3b1660ed1b5a8891e",
+  "sourceSha256": "10ffab3c05bd64c6f74f42cc0b36561fe8b92270d04f98a3b1660ed1b5a8891e",
+  "preview": "/assets/industrial-plant-process-reactor-vessel.png",
+  "previewSha256": "0b514449e6de0c2ae4522cc65f40de8c997cc4e1ae0c380dad58ae07626bf30a",
+  "triangleCount": 612,
+  "triangleBudget": 1400,
+  "nonTargetRowsUnchanged": true,
+  "controlsPresetsStatsAndPreviewPathUnchanged": true
+}

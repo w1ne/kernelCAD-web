@@ -84,10 +84,17 @@ export function formatFaceCandidates(refText: string, candidates: readonly FaceC
   const lines = candidates.map((c, i) =>
     `  #${i + 1} centre (${c.center.join(', ')}), normal (${c.normal.join(', ')}) → face: ${c.selector}`,
   );
+  const axes = new Set(candidates.map((c) => axisName(c.normal)));
+  const axis = axes.size === 1 ? [...axes][0] : undefined;
+  const letter = axis?.replace('-', '');
+  const byExtent = axis === undefined
+    ? ''
+    : ` To pick by position instead, { byNormal: '${axis}', extreme: '${letter}' } is the one furthest toward +${letter}, ` +
+      `{ byNormal: '${axis}', extreme: '-${letter}' } the one furthest toward -${letter}.`;
   return (
     `Candidates for ${refText}:\n${lines.join('\n')}\n` +
     `Fix: pass the FaceQuery of the one you mean in place of ${refText} ` +
     `(\`atX/atY/atZ\` match the face centre within 1 mm), or apply this feature to the primitive ` +
-    `BEFORE the union/cut that split it.`
+    `BEFORE the union/cut that split it.${byExtent}`
   );
 }

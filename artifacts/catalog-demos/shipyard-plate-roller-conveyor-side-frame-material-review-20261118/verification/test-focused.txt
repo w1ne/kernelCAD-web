@@ -1,0 +1,9 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/plateRollerConveyorSideFrameMaterials.test.ts > shipyard/plate-roller-conveyor side-frame materials > uses one painted-steel finish for both mirrored side frames 335ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  22:41:40
+   Duration  11.30s (transform 8.60s, setup 163ms, import 10.35s, tests 626ms, environment 0ms)

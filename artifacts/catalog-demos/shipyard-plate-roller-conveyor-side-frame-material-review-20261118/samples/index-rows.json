@@ -1,0 +1,531 @@
+[
+  {
+    "id": "coating-mix-cabinet",
+    "kit": "shipyard",
+    "title": "Coating mix cabinet",
+    "description": "Ventilated material cabinet with a mixing worktop, paired lower doors, top extraction hood, and side shelf. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "shipyard",
+      "shipbuilding",
+      "drydock",
+      "refit",
+      "low poly",
+      "CC0",
+      "coating",
+      "mix",
+      "cabinet"
+    ],
+    "compat": [
+      "shipyard",
+      "marine",
+      "drydock",
+      "ship-repair"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/shipyard/coating-mix-cabinet.kcad.ts",
+    "preview": "/assets/shipyard-coating-mix-cabinet.png",
+    "sourceSha256": "49846b39d7177032ccddaca304f1ab6fd89d609594547b852a2f9ad5a469fc62",
+    "triangleBudget": 1800,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "yardPaint",
+        "type": "color",
+        "default": "#7d7567",
+        "label": "Yard finish"
+      },
+      {
+        "name": "structuralSteel",
+        "type": "color",
+        "default": "#b6c1c4",
+        "label": "Structural steel"
+      }
+    ],
+    "presets": {
+      "fresh-coat": {
+        "yardPaint": "#948e82",
+        "structuralSteel": "#d0d7d8"
+      },
+      "weathered-yard": {
+        "yardPaint": "#686155",
+        "structuralSteel": "#828d91"
+      }
+    },
+    "stats": {
+      "triangles": 224,
+      "sizeM": [
+        2.03,
+        2.36,
+        0.96
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "yardPaint",
+        "color": "#7d7567",
+        "parts": [
+          "cabinet-body",
+          "toe-kick",
+          "mixing-top",
+          "lower-door-0",
+          "lower-door-1",
+          "extraction-hood"
+        ],
+        "param": "yardPaint"
+      },
+      {
+        "name": "structuralSteel",
+        "color": "#b6c1c4",
+        "parts": [
+          "side-shelf",
+          "vent-stack"
+        ],
+        "param": "structuralSteel"
+      }
+    ]
+  },
+  {
+    "id": "optical-measurement-station",
+    "kit": "shipyard",
+    "title": "Optical measurement station",
+    "description": "Portable optical measurement head on a tripod base with a hooded sensor, side handle, and target mast. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "shipyard",
+      "shipbuilding",
+      "drydock",
+      "refit",
+      "low poly",
+      "CC0",
+      "optical",
+      "measurement",
+      "station"
+    ],
+    "compat": [
+      "shipyard",
+      "marine",
+      "drydock",
+      "ship-repair"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/shipyard/optical-measurement-station.kcad.ts",
+    "preview": "/assets/shipyard-optical-measurement-station.png",
+    "sourceSha256": "0405d45106a0c8860a482988e8a00bc698a7e9d06adc4d87a40f79f2f9e3ef78",
+    "triangleBudget": 1800,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "yardPaint",
+        "type": "color",
+        "default": "#718780",
+        "label": "Yard finish"
+      },
+      {
+        "name": "structuralSteel",
+        "type": "color",
+        "default": "#b6c1c4",
+        "label": "Structural steel"
+      },
+      {
+        "name": "safetyMarking",
+        "type": "color",
+        "default": "#efb934",
+        "label": "Safety marking"
+      }
+    ],
+    "presets": {
+      "fresh-coat": {
+        "yardPaint": "#8b9d97",
+        "structuralSteel": "#d0d7d8",
+        "safetyMarking": "#ffd44d"
+      },
+      "weathered-yard": {
+        "yardPaint": "#5e706a",
+        "structuralSteel": "#828d91",
+        "safetyMarking": "#bd8528"
+      }
+    },
+    "stats": {
+      "triangles": 276,
+      "sizeM": [
+        0.82,
+        1.85,
+        0.99
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "structuralSteel",
+        "color": "#b6c1c4",
+        "parts": [
+          "tripod-leg-0",
+          "tripod-leg-1",
+          "tripod-leg-2",
+          "side-handle"
+        ],
+        "param": "structuralSteel"
+      },
+      {
+        "name": "yardPaint",
+        "color": "#718780",
+        "parts": [
+          "instrument-base",
+          "instrument-head",
+          "optical-hood"
+        ],
+        "param": "yardPaint"
+      },
+      {
+        "name": "safetyMarking",
+        "color": "#efb934",
+        "parts": [
+          "lens-ring",
+          "target-mast"
+        ],
+        "param": "safetyMarking"
+      }
+    ]
+  },
+  {
+    "id": "pipe-spool-saddle-stand",
+    "kit": "shipyard",
+    "title": "Pipe spool saddle stand",
+    "description": "Adjustable pipe support with a broad base, twin uprights, saddle crossbar, locking collars, and storage tray. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "shipyard",
+      "shipbuilding",
+      "drydock",
+      "refit",
+      "low poly",
+      "CC0",
+      "pipe",
+      "spool",
+      "saddle",
+      "stand"
+    ],
+    "compat": [
+      "shipyard",
+      "marine",
+      "drydock",
+      "ship-repair"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/shipyard/pipe-spool-saddle-stand.kcad.ts",
+    "preview": "/assets/shipyard-pipe-spool-saddle-stand.png",
+    "sourceSha256": "aec340db4d7bac78433b4974516dc0ead8989965a48f0a87e4cce739ad01aab6",
+    "triangleBudget": 1800,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "yardPaint",
+        "type": "color",
+        "default": "#778780",
+        "label": "Yard finish"
+      },
+      {
+        "name": "structuralSteel",
+        "type": "color",
+        "default": "#b6c1c4",
+        "label": "Structural steel"
+      }
+    ],
+    "presets": {
+      "fresh-coat": {
+        "yardPaint": "#8f9d97",
+        "structuralSteel": "#d0d7d8"
+      },
+      "weathered-yard": {
+        "yardPaint": "#63706a",
+        "structuralSteel": "#828d91"
+      }
+    },
+    "stats": {
+      "triangles": 224,
+      "sizeM": [
+        1.6,
+        1.45,
+        0.715
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "yardPaint",
+        "color": "#778780",
+        "parts": [
+          "base"
+        ],
+        "param": "yardPaint"
+      },
+      {
+        "name": "structuralSteel",
+        "color": "#b6c1c4",
+        "parts": [
+          "upright-0",
+          "upright-1",
+          "saddle-crossbar",
+          "saddle-cap",
+          "locking-collar-0",
+          "locking-collar-1",
+          "tool-tray"
+        ],
+        "param": "structuralSteel"
+      }
+    ]
+  },
+  {
+    "id": "plate-roller-conveyor",
+    "kit": "shipyard",
+    "title": "Plate roller conveyor",
+    "description": "Section of plate feed line with a heavy frame, transverse rollers, side guides, and adjustable feet. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "shipyard",
+      "shipbuilding",
+      "drydock",
+      "refit",
+      "low poly",
+      "CC0",
+      "plate",
+      "roller",
+      "conveyor"
+    ],
+    "compat": [
+      "shipyard",
+      "marine",
+      "drydock",
+      "ship-repair"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/shipyard/plate-roller-conveyor.kcad.ts",
+    "preview": "/assets/shipyard-plate-roller-conveyor.png",
+    "sourceSha256": "4a4f4ab9755c23b5f98c4bef43e797995aee5c5b917aad5eb7edf74ffd5b0f1f",
+    "triangleBudget": 1800,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "yardPaint",
+        "type": "color",
+        "default": "#78847e",
+        "label": "Yard finish"
+      },
+      {
+        "name": "structuralSteel",
+        "type": "color",
+        "default": "#b6c1c4",
+        "label": "Structural steel"
+      }
+    ],
+    "presets": {
+      "fresh-coat": {
+        "yardPaint": "#909a95",
+        "structuralSteel": "#d0d7d8"
+      },
+      "weathered-yard": {
+        "yardPaint": "#646e69",
+        "structuralSteel": "#828d91"
+      }
+    },
+    "stats": {
+      "triangles": 440,
+      "sizeM": [
+        2.55,
+        0.575,
+        1.54
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "yardPaint",
+        "color": "#78847e",
+        "parts": [
+          "side-frame-0"
+        ],
+        "param": "yardPaint"
+      },
+      {
+        "name": "structuralSteel",
+        "color": "#b6c1c4",
+        "parts": [
+          "side-frame-1",
+          "feed-roller-0",
+          "feed-roller-1",
+          "feed-roller-2",
+          "feed-roller-3",
+          "feed-roller-4",
+          "feed-roller-5",
+          "guide-rail-0",
+          "guide-rail-1",
+          "leveling-foot-0",
+          "leveling-foot-1",
+          "leveling-foot-2",
+          "leveling-foot-3"
+        ],
+        "param": "structuralSteel"
+      }
+    ]
+  },
+  {
+    "id": "temporary-work-light-mast",
+    "kit": "shipyard",
+    "title": "Temporary work light mast",
+    "description": "Portable telescoping light mast on a stabilizing base with a four-lamp head and cable hook. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+    "category": "prop",
+    "origin": "base",
+    "tags": [
+      "shipyard",
+      "shipbuilding",
+      "drydock",
+      "refit",
+      "low poly",
+      "CC0",
+      "temporary",
+      "work",
+      "light",
+      "mast"
+    ],
+    "compat": [
+      "shipyard",
+      "marine",
+      "drydock",
+      "ship-repair"
+    ],
+    "license": "CC0-1.0",
+    "source": "catalog/kits/shipyard/temporary-work-light-mast.kcad.ts",
+    "preview": "/assets/shipyard-temporary-work-light-mast.png",
+    "sourceSha256": "317881a4cb4c4fbf662fc2edd59d9f6dfa8a564a731a067ff018521dfa98d123",
+    "triangleBudget": 1800,
+    "params": [
+      {
+        "name": "scale",
+        "type": "number",
+        "default": 1,
+        "label": "Overall scale",
+        "min": 0.65,
+        "max": 1.35,
+        "step": 0.05
+      },
+      {
+        "name": "yardPaint",
+        "type": "color",
+        "default": "#d5a951",
+        "label": "Yard finish"
+      },
+      {
+        "name": "structuralSteel",
+        "type": "color",
+        "default": "#b6c1c4",
+        "label": "Structural steel"
+      },
+      {
+        "name": "safetyMarking",
+        "type": "color",
+        "default": "#efb934",
+        "label": "Safety marking"
+      }
+    ],
+    "presets": {
+      "fresh-coat": {
+        "yardPaint": "#ddb870",
+        "structuralSteel": "#d0d7d8",
+        "safetyMarking": "#ffd44d"
+      },
+      "weathered-yard": {
+        "yardPaint": "#b18c43",
+        "structuralSteel": "#828d91",
+        "safetyMarking": "#bd8528"
+      }
+    },
+    "stats": {
+      "triangles": 364,
+      "sizeM": [
+        1.74,
+        3.32,
+        1.16
+      ],
+      "minUpM": 0,
+      "materials": 1
+    },
+    "palette": [
+      {
+        "name": "yardPaint",
+        "color": "#d5a951",
+        "parts": [
+          "base-foot",
+          "stabilizer-0",
+          "stabilizer-1",
+          "stabilizer-2",
+          "stabilizer-3"
+        ],
+        "param": "yardPaint"
+      },
+      {
+        "name": "structuralSteel",
+        "color": "#b6c1c4",
+        "parts": [
+          "mast-lower",
+          "mast-upper",
+          "cable-hook"
+        ],
+        "param": "structuralSteel"
+      },
+      {
+        "name": "safetyMarking",
+        "color": "#efb934",
+        "parts": [
+          "lamp-bar",
+          "lamp-0",
+          "lamp-1",
+          "lamp-2",
+          "lamp-3"
+        ],
+        "param": "safetyMarking"
+      }
+    ]
+  }
+]

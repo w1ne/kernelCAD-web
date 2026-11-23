@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/export/creaseSplit.ts
 //
-// Crease-split shading normals for the PLY and USD mesh writers. The export
+// Crease-split shading normals for the PLY, OBJ and USD mesh writers. The export
 // mesher shares vertices across B-rep face boundaries, so a plain average
 // rounds every sharp edge. A vertex shared by faces meeting at more than the
 // crease angle gets one normal per smooth fan instead.

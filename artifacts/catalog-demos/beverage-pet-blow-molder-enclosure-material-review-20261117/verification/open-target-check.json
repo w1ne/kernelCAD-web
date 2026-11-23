@@ -1,0 +1,29 @@
+{
+  "bottle-rinser-carousel": {
+    "openIssues": [],
+    "openPullRequests": []
+  },
+  "case-erector": {
+    "openIssues": [],
+    "openPullRequests": []
+  },
+  "case-layer-palletizer": {
+    "openIssues": [],
+    "openPullRequests": []
+  },
+  "openCatalogPR1507SourcePathCheck": {
+    "bottle-rinser-carousel": false,
+    "case-erector": false,
+    "case-layer-palletizer": false,
+    "pet-blow-molder": false,
+    "rotary-filler": false
+  },
+  "pet-blow-molder": {
+    "openIssues": [],
+    "openPullRequests": []
+  },
+  "rotary-filler": {
+    "openIssues": [],
+    "openPullRequests": []
+  }
+}

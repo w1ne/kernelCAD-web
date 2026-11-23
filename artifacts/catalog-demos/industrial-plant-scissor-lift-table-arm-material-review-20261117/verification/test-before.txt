@@ -1,0 +1,4 @@
+Command: npx vitest run tests/integration/catalog/scissorLiftTableMaterial.test.ts
+Run state: original scissor-lift-table source, before the material correction
+Exit code: 1
+Result: 1 test failed. The `steel` palette contained `scissor-arm-a--1` and `scissor-arm-a-1`, but not `scissor-arm-b--1` or `scissor-arm-b-1`; those B-arm parts were still in `safetyPaint`.

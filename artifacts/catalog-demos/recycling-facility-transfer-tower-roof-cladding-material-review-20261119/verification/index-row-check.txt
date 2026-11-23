@@ -1,0 +1,18 @@
+{
+  "asset": "recycling-facility/conveyor-transfer-tower",
+  "sourceSha256": "6a13c36fc6a56b433d8d46a01ad88f99a6ce04d8e7358ac94b06ac19f896fa5b",
+  "preview": "/assets/recycling-facility-conveyor-transfer-tower.png",
+  "previewExists": true,
+  "triangles": 2054,
+  "sizeM": [
+    17.83,
+    6.8,
+    3.902507
+  ],
+  "triangleBudget": 4400,
+  "catalogAssets": 2402,
+  "changedIndexRows": [
+    "recycling-facility/conveyor-transfer-tower"
+  ],
+  "nonTargetRowsUnchanged": true
+}

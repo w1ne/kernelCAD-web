@@ -1,0 +1,69 @@
+{
+  "date": "2026-11-17",
+  "asset": "industrial-plant/process-reactor-vessel",
+  "sourceChanges": 4,
+  "beforeSourceSha256": "b80a6a83670cdb4587db403f314a0f5cc01c0938407a112546760d1c40eda571",
+  "afterSourceSha256": "10ffab3c05bd64c6f74f42cc0b36561fe8b92270d04f98a3b1660ed1b5a8891e",
+  "beforePreviewSha256": "61480bb5c4f5016046905e24f861f82e6ee854839b3e9468d78b093dcd853be4",
+  "afterPreviewSha256": "0b514449e6de0c2ae4522cc65f40de8c997cc4e1ae0c380dad58ae07626bf30a",
+  "index": {
+    "rows": 2402,
+    "target": "industrial-plant/process-reactor-vessel",
+    "indexedSourceSha256": "10ffab3c05bd64c6f74f42cc0b36561fe8b92270d04f98a3b1660ed1b5a8891e",
+    "sourceSha256": "10ffab3c05bd64c6f74f42cc0b36561fe8b92270d04f98a3b1660ed1b5a8891e",
+    "preview": "/assets/industrial-plant-process-reactor-vessel.png",
+    "previewSha256": "0b514449e6de0c2ae4522cc65f40de8c997cc4e1ae0c380dad58ae07626bf30a",
+    "triangleCount": 612,
+    "triangleBudget": 1400,
+    "nonTargetRowsUnchanged": true,
+    "controlsPresetsStatsAndPreviewPathUnchanged": true
+  },
+  "focusedRegression": {
+    "baseline": "fails at the roof-lip steel-finish assertion as expected",
+    "after": "1 test passed"
+  },
+  "catalogIntegration": {
+    "status": "passed",
+    "filesPassed": 130,
+    "filesTotal": 130,
+    "testsPassed": 200,
+    "testsTotal": 200
+  },
+  "eslint": "passed for the entire industrial-plant kit and focused regression test",
+  "kitQuality": {
+    "assetsPassing": 60,
+    "assetsTotal": 60,
+    "passRate": "100.00%"
+  },
+  "renderInspection": {
+    "canonicalBundle": "not produced",
+    "reason": "installed kernelcad CLI requires Node >=24 and Playwright Chromium; workspace Node is 22 and Playwright Chromium is unavailable",
+    "fallback": "generated catalog preview opened and visually reviewed"
+  },
+  "demo": {
+    "video": "industrial-plant-process-reactor-rings-material-review.mp4",
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "frameRate": "30/1",
+    "durationSeconds": 15.0,
+    "decodedReviewFrames": [
+      "decoded-01.png",
+      "decoded-02.png",
+      "decoded-03.png",
+      "decoded-04.png",
+      "decoded-05.png"
+    ],
+    "visualInspection": "Contact sheet contains audit, baseline, source assignment, updated render and verification slides.",
+    "claimLimit": "Local source/render and software checks only; no deployment, simulation, fabrication or hardware acceptance."
+  },
+  "pr1258": {
+    "state": "MERGED",
+    "mergedAt": "2026-11-14T23:12:38Z",
+    "reviewDecision": "",
+    "reviewEvents": 0,
+    "allRecordedChecksSucceeded": true,
+    "recordedChecks": 17
+  },
+  "deployment": "not deployed; local source and software render only"
+}

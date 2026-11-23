@@ -1,0 +1,19 @@
+{
+  "asset": "industrial-plant/palletizer-robot-cell",
+  "sourceSha256": "ed5a1f70836696f10ca7dbcf936e3e5dfc298fd8f874f9e73792ff0b28091c1b",
+  "indexedSourceSha256": "ed5a1f70836696f10ca7dbcf936e3e5dfc298fd8f874f9e73792ff0b28091c1b",
+  "sourceHashMatches": true,
+  "preview": "/assets/industrial-plant-palletizer-robot-cell.png",
+  "previewExists": true,
+  "triangleBudget": 1400,
+  "triangles": 254,
+  "colorParams": [
+    "steel",
+    "safetyPaint",
+    "concrete"
+  ],
+  "presetNames": [
+    "highVisibility",
+    "weathered"
+  ]
+}

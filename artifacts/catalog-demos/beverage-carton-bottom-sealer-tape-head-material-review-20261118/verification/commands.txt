@@ -1,0 +1,13 @@
+PR review: gh pr view 1258 --json state,reviews,statusCheckRollup
+Open target audit: gh pr list --state open; gh api repos/w1ne/kernelCAD-web/pulls/<number>/files --paginate; gh issue list --state open
+Current public baseline: curl -fsSL detail page, public source and preview; compare public source/preview SHA-256 with local copies
+Baseline regression: npx vitest run tests/integration/catalog/cartonBottomSealerTapeHeadMaterial.test.ts --reporter=verbose
+Preview: npx tsx scripts/renderCatalogPreviews.ts carton-bottom-sealer
+Index: npx tsx scripts/buildAssetCatalog.ts
+Index verification: compare the generated row's sourceSha256 with the source, confirm its preview path exists, and confirm only the target row changed
+Full index freshness: npx vitest run tests/integration/catalog/catalogIndex.test.ts --reporter=verbose (also included in the full catalog integration suite; rebuilds all 2,402 assets and compares the exact serialized index)
+Lint: npx eslint catalog/kits/beverage-bottling-line/
+Focused regression: npx vitest run tests/integration/catalog/cartonBottomSealerTapeHeadMaterial.test.ts --reporter=verbose
+Catalog integration: npx vitest run tests/integration/catalog/ --reporter=verbose
+Demo: python3 artifacts/catalog-demos/beverage-carton-bottom-sealer-tape-head-material-review-20261118/make_demo.py
+Video inspection: python3 artifacts/catalog-demos/beverage-carton-bottom-sealer-tape-head-material-review-20261118/inspect_video.py

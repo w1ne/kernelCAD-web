@@ -1,0 +1,10 @@
+The four failures reported by scripts/checkCatalogQuality.py --top 4 are:
+
+- catalog/kits/standard-components/din-rail.kcad.ts
+- catalog/kits/standard-components/hose-barb-adapter.kcad.ts
+- catalog/kits/standard-components/retaining-ring.kcad.ts
+- catalog/kits/standard-components/beam-coupling.kcad.ts
+
+Each source file is unchanged from origin/develop. The edited industrial-plant
+asset passes the gate; the industrial-plant kit reports 60/60 (100%). The
+global result remains 2,398/2,402 (99.83%).

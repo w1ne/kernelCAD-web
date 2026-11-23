@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-18",
+  "pr1258": {
+    "state": "MERGED",
+    "mergedAt": "2026-11-14T23:12:38Z",
+    "reportedChecks": 17,
+    "successfulChecks": 17,
+    "failedChecks": 0,
+    "submittedReviews": 0
+  },
+  "openPrs": [
+    {
+      "number": 1507,
+      "title": "fix(catalog): refine industrial-plant material finishes"
+    },
+    {
+      "number": 1400,
+      "title": "fix(examples): seat the meta-glasses parts without interpenetration"
+    },
+    {
+      "number": 1309,
+      "title": "Rebuild the compact supported arm as a desktop 4-DOF"
+    },
+    {
+      "number": 1253,
+      "title": "feat(catalog): downloadable GLB + STEP on every asset page (the acquisition loop)"
+    },
+    {
+      "number": 1187,
+      "title": "feat(params): plain JS math on params, fast and universal (dependency-aware rebuild)"
+    },
+    {
+      "number": 1094,
+      "title": "perf(gears): ring gear as one holed-profile extrude (HOLD: face IDs change)"
+    }
+  ],
+  "openPrsTouchingCandidates": [],
+  "candidates": [
+    "water-treatment/activated-carbon-filter-vessel",
+    "water-treatment/equalization-basin",
+    "water-treatment/sodium-hypochlorite-cabinet",
+    "water-treatment/bar-screen-channel",
+    "water-treatment/membrane-filtration-rack"
+  ],
+  "openIssueSearchResults": {
+    "activated-carbon-filter-vessel": [],
+    "equalization-basin": [],
+    "sodium-hypochlorite-cabinet": [],
+    "bar-screen-channel": [],
+    "membrane-filtration-rack": []
+  }
+}

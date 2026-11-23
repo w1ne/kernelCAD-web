@@ -1,0 +1,16 @@
+{
+  "computedSha256": "3264a72debdcd31f4fec39e465d97736612fdd76565d939307ed45a4bfdcffb0",
+  "indexSha256": "3264a72debdcd31f4fec39e465d97736612fdd76565d939307ed45a4bfdcffb0",
+  "preview": "/assets/beverage-bottling-line-pet-blow-molder.png",
+  "triangleBudget": 2200,
+  "triangles": 364,
+  "colorParams": [
+    "stainlessSteel",
+    "powderCoat",
+    "enclosureCoat"
+  ],
+  "presets": [
+    "sanitaryLine",
+    "legacyPlant"
+  ]
+}

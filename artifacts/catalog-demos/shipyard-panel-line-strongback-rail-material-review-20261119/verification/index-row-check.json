@@ -1,0 +1,23 @@
+{
+  "asset": "panel-line-strongback",
+  "sourceSha256": "9263498d7a434758237e79eccda7259b291a71ee93523d42b10fdc10972089d4",
+  "preview": "/assets/shipyard-panel-line-strongback.png",
+  "changedIndexRows": [
+    "panel-line-strongback"
+  ],
+  "triangleCount": 476,
+  "boundsM": [
+    3,
+    0.54,
+    1.52
+  ],
+  "checks": {
+    "sourceSha256Matches": true,
+    "previewPathMatches": true,
+    "previewExists": true,
+    "onlyTargetIndexRowChanged": true,
+    "triangleCountUnchanged": true,
+    "boundsUnchanged": true
+  },
+  "passed": true
+}

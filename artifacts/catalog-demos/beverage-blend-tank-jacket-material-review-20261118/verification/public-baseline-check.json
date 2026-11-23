@@ -1,0 +1,11 @@
+{
+  "checkedAtUtc": "2026-11-18T21:53:00Z",
+  "detailPage": "https://kernelcad.com/catalog/beverage-bottling-line/beverage-blend-tank/",
+  "detailPageHttpStatus": 200,
+  "preview": "https://kernelcad.com/catalog/beverage-bottling-line/beverage-blend-tank/preview.png",
+  "previewHttpStatus": 200,
+  "localBaselinePreviewSha256": "ed13a292b97d41f20adcf78b30dc220bbea95fdccea22d7fa4152e7f1f69af87",
+  "publicBaselinePreviewSha256": "ed13a292b97d41f20adcf78b30dc220bbea95fdccea22d7fa4152e7f1f69af87",
+  "pageInspection": "Existing Chrome/CDP session showed the live catalog detail page with its title, preview, knobs, presets, size and triangle budget. The public preview hash matched the checked-in baseline PNG.",
+  "scope": "Baseline before branch change; this feature branch is not deployed."
+}

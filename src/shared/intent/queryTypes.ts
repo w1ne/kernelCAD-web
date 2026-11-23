@@ -70,6 +70,12 @@ export type EdgeQuery = {
   ofCurveType?: CurveTypeName;
   tolerance?: number;     // default 1.0
   angleTolerance?: number; // default 10 (degrees)
+  /**
+   * Keep only edges that border a face matching this FaceQuery (the edges of
+   * the top face: `{ ofFace: { byNormal: 'Z', extreme: 'Z' } }`). AND-combines
+   * with every other key.
+   */
+  ofFace?: FaceQuery;
 };
 
 export type FaceQuery = {
@@ -91,6 +97,14 @@ export type FaceQuery = {
   minArea?: number;
   maxArea?: number;
   boundingBoxIn?: BoundingRegion | BoundingBoxCorners;
+  /**
+   * Of the faces that match the other keys, keep those furthest along this
+   * direction (face centres projected on it, within `tolerance`). `'Z'` is the
+   * highest face, `'-X'` the one furthest toward -X. Use it to name a face on
+   * a stacked or unioned body where the canonical `'top'` is ambiguous:
+   * `{ byNormal: 'Z', extreme: 'Z' }` is the topmost upward-facing face.
+   */
+  extreme?: DirectionSpec;
 };
 
 export type EdgeSegment = {
