@@ -127,10 +127,6 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
 // citation).
 export const ISSUE_TRACKED: ReadonlyMap<string, { issue: number; testFile: string }> = new Map([
   [
-    'examples/robot-arm/compact-supported-arm.kcad.ts',
-    { issue: 346, testFile: 'tests/integration/examples/compactSupportedArm.test.ts' },
-  ],
-  [
     'examples/robot-arm/skill-built-supported-arm.kcad.ts',
     { issue: 352, testFile: 'tests/integration/examples/skillBuiltSupportedArm.test.ts' },
   ],
