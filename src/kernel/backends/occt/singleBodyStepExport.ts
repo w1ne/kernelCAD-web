@@ -7,7 +7,7 @@
 
 import { resolveColor } from '../../../shared/render/palette';
 import { OcctBackend } from './occtBackend';
-import { writeStepBody } from './stepAssemblyExport';
+import { writeStepBody, type StepLengthUnit } from './stepAssemblyExport';
 
 /**
  * STEP product name of a bare shape: the source file name without its
@@ -23,13 +23,18 @@ export function stepBodyName(fileName: string): string {
 /**
  * Export one shape as a STEP file with a named product. `color` is a role
  * token or a `#rrggbb` literal; a value that is neither, or no value, writes
- * no colour. A backend without an OCCT shape keeps its own STEP writer.
+ * no colour. `unit` is the file's length unit (default `mm`). A backend
+ * without an OCCT shape keeps its own millimetre STEP writer.
  */
 export async function exportShapeToSTEPAsync(
   shape: OcctBackend,
   name: string,
   color?: string,
+  unit: StepLengthUnit = 'mm',
 ): Promise<Uint8Array> {
-  if (!(shape instanceof OcctBackend)) return (shape as OcctBackend).exportSTEPAsync();
-  return writeStepBody({ shape: shape.getReplicadShape().wrapped, name, color: resolveColor(color) });
+  if (!(shape instanceof OcctBackend)) {
+    if (unit !== 'mm') throw new Error(`STEP unit '${unit}' needs an OCCT shape; this backend writes millimetres only.`);
+    return (shape as OcctBackend).exportSTEPAsync();
+  }
+  return writeStepBody({ shape: shape.getReplicadShape().wrapped, name, color: resolveColor(color) }, { unit });
 }
