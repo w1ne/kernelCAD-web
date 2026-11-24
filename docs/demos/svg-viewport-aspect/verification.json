@@ -40,7 +40,7 @@
   "narrowTest": {
     "command": "npx vitest run src/kernel/import/importSvg.test.ts",
     "files": 1,
-    "passed": 47,
+    "passed": 48,
     "failed": 0
   },
   "relatedTest": {

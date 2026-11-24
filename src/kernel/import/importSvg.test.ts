@@ -520,6 +520,13 @@ describe('importSvgText — units', () => {
     expect(r.regions[0].areaMm2).toBeCloseTo(100, 9);
   });
 
+  it('ignores a non-positive height and keeps the width-only scale', () => {
+    const r = importSvgText(svg('<rect x="0" y="0" width="100" height="100"/>',
+      'width="200mm" height="-100mm" viewBox="0 0 100 100"'));
+    expect(r.unitScale).toBeCloseTo(2, 12);
+    expect(r.unitSource).toBe("width='200mm' over viewBox width 100");
+  });
+
   it('refuses a percentage width, which has no absolute size', () => {
     expect(() => importSvgText(svg('<polygon points="0,0 10,0 10,10 0,10"/>',
       'width="100%" viewBox="0 0 10 10"')))

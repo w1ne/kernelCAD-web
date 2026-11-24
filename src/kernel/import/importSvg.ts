@@ -900,7 +900,8 @@ function physicalHeightMm(raw: string | undefined): number | null {
   if (raw === undefined) return null;
   const suffix = raw.trim().match(/[a-z%]+$/i)?.[0].toLowerCase();
   if (suffix === undefined || !isLengthUnit(suffix)) return null;
-  return lengthToMm(raw, '<svg> height');
+  const mm = lengthToMm(raw, '<svg> height');
+  return mm !== null && mm > 0 ? mm : null;
 }
 
 /** Decide the root matrix: `opts.units` first, then the physical viewport
