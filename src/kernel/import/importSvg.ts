@@ -38,9 +38,10 @@
 // One SVG user unit becomes millimetres by this ladder, and the result is
 // always reported in `unitSource` — never assumed silently:
 //   1. `opts.units` — user units are that unit, whatever the file says.
-//   2. `viewBox` + physically-dimensioned `width` and `height` (e.g.
-//      `width="120mm" height="60mm"`) — the viewport-scale rule followed by
-//      SVG `preserveAspectRatio` (default `xMidYMid meet`), so a viewBox whose
+//   2. `viewBox` + a declared `width` and `height` (e.g.
+//      `width="120mm" height="60mm"`, or unitless `width="192"` = 192 CSS
+//      pixels) — the viewport-scale rule followed by SVG
+//      `preserveAspectRatio` (default `xMidYMid meet`), so a viewBox whose
 //      aspect differs from the viewport is letterboxed, not stretched.
 //      Width alone sets a uniform scale from the width.
 //   3. Otherwise a user unit is one CSS pixel = 1/96 inch, which is what the
@@ -894,19 +895,21 @@ function axisFraction(token: string | undefined): number {
   return token === 'Min' ? 0 : token === 'Max' ? 1 : 0.5;
 }
 
-/** A `height` with a known absolute length unit. Percentage and unitless
- *  heights have no absolute size here, so they stay null. */
+/** A `height` with a known length: an absolute unit or a unitless CSS pixel
+ *  count. Percentage heights have no absolute size here, so they stay null. */
 function physicalHeightMm(raw: string | undefined): number | null {
   if (raw === undefined) return null;
   const suffix = raw.trim().match(/[a-z%]+$/i)?.[0].toLowerCase();
-  if (suffix === undefined || !isLengthUnit(suffix)) return null;
+  if (suffix === '%' || (suffix !== undefined && !isLengthUnit(suffix))) return null;
   const mm = lengthToMm(raw, '<svg> height');
   return mm !== null && mm > 0 ? mm : null;
 }
 
-/** Decide the root matrix: `opts.units` first, then the physical viewport
+/** Decide the root matrix: `opts.units` first, then the declared viewport
  *  (`width`/`height` over the viewBox with `preserveAspectRatio`), then the
- *  width-only uniform scale, then the CSS-pixel default. */
+ *  width-only uniform scale, then the CSS-pixel default. A unitless width or
+ *  height is a CSS pixel count, so it takes part in the viewport scale exactly
+ *  like `width="192px"` does. */
 function resolveSvgPlacement(
   root: Tag,
   viewBox: ViewBox | null,
@@ -918,8 +921,7 @@ function resolveSvgPlacement(
   }
   const widthAttr = root.attrs.width;
   const widthMm = widthAttr !== undefined ? lengthToMm(widthAttr, '<svg> width') : null;
-  const widthIsPhysical = widthAttr !== undefined && /[a-z]/i.test(widthAttr);
-  if (viewBox && widthIsPhysical && widthMm !== null) {
+  if (viewBox && widthMm !== null && widthMm > 0) {
     const heightMm = physicalHeightMm(root.attrs.height);
     if (heightMm !== null) return viewportPlacement(root, viewBox, widthMm, heightMm, flipAbout !== null);
     return widthPlacement(widthAttr!, widthMm, viewBox, flipAbout);
