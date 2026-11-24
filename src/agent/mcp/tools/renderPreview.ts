@@ -48,6 +48,7 @@ import {
   watermarkBrokenMechanism,
 } from '../../cli/commands/render';
 import { mechanismErrors } from '../../cli/lib/mechanismBanner';
+import { overlayRefusalFor } from './renderPreviewOverlayRefusal';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { parseExplodeInput, type ParsedExplode } from '../../../modeling/runtime/explodedPoses';
 import { loadScriptFeatures } from '../../../composition/scriptLoader';
@@ -968,28 +969,5 @@ async function renderPreviewWork(args: {
       ...(probe.mechanism === 'broken' ? probe.failures : []),
       ...(overlayRefusal !== undefined ? [overlayRefusal] : []),
     ],
-  };
-}
-
-/** A requested overlay that matched no visible part is a REFUSAL, not a
- *  silent no-op: the caller asked for a texture/LED state and must not be
- *  told a render succeeded without it. */
-function overlayRefusalFor(
-  overlays: import('../../render/headlessRender').DisplayOverlayResult | undefined,
-): CompilerDiagnostic | undefined {
-  if (overlays === undefined) return undefined;
-  const missing = [...overlays.displaysMissing, ...overlays.indicatorsMissing];
-  if (missing.length === 0) return undefined;
-  return {
-    target: 'export-occt',
-    code: 'cli.invalid-args',
-    severity: 'error',
-    message:
-      `render_preview: ${missing.length} overlay target(s) matched no visible part: ${missing.join(', ')}. `
-      + 'The PNGs were still written, but those display/indicator overlays are NOT in them.',
-    hint:
-      'Name a loaded assembly part or feature id (use inspect({ of: "features" }) / inspect({ of: "assembly" })), '
-      + 'or pass subMesh to pick one material group of an imported GLB. Part names are matched case-insensitively '
-      + 'against the feature id, assembly part name, display name and filter names.',
   };
 }

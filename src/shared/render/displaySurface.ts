@@ -283,7 +283,7 @@ function parseDisplaySurface(raw: unknown, index: number): DisplaySurfaceSpec | 
   if (!part.ok) return part.message;
   const image = requiredStringField(collection, index, 'image', raw.image);
   if (!image.ok) return image.message;
-  const subMesh = optionalStringField(collection, index, 'subMesh', raw.subMesh);
+  const subMesh = optionalStringField(collection, index, 'sub_mesh', raw.sub_mesh ?? raw.subMesh);
   if (!subMesh.ok) return subMesh.message;
   const face = enumField(collection, index, 'face', raw.face, DISPLAY_FACES, `Valid faces: ${DISPLAY_FACES.join(', ')}.`);
   if (!face.ok) return face.message;
@@ -295,9 +295,9 @@ function parseDisplaySurface(raw: unknown, index: number): DisplaySurfaceSpec | 
   if (!rotation.ok) return rotation.message;
   const mode = enumField(collection, index, 'mode', raw.mode, DISPLAY_SURFACE_MODES, `Use one of ${DISPLAY_SURFACE_MODES.join(', ')}.`);
   if (!mode.ok) return mode.message;
-  const emissiveIntensity = rangeField(collection, index, 'emissiveIntensity', raw.emissiveIntensity, 0, 5);
+  const emissiveIntensity = rangeField(collection, index, 'emissive_intensity', raw.emissive_intensity ?? raw.emissiveIntensity, 0, 5);
   if (!emissiveIntensity.ok) return emissiveIntensity.message;
-  const offsetMm = rangeField(collection, index, 'offsetMm', raw.offsetMm, 0, 5);
+  const offsetMm = rangeField(collection, index, 'offset_mm', raw.offset_mm ?? raw.offsetMm, 0, 5);
   if (!offsetMm.ok) return offsetMm.message;
   return withoutUndefined({
     part: part.value,
@@ -375,7 +375,7 @@ function parseIndicatorState(raw: unknown, index: number): ResolvedIndicatorStat
   if (!isRecord(raw)) return `${collection}[${index}] must be an object { part, color, ... }.`;
   const part = requiredStringField(collection, index, 'part', raw.part);
   if (!part.ok) return part.message;
-  const subMesh = optionalStringField(collection, index, 'subMesh', raw.subMesh);
+  const subMesh = optionalStringField(collection, index, 'sub_mesh', raw.sub_mesh ?? raw.subMesh);
   if (!subMesh.ok) return subMesh.message;
   const color = hexColorField(collection, index, raw.color);
   if (!color.ok) return color.message;

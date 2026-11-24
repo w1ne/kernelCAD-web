@@ -20,12 +20,12 @@ const DISPLAY_SURFACES_SCHEMA = {
   type: 'array',
   maxItems: MAX_DISPLAY_SURFACES,
   description:
-    'Display surfaces: real screen images seated on named part faces. Each entry names a part (or feature) and a PNG/JPEG/WebP image (path relative to the script, an absolute path, or a data:image/... URI), plus an optional face (+x/-x/+y/-y/+z/-z, default +z), region [u0, v0, u1, v1] in [0, 1], rotation, mode (oled/lcd/epaper) and offsetMm. Land on real imported GLB display modules: the plane seats on the panel active-area sub-mesh when the part has one.',
+    'Display surfaces: real screen images seated on named part faces. Each entry names a part (or feature) and a PNG/JPEG/WebP image (path relative to the script, an absolute path, or a data:image/... URI), plus an optional face (+x/-x/+y/-y/+z/-z, default +z), region [u0, v0, u1, v1] in [0, 1], rotation, mode (oled/lcd/epaper) and offset_mm. Land on real imported GLB display modules: the plane seats on the panel active-area sub-mesh when the part has one.',
   items: {
     type: 'object',
     properties: {
       part: { type: 'string', description: 'Assembly part name, feature id, or display name of the carrier part. Use "part/sub-mesh" to name a sub-mesh.' },
-      subMesh: { type: 'string', description: 'Sub-mesh name inside a composite GLB part (e.g. the panel or glass primitive).' },
+      sub_mesh: { type: 'string', description: 'Sub-mesh name inside a composite GLB part (e.g. the panel or glass primitive).' },
       image: { type: 'string', description: 'PNG/JPEG/WebP image: path relative to the script, absolute path, or data:image/...;base64,... URI.' },
       face: { type: 'string', enum: [...DISPLAY_FACES], description: "Part-bbox face the screen sits on (default '+z')." },
       region: {
@@ -37,8 +37,8 @@ const DISPLAY_SURFACES_SCHEMA = {
       },
       rotation: { type: 'number', enum: [...DISPLAY_ROTATIONS], description: 'In-plane texture rotation in degrees (default 0).' },
       mode: { type: 'string', enum: [...DISPLAY_SURFACE_MODES], description: "Panel finish: 'oled' (default, dark glass + self-lit), 'lcd' (backlit white), 'epaper' (matte, unlit)." },
-      emissiveIntensity: { type: 'number', minimum: 0, maximum: 5, description: 'Emission multiplier for oled/lcd (default 1.1 / 0.65).' },
-      offsetMm: { type: 'number', minimum: 0, maximum: 5, description: 'Plane offset off the part face in mm (default 0.035).' },
+      emissive_intensity: { type: 'number', minimum: 0, maximum: 5, description: 'Emission multiplier for oled/lcd (default 1.8 / 0.8).' },
+      offset_mm: { type: 'number', minimum: 0, maximum: 5, description: 'Plane offset off the part face in mm (default 0.035).' },
     },
     required: ['part', 'image'],
     additionalProperties: false,
@@ -55,7 +55,7 @@ const INDICATOR_STATES_SCHEMA = {
     type: 'object',
     properties: {
       part: { type: 'string', description: 'Assembly part name, feature id, or display name of the indicator part. Use "part/sub-mesh" to name a sub-mesh.' },
-      subMesh: { type: 'string', description: 'Sub-mesh name inside a composite GLB part (e.g. the LED lens).' },
+      sub_mesh: { type: 'string', description: 'Sub-mesh name inside a composite GLB part (e.g. the LED lens).' },
       color: { type: 'string', description: "LED colour as '#rrggbb'." },
       level: { type: 'number', minimum: 0, maximum: 1, description: 'Brightness 0 (off) to 1 (full, default 1).' },
       intensity: { type: 'number', minimum: 0, maximum: 10, description: 'Emissive multiplier at level 1 (default 2.2).' },
