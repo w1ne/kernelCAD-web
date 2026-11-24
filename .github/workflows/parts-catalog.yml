@@ -133,3 +133,4 @@ jobs:
         with:
           name: parts-catalog
           path: catalog
+          retention-days: 7

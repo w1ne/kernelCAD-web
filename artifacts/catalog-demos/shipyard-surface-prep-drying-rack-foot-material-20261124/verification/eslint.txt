@@ -1,0 +1,1 @@
+ESLint: no findings (exit 0) on catalog/kits/shipyard/ and tests/integration/catalog/surfacePrepDryingRackMaterial.test.ts

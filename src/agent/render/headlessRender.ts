@@ -20,6 +20,7 @@ import { meshFeaturesPerFeature } from '../../modeling/capture/featureMeshing';
 import { serializeForBridge, type FeatureMeshSerialized } from '../../modeling/capture/featureMeshSerialize';
 import { CANONICAL_VIEWS, SHEET_VIEWS, type RenderView } from '../../shared/render/views';
 import type { PublishStageSpec } from '../../shared/render/publishPreset';
+import type { ResolvedDisplaySurface, ResolvedIndicatorState } from '../../shared/render/displaySurface';
 import { PUBLISH_QUERY_PARTS, applyPublishStageOnPage, capturePublishTile } from './publishCapture';
 
 export type { RenderView };
@@ -47,6 +48,13 @@ declare const window: {
     setRenderPose: (azDeg: number, elDeg: number, outputAspect?: number) => void;
     setReferenceImagesVisible: (visible: boolean) => void;
     setRenderEnvironment: (spec: unknown) => Promise<void>;
+    setDisplaySurfaces: (
+      specs: readonly ResolvedDisplaySurface[],
+    ) => Promise<{ applied: string[]; missing: string[] }>;
+    setIndicatorStates: (
+      specs: readonly ResolvedIndicatorState[],
+    ) => { applied: string[]; missing: string[] };
+    waitForPendingTextures: (timeoutMs?: number) => Promise<void>;
   };
 };
 
@@ -164,6 +172,11 @@ export interface HeadlessRenderOpts {
    *  and the camera is auto-framed with the preset margin. RGB only — the
    *  inspection channels are engineering evidence and keep the default look. */
   publish?: PublishStageSpec;
+  /** Resolved display surfaces: textured planes seated on loaded part faces.
+   *  Images are already data URLs (see displaySurfaceImages.ts). */
+  displays?: readonly ResolvedDisplaySurface[];
+  /** Resolved LED / indicator emissive states applied to loaded parts. */
+  indicators?: readonly ResolvedIndicatorState[];
 }
 
 export interface HeadlessRenderResult {
@@ -176,6 +189,10 @@ export interface HeadlessRenderResult {
   inspectionChannelMetadata?: HeadlessInspectionCapture['metadata'];
   bounds: { min: [number, number, number]; max: [number, number, number] };
   objectVisibility?: HeadlessObjectVisibility;
+  /** Which requested display / indicator overlays actually landed. Present
+   *  only when an overlay was requested; a non-empty `*Missing` list means the
+   *  caller must not report that texture or LED state. */
+  displayOverlays?: DisplayOverlayResult;
 }
 
 /** The demo-player's headless ViewerPane is fixed at this size; capturing
@@ -360,6 +377,50 @@ export async function updateFeatureTransformsOnPage(
     ({ t, b }) => window.__demoPlayer!.updateFeatureTransforms(t, b),
     { t: transforms, b: bounds },
   );
+}
+
+export interface PageDisplayOverlays {
+  displays?: readonly ResolvedDisplaySurface[];
+  indicators?: readonly ResolvedIndicatorState[];
+}
+
+/**
+ * Apply display-surface planes and indicator states to the page scene, then
+ * wait for every texture that is still decoding. Safe to call with neither
+ * list (it only settles pending textures). MUST run after every full
+ * `loadFeatureMeshes` — that rebuilds every feature group and its materials —
+ * and is unnecessary on transform-only frames, where both stay attached to
+ * their group and move rigidly with the part. Indicator states are applied
+ * after display surfaces so a display plane is never tinted as an LED.
+ */
+export interface DisplayOverlayResult {
+  /** Requested display parts whose plane was seated on a visible part. */
+  displaysApplied: string[];
+  /** Requested display parts that matched no visible feature group, or whose
+   *  face had no usable extent. A non-empty list is a REFUSED overlay, not a
+   *  silent no-op: the caller must not report a texture that never landed. */
+  displaysMissing: string[];
+  indicatorsApplied: string[];
+  indicatorsMissing: string[];
+}
+
+export async function applyDisplayOverlaysOnPage(
+  page: Pick<Page, 'evaluate'>,
+  overlays: PageDisplayOverlays,
+): Promise<DisplayOverlayResult> {
+  const displays = overlays.displays !== undefined && overlays.displays.length > 0
+    ? await page.evaluate((specs) => window.__demoPlayer!.setDisplaySurfaces(specs), overlays.displays)
+    : { applied: [], missing: [] };
+  const indicators = overlays.indicators !== undefined && overlays.indicators.length > 0
+    ? await page.evaluate((specs) => window.__demoPlayer!.setIndicatorStates(specs), overlays.indicators)
+    : { applied: [], missing: [] };
+  await page.evaluate(() => window.__demoPlayer?.waitForPendingTextures?.());
+  return {
+    displaysApplied: displays.applied,
+    displaysMissing: displays.missing,
+    indicatorsApplied: indicators.applied,
+    indicatorsMissing: indicators.missing,
+  };
 }
 
 /** How long the page may spend loading + PMREM-prefiltering an HDRI before the
@@ -572,7 +633,11 @@ export async function openRenderPage(
   baseUrl: string,
   serialized: readonly FeatureMeshSerialized[],
   meshing: Awaited<ReturnType<typeof meshFeaturesPerFeature>>,
-): Promise<{ pageHandle: DemoPlayerPageHandle; objectVisibility: HeadlessObjectVisibility | undefined }> {
+): Promise<{
+  pageHandle: DemoPlayerPageHandle;
+  objectVisibility: HeadlessObjectVisibility | undefined;
+  displayOverlays: DisplayOverlayResult | undefined;
+}> {
   // 2. Launch headless chromium via the shared demo-player bootstrap.
   //    Build query string: headless=1 always (added by the helper),
   //    nowatermark=1 when requested.
@@ -612,6 +677,12 @@ export async function openRenderPage(
       ? await page.evaluate((filter) => window.__demoPlayer!.applyObjectVisibilityFilter(filter), opts.objectFilter)
       : undefined;
 
+    // 3a2. Display surfaces + LED states, after the visible set is settled.
+    //      Also waits for pending texture decodes before any capture.
+    //      Part-local indicator point lights live inside feature groups so
+    //      applyPublishStage (which hides only top-level scene lights) keeps them lit.
+    const displayOverlays = await applyDisplayOverlaysOnPage(page, { displays: opts.displays, indicators: opts.indicators });
+
     // 3b. Optionally hide reference-image overlays for clean engineering views.
     if (opts.hideReferenceImages) {
       await page.evaluate(() => window.__demoPlayer?.setReferenceImagesVisible(false));
@@ -637,7 +708,7 @@ export async function openRenderPage(
     // Belt-and-suspenders dev-chrome removal, once after mesh load.
     await removeDevChrome(page);
 
-    return { pageHandle, objectVisibility };
+    return { pageHandle, objectVisibility, displayOverlays };
   } catch (e) {
     await pageHandle.close();
     throw e;
@@ -795,6 +866,12 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
         : {}),
       bounds: meshing.bounds,
       ...(opened.objectVisibility !== undefined ? { objectVisibility: opened.objectVisibility } : {}),
+      ...(opened.displayOverlays !== undefined && opened.displayOverlays.displaysApplied.length
+        + opened.displayOverlays.displaysMissing.length
+        + opened.displayOverlays.indicatorsApplied.length
+        + opened.displayOverlays.indicatorsMissing.length > 0
+        ? { displayOverlays: opened.displayOverlays }
+        : {}),
     };
   } finally {
     // captureDemo has a known timeout-on-close issue; the handle's close()

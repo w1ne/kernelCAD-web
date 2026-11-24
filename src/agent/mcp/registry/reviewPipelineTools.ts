@@ -6,7 +6,64 @@ import { reviewCadTool } from '../tools/reviewCad';
 import { flattenPatternTool } from '../tools/flattenPattern';
 import { captureAnimationTool } from '../tools/captureAnimation';
 import { renderPreviewTool } from '../tools/renderPreview';
+import {
+  DISPLAY_FACES,
+  DISPLAY_ROTATIONS,
+  DISPLAY_SURFACE_MODES,
+  MAX_DISPLAY_SURFACES,
+  MAX_INDICATOR_STATES,
+} from '../../../shared/render/displaySurface';
 import type { ToolRegistryEntry } from './types';
+
+/** `displays` input schema shared by render_preview and capture_animation. */
+const DISPLAY_SURFACES_SCHEMA = {
+  type: 'array',
+  maxItems: MAX_DISPLAY_SURFACES,
+  description:
+    'Display surfaces: real screen images seated on named part faces. Each entry names a part (or feature) and a PNG/JPEG/WebP image (path relative to the script, an absolute path, or a data:image/... URI), plus an optional face (+x/-x/+y/-y/+z/-z, default +z), region [u0, v0, u1, v1] in [0, 1], rotation, mode (oled/lcd/epaper) and offset_mm. Land on real imported GLB display modules: the plane seats on the panel active-area sub-mesh when the part has one.',
+  items: {
+    type: 'object',
+    properties: {
+      part: { type: 'string', description: 'Assembly part name, feature id, or display name of the carrier part. Use "part/sub-mesh" to name a sub-mesh.' },
+      sub_mesh: { type: 'string', description: 'Sub-mesh name inside a composite GLB part (e.g. the panel or glass primitive).' },
+      image: { type: 'string', description: 'PNG/JPEG/WebP image: path relative to the script, absolute path, or data:image/...;base64,... URI.' },
+      face: { type: 'string', enum: [...DISPLAY_FACES], description: "Part-bbox face the screen sits on (default '+z')." },
+      region: {
+        type: 'array',
+        minItems: 4,
+        maxItems: 4,
+        items: { type: 'number', minimum: 0, maximum: 1 },
+        description: 'Sub-region of the face as [u0, v0, u1, v1] in [0, 1], u0 < u1, v0 < v1 (default [0, 0, 1, 1]).',
+      },
+      rotation: { type: 'number', enum: [...DISPLAY_ROTATIONS], description: 'In-plane texture rotation in degrees (default 0).' },
+      mode: { type: 'string', enum: [...DISPLAY_SURFACE_MODES], description: "Panel finish: 'oled' (default, dark glass + self-lit), 'lcd' (backlit white), 'epaper' (matte, unlit)." },
+      emissive_intensity: { type: 'number', minimum: 0, maximum: 5, description: 'Emission multiplier for oled/lcd (default 1.8 / 0.8).' },
+      offset_mm: { type: 'number', minimum: 0, maximum: 5, description: 'Plane offset off the part face in mm (default 0.035).' },
+    },
+    required: ['part', 'image'],
+    additionalProperties: false,
+  },
+} as const;
+
+/** `indicators` input schema shared by render_preview and capture_animation. */
+const INDICATOR_STATES_SCHEMA = {
+  type: 'array',
+  maxItems: MAX_INDICATOR_STATES,
+  description:
+    'Live / simulated LED and indicator emissive states. Each entry tints the LED sub-meshes of a named part (or one sub-mesh) with an emissive colour, a level (0 = off, 1 = full) and an intensity multiplier, and adds a subtle local point light so lit LEDs spill colour onto nearby PCB/enclosure surfaces. Works on real imported GLB parts (LED/lens/dome sub-meshes are preferred over pins/leads).',
+  items: {
+    type: 'object',
+    properties: {
+      part: { type: 'string', description: 'Assembly part name, feature id, or display name of the indicator part. Use "part/sub-mesh" to name a sub-mesh.' },
+      sub_mesh: { type: 'string', description: 'Sub-mesh name inside a composite GLB part (e.g. the LED lens).' },
+      color: { type: 'string', description: "LED colour as '#rrggbb'." },
+      level: { type: 'number', minimum: 0, maximum: 1, description: 'Brightness 0 (off) to 1 (full, default 1).' },
+      intensity: { type: 'number', minimum: 0, maximum: 10, description: 'Emissive multiplier at level 1 (default 5.5).' },
+    },
+    required: ['part', 'color'],
+    additionalProperties: false,
+  },
+} as const;
 
 export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
   {
@@ -248,6 +305,9 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
         'endpoint is excluded, so the loop is seamless). A turntable has no poses to verify: it reports verify_skipped: true. ' +
         'ENVIRONMENT: needs playwright chromium (npx playwright install chromium) and ffmpeg for MP4/GIF (frames_dir needs ' +
         'neither); the bundled static player is served automatically, no dev server required. ' +
+        'DISPLAYS / INDICATORS: pass { displays } to seat real display PNGs (OLED/LCD/e-paper) on named part faces and ' +
+        '{ indicators } for live/simulated LED emissive states; both stay attached to their part and move with it ' +
+        'in timeline and turntable mode. ' +
         'Returns { ok, output_path, frame_count, duration_ms, fps, verified, verify_skipped?, collisions: [{ t_ms, a, b, volume_mm3 }], diagnostics }.',
       inputSchema: {
         type: 'object',
@@ -269,6 +329,8 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
           background: { type: 'string', description: "Turntable + publish: 'white' (default), 'light', 'dark', 'black', '#rrggbb', or 'transparent' (frames_dir only — MP4/GIF have no usable alpha)." },
           shadow: { type: 'boolean', description: 'Turntable + publish: soft contact shadow under the model (default true).' },
           environment: { type: 'string', description: "Turntable: HDRI environment override ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse', a URL, or 'none')." },
+          displays: DISPLAY_SURFACES_SCHEMA,
+          indicators: INDICATOR_STATES_SCHEMA,
         },
         required: ['file'],
       },
@@ -311,7 +373,9 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
         'as authored, no watermark. With no views/pose it renders ONE image named \'hero\': publish at 3/4 front-right ' +
         'az=30°, el=22°, 1600×1200; studio at az=32°, el=24°, 1280×960. width/height go up to 2048; views/pose still work ' +
         'under either preset. Output is deterministic for the ' +
-        'same input. For a 360° loop use capture_animation({ turntable: true }). INSPECTION SHEET: { sheet: true } renders all ' +
+        'same input. DISPLAYS / INDICATORS: pass { displays: [{ part, image, face?, region? }] } to seat real display PNGs ' +
+        '(OLED/LCD/e-paper modules) on part faces and { indicators: [{ part, color, level? }] } for live/simulated LED ' +
+        'emissive states. For a 360° loop use capture_animation({ turntable: true }). INSPECTION SHEET: { sheet: true } renders all ' +
         'seven views (iso, front, back, left, right, top, bottom) and adds one labelled image named \'sheet\' tiling them — ' +
         'do not call a model done because it compiled; call it done when every tile of the sheet matches the request. Returns { ok, images: [{ name, path, description }], ' +
         'out_dir, bounds, mechanism, render_source, render_ms, diagnostics }. PATHS ARE LOCAL to the machine running the ' +
@@ -364,6 +428,8 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
           preset: { type: 'string', enum: ['default', 'publish', 'studio'], description: "Render look: 'default' (engineering review), 'publish' (share-ready studio product shot; one 'hero' image unless views/pose are given), or 'studio' (standard KernelCAD studio graphical render mode: studio lighting, AgX tone mapping, soft studio-gradient backdrop, 4:3 hero)." },
           background: { type: 'string', description: "preset 'publish' / 'studio' only: 'white' (publish default), 'light', 'dark', 'black', 'neutral', 'studio' (soft gradient, studio default), 'transparent' (PNG alpha), or '#rrggbb'." },
           shadow: { type: 'boolean', description: "preset 'publish' / 'studio' only: soft contact shadow under the model (default true)." },
+          displays: DISPLAY_SURFACES_SCHEMA,
+          indicators: INDICATOR_STATES_SCHEMA,
         },
       },
     },

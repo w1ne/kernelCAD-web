@@ -55,6 +55,7 @@ import type { BuiltModel } from '../../composition/buildModel';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { AnimationViewMetadata } from '../../shared/intent/animationViewRecord';
 import type { AnimationCollision } from '../../modeling/animation/verifyAnimation';
+import type { ResolvedDisplaySurface, ResolvedIndicatorState } from '../../shared/render/displaySurface';
 import { sampleTracks } from '../../modeling/animation/animationSampler';
 import { openDemoPlayerPage, type DemoPlayerPageHandle, type HeadlessObjectFilter } from './headlessRender';
 import { resolveRenderBaseUrl, type ResolvedRenderBase } from './playerServer';
@@ -128,6 +129,12 @@ export interface CaptureAnimationOpts {
   /** Opaque '#rrggbb' publish backdrop applied on every timeline frame.
    *  Omit to keep the engineering gray viewport. */
   backdrop?: string;
+  /** Resolved display surfaces (textured planes on part faces). Re-applied
+   *  after every full mesh reload; transform-only frames keep them attached. */
+  displays?: readonly ResolvedDisplaySurface[];
+  /** Resolved LED / indicator emissive states. Re-applied after every full
+   *  mesh reload (a reload rebuilds every material). */
+  indicators?: readonly ResolvedIndicatorState[];
 }
 
 /** Which side is at fault when a capture refuses or aborts. Lets CLI/MCP
@@ -163,6 +170,10 @@ export interface CaptureAnimationResult {
   collisions: AnimationCollision[];
   /** True when `skipVerify` suppressed verification. */
   verifySkipped?: boolean;
+  /** Which requested display / indicator overlays actually landed on the
+   *  page. A non-empty `*Missing` list means that texture or LED state is NOT
+   *  in the frames; the tool reports it as a refusal, never a success. */
+  displayOverlays?: import('./headlessRender').DisplayOverlayResult;
   /** Set on every ok:false result; absent on success. */
   failureKind?: CaptureFailureKind;
 }
@@ -365,6 +376,7 @@ export async function captureAnimation(
   if ('failure' in targetResult) return targetResult.failure;
 
   let pageHandle: DemoPlayerPageHandle | undefined;
+  let overlays: import('./headlessRender').DisplayOverlayResult | undefined;
   /** Provisioned render surface (bundled static player unless opts.baseUrl
    *  overrides it). Torn down in the same `finally` as the page so a failed
    *  capture never leaks a listening socket. */
@@ -405,7 +417,12 @@ export async function captureAnimation(
     if (renderSurface.source !== 'explicit') {
       onProgress(`render surface = ${renderSurface.source} (${renderSurface.baseUrl})`);
     }
-    pageHandle = await bootstrapPagePhase(renderSurface.baseUrl, initial, t0, onProgress, openPage);
+    const bootstrapped = await bootstrapPagePhase(renderSurface.baseUrl, initial, t0, onProgress, openPage, {
+      displays: opts.displays,
+      indicators: opts.indicators,
+    });
+    pageHandle = bootstrapped.pageHandle;
+    overlays = bootstrapped.displayOverlays;
 
     const loopResult = await runFrameLoopPhase({
       frames, model, page: pageHandle.page, ffmpeg, framesDir, durationMs, fps, stashedWarns, verifyFields, onProgress, opts, t0, abortFfmpeg,
@@ -420,7 +437,7 @@ export async function captureAnimation(
     if (finalFailure) return finalFailure;
 
     onProgress(`total ${Date.now() - t0}ms`);
-    return { ok: true, outPath, frameCount: written, durationMs, fps, diagnostics: [...stashedWarns], ...verifyFields() };
+    return { ok: true, outPath, frameCount: written, durationMs, fps, diagnostics: [...stashedWarns], ...verifyFields(), ...(overlays !== undefined ? { displayOverlays: overlays } : {}) };
   } catch (e) {
     // Unexpected non-frame failure (browser connect, page bootstrap, fs).
     await abortFfmpeg();

@@ -1,0 +1,31 @@
+diff --git a/catalog/kits/shipyard/hull-survey-grid-frame.kcad.ts b/catalog/kits/shipyard/hull-survey-grid-frame.kcad.ts
+index 73491dd4f..959c591fd 100644
+--- a/catalog/kits/shipyard/hull-survey-grid-frame.kcad.ts
++++ b/catalog/kits/shipyard/hull-survey-grid-frame.kcad.ts
+@@ -1,9 +1,15 @@
+-// Hull survey grid frame: Portable reference frame with an open rectangle, graduated crossbars, leveling feet, and target mounts. This profile, component layout, and color zoning define its yard role. Millimetres, Z up, base origin.
++// Hull survey grid frame: the portable reference frame a shipyard stands against
++// a hull to read plate seams and survey grid lines. What makes it that frame: two
++// open portal rectangles 2.3 m wide and 1.8 m tall, each built from a sill rail, a
++// top rail and two uprights, joined across by three cross-reference bars at
++// staggered heights. The two sill rails that stand on the dock carry the yard
++// paint, as the base members of the other shipyard stands do; the uprights, top
++// rails and crossbars stay bare structural steel. Millimetres, Z up, base origin.
+ meta({
+   name: "hull-survey-grid-frame",
+   license: 'CC0-1.0',
+   title: "Hull survey grid frame",
+-  description: "Portable reference frame with an open rectangle, graduated crossbars, leveling feet, and target mounts. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
++  description: "Portable hull survey grid frame at about real size: two open portal rectangles 2.3 m wide and 1.8 m tall, each framed by a sill rail, a top rail and two uprights, joined by three cross-reference bars at staggered heights. Material controls: yard-painted sill rails and bare structural steel; fresh-coat and weathered-yard presets.",
+   tags: ["shipyard", "shipbuilding", "drydock", "refit", "low poly", "CC0", "hull", "survey", "grid", "frame"],
+   kit: 'shipyard',
+   category: 'prop',
+@@ -52,7 +58,7 @@ const b = (name: string, size: [number, number, number], at: [number, number, nu
+ };
+ 
+ p.part("frame-rail-0", b("frame-rail-0", [2300, 110, 120], [0, -650, 60]).color(yardPaint));
+-p.part("frame-rail-1", b("frame-rail-1", [2300, 110, 120], [0, 650, 60]).color(structuralSteel));
++p.part("frame-rail-1", b("frame-rail-1", [2300, 110, 120], [0, 650, 60]).color(yardPaint));
+ p.part("frame-rail-2", b("frame-rail-2", [2300, 110, 120], [0, -650, 1800]).color(structuralSteel));
+ p.part("frame-rail-3", b("frame-rail-3", [2300, 110, 120], [0, 650, 1800]).color(structuralSteel));
+ p.part("upright-0", b("upright-0", [110, 110, 1800], [-1150, -650, 900]).color(structuralSteel));

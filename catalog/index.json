@@ -59171,7 +59171,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/scaffolding-section.kcad.ts",
       "preview": "/assets/city-street-scaffolding-section.png",
-      "sourceSha256": "d102aa9c53c01e2c473526201c53e749095d5aded3eeba928729a509989a1742",
+      "sourceSha256": "9bf31a31a191e8a7b099c7cf64c1da629bb80bbeda68bef896f850d2a6a884aa",
       "triangleBudget": 600,
       "params": [
         {
@@ -59897,7 +59897,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/street-clock.kcad.ts",
       "preview": "/assets/city-street-street-clock.png",
-      "sourceSha256": "32ae412254a2d9538cf6e10a40712940214a2f2749537d527491c8b5c29afcba",
+      "sourceSha256": "3fd8b053bfe293753080d7251f090701497e4b6facf6f76fc968b8a3b6244b08",
       "triangleBudget": 450,
       "params": [
         {
@@ -61122,7 +61122,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/utility-pole.kcad.ts",
       "preview": "/assets/city-street-utility-pole.png",
-      "sourceSha256": "b11931ee8b704b1d26aca78da476437bdc7f0f98df299381904e1ca7a5e53629",
+      "sourceSha256": "bde8f13589eef22ac18d9173e4c78de33e358558750b2f2d35735bc0d18b68c0",
       "triangleBudget": 520,
       "params": [
         {
@@ -288670,7 +288670,7 @@
       "id": "hull-survey-grid-frame",
       "kit": "shipyard",
       "title": "Hull survey grid frame",
-      "description": "Portable reference frame with an open rectangle, graduated crossbars, leveling feet, and target mounts. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "description": "Portable hull survey grid frame at about real size: two open portal rectangles 2.3 m wide and 1.8 m tall, each framed by a sill rail, a top rail and two uprights, joined by three cross-reference bars at staggered heights. Material controls: yard-painted sill rails and bare structural steel; fresh-coat and weathered-yard presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -288694,7 +288694,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/hull-survey-grid-frame.kcad.ts",
       "preview": "/assets/shipyard-hull-survey-grid-frame.png",
-      "sourceSha256": "bac2ae2981498afa0f54d2d33b1a364d4c07fc829637da546f9ead312ef88d1b",
+      "sourceSha256": "e1562c8efb5771476e548b9c9bfe8cd598f3274821dccca85aabb9449110e5be",
       "triangleBudget": 1800,
       "params": [
         {
@@ -288744,7 +288744,8 @@
           "name": "yardPaint",
           "color": "#6e817a",
           "parts": [
-            "frame-rail-0"
+            "frame-rail-0",
+            "frame-rail-1"
           ],
           "param": "yardPaint"
         },
@@ -288752,7 +288753,6 @@
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
-            "frame-rail-1",
             "frame-rail-2",
             "frame-rail-3",
             "upright-0",
@@ -292569,7 +292569,7 @@
       "id": "surface-prep-drying-rack",
       "kit": "shipyard",
       "title": "Surface preparation drying rack",
-      "description": "Open rack for small hull panels with four uprights, removable cross bars, tray feet, and spacing stops. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "description": "Open drying rack about 2.2 m wide for small hull panels: four uprights on wide tray feet, four removable cross bars in two tiers, and four spacing stops. Material controls: yard-painted floor pads and bare structural steel; fresh-coat and weathered-yard presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -292593,7 +292593,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/surface-prep-drying-rack.kcad.ts",
       "preview": "/assets/shipyard-surface-prep-drying-rack.png",
-      "sourceSha256": "0ac5b86a2eedb6b7fc327e020adefbeb08c7a0804090e03ae9024aeb8648bd62",
+      "sourceSha256": "c8d0ef4b4f69fef56eb48ddc45b4a6d47ea0114d0d69de64a414f1e6229b7f54",
       "triangleBudget": 1800,
       "params": [
         {
@@ -292640,17 +292640,10 @@
       },
       "palette": [
         {
-          "name": "yardPaint",
-          "color": "#78847c",
-          "parts": [
-            "upright-0"
-          ],
-          "param": "yardPaint"
-        },
-        {
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
+            "upright-0",
             "upright-1",
             "upright-2",
             "upright-3",
@@ -292661,13 +292654,20 @@
             "panel-stop-0",
             "panel-stop-1",
             "panel-stop-2",
-            "panel-stop-3",
+            "panel-stop-3"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "yardPaint",
+          "color": "#78847c",
+          "parts": [
             "tray-foot-0",
             "tray-foot-1",
             "tray-foot-2",
             "tray-foot-3"
           ],
-          "param": "structuralSteel"
+          "param": "yardPaint"
         }
       ]
     },

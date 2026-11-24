@@ -7716,7 +7716,7 @@
   },
   {
     "name": "capture_animation",
-    "description": "Use this when you need to render a script's animation timeline to a video, or a 360° turntable of a model for sharing. Capture a kernelCAD script's animationView({...}) timeline to an MP4 (ffmpeg) or a PNG frame sequence, verifying the sampled poses for part interference. FILE ONLY: pass { file } (a .kcad.ts path) — there is no { code } mode, because the capture engine renders from a file on disk (its relative lib.fromSTEP imports resolve against the script directory). MP4 by default; pass { frames_dir } to write frame-0000.png... and skip ffmpeg entirely (mutually exclusive with output_path). Animation-pose interference verification runs by default (keyframe times + segment midpoints) BEFORE any browser/ffmpeg cost; { no_verify: true } skips it and { verify_every: n } additionally samples every n-th frame time. Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts in the rendered frames — same semantics as `kernelcad render --focus/--hide`; visibility is render-only and does NOT affect the pose verification. Collisions DO NOT fail the call — the artifact is still written as evidence with ok: true; read verified: false + the collisions[] array. TURNTABLE MODE: pass { turntable: true } for a seamless 360° orbit of the model (no animationView record needed) — a share-ready loop for a README, social post or product page. It uses the 'publish' studio look by default (same as render_preview preset: 'publish': key/fill/rim lights, soft contact shadow, clean backdrop, 30° lens, constant auto-framing over the whole orbit, light rig turns with the camera); { preset: 'studio' } uses the standard KernelCAD studio graphical render mode; { preset: 'default' } keeps the engineering look. Knobs: width/height (default 1080×1080 for publish, 1280×960 for studio, max 2048, even for MP4), duration_ms (one revolution, default 6000), fps (default 30), elevation_deg (default publish 22° / studio 24°), background ('white' publish default, 'studio' studio default, 'light', 'dark', 'black', 'neutral', '#rrggbb', or 'transparent' with frames_dir only), shadow (default true), environment. output_path ending in .gif writes a looping GIF; otherwise MP4. Frame i sits at az 30° + 360°·i/N (the 360° endpoint is excluded, so the loop is seamless). A turntable has no poses to verify: it reports verify_skipped: true. ENVIRONMENT: needs playwright chromium (npx playwright install chromium) and ffmpeg for MP4/GIF (frames_dir needs neither); the bundled static player is served automatically, no dev server required. Returns { ok, output_path, frame_count, duration_ms, fps, verified, verify_skipped?, collisions: [{ t_ms, a, b, volume_mm3 }], diagnostics }.",
+    "description": "Use this when you need to render a script's animation timeline to a video, or a 360° turntable of a model for sharing. Capture a kernelCAD script's animationView({...}) timeline to an MP4 (ffmpeg) or a PNG frame sequence, verifying the sampled poses for part interference. FILE ONLY: pass { file } (a .kcad.ts path) — there is no { code } mode, because the capture engine renders from a file on disk (its relative lib.fromSTEP imports resolve against the script directory). MP4 by default; pass { frames_dir } to write frame-0000.png... and skip ffmpeg entirely (mutually exclusive with output_path). Animation-pose interference verification runs by default (keyframe times + segment midpoints) BEFORE any browser/ffmpeg cost; { no_verify: true } skips it and { verify_every: n } additionally samples every n-th frame time. Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts in the rendered frames — same semantics as `kernelcad render --focus/--hide`; visibility is render-only and does NOT affect the pose verification. Collisions DO NOT fail the call — the artifact is still written as evidence with ok: true; read verified: false + the collisions[] array. TURNTABLE MODE: pass { turntable: true } for a seamless 360° orbit of the model (no animationView record needed) — a share-ready loop for a README, social post or product page. It uses the 'publish' studio look by default (same as render_preview preset: 'publish': key/fill/rim lights, soft contact shadow, clean backdrop, 30° lens, constant auto-framing over the whole orbit, light rig turns with the camera); { preset: 'studio' } uses the standard KernelCAD studio graphical render mode; { preset: 'default' } keeps the engineering look. Knobs: width/height (default 1080×1080 for publish, 1280×960 for studio, max 2048, even for MP4), duration_ms (one revolution, default 6000), fps (default 30), elevation_deg (default publish 22° / studio 24°), background ('white' publish default, 'studio' studio default, 'light', 'dark', 'black', 'neutral', '#rrggbb', or 'transparent' with frames_dir only), shadow (default true), environment. output_path ending in .gif writes a looping GIF; otherwise MP4. Frame i sits at az 30° + 360°·i/N (the 360° endpoint is excluded, so the loop is seamless). A turntable has no poses to verify: it reports verify_skipped: true. ENVIRONMENT: needs playwright chromium (npx playwright install chromium) and ffmpeg for MP4/GIF (frames_dir needs neither); the bundled static player is served automatically, no dev server required. DISPLAYS / INDICATORS: pass { displays } to seat real display PNGs (OLED/LCD/e-paper) on named part faces and { indicators } for live/simulated LED emissive states; both stay attached to their part and move with it in timeline and turntable mode. Returns { ok, output_path, frame_count, duration_ms, fps, verified, verify_skipped?, collisions: [{ t_ms, a, b, volume_mm3 }], diagnostics }.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -7809,6 +7809,126 @@
         "environment": {
           "type": "string",
           "description": "Turntable: HDRI environment override ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse', a URL, or 'none')."
+        },
+        "displays": {
+          "type": "array",
+          "maxItems": 16,
+          "description": "Display surfaces: real screen images seated on named part faces. Each entry names a part (or feature) and a PNG/JPEG/WebP image (path relative to the script, an absolute path, or a data:image/... URI), plus an optional face (+x/-x/+y/-y/+z/-z, default +z), region [u0, v0, u1, v1] in [0, 1], rotation, mode (oled/lcd/epaper) and offset_mm. Land on real imported GLB display modules: the plane seats on the panel active-area sub-mesh when the part has one.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "part": {
+                "type": "string",
+                "description": "Assembly part name, feature id, or display name of the carrier part. Use \"part/sub-mesh\" to name a sub-mesh."
+              },
+              "sub_mesh": {
+                "type": "string",
+                "description": "Sub-mesh name inside a composite GLB part (e.g. the panel or glass primitive)."
+              },
+              "image": {
+                "type": "string",
+                "description": "PNG/JPEG/WebP image: path relative to the script, absolute path, or data:image/...;base64,... URI."
+              },
+              "face": {
+                "type": "string",
+                "enum": [
+                  "+x",
+                  "-x",
+                  "+y",
+                  "-y",
+                  "+z",
+                  "-z"
+                ],
+                "description": "Part-bbox face the screen sits on (default '+z')."
+              },
+              "region": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "description": "Sub-region of the face as [u0, v0, u1, v1] in [0, 1], u0 < u1, v0 < v1 (default [0, 0, 1, 1])."
+              },
+              "rotation": {
+                "type": "number",
+                "enum": [
+                  0,
+                  90,
+                  180,
+                  270
+                ],
+                "description": "In-plane texture rotation in degrees (default 0)."
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "oled",
+                  "lcd",
+                  "epaper"
+                ],
+                "description": "Panel finish: 'oled' (default, dark glass + self-lit), 'lcd' (backlit white), 'epaper' (matte, unlit)."
+              },
+              "emissive_intensity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5,
+                "description": "Emission multiplier for oled/lcd (default 1.8 / 0.8)."
+              },
+              "offset_mm": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5,
+                "description": "Plane offset off the part face in mm (default 0.035)."
+              }
+            },
+            "required": [
+              "part",
+              "image"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "indicators": {
+          "type": "array",
+          "maxItems": 64,
+          "description": "Live / simulated LED and indicator emissive states. Each entry tints the LED sub-meshes of a named part (or one sub-mesh) with an emissive colour, a level (0 = off, 1 = full) and an intensity multiplier, and adds a subtle local point light so lit LEDs spill colour onto nearby PCB/enclosure surfaces. Works on real imported GLB parts (LED/lens/dome sub-meshes are preferred over pins/leads).",
+          "items": {
+            "type": "object",
+            "properties": {
+              "part": {
+                "type": "string",
+                "description": "Assembly part name, feature id, or display name of the indicator part. Use \"part/sub-mesh\" to name a sub-mesh."
+              },
+              "sub_mesh": {
+                "type": "string",
+                "description": "Sub-mesh name inside a composite GLB part (e.g. the LED lens)."
+              },
+              "color": {
+                "type": "string",
+                "description": "LED colour as '#rrggbb'."
+              },
+              "level": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Brightness 0 (off) to 1 (full, default 1)."
+              },
+              "intensity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10,
+                "description": "Emissive multiplier at level 1 (default 5.5)."
+              }
+            },
+            "required": [
+              "part",
+              "color"
+            ],
+            "additionalProperties": false
+          }
         }
       },
       "required": [
@@ -7886,7 +8006,7 @@
   },
   {
     "name": "render_preview",
-    "description": "Use this when you need to LOOK at a kernelCAD model — render its script to deterministic PNG views for visual self-check (the visual half of the evaluate → render → inspect → fix loop), with NO studio or dev server required. Pass { code } (inline source) or { file } (a .kcad.ts path), exactly one. Renders the canonical engineering views (front, right, top, iso — pass { views } for a subset, e.g. [\"iso\"] for fastest iteration) plus an optional { pose: \"<az>,<el>\" } arbitrary camera angle (degrees; az=0,el=0 is front, +az rotates CCW around +Z, +el lifts the camera). NO STUDIO / DEV-SERVER REQUIRED: a prebuilt static player (dist/headless-player) is served from an ephemeral local port automatically; a running studio dev server is used as fallback, and { base_url } forces one. The only environment dependency is playwright chromium (npx playwright install chromium). Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts — same semantics as `kernelcad render --focus/--hide`. Pass { section: { axis, position, flip? } } to cut a cross-section and inspect INTERIOR geometry (wall thickness, internal pockets, whether a bore runs through) rather than only the outer shell. Pass { explode: { factor, mode? } } to pull a multi-part assembly apart (mode: \"mate-axis\" default, or \"radial\") using the same mesher as `kernelcad render --explode` — requires assembly.model()/solvedModel(). PNGs are written to { out_dir } (default: a fresh temp session directory) and returned as absolute paths with per-view camera descriptions (kernelCAD is Z-up). Mechanism truth runs first, same protocol as `kernelcad render`: a broken mechanism still renders but every tile is watermarked MECHANISM BROKEN (KERNELCAD_RENDER_STRICT=1 refuses instead); read { mechanism, mechanism_failure_codes }. The probe runs full BREP interference sweeps and can dominate latency on large assemblies — pass { no_mechanism_check: true } for fast iteration (the preview then reports mechanism: \"unverified\"; ignored under strict mode). Pass { overlay: 'zebra' | 'curvature' | 'continuity' } for a surface-quality visualisation (zebra stripes from vertex normals, curvature as vertex colours, continuity edges coloured by G0/G1/G2/broken) — numbers come from inspect({ of: 'continuity' | 'curvature' }); the overlay is the picture. PUBLISH / STUDIO PRESETS: pass { preset: 'publish' } for a share-ready studio product shot (gallery tile, social post, README image, product page) or { preset: 'studio' } for the standard KernelCAD studio graphical render mode. Both use studio key/fill/rim lights + procedural softbox IBL, real self-shadowing, AgX tone mapping, soft contact shadow, clean backdrop ({ background: 'white' (publish default) | 'light' | 'dark' | 'black' | 'neutral' | 'studio' (soft gradient, studio default) | '#rrggbb' | 'transparent' } — transparent gives a PNG with alpha), { shadow: false } to drop the shadow, supersampled anti-aliasing, 30° lens, the model silhouette centred and auto-framed with margin (a script's setCameraTarget is ignored), per-part colours/materials as authored, no watermark. With no views/pose it renders ONE image named 'hero': publish at 3/4 front-right az=30°, el=22°, 1600×1200; studio at az=32°, el=24°, 1280×960. width/height go up to 2048; views/pose still work under either preset. Output is deterministic for the same input. For a 360° loop use capture_animation({ turntable: true }). INSPECTION SHEET: { sheet: true } renders all seven views (iso, front, back, left, right, top, bottom) and adds one labelled image named 'sheet' tiling them — do not call a model done because it compiled; call it done when every tile of the sheet matches the request. Returns { ok, images: [{ name, path, description }], out_dir, bounds, mechanism, render_source, render_ms, diagnostics }. PATHS ARE LOCAL to the machine running the MCP server — local stdio clients read them directly; hosted/remote clients should use open_in_studio instead.",
+    "description": "Use this when you need to LOOK at a kernelCAD model — render its script to deterministic PNG views for visual self-check (the visual half of the evaluate → render → inspect → fix loop), with NO studio or dev server required. Pass { code } (inline source) or { file } (a .kcad.ts path), exactly one. Renders the canonical engineering views (front, right, top, iso — pass { views } for a subset, e.g. [\"iso\"] for fastest iteration) plus an optional { pose: \"<az>,<el>\" } arbitrary camera angle (degrees; az=0,el=0 is front, +az rotates CCW around +Z, +el lifts the camera). NO STUDIO / DEV-SERVER REQUIRED: a prebuilt static player (dist/headless-player) is served from an ephemeral local port automatically; a running studio dev server is used as fallback, and { base_url } forces one. The only environment dependency is playwright chromium (npx playwright install chromium). Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts — same semantics as `kernelcad render --focus/--hide`. Pass { section: { axis, position, flip? } } to cut a cross-section and inspect INTERIOR geometry (wall thickness, internal pockets, whether a bore runs through) rather than only the outer shell. Pass { explode: { factor, mode? } } to pull a multi-part assembly apart (mode: \"mate-axis\" default, or \"radial\") using the same mesher as `kernelcad render --explode` — requires assembly.model()/solvedModel(). PNGs are written to { out_dir } (default: a fresh temp session directory) and returned as absolute paths with per-view camera descriptions (kernelCAD is Z-up). Mechanism truth runs first, same protocol as `kernelcad render`: a broken mechanism still renders but every tile is watermarked MECHANISM BROKEN (KERNELCAD_RENDER_STRICT=1 refuses instead); read { mechanism, mechanism_failure_codes }. The probe runs full BREP interference sweeps and can dominate latency on large assemblies — pass { no_mechanism_check: true } for fast iteration (the preview then reports mechanism: \"unverified\"; ignored under strict mode). Pass { overlay: 'zebra' | 'curvature' | 'continuity' } for a surface-quality visualisation (zebra stripes from vertex normals, curvature as vertex colours, continuity edges coloured by G0/G1/G2/broken) — numbers come from inspect({ of: 'continuity' | 'curvature' }); the overlay is the picture. PUBLISH / STUDIO PRESETS: pass { preset: 'publish' } for a share-ready studio product shot (gallery tile, social post, README image, product page) or { preset: 'studio' } for the standard KernelCAD studio graphical render mode. Both use studio key/fill/rim lights + procedural softbox IBL, real self-shadowing, AgX tone mapping, soft contact shadow, clean backdrop ({ background: 'white' (publish default) | 'light' | 'dark' | 'black' | 'neutral' | 'studio' (soft gradient, studio default) | '#rrggbb' | 'transparent' } — transparent gives a PNG with alpha), { shadow: false } to drop the shadow, supersampled anti-aliasing, 30° lens, the model silhouette centred and auto-framed with margin (a script's setCameraTarget is ignored), per-part colours/materials as authored, no watermark. With no views/pose it renders ONE image named 'hero': publish at 3/4 front-right az=30°, el=22°, 1600×1200; studio at az=32°, el=24°, 1280×960. width/height go up to 2048; views/pose still work under either preset. Output is deterministic for the same input. DISPLAYS / INDICATORS: pass { displays: [{ part, image, face?, region? }] } to seat real display PNGs (OLED/LCD/e-paper modules) on part faces and { indicators: [{ part, color, level? }] } for live/simulated LED emissive states. For a 360° loop use capture_animation({ turntable: true }). INSPECTION SHEET: { sheet: true } renders all seven views (iso, front, back, left, right, top, bottom) and adds one labelled image named 'sheet' tiling them — do not call a model done because it compiled; call it done when every tile of the sheet matches the request. Returns { ok, images: [{ name, path, description }], out_dir, bounds, mechanism, render_source, render_ms, diagnostics }. PATHS ARE LOCAL to the machine running the MCP server — local stdio clients read them directly; hosted/remote clients should use open_in_studio instead.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -8057,6 +8177,126 @@
         "shadow": {
           "type": "boolean",
           "description": "preset 'publish' / 'studio' only: soft contact shadow under the model (default true)."
+        },
+        "displays": {
+          "type": "array",
+          "maxItems": 16,
+          "description": "Display surfaces: real screen images seated on named part faces. Each entry names a part (or feature) and a PNG/JPEG/WebP image (path relative to the script, an absolute path, or a data:image/... URI), plus an optional face (+x/-x/+y/-y/+z/-z, default +z), region [u0, v0, u1, v1] in [0, 1], rotation, mode (oled/lcd/epaper) and offset_mm. Land on real imported GLB display modules: the plane seats on the panel active-area sub-mesh when the part has one.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "part": {
+                "type": "string",
+                "description": "Assembly part name, feature id, or display name of the carrier part. Use \"part/sub-mesh\" to name a sub-mesh."
+              },
+              "sub_mesh": {
+                "type": "string",
+                "description": "Sub-mesh name inside a composite GLB part (e.g. the panel or glass primitive)."
+              },
+              "image": {
+                "type": "string",
+                "description": "PNG/JPEG/WebP image: path relative to the script, absolute path, or data:image/...;base64,... URI."
+              },
+              "face": {
+                "type": "string",
+                "enum": [
+                  "+x",
+                  "-x",
+                  "+y",
+                  "-y",
+                  "+z",
+                  "-z"
+                ],
+                "description": "Part-bbox face the screen sits on (default '+z')."
+              },
+              "region": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "description": "Sub-region of the face as [u0, v0, u1, v1] in [0, 1], u0 < u1, v0 < v1 (default [0, 0, 1, 1])."
+              },
+              "rotation": {
+                "type": "number",
+                "enum": [
+                  0,
+                  90,
+                  180,
+                  270
+                ],
+                "description": "In-plane texture rotation in degrees (default 0)."
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "oled",
+                  "lcd",
+                  "epaper"
+                ],
+                "description": "Panel finish: 'oled' (default, dark glass + self-lit), 'lcd' (backlit white), 'epaper' (matte, unlit)."
+              },
+              "emissive_intensity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5,
+                "description": "Emission multiplier for oled/lcd (default 1.8 / 0.8)."
+              },
+              "offset_mm": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5,
+                "description": "Plane offset off the part face in mm (default 0.035)."
+              }
+            },
+            "required": [
+              "part",
+              "image"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "indicators": {
+          "type": "array",
+          "maxItems": 64,
+          "description": "Live / simulated LED and indicator emissive states. Each entry tints the LED sub-meshes of a named part (or one sub-mesh) with an emissive colour, a level (0 = off, 1 = full) and an intensity multiplier, and adds a subtle local point light so lit LEDs spill colour onto nearby PCB/enclosure surfaces. Works on real imported GLB parts (LED/lens/dome sub-meshes are preferred over pins/leads).",
+          "items": {
+            "type": "object",
+            "properties": {
+              "part": {
+                "type": "string",
+                "description": "Assembly part name, feature id, or display name of the indicator part. Use \"part/sub-mesh\" to name a sub-mesh."
+              },
+              "sub_mesh": {
+                "type": "string",
+                "description": "Sub-mesh name inside a composite GLB part (e.g. the LED lens)."
+              },
+              "color": {
+                "type": "string",
+                "description": "LED colour as '#rrggbb'."
+              },
+              "level": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Brightness 0 (off) to 1 (full, default 1)."
+              },
+              "intensity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10,
+                "description": "Emissive multiplier at level 1 (default 5.5)."
+              }
+            },
+            "required": [
+              "part",
+              "color"
+            ],
+            "additionalProperties": false
+          }
         }
       }
     },

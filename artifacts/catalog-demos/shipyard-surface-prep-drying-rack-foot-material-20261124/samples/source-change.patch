@@ -1,0 +1,45 @@
+diff --git a/catalog/kits/shipyard/surface-prep-drying-rack.kcad.ts b/catalog/kits/shipyard/surface-prep-drying-rack.kcad.ts
+index 33afe2689..f38829265 100644
+--- a/catalog/kits/shipyard/surface-prep-drying-rack.kcad.ts
++++ b/catalog/kits/shipyard/surface-prep-drying-rack.kcad.ts
+@@ -1,9 +1,15 @@
+-// Surface preparation drying rack: Open rack for small hull panels with four uprights, removable cross bars, tray feet, and spacing stops. This profile, component layout, and color zoning define its yard role. Millimetres, Z up, base origin.
++// Surface preparation drying rack: the open rack a shipyard uses to hold small
++// hull panels after surface preparation while the coating dries. What makes it
++// that rack: four uprights about 1.9 m tall standing on wide tray feet, four
++// removable cross bars in two tiers, and four spacing stops that keep the panels
++// apart. The four tray feet rest on the dock and carry the yard finish, as the
++// base members of the other shipyard stands do; the uprights, cross bars and
++// stops above them stay bare structural steel. Millimetres, Z up, base origin.
+ meta({
+   name: "surface-prep-drying-rack",
+   license: 'CC0-1.0',
+   title: "Surface preparation drying rack",
+-  description: "Open rack for small hull panels with four uprights, removable cross bars, tray feet, and spacing stops. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
++  description: "Open drying rack about 2.2 m wide for small hull panels: four uprights on wide tray feet, four removable cross bars in two tiers, and four spacing stops. Material controls: yard-painted floor pads and bare structural steel; fresh-coat and weathered-yard presets.",
+   tags: ["shipyard", "shipbuilding", "drydock", "refit", "low poly", "CC0", "surface", "preparation", "drying", "rack"],
+   kit: 'shipyard',
+   category: 'prop',
+@@ -51,7 +57,7 @@ const b = (name: string, size: [number, number, number], at: [number, number, nu
+   return shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+ };
+ 
+-p.part("upright-0", b("upright-0", [120, 140, 1940], [-920, -520, 970]).color(yardPaint));
++p.part("upright-0", b("upright-0", [120, 140, 1940], [-920, -520, 970]).color(structuralSteel));
+ p.part("upright-1", b("upright-1", [120, 140, 1940], [920, -520, 970]).color(structuralSteel));
+ p.part("upright-2", b("upright-2", [120, 140, 1940], [-920, 520, 970]).color(structuralSteel));
+ p.part("upright-3", b("upright-3", [120, 140, 1940], [920, 520, 970]).color(structuralSteel));
+@@ -63,9 +69,9 @@ p.part("panel-stop-0", b("panel-stop-0", [130, 210, 580], [-720, -520, 1740]).co
+ p.part("panel-stop-1", b("panel-stop-1", [130, 210, 580], [720, -520, 1740]).color(structuralSteel));
+ p.part("panel-stop-2", b("panel-stop-2", [130, 210, 580], [-720, 520, 1740]).color(structuralSteel));
+ p.part("panel-stop-3", b("panel-stop-3", [130, 210, 580], [720, 520, 1740]).color(structuralSteel));
+-p.part("tray-foot-0", b("tray-foot-0", [380, 320, 130], [-920, -520, 65]).color(structuralSteel));
+-p.part("tray-foot-1", b("tray-foot-1", [380, 320, 130], [920, -520, 65]).color(structuralSteel));
+-p.part("tray-foot-2", b("tray-foot-2", [380, 320, 130], [-920, 520, 65]).color(structuralSteel));
+-p.part("tray-foot-3", b("tray-foot-3", [380, 320, 130], [920, 520, 65]).color(structuralSteel));
++p.part("tray-foot-0", b("tray-foot-0", [380, 320, 130], [-920, -520, 65]).color(yardPaint));
++p.part("tray-foot-1", b("tray-foot-1", [380, 320, 130], [920, -520, 65]).color(yardPaint));
++p.part("tray-foot-2", b("tray-foot-2", [380, 320, 130], [-920, 520, 65]).color(yardPaint));
++p.part("tray-foot-3", b("tray-foot-3", [380, 320, 130], [920, 520, 65]).color(yardPaint));
+ 
+ return p.model();

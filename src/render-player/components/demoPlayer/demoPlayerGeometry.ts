@@ -72,7 +72,11 @@ export function buildIndexedDisplayMesh(
   const group = new THREE.Group();
   group.name = `${featureId}-indexed-mesh`;
   indexed.subMeshes.forEach((sub, index) => {
-    group.add(buildMesh(sub, build(sub), `${featureId}-indexed-mesh-${index}`));
+    const mesh = buildMesh(sub, build(sub), `${featureId}-indexed-mesh-${index}`);
+    // Keep the imported primitive name so display surfaces and LED states can
+    // target one sub-mesh inside a composite GLB part.
+    if (sub.name !== undefined) mesh.userData.subMeshName = sub.name;
+    group.add(mesh);
   });
   return group;
 }
@@ -236,6 +240,20 @@ export interface DemoPlayerWindow {
    *  key/fill/rim rig + room IBL, backdrop colour or transparent, soft
    *  contact shadow. Re-apply after the visible model changes. */
   setPublishStage(spec: PublishStageSpec | null): void;
+  /** Seat display-texture planes on loaded part faces (resolved images,
+   *  script-relative paths already turned into data URLs). Re-apply after
+   *  every full mesh reload; on rigid transform-only frames the planes stay
+   *  attached to their feature group and move with it. */
+  setDisplaySurfaces(
+    specs: readonly import('../../../shared/render/displaySurface').ResolvedDisplaySurface[],
+  ): Promise<{ applied: string[]; missing: string[] }>;
+  /** Set live/simulated LED and indicator emissive states on loaded parts. */
+  setIndicatorStates(
+    specs: readonly import('../../../shared/render/displaySurface').ResolvedIndicatorState[],
+  ): { applied: string[]; missing: string[] };
+  /** Wait for in-flight PBR texture loads (bounded) so a capture never
+   *  screenshots an undecoded map. */
+  waitForPendingTextures(timeoutMs?: number): Promise<void>;
   /** Render one publish frame at the supersampled output size (canvas
    *  capture, not a viewport screenshot) and return it as a PNG data URL. */
   capturePublishFrame(req: PublishFrameRequest): PublishFrameCapture;

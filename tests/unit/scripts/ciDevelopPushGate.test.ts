@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 
@@ -65,5 +65,30 @@ describe('ci.yml develop push gate', () => {
     expect(jobs.test.needs).toContain('changed-tests');
     expect(jobs.test.if).toBe('always()');
     expect(jobs.test.name).toContain("'test (draft-light)'");
+  });
+});
+
+// The repo default keeps artifacts 90 days; large catalog GLBs and eval
+// output then accumulate against the storage quota. Every upload must opt in
+// to a short, explicit retention.
+describe('workflow artifact retention', () => {
+  it('bounds retention-days on every actions/upload-artifact step', () => {
+    const dir = '.github/workflows';
+    const uploads: { where: string; retention: unknown }[] = [];
+    for (const file of readdirSync(dir).filter(f => /\.ya?ml$/.test(f))) {
+      const wf = parse(readFileSync(`${dir}/${file}`, 'utf8')) as { jobs?: Record<string, { steps?: { uses?: string; with?: Record<string, unknown> }[] }> };
+      for (const [job, def] of Object.entries(wf?.jobs ?? {})) {
+        for (const [i, step] of (def.steps ?? []).entries()) {
+          if (!step.uses?.startsWith('actions/upload-artifact@')) continue;
+          uploads.push({ where: `${file} ${job} step ${i}`, retention: step.with?.['retention-days'] });
+        }
+      }
+    }
+    expect(uploads.length).toBeGreaterThan(0);
+    for (const { where, retention } of uploads) {
+      expect(Number.isInteger(retention), `${where}: retention-days must be an integer, got ${JSON.stringify(retention)}`).toBe(true);
+      expect(retention as number, where).toBeGreaterThanOrEqual(1);
+      expect(retention as number, where).toBeLessThanOrEqual(30);
+    }
   });
 });
