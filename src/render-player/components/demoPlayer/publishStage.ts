@@ -46,6 +46,9 @@ export const PUBLISH_FOV_DEG = 30;
 /** Room IBL strength under the legacy publish rig and procedural softbox IBL
  *  strength under the studio rig. */
 const PUBLISH_ENV_INTENSITY = 0.55;
+/** Studio IBL sits below the legacy room probe so bevels and cast shadows keep
+ *  their contrast instead of washing out under the light tent. */
+const STUDIO_ENV_INTENSITY = 0.44;
 /** AgX tone mapping for the studio stage: clean highlight roll-off for metals,
  *  glass and brass. */
 const STUDIO_TONE_MAPPING = THREE.AgXToneMapping;
@@ -60,6 +63,9 @@ interface LightSpec {
   azOffsetDeg: number;
   elDeg: number;
   castShadow?: boolean;
+  /** Shadow-map edge in texels (default 2048) and PCF blur radius. */
+  shadowMapSize?: number;
+  shadowRadius?: number;
 }
 
 /** Legacy publish rig — kept exact so committed catalog previews stay pixel-stable. */
@@ -70,24 +76,32 @@ const LEGACY_PUBLISH_LIGHTS: readonly LightSpec[] = [
   { kind: 'hemisphere', color: 0xffffff, intensity: 0.45, azOffsetDeg: 0, elDeg: 90 },
 ];
 
-/** Crisp 3-point studio rig: dominant warm key upper-front-left (shadow
- *  caster), restrained cool fill front-right, grazing rear rim, and subtle
- *  sky/ground bounce so cast shadows read crisply across parts and PCBs. */
-const PUBLISH_KEY = { color: 0xfff5e8, intensity: 3.4, azOffsetDeg: -42, elDeg: 44 } as const;
-
+/** Crisp 3-point studio rig: dominant warm key upper-front-left plus a soft
+ *  high-angle overhead AO caster (both cast shadows), a restrained cool fill,
+ *  a grazing rear rim, and a subtle sky/ground bounce. The two shadow casters
+ *  ground components onto PCBs and enclosures, not just onto the floor. */
 const STUDIO_LIGHTS: readonly LightSpec[] = [
-  { kind: 'directional', ...PUBLISH_KEY, castShadow: true },
-  { kind: 'directional', color: 0xdbe8ff, intensity: 0.45, azOffsetDeg: 68, elDeg: 22 },
-  { kind: 'directional', color: 0xf4f8ff, intensity: 1.35, azOffsetDeg: 155, elDeg: 28 },
-  { kind: 'hemisphere', color: 0xf0f4f8, groundColor: 0x9aa3b0, intensity: 0.22, azOffsetDeg: 0, elDeg: 90 },
+  {
+    kind: 'directional', color: 0xfff5e8, intensity: 3.6, azOffsetDeg: -38, elDeg: 50,
+    castShadow: true, shadowMapSize: 2048, shadowRadius: 2.0,
+  },
+  {
+    kind: 'directional', color: 0xeef4ff, intensity: 0.75, azOffsetDeg: 42, elDeg: 76,
+    castShadow: true, shadowMapSize: 1024, shadowRadius: 3.0,
+  },
+  { kind: 'directional', color: 0xd8e6ff, intensity: 0.28, azOffsetDeg: 78, elDeg: 18 },
+  { kind: 'directional', color: 0xf4f8ff, intensity: 1.25, azOffsetDeg: 152, elDeg: 24 },
+  { kind: 'hemisphere', color: 0xeef3fa, groundColor: 0x7c8694, intensity: 0.14, azOffsetDeg: 0, elDeg: 90 },
 ];
+
+interface ShadowLight { light: THREE.DirectionalLight; spec: LightSpec }
 
 interface MeshShadowState { mesh: THREE.Mesh; castShadow: boolean; receiveShadow: boolean }
 
 interface StageState {
   renderer: THREE.WebGLRenderer;
   rig: THREE.Group;
-  keyLight?: THREE.DirectionalLight;
+  shadowLights: ShadowLight[];
   shadows: ContactShadow[];
   hiddenLights: THREE.Light[];
   background: THREE.Scene['background'];
@@ -169,18 +183,19 @@ function makeLight(spec: LightSpec): THREE.Light {
   light.position.set(x * 100, y * 100, z * 100);
   if (spec.castShadow) {
     light.castShadow = true;
-    light.shadow.mapSize.set(2048, 2048);
-    light.shadow.radius = 2.0;
+    const mapSize = spec.shadowMapSize ?? 2048;
+    light.shadow.mapSize.set(mapSize, mapSize);
+    light.shadow.radius = spec.shadowRadius ?? 2.0;
     light.shadow.bias = -0.0005;
   }
   return light;
 }
 
-function buildRig(studio: boolean): { rig: THREE.Group; keyLight?: THREE.DirectionalLight } {
+function buildRig(studio: boolean): { rig: THREE.Group; shadowLights: ShadowLight[] } {
   const rig = new THREE.Group();
   rig.name = '__publishRig';
   rig.userData[STAGE_HELPER_KEY] = true;
-  let keyLight: THREE.DirectionalLight | undefined;
+  const shadowLights: ShadowLight[] = [];
   const specs = studio ? STUDIO_LIGHTS : LEGACY_PUBLISH_LIGHTS;
   for (const spec of specs) {
     const light = makeLight(spec);
@@ -188,10 +203,10 @@ function buildRig(studio: boolean): { rig: THREE.Group; keyLight?: THREE.Directi
     if (spec.castShadow && light instanceof THREE.DirectionalLight) {
       // The target must live in the graph for its world matrix to update.
       rig.add(light.target);
-      keyLight = light;
+      shadowLights.push({ light, spec });
     }
   }
-  return { rig, ...(keyLight !== undefined ? { keyLight } : {}) };
+  return { rig, shadowLights };
 }
 
 /** Procedural Z-up studio light tent: bright overhead softbox, warm key at
@@ -201,9 +216,9 @@ function buildRig(studio: boolean): { rig: THREE.Group; keyLight?: THREE.Directi
 export function buildStudioSoftboxEnvironment(renderer: THREE.WebGLRenderer): THREE.Texture | undefined {
   if (typeof (renderer as unknown as { compile?: unknown }).compile !== 'function') return undefined;
   const envScene = new THREE.Scene();
-  // Mid-dark studio walls prevent pitch-black crushes on vertical dark metals
-  // while keeping crisp contrast against the horizon & overhead softbox cards.
-  envScene.background = new THREE.Color(0x2a303a);
+  // Dark studio walls keep bevel highlights and cast shadows deep instead of
+  // washing the whole tent into a grey haze.
+  envScene.background = new THREE.Color(0x1b2028);
   const geometries: THREE.BufferGeometry[] = [];
   const materials: THREE.Material[] = [];
   const addPanel = (
@@ -225,12 +240,12 @@ export function buildStudioSoftboxEnvironment(renderer: THREE.WebGLRenderer): TH
     geometries.push(geometry);
     materials.push(material);
   };
-  addPanel(7.5, 7.5, 0xffffff, 2.2, [0, 0, 10]);        // overhead softbox (+Z, balanced so top shadows stay crisp)
-  addPanel(4.5, 7.5, 0xfff0da, 3.2, [-7, -6, 2.2]);     // warm key vertical strip (catches vertical metal faces)
-  addPanel(4.5, 6.5, 0xd8e6ff, 1.8, [7, -5, 1.2]);      // cool fill horizon card (lifts dark front-side faces)
-  addPanel(3.5, 8.5, 0xffffff, 3.4, [-6, 7, 2.5]);      // rear-left rim strip
-  addPanel(3.5, 8.5, 0xffffff, 3.4, [6, 7, 2.5]);       // rear-right rim strip
-  addPanel(12, 12, 0x9aa4b2, 0.35, [0, 0, -8]);         // subtle floor bounce (-Z)
+  addPanel(5.5, 5.5, 0xffffff, 1.8, [0, 0, 10]);        // tight overhead softbox: crisp top faces, unwashed shadows
+  addPanel(4.0, 7.5, 0xfff0da, 3.0, [-7, -6, 2.2]);     // warm key vertical strip (catches vertical metal faces)
+  addPanel(4.0, 6.0, 0xd8e6ff, 1.5, [7, -5, 1.2]);      // cool fill horizon card (lifts dark front-side faces)
+  addPanel(3.2, 8.5, 0xffffff, 3.6, [-6, 7, 2.5]);      // rear-left rim strip
+  addPanel(3.2, 8.5, 0xffffff, 3.6, [6, 7, 2.5]);       // rear-right rim strip
+  addPanel(12, 12, 0x8a94a2, 0.25, [0, 0, -8]);         // subtle floor bounce (-Z)
 
   const pmrem = (() => {
     try {
@@ -393,7 +408,7 @@ function applyStudioLightingAndEnv(scene: THREE.Scene, renderer: THREE.WebGLRend
   if (scene.environment === null || scene.userData.kCadDefaultEnv === true) {
     state.ownedEnvironment = buildStudioSoftboxEnvironment(renderer);
     scene.environment = state.ownedEnvironment ?? null;
-    scene.environmentIntensity = PUBLISH_ENV_INTENSITY;
+    scene.environmentIntensity = STUDIO_ENV_INTENSITY;
     scene.environmentRotation.set(0, 0, 0);
   }
   renderer.toneMapping = STUDIO_TONE_MAPPING;
@@ -429,11 +444,11 @@ export function applyPublishStage(
   }
 
   const studio = spec.stage === 'studio';
-  const { rig, keyLight } = buildRig(studio);
+  const { rig, shadowLights } = buildRig(studio);
   const state: StageState = {
     renderer,
     rig,
-    ...(keyLight !== undefined ? { keyLight } : {}),
+    shadowLights,
     shadows: [],
     hiddenLights: hideSceneLights(scene),
     background: scene.background,
@@ -462,36 +477,92 @@ export function applyPublishStage(
   if (spec.shadow) state.shadows = bakeContactShadows(renderer, scene, casters, layers);
 }
 
-/** Fit the key light and its orthographic shadow camera tightly around the
- *  visible model's bounding sphere for crisp inter-part self-shadowing. */
-function fitKeyLightShadow(
-  keyLight: THREE.DirectionalLight,
-  centre: THREE.Vector3,
-  radius: number,
+const SHADOW_UP = new THREE.Vector3(0, 0, 1);
+const SHADOW_UP_ALT = new THREE.Vector3(0, 1, 0);
+
+interface ViewSpaceExtents {
+  minX: number; maxX: number; minY: number; maxY: number; minZ: number; maxZ: number;
+}
+
+/** Project the eight world corners of `box` into the shadow camera's view space
+ *  (camera looks down -Z, so -maxZ is the nearest and -minZ the farthest depth). */
+function viewSpaceExtents(box: THREE.Box3, inverse: THREE.Matrix4): ViewSpaceExtents {
+  const extents: ViewSpaceExtents = {
+    minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity, minZ: Infinity, maxZ: -Infinity,
+  };
+  const corner = new THREE.Vector3();
+  for (let i = 0; i < 8; i += 1) {
+    corner.set(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z);
+    corner.applyMatrix4(inverse);
+    extents.minX = Math.min(extents.minX, corner.x);
+    extents.maxX = Math.max(extents.maxX, corner.x);
+    extents.minY = Math.min(extents.minY, corner.y);
+    extents.maxY = Math.max(extents.maxY, corner.y);
+    extents.minZ = Math.min(extents.minZ, corner.z);
+    extents.maxZ = Math.max(extents.maxZ, corner.z);
+  }
+  return extents;
+}
+
+/** Point the shadow camera from the light at the model centre, with a Z-up
+ *  frame (three's LightShadow.updateMatrices reproduces the same basis). */
+function aimShadowCamera(light: THREE.DirectionalLight, worldCentre: THREE.Vector3): void {
+  const camera = light.shadow.camera;
+  const position = light.getWorldPosition(new THREE.Vector3());
+  const dir = worldCentre.clone().sub(position).normalize();
+  camera.up.copy(Math.abs(dir.z) > 0.99 ? SHADOW_UP_ALT : SHADOW_UP);
+  camera.position.copy(position);
+  camera.lookAt(worldCentre);
+  camera.updateMatrixWorld(true);
+}
+
+/** Fit one directional light's orthographic shadow camera to the visible
+ *  model's light-space AABB: a tight frustum gives crisp inter-part shadows
+ *  where a bounding-sphere cube wastes most of the map. */
+function fitDirectionalShadow(
+  light: THREE.DirectionalLight,
+  spec: LightSpec,
+  box: THREE.Box3,
   azDeg: number,
 ): void {
   const azRad = (azDeg * Math.PI) / 180;
-  const zAxis = new THREE.Vector3(0, 0, 1);
-  const localCentre = centre.clone().applyAxisAngle(zAxis, -azRad);
-  const [dx, dy, dz] = poseCameraDir(PUBLISH_KEY.azOffsetDeg, PUBLISH_KEY.elDeg);
-  // Local direction is fixed; the rig's +Z rotation turns it with the camera,
-  // so the key stays upper-front-left of every turntable frame.
-  const localDir = new THREE.Vector3(dx, dy, dz);
-  const distance = Math.max(radius * 2.6, radius + 1);
-  keyLight.position.copy(localCentre).addScaledVector(localDir, distance);
-  keyLight.target.position.copy(localCentre);
-  keyLight.target.updateMatrixWorld();
+  const worldCentre = box.getCenter(new THREE.Vector3());
+  const localCentre = worldCentre.clone().applyAxisAngle(SHADOW_UP, -azRad);
+  const radius = Math.max(box.getBoundingSphere(new THREE.Sphere()).radius, 1e-3);
+  const [dx, dy, dz] = poseCameraDir(spec.azOffsetDeg, spec.elDeg);
+  const distance = Math.max(radius * 2.5, radius + 2);
+  light.position.copy(localCentre).addScaledVector(new THREE.Vector3(dx, dy, dz), distance);
+  light.target.position.copy(localCentre);
+  light.parent?.updateMatrixWorld(true);
+  light.updateMatrixWorld(true);
+  light.target.updateMatrixWorld(true);
 
-  const extent = Math.max(radius * 1.45, 1e-3);
-  const shadowCamera = keyLight.shadow.camera;
-  shadowCamera.left = -extent;
-  shadowCamera.right = extent;
-  shadowCamera.top = extent;
-  shadowCamera.bottom = -extent;
-  shadowCamera.near = 0.1;
-  shadowCamera.far = radius * 8;
-  shadowCamera.updateProjectionMatrix();
-  keyLight.shadow.normalBias = Math.max(0.02, radius * 0.004);
+  const camera = light.shadow.camera;
+  aimShadowCamera(light, worldCentre);
+  const ext = viewSpaceExtents(box, camera.matrixWorldInverse);
+  const padXY = Math.max(Math.max(ext.maxX - ext.minX, ext.maxY - ext.minY) * 0.06, 1);
+  const nearDist = -ext.maxZ;
+  const farDist = -ext.minZ;
+  const padZ = Math.max((farDist - nearDist) * 0.12, 2);
+  camera.left = ext.minX - padXY;
+  camera.right = ext.maxX + padXY;
+  camera.bottom = ext.minY - padXY;
+  camera.top = ext.maxY + padXY;
+  camera.near = Math.max(nearDist - padZ, 0.01);
+  camera.far = farDist + padZ;
+  camera.updateProjectionMatrix();
+  const texelSize = Math.max(camera.right - camera.left, camera.top - camera.bottom)
+    / Math.max(light.shadow.mapSize.width, 1);
+  light.shadow.bias = -0.00015;
+  light.shadow.normalBias = Math.max(0.015, texelSize * 1.5);
+}
+
+/** Re-fit every shadow caster after the rig has turned to the camera azimuth. */
+function fitStageShadows(state: StageState, scene: THREE.Scene, azDeg: number): void {
+  if (state.shadowLights.length === 0) return;
+  const box = boundsOf(visibleModelMeshes(scene));
+  if (box.isEmpty()) return;
+  for (const { light, spec } of state.shadowLights) fitDirectionalShadow(light, spec, box, azDeg);
 }
 
 function azimuthOfDir(dir: readonly [number, number, number]): number {
@@ -522,18 +593,12 @@ export function modelPoints(meshes: readonly THREE.Mesh[]): Vec3[] {
   return out;
 }
 
-/** Aim the camera for the request; returns the camera azimuth (deg). */
+/** Aim the camera for the request; returns the camera azimuth (deg). Shadow
+ *  fitting happens after the rig turns, in capturePublishFrame. */
 function aimCamera(camera: THREE.PerspectiveCamera, scene: THREE.Scene, req: PublishFrameRequest): { azDeg: number; distance: number } {
   const meshes = visibleModelMeshes(scene);
   const box = boundsOf(meshes);
   if (box.isEmpty()) throw new Error('demo-player: publish capture has no visible model geometry');
-  const state = stages.get(scene);
-  const fitShadow = (azDeg: number): void => {
-    if (state?.keyLight === undefined) return;
-    const sphere = box.getBoundingSphere(new THREE.Sphere());
-    const radius = Math.max(sphere.radius, 1e-3);
-    fitKeyLightShadow(state.keyLight, sphere.center, radius, azDeg);
-  };
   if (req.view !== undefined) {
     const bounds = {
       min: [box.min.x, box.min.y, box.min.z] as Vec3,
@@ -543,7 +608,6 @@ function aimCamera(camera: THREE.PerspectiveCamera, scene: THREE.Scene, req: Pub
     const centre = box.getCenter(new THREE.Vector3());
     const dir = camera.position.clone().sub(centre).normalize();
     const azDeg = azimuthOfDir([dir.x, dir.y, dir.z]);
-    fitShadow(azDeg);
     return { azDeg, distance: camera.position.distanceTo(centre) };
   }
   const { target, camDir, distance } = frameForRequest(modelPoints(meshes), req, {
@@ -555,9 +619,7 @@ function aimCamera(camera: THREE.PerspectiveCamera, scene: THREE.Scene, req: Pub
   camera.near = Math.max(0.1, distance / 100);
   camera.far = distance * 20;
   camera.updateProjectionMatrix();
-  const azDeg = req.azDeg ?? 0;
-  fitShadow(azDeg);
-  return { azDeg, distance };
+  return { azDeg: req.azDeg ?? 0, distance };
 }
 
 /**
@@ -578,9 +640,10 @@ export function capturePublishFrame(
     camera.aspect = req.width / req.height;
     camera.updateProjectionMatrix();
     const { azDeg, distance } = aimCamera(camera, scene, req);
-    const rig = stages.get(scene)?.rig;
-    if (rig) rig.rotation.z = (azDeg * Math.PI) / 180;
+    const state = stages.get(scene);
+    if (state !== undefined) state.rig.rotation.z = (azDeg * Math.PI) / 180;
     scene.updateMatrixWorld(true);
+    if (state !== undefined) fitStageShadows(state, scene, azDeg);
     ensureCanvasSize(renderer, req.width * req.supersample, req.height * req.supersample);
     renderer.setRenderTarget(null);
     renderer.render(scene, camera);

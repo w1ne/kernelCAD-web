@@ -32,6 +32,13 @@ function mesh(name: string, size: [number, number, number], position: [number, n
   return created;
 }
 
+/** An imported GLB primitive: material only, no `userData.subMeshName`. */
+function unnamedMesh(size: [number, number, number], position: [number, number, number], material: THREE.Material): THREE.Mesh {
+  const created = new THREE.Mesh(new THREE.BoxGeometry(...size), material);
+  created.position.set(...position);
+  return created;
+}
+
 function displayScene(): { scene: THREE.Scene; group: THREE.Group; shared: THREE.MeshStandardMaterial } {
   const scene = new THREE.Scene();
   const group = new THREE.Group();
@@ -73,7 +80,7 @@ describe('applyDisplaySurfaces', () => {
     expect(plane.renderOrder).toBe(2);
     expect(plane.castShadow).toBe(false);
     const material = plane.material as THREE.MeshPhysicalMaterial;
-    expect(material.emissiveIntensity).toBeCloseTo(1.8, 6);
+    expect(material.emissiveIntensity).toBeCloseTo(1.6, 6);
     expect(material.userData.authoredOpacity).toBe(1);
     expect(material.side).toBe(THREE.FrontSide);
 
@@ -93,6 +100,68 @@ describe('applyDisplaySurfaces', () => {
     ]);
     expect(result.missing).toEqual(['nothing-here']);
     expect(result.applied).toEqual(['oled-module/panel']);
+  });
+});
+
+async function seatDisplayMaterial(mode: 'oled' | 'lcd' | 'epaper'): Promise<{
+  material: THREE.MeshPhysicalMaterial;
+  plane: THREE.Mesh;
+}> {
+  vi.spyOn(THREE.TextureLoader.prototype, 'loadAsync').mockResolvedValue(new THREE.Texture());
+  const { scene, group } = displayScene();
+  await applyDisplaySurfaces(scene, [{ ...DISPLAY, mode }]);
+  const plane = group.children.find((c) => c.userData[KCAD_DISPLAY_SURFACE_KEY] === true) as THREE.Mesh;
+  return { material: plane.material as THREE.MeshPhysicalMaterial, plane };
+}
+
+describe('display surface material finish per panel mode', () => {
+  it('oled: near-black anti-reflective polariser with no diffuse albedo', async () => {
+    const { material } = await seatDisplayMaterial('oled');
+    expect(material.color.getHexString()).toBe('05070a');
+    expect(material.map).toBeNull();
+    expect(material.emissiveMap).not.toBeNull();
+    expect(material.emissiveIntensity).toBeCloseTo(1.6, 6);
+    expect(material.metalness).toBe(0);
+    expect(material.roughness).toBeLessThanOrEqual(0.1);
+    expect(material.envMapIntensity).toBeLessThanOrEqual(0.15);
+    expect(material.specularIntensity).toBeLessThanOrEqual(0.2);
+    expect(material.clearcoat).toBeLessThanOrEqual(0.1);
+    expect(material.polygonOffset).toBe(true);
+  });
+
+  it('epaper: matte reflective paper that receives shadows and never emits', async () => {
+    const { material, plane } = await seatDisplayMaterial('epaper');
+    expect(material.map).not.toBeNull();
+    expect(material.color.getHexString()).toBe('ffffff');
+    expect(material.roughness).toBeGreaterThanOrEqual(0.9);
+    expect(material.emissive.getHexString()).toBe('000000');
+    expect(material.emissiveIntensity).toBe(0);
+    expect(material.clearcoat).toBe(0);
+    expect(material.specularIntensity).toBeLessThanOrEqual(0.1);
+    expect(plane.receiveShadow).toBe(true);
+    expect(plane.castShadow).toBe(false);
+  });
+
+  it('lcd: dark polariser albedo, backlit contrast and controlled specular', async () => {
+    const { material } = await seatDisplayMaterial('lcd');
+    expect(material.color.getHexString()).toBe('1c222b');
+    expect(material.map).not.toBeNull();
+    expect(material.emissiveMap).not.toBeNull();
+    expect(material.emissiveIntensity).toBeGreaterThan(0.9);
+    expect(material.emissiveIntensity).toBeLessThanOrEqual(1.2);
+    expect(material.roughness).toBeLessThanOrEqual(0.2);
+    expect(material.specularIntensity).toBeGreaterThan(0);
+    expect(material.specularIntensity).toBeLessThanOrEqual(0.25);
+    expect(material.envMapIntensity).toBeLessThanOrEqual(0.25);
+    expect(material.clearcoat).toBeLessThanOrEqual(0.15);
+  });
+
+  it('honours an explicit emissive intensity on lcd / oled', async () => {
+    vi.spyOn(THREE.TextureLoader.prototype, 'loadAsync').mockResolvedValue(new THREE.Texture());
+    const { scene, group } = displayScene();
+    await applyDisplaySurfaces(scene, [{ ...DISPLAY, mode: 'lcd', emissiveIntensity: 0.6 }]);
+    const plane = group.children.find((c) => c.userData[KCAD_DISPLAY_SURFACE_KEY] === true) as THREE.Mesh;
+    expect((plane.material as THREE.MeshPhysicalMaterial).emissiveIntensity).toBeCloseTo(0.6, 6);
   });
 });
 
@@ -122,8 +191,13 @@ describe('applyIndicatorStates', () => {
 
     const lights = group.children.filter((c) => c.userData[KCAD_INDICATOR_LIGHT_KEY] === true);
     expect(lights).toHaveLength(1);
-    expect((lights[0] as THREE.PointLight).intensity).toBeCloseTo(14, 6);
-    expect((lights[0] as THREE.PointLight).castShadow).toBe(false);
+    const light = lights[0] as THREE.PointLight;
+    expect(light.intensity).toBeCloseTo(260, 6);
+    // Physical inverse-square falloff with no cutoff sphere: no clipped
+    // crescent reflection on nearby metal.
+    expect(light.decay).toBe(2);
+    expect(light.distance).toBe(0);
+    expect(light.castShadow).toBe(false);
 
     applyIndicatorStates(scene, [{ ...LED, level: 0 }]);
     expect(group.children.filter((c) => c.userData[KCAD_INDICATOR_LIGHT_KEY] === true)).toHaveLength(0);
@@ -149,6 +223,68 @@ describe('applyIndicatorStates', () => {
     const lead = group.children[1] as THREE.Mesh;
     expect((body.material as THREE.MeshStandardMaterial).emissiveIntensity).toBeGreaterThan(0);
     expect((lead.material as THREE.MeshStandardMaterial).emissive.getHexString()).toBe('000000');
+  });
+
+  it('material-aware on an unnamed multi-material GLB: only the translucent lens glows', () => {
+    const scene = new THREE.Scene();
+    const group = new THREE.Group();
+    group.name = 'led-module';
+    group.userData[KCAD_FEATURE_GROUP_KEY] = true;
+    const pins = new THREE.MeshStandardMaterial({ color: '#c8c8c8', metalness: 0.9, roughness: 0.25 });
+    const lens = new THREE.MeshStandardMaterial({
+      color: '#200000', metalness: 0, roughness: 0.2, transparent: true, opacity: 0.6,
+    });
+    const collar = new THREE.MeshStandardMaterial({ color: '#e8e8e8', metalness: 0, roughness: 0.5 });
+    const pinMesh = unnamedMesh([0.6, 0.6, 6], [0, 0, -3], pins);
+    const lensMesh = unnamedMesh([3, 3, 2], [0, 0, 1], lens);
+    const collarMesh = unnamedMesh([4, 4, 1], [0, 0, 0], collar);
+    group.add(pinMesh, lensMesh, collarMesh);
+    scene.add(group);
+
+    const result = applyIndicatorStates(scene, [{ part: 'led-module', color: '#ff2200', level: 1, intensity: 2.2 }]);
+    expect(result).toEqual({ applied: ['led-module'], missing: [] });
+
+    const lensMaterial = lensMesh.material as THREE.MeshStandardMaterial;
+    expect(lensMaterial).not.toBe(lens);
+    expect(lensMaterial.emissiveIntensity).toBeCloseTo(2.2, 6);
+    // Metallic pins and the opaque collar keep their own material untouched.
+    expect(pinMesh.material).toBe(pins);
+    expect(collarMesh.material).toBe(collar);
+    expect((pinMesh.material as THREE.MeshStandardMaterial).emissive.getHexString()).toBe('000000');
+    expect((collarMesh.material as THREE.MeshStandardMaterial).emissive.getHexString()).toBe('000000');
+
+    const lights = group.children.filter((c) => c.userData[KCAD_INDICATOR_LIGHT_KEY] === true);
+    expect(lights).toHaveLength(1);
+    const light = lights[0] as THREE.PointLight;
+    // Dome centroid (0, 0, 1), not the pin + lens midpoint.
+    expect(light.position.toArray().map((v) => Number(v.toFixed(6)))).toEqual([0, 0, 1]);
+    expect(light.decay).toBe(2);
+    expect(light.distance).toBe(0);
+    expect(light.intensity).toBeGreaterThanOrEqual(30);
+    expect(light.intensity).toBeLessThanOrEqual(260);
+  });
+
+  it('named led-dome + led-pins lights only the dome and centres the light on it', () => {
+    const scene = new THREE.Scene();
+    const group = new THREE.Group();
+    group.name = 'led-module';
+    group.userData[KCAD_FEATURE_GROUP_KEY] = true;
+    const pins = new THREE.MeshStandardMaterial({ color: '#c8c8c8', metalness: 0.9, roughness: 0.25 });
+    const lens = new THREE.MeshStandardMaterial({ color: '#200000', metalness: 0, roughness: 0.3 });
+    const pinMesh = mesh('led-pins', [0.6, 0.6, 6], [0, 0, -3], pins);
+    const domeMesh = mesh('led-dome', [3, 3, 2], [0, 0, 1], lens);
+    group.add(pinMesh, domeMesh);
+    scene.add(group);
+
+    applyIndicatorStates(scene, [{ part: 'led-module', color: '#22ff44', level: 1, intensity: 2 }]);
+
+    expect((domeMesh.material as THREE.MeshStandardMaterial).emissiveIntensity).toBeCloseTo(2, 6);
+    expect(pinMesh.material).toBe(pins);
+    expect((pinMesh.material as THREE.MeshStandardMaterial).emissive.getHexString()).toBe('000000');
+
+    const lights = group.children.filter((c) => c.userData[KCAD_INDICATOR_LIGHT_KEY] === true);
+    expect(lights).toHaveLength(1);
+    expect((lights[0] as THREE.PointLight).position.toArray().map((v) => Number(v.toFixed(6)))).toEqual([0, 0, 1]);
   });
 });
 
