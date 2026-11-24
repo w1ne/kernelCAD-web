@@ -141,6 +141,9 @@ export type FeatureKind =
   // Keep intersection, A−B, and B−A as separate solids. Not a wasm bind:
   // lowered with the existing Cut and Common history helpers.
   | 'booleanSplit'
+  // One side of an infinite-plane split. Two records (positive/negative) are
+  // captured per call so each half is a normal Shape.
+  | 'splitPlane'
   // edge/face features (v0.2+)
   | 'fillet' | 'chamfer' | 'shell' | 'hole' | 'holes' | 'cutout' | 'draft' | 'moveFaces' | 'offsetFaces' | 'pattern'
   // symmetric (v0.13+)

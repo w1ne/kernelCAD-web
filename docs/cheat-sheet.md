@@ -145,6 +145,7 @@ Merge or intersect solids, or group them without paying for a boolean.
 | `Curve3D.analytics.intersect(other: Curve3D \| Surface, opts?: { tolerance?: number }) => CurveCurveIntersection[] \| CurveSurfaceIntersection[]` | Geometric intersection of this curve with another `Curve3D` (returns `{ tA, tB, ptA, ptB, distance }` records) or with a `Surface` from `nurbsSurface()` (returns `{ tCurve, uv, pt }` records). |
 | `Shape.split(other: Shape, opts?: { keep?: 'parts' \| 'intersection' \| 'a_only' \| 'b_only' }) => Scene \| Shape` | Keep the overlap and both leftovers as named parts. |
 | `Surface.split(by: Surface \| Shape) => [Surface, Surface]` | Split this surface at its intersection with `by` and return both resulting Surface halves as `[first, second]`, ordered by descending face area. |
+| `Shape.splitByPlane(normal: Vec3, offset: Editable<number>) => [Shape, Shape]` | Split this solid at the infinite plane dot(point, normal) = offset. |
 | `Scene.toCompound() => Shape` | Groups bodies without booleaning. |
 | `Scene.toUnion() => Shape` | Explicit boolean fuse of all parts into one Shape. |
 

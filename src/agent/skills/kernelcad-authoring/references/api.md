@@ -522,6 +522,12 @@ shape, not a copy.
 // the cut splits stay ambiguous (feature.face-ref.ambiguous-after-split).
 // MCP: split_keep_parts.
 .split(other: Shape, opts?: { keep?: 'parts' | 'intersection' | 'a_only' | 'b_only' }): Scene | Shape
+// Split one solid at an infinite plane dot(point, normal) = offset. Returns
+// [positive, negative]; positive is the material on the normal side. The normal
+// need not be unit length ([1, 1, 0], 20 is x + y = 20), and offset accepts a
+// numeric param(). Both halves are ordinary Shapes. A plane that misses the
+// body fails the empty half with feature.empty-result, never a phantom solid.
+.splitByPlane(normal: [number, number, number], offset: Editable<number>): [Shape, Shape]
 
 // Edge features:
 // Simple form — single radius applied to matching edges:
