@@ -913,42 +913,51 @@ function resolveSvgPlacement(
   opts: ImportSvgOptions,
 ): SvgPlacement {
   const flipAbout = resolveFlipAbout(root, viewBox);
-  const flippedAboutViewBox = flipAbout !== null;
-  const frame = (sx: number, sy: number, tx: number, ty: number): Matrix => [sx, 0, 0, -sy, tx, ty];
-
   if (opts.units !== undefined) {
-    const s = MM_PER_UNIT[opts.units];
-    return {
-      matrix: frame(s, s, viewBox ? -s * viewBox.minX : 0, s * (flipAbout ?? 0)),
-      scale: s,
-      unitSource: `opts.units=${opts.units}`,
-      flippedAboutViewBox,
-    };
+    return unitPlacement(opts.units, viewBox, flipAbout);
   }
-
   const widthAttr = root.attrs.width;
   const widthMm = widthAttr !== undefined ? lengthToMm(widthAttr, '<svg> width') : null;
   const widthIsPhysical = widthAttr !== undefined && /[a-z]/i.test(widthAttr);
-  const heightMm = physicalHeightMm(root.attrs.height);
-
-  if (viewBox && widthIsPhysical && widthMm !== null && heightMm !== null) {
-    return viewportPlacement(root, viewBox, widthMm, heightMm, flippedAboutViewBox);
-  }
   if (viewBox && widthIsPhysical && widthMm !== null) {
-    const s = widthMm / viewBox.width;
-    return {
-      matrix: frame(s, s, -s * viewBox.minX, s * (flipAbout ?? 0)),
-      scale: s,
-      unitSource: `width='${widthAttr!.trim()}' over viewBox width ${viewBox.width}`,
-      flippedAboutViewBox,
-    };
+    const heightMm = physicalHeightMm(root.attrs.height);
+    if (heightMm !== null) return viewportPlacement(root, viewBox, widthMm, heightMm, flipAbout !== null);
+    return widthPlacement(widthAttr!, widthMm, viewBox, flipAbout);
   }
+  return pixelPlacement(viewBox, flipAbout);
+}
+
+function frame(sx: number, sy: number, tx: number, ty: number): Matrix {
+  return [sx, 0, 0, -sy, tx, ty];
+}
+
+function unitPlacement(unit: NonNullable<ImportSvgOptions['units']>, viewBox: ViewBox | null, flipAbout: number | null): SvgPlacement {
+  const s = MM_PER_UNIT[unit];
+  return {
+    matrix: frame(s, s, viewBox ? -s * viewBox.minX : 0, s * (flipAbout ?? 0)),
+    scale: s,
+    unitSource: `opts.units=${unit}`,
+    flippedAboutViewBox: flipAbout !== null,
+  };
+}
+
+function widthPlacement(widthAttr: string, widthMm: number, viewBox: ViewBox, flipAbout: number | null): SvgPlacement {
+  const s = widthMm / viewBox.width;
+  return {
+    matrix: frame(s, s, -s * viewBox.minX, s * (flipAbout ?? 0)),
+    scale: s,
+    unitSource: `width='${widthAttr.trim()}' over viewBox width ${viewBox.width}`,
+    flippedAboutViewBox: flipAbout !== null,
+  };
+}
+
+function pixelPlacement(viewBox: ViewBox | null, flipAbout: number | null): SvgPlacement {
   const s = MM_PER_UNIT.px;
   return {
     matrix: frame(s, s, viewBox ? -s * viewBox.minX : 0, s * (flipAbout ?? 0)),
     scale: s,
     unitSource: 'assumed 1 user unit = 1 CSS px (1/96 in); no physically-dimensioned width',
-    flippedAboutViewBox,
+    flippedAboutViewBox: flipAbout !== null,
   };
 }
 
