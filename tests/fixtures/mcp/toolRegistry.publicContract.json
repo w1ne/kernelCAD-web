@@ -7813,7 +7813,7 @@
         "displays": {
           "type": "array",
           "maxItems": 16,
-          "description": "Display surfaces: real screen images seated on named part faces. Each entry names a part (or feature) and a PNG/JPEG/WebP image (path relative to the script, an absolute path, or a data:image/... URI), plus an optional face (+x/-x/+y/-y/+z/-z, default +z), region [u0, v0, u1, v1] in [0, 1], rotation, mode (oled/lcd/epaper) and offsetMm. Land on real imported GLB display modules: the plane seats on the panel active-area sub-mesh when the part has one.",
+          "description": "Display surfaces: real screen images seated on named part faces. Each entry names a part (or feature) and a PNG/JPEG/WebP image (path relative to the script, an absolute path, or a data:image/... URI), plus an optional face (+x/-x/+y/-y/+z/-z, default +z), region [u0, v0, u1, v1] in [0, 1], rotation, mode (oled/lcd/epaper) and offset_mm. Land on real imported GLB display modules: the plane seats on the panel active-area sub-mesh when the part has one.",
           "items": {
             "type": "object",
             "properties": {
@@ -7821,7 +7821,7 @@
                 "type": "string",
                 "description": "Assembly part name, feature id, or display name of the carrier part. Use \"part/sub-mesh\" to name a sub-mesh."
               },
-              "subMesh": {
+              "sub_mesh": {
                 "type": "string",
                 "description": "Sub-mesh name inside a composite GLB part (e.g. the panel or glass primitive)."
               },
@@ -7871,13 +7871,13 @@
                 ],
                 "description": "Panel finish: 'oled' (default, dark glass + self-lit), 'lcd' (backlit white), 'epaper' (matte, unlit)."
               },
-              "emissiveIntensity": {
+              "emissive_intensity": {
                 "type": "number",
                 "minimum": 0,
                 "maximum": 5,
-                "description": "Emission multiplier for oled/lcd (default 1.1 / 0.65)."
+                "description": "Emission multiplier for oled/lcd (default 1.8 / 0.8)."
               },
-              "offsetMm": {
+              "offset_mm": {
                 "type": "number",
                 "minimum": 0,
                 "maximum": 5,
@@ -7902,7 +7902,7 @@
                 "type": "string",
                 "description": "Assembly part name, feature id, or display name of the indicator part. Use \"part/sub-mesh\" to name a sub-mesh."
               },
-              "subMesh": {
+              "sub_mesh": {
                 "type": "string",
                 "description": "Sub-mesh name inside a composite GLB part (e.g. the LED lens)."
               },
@@ -8181,7 +8181,7 @@
         "displays": {
           "type": "array",
           "maxItems": 16,
-          "description": "Display surfaces: real screen images seated on named part faces. Each entry names a part (or feature) and a PNG/JPEG/WebP image (path relative to the script, an absolute path, or a data:image/... URI), plus an optional face (+x/-x/+y/-y/+z/-z, default +z), region [u0, v0, u1, v1] in [0, 1], rotation, mode (oled/lcd/epaper) and offsetMm. Land on real imported GLB display modules: the plane seats on the panel active-area sub-mesh when the part has one.",
+          "description": "Display surfaces: real screen images seated on named part faces. Each entry names a part (or feature) and a PNG/JPEG/WebP image (path relative to the script, an absolute path, or a data:image/... URI), plus an optional face (+x/-x/+y/-y/+z/-z, default +z), region [u0, v0, u1, v1] in [0, 1], rotation, mode (oled/lcd/epaper) and offset_mm. Land on real imported GLB display modules: the plane seats on the panel active-area sub-mesh when the part has one.",
           "items": {
             "type": "object",
             "properties": {
@@ -8189,7 +8189,7 @@
                 "type": "string",
                 "description": "Assembly part name, feature id, or display name of the carrier part. Use \"part/sub-mesh\" to name a sub-mesh."
               },
-              "subMesh": {
+              "sub_mesh": {
                 "type": "string",
                 "description": "Sub-mesh name inside a composite GLB part (e.g. the panel or glass primitive)."
               },
@@ -8239,13 +8239,13 @@
                 ],
                 "description": "Panel finish: 'oled' (default, dark glass + self-lit), 'lcd' (backlit white), 'epaper' (matte, unlit)."
               },
-              "emissiveIntensity": {
+              "emissive_intensity": {
                 "type": "number",
                 "minimum": 0,
                 "maximum": 5,
-                "description": "Emission multiplier for oled/lcd (default 1.1 / 0.65)."
+                "description": "Emission multiplier for oled/lcd (default 1.8 / 0.8)."
               },
-              "offsetMm": {
+              "offset_mm": {
                 "type": "number",
                 "minimum": 0,
                 "maximum": 5,
@@ -8270,7 +8270,7 @@
                 "type": "string",
                 "description": "Assembly part name, feature id, or display name of the indicator part. Use \"part/sub-mesh\" to name a sub-mesh."
               },
-              "subMesh": {
+              "sub_mesh": {
                 "type": "string",
                 "description": "Sub-mesh name inside a composite GLB part (e.g. the LED lens)."
               },
