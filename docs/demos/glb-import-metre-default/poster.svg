@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+    <rect width="1280" height="720" fill="#ffffff"/>
+    <text x="48" y="26" font-family="DejaVu Sans" font-size="15" fill="#6b7280">kernelCAD lib.meshFromGLB / decodeGlbMesh, same 1108-byte beam.glb</text>
+    <g transform="translate(0 0)">
+    <line x1="0" y1="0" x2="0" y2="720" stroke="#e5e7eb" stroke-width="2"/>
+    <text x="48" y="62" font-family="DejaVu Sans" font-size="26" font-weight="700" fill="#111827">Before: extent heuristic</text>
+    <text x="48" y="92" font-family="DejaVu Sans" font-size="16" fill="#6b7280">origin/develop c4a1e57dc (2026-11-24)</text>
+
+    <text x="48" y="210" font-family="DejaVu Sans" font-size="18" fill="#374151">source part (raw glTF metres)</text>
+    <rect x="48" y="330" width="532" height="34" fill="#9ca3af" fill-opacity="0.22" stroke="#4b5563" stroke-width="2" stroke-dasharray="7 5"/>
+    <text x="314" y="353" text-anchor="middle" font-family="DejaVu Sans" font-size="16" fill="#4b5563">3.00 m reference</text>
+
+    <text x="48" y="422" font-family="DejaVu Sans" font-size="18" fill="#374151">imported display mesh</text>
+    <circle cx="48.266" cy="347" r="7" fill="#c0392b"/>
+       <line x1="48.266" y1="304" x2="72.26599999999999" y2="260" stroke="#c0392b" stroke-width="2"/>
+       <text x="80.26599999999999" y="252" font-family="DejaVu Sans" font-size="20" font-weight="700" fill="#c0392b">imported 3.00 mm</text>
+    <rect x="48" y="374" width="1" height="6" fill="#c0392b"/>
+
+    <line x1="48" y1="408" x2="48" y2="422" stroke="#9aa0a6" stroke-width="2"/><text x="48" y="444" text-anchor="middle" font-family="DejaVu Sans" font-size="16" fill="#6b7280">0 m</text><line x1="225.33333333333334" y1="408" x2="225.33333333333334" y2="422" stroke="#9aa0a6" stroke-width="2"/><text x="225.33333333333334" y="444" text-anchor="middle" font-family="DejaVu Sans" font-size="16" fill="#6b7280">1 m</text><line x1="402.6666666666667" y1="408" x2="402.6666666666667" y2="422" stroke="#9aa0a6" stroke-width="2"/><text x="402.6666666666667" y="444" text-anchor="middle" font-family="DejaVu Sans" font-size="16" fill="#6b7280">2 m</text><line x1="580" y1="408" x2="580" y2="422" stroke="#9aa0a6" stroke-width="2"/><text x="580" y="444" text-anchor="middle" font-family="DejaVu Sans" font-size="16" fill="#6b7280">3 m</text>
+
+    <text x="48" y="608" font-family="DejaVu Sans" font-size="17" fill="#111827">no extras, no unit record: extent 3 &gt; 2, assumed millimetres</text>
+    <text x="48" y="638" font-family="DejaVu Sans" font-size="20" font-weight="700" fill="#c0392b">1000x too small</text>
+    <text x="48" y="672" font-family="DejaVu Sans" font-size="15" fill="#6b7280">measured bbox 3.00 x 0.20 x 0.20 mm</text>
+  </g>
+    <g transform="translate(640 0)">
+    <line x1="0" y1="0" x2="0" y2="720" stroke="#e5e7eb" stroke-width="2"/>
+    <text x="48" y="62" font-family="DejaVu Sans" font-size="26" font-weight="700" fill="#111827">After: glTF metre rule</text>
+    <text x="48" y="92" font-family="DejaVu Sans" font-size="16" fill="#6b7280">fix/glb-import-metre-default-20261124</text>
+
+    <text x="48" y="210" font-family="DejaVu Sans" font-size="18" fill="#374151">source part (raw glTF metres)</text>
+    <rect x="48" y="330" width="532" height="34" fill="#9ca3af" fill-opacity="0.22" stroke="#4b5563" stroke-width="2" stroke-dasharray="7 5"/>
+    <text x="314" y="353" text-anchor="middle" font-family="DejaVu Sans" font-size="16" fill="#4b5563">3.00 m reference</text>
+
+    <text x="48" y="422" font-family="DejaVu Sans" font-size="18" fill="#374151">imported display mesh</text>
+    <rect x="48" y="330" width="532" height="34" fill="#2d6cdf" fill-opacity="0.18" stroke="#1d4ed8" stroke-width="2"/>
+       <text x="314" y="314" text-anchor="middle" font-family="DejaVu Sans" font-size="20" font-weight="700" fill="#1d4ed8">imported 3000 mm, exactly on the source</text>
+
+
+    <line x1="48" y1="408" x2="48" y2="422" stroke="#9aa0a6" stroke-width="2"/><text x="48" y="444" text-anchor="middle" font-family="DejaVu Sans" font-size="16" fill="#6b7280">0 m</text><line x1="225.33333333333334" y1="408" x2="225.33333333333334" y2="422" stroke="#9aa0a6" stroke-width="2"/><text x="225.33333333333334" y="444" text-anchor="middle" font-family="DejaVu Sans" font-size="16" fill="#6b7280">1 m</text><line x1="402.6666666666667" y1="408" x2="402.6666666666667" y2="422" stroke="#9aa0a6" stroke-width="2"/><text x="402.6666666666667" y="444" text-anchor="middle" font-family="DejaVu Sans" font-size="16" fill="#6b7280">2 m</text><line x1="580" y1="408" x2="580" y2="422" stroke="#9aa0a6" stroke-width="2"/><text x="580" y="444" text-anchor="middle" font-family="DejaVu Sans" font-size="16" fill="#6b7280">3 m</text>
+
+    <text x="48" y="608" font-family="DejaVu Sans" font-size="17" fill="#111827">no extras: glTF metres, scale 1000, source gltf-default</text>
+    <text x="48" y="638" font-family="DejaVu Sans" font-size="20" font-weight="700" fill="#15803d">matches the 3 m source</text>
+    <text x="48" y="672" font-family="DejaVu Sans" font-size="15" fill="#6b7280">measured bbox 3000.00 x 200.00 x 200.00 mm</text>
+  </g>
+    <text x="1262" y="704" text-anchor="end" font-family="DejaVu Sans" font-size="13" fill="#9ca3af">local decoder measurement, not a viewer screenshot</text>
+  </svg>
