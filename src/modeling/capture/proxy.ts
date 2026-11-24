@@ -18,6 +18,7 @@ import { buildFaceInputRef, buildUpToFaceInputRef } from './shapeOperationFeatur
 import { assertProjectCurveOptions } from './projectCurveOptions';
 import { captureFilletIntersection } from './filletIntersectionCapture';
 import { captureBooleanSplit } from './booleanSplitCapture';
+import { captureSplitByPlane } from './splitByPlaneCapture';
 import type { Scene } from '../validation/scene';
 import { captureMoveFaces, captureOffsetFaces, type CanonicalFace, type FaceEditInput, type FaceSelector } from './faceEditCapture';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
@@ -849,6 +850,23 @@ export class Shape {
   split(other: Shape, opts?: { keep?: 'parts' }): Scene;
   split(other: Shape, opts?: { keep?: 'parts' | 'intersection' | 'a_only' | 'b_only' }): Shape | Scene {
     return captureBooleanSplit(this.session, this, other, opts);
+  }
+
+  /**
+   * Split this solid by the infinite plane `dot(p, normal) = offset`.
+   *
+   * Returns `[positive, negative]`: the material on the normal side first,
+   * then the material on the opposite side. Both halves are ordinary Shapes,
+   * so each can be filleted, measured, exported or combined downstream. The
+   * normal need not be unit length; a negative offset measures along the
+   * origin in the opposite direction. `offset` accepts a numeric param().
+   *
+   * The cut face is the exact plane. A plane that misses the body makes the
+   * half it does not reach fail at lower time with `feature.empty-result`
+   * rather than returning a phantom solid.
+   */
+  splitByPlane(normal: Vec3, offset: Editable<number>): [Shape, Shape] {
+    return captureSplitByPlane(this.session, this, normal, offset);
   }
 
   // Single-radius form (rc.6) + optional continuity opts (Slice C Task 6).

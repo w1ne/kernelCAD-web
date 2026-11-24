@@ -35,7 +35,7 @@ const ABSOLUTE_LIMIT_MM = 1e7;
 /** Kinds whose result must lie inside the union of their inputs' boxes,
  *  grown by `BOUNDED_MARGIN_FACTOR` × that union's diagonal. */
 const BOUNDED_KINDS: ReadonlySet<string> = new Set([
-  'boolean', 'fillet', 'chamfer', 'shell', 'draft', 'hole', 'holes', 'cutout',
+  'boolean', 'booleanSplit', 'splitPlane', 'fillet', 'chamfer', 'shell', 'draft', 'hole', 'holes', 'cutout',
 ]);
 const BOUNDED_MARGIN_FACTOR = 0.5;
 

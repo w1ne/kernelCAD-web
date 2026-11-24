@@ -19,6 +19,7 @@ import { isOcctInitialized } from './backendInit';
 import { meshShapeForExport, type ExportMeshDeflection } from './backendMesh';
 import { sharedAnalysisMesh } from './analysisMeshScope';
 import { completeLoftFromLifted } from './polyhedralRuledLoft';
+import { planeSplitCutters } from '../../geometry/planeSplitCutters';
 import { cachedCollisionVertices } from './collisionVerticesCache';
 import { locateShape } from './occtPlacement';
 import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases';
@@ -1106,9 +1107,21 @@ export class OcctBackend implements ShapeBackend {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  splitByPlane(_normal: Vec3, _offset: number): [ShapeBackend, ShapeBackend] {
-    throw new Error('splitByPlane not implemented in v0.1');
+  /**
+   * Split this solid at the plane `dot(p, normal) = offset`.
+   *
+   * Returns `[positive, negative]`, where positive is the material on the
+   * `normal` side. The plane is modelled with two bounded half-space cutters
+   * sized from this shape's box; both cut faces lie exactly on the plane.
+   * A normal need not be unit length. Each side may be an empty compound when
+   * the plane misses the body or lies on a face.
+   */
+  splitByPlane(normal: Vec3, offset: number): [ShapeBackend, ShapeBackend] {
+    const bounds = this.boundingBox();
+    const [positive, negative] = planeSplitCutters(normal, offset, bounds);
+    const cutter = (c: typeof positive): OcctBackend =>
+      OcctBackend.box(c.size, c.size, c.size, true).applyTransform(c.transform);
+    return [this.intersect(cutter(positive)), this.intersect(cutter(negative))];
   }
 
   boundingBox(opts?: { exact?: boolean }): { min: Vec3; max: Vec3 } {

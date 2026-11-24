@@ -120,9 +120,16 @@ export const API_IDIOMS: readonly ApiIdiom[] = [
   {
     id: 'booleans',
     aliases: ['cut', 'combine', 'cutwith', 'intersect', 'add', 'merge', 'fuse', 'boolean'],
-    use: 'a.union(b), a.subtract(b), a.intersect(b), or the n-ary global union(a, b, c). The operands must really overlap (0.1 mm or more); cut tools should run past the faces they cut.',
+    use: 'a.union(b), a.subtract(b), a.intersect(b), or the n-ary global union(a, b, c). The operands must really overlap (0.1 mm or more); cut tools should run past the faces they cut. To cut one body at an infinite plane, use splitByPlane rather than subtracting a box.',
     example: 'box(20, 20, 5).subtract(cylinder(7, 3).translate(10, 10, -1))',
-    entries: ['union', 'subtract', 'intersect'],
+    entries: ['union', 'subtract', 'intersect', 'splitByPlane'],
+  },
+  {
+    id: 'split-by-plane',
+    aliases: ['split body', 'cut in half', 'half space', 'section body', 'split at plane', 'plane cut'],
+    use: "shape.splitByPlane([nx, ny, nz], offset) returns [positive, negative]. positive is the material where dot(point, normal) >= offset. The plane is infinite and the normal need not be unit length. Both halves are ordinary Shapes; a plane that misses the body fails the empty half at lower time.",
+    example: 'const [upper, lower] = box(40, 30, 20).splitByPlane([0, 0, 1], 8);',
+    entries: ['splitByPlane', 'split'],
   },
   {
     id: 'transforms',
