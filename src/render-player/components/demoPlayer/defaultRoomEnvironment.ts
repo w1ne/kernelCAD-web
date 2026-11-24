@@ -35,5 +35,6 @@ export function installDefaultRoomEnvironment(renderer: THREE.WebGLRenderer, sce
   scene.environment = texture;
   scene.environmentIntensity = ROOM_ENVIRONMENT_INTENSITY;
   scene.environmentRotation = new THREE.Euler(ROOM_ENVIRONMENT_ROTATION_X, 0, 0);
+  scene.userData.kCadDefaultEnv = true;
   return true;
 }

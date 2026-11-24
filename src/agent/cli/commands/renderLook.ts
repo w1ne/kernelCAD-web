@@ -15,11 +15,13 @@ import {
   PUBLISH_BACKGROUND_HINT,
   PUBLISH_MAX_SIZE,
   PUBLISH_MIN_SIZE,
-  PUBLISH_PRESET,
   RENDER_PRESETS,
   resolvePublishLook,
+  STUDIO_PRESET,
+  PUBLISH_PRESET,
   type PublishLookRefusal,
   type PublishStageSpec,
+  type RenderPreset,
 } from '../../../shared/render/publishPreset';
 import type { RenderCliResult, RenderInput } from './render';
 
@@ -48,12 +50,12 @@ function refuseLook(reason: PublishLookRefusal, input: RenderInput): RenderLookR
     case 'unknown-preset':
       return refuse(
         `render: unknown --preset '${String(input.preset)}'. Valid: ${RENDER_PRESETS.join(', ')}.`,
-        'Pass --preset publish for a studio product shot, or omit --preset for the engineering look.',
+        'Pass --preset publish or --preset studio for a studio product shot, or omit --preset for the engineering look.',
       );
     case 'look-without-publish':
       return refuse(
-        'render: --background and --no-shadow apply only to --preset publish.',
-        'Add --preset publish, or drop --background/--no-shadow for the engineering look.',
+        'render: --background and --no-shadow apply only to --preset publish or --preset studio.',
+        'Add --preset publish (or --preset studio), or drop --background/--no-shadow for the engineering look.',
       );
     case 'invalid-background':
       return refuse(
@@ -63,14 +65,15 @@ function refuseLook(reason: PublishLookRefusal, input: RenderInput): RenderLookR
   }
 }
 
-function publishLook(input: RenderInput, publish: PublishStageSpec): RenderLookResolution {
-  const width = input.width ?? PUBLISH_PRESET.stillWidth;
-  const height = input.height ?? PUBLISH_PRESET.stillHeight;
+function publishLook(input: RenderInput, publish: PublishStageSpec, preset: RenderPreset): RenderLookResolution {
+  const defaults = preset === 'studio' ? STUDIO_PRESET : PUBLISH_PRESET;
+  const width = input.width ?? defaults.stillWidth;
+  const height = input.height ?? defaults.stillHeight;
   const inRange = (n: number) => Number.isInteger(n) && n >= PUBLISH_MIN_SIZE && n <= PUBLISH_MAX_SIZE;
   if (!inRange(width) || !inRange(height)) {
     return refuse(
-      `render: --preset publish needs --width/--height integers in [${PUBLISH_MIN_SIZE}, ${PUBLISH_MAX_SIZE}] (got ${width}×${height}).`,
-      `Pass sizes in that range, or omit them for ${PUBLISH_PRESET.stillWidth}×${PUBLISH_PRESET.stillHeight}.`,
+      `render: --preset ${preset} needs --width/--height integers in [${PUBLISH_MIN_SIZE}, ${PUBLISH_MAX_SIZE}] (got ${width}×${height}).`,
+      `Pass sizes in that range, or omit them for ${defaults.stillWidth}×${defaults.stillHeight}.`,
     );
   }
   // Same rule as render_preview: a bare publish render is one hero shot;
@@ -84,7 +87,7 @@ function publishLook(input: RenderInput, publish: PublishStageSpec): RenderLookR
       width,
       height,
       views: input.separate ? ALL_VIEWS : [],
-      poses: hero ? [`${PUBLISH_PRESET.heroAzDeg},${PUBLISH_PRESET.heroElDeg}`] : input.poses,
+      poses: hero ? [`${defaults.heroAzDeg},${defaults.heroElDeg}`] : input.poses,
     },
   };
 }
@@ -96,11 +99,11 @@ export function resolveRenderLook(input: RenderInput): RenderLookResolution {
   if (resolved.publish !== undefined) {
     if (input.sheet === true) {
       return refuse(
-        'render: --sheet is an engineering-review sheet and does not combine with --preset publish.',
-        'Drop --preset publish for the sheet, or use --preset publish --separate for per-view product shots.',
+        `render: --sheet is an engineering-review sheet and does not combine with --preset ${resolved.preset}.`,
+        `Drop --preset ${resolved.preset} for the sheet, or use --preset ${resolved.preset} --separate for per-view product shots.`,
       );
     }
-    return publishLook(input, resolved.publish);
+    return publishLook(input, resolved.publish, resolved.preset);
   }
   return {
     ok: true,

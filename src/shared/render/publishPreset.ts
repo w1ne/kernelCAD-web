@@ -13,8 +13,10 @@
 import type { RenderView } from './views';
 
 /** Named render looks. 'default' is the engineering-review look every render
- *  has always used; 'publish' is the studio product shot. */
-export const RENDER_PRESETS = ['default', 'publish'] as const;
+ *  has always used; 'publish' is the share-ready studio product shot; 'studio'
+ *  is the standard KernelCAD studio graphical render mode (4:3, soft studio
+ *  gradient backdrop, slightly higher hero camera). */
+export const RENDER_PRESETS = ['default', 'publish', 'studio'] as const;
 export type RenderPreset = (typeof RENDER_PRESETS)[number];
 
 /** Stage spec the page applies for a publish capture. */
@@ -65,15 +67,33 @@ export const PUBLISH_PRESET = {
   turntableSize: 1080,
   turntableDurationMs: 6000,
   turntableFps: 30,
-  /** Supersampling factor cap and the largest canvas edge the page may
-   *  allocate for it. 2× over MSAA is visually clean; a 2048 px tile
-   *  renders on a 4096 px canvas. */
+  /** Supersampling factor cap and the largest canvas edge / area the page may
+   *  allocate for it. Hosted SwiftShader runs are memory-capped: 2× over MSAA
+   *  is visually clean, but 1600×1200 at 2× (3200×2400) was killed for OOM.
+   *  The cap keeps both edges ≤ 2560 AND the supersampled area ≤ 2560×1920
+   *  (1280×960 at 2×), so larger tiles use 1× plus WebGL MSAA. */
   maxSupersample: 2,
-  maxCanvasEdge: 4096,
+  maxCanvasEdge: 2560,
+  maxCanvasArea: 2560 * 1920,
   /** Turntable frames render at 1× (MSAA only): a 1080² loop is 180
    *  frames, 4× the pixels per frame would not fit the capture deadline,
    *  and the video encode smooths edges anyway. */
   turntableSupersample: 1,
+} as const;
+
+/** Standard KernelCAD studio graphical render mode. Same capture machinery as
+ *  'publish' (supersampled, auto-framed, no watermark) with a 4:3 still, a
+ *  slightly higher 3/4 hero camera, more air around the silhouette, and the
+ *  procedural studio-gradient backdrop. */
+export const STUDIO_PRESET = {
+  ...PUBLISH_PRESET,
+  heroAzDeg: 32,
+  heroElDeg: 24,
+  margin: 1.28,
+  background: 'studio',
+  shadow: true,
+  stillWidth: 1280,
+  stillHeight: 960,
 } as const;
 
 /** Output sizes the publish path accepts (px, per edge). */
@@ -81,11 +101,14 @@ export const PUBLISH_MIN_SIZE = 64;
 export const PUBLISH_MAX_SIZE = 2048;
 
 /** Supersampling factor for a `width × height` output: the largest integer
- *  ≤ maxSupersample whose canvas stays within maxCanvasEdge. */
+ *  ≤ maxSupersample whose canvas stays within maxCanvasEdge AND maxCanvasArea. */
 export function publishSupersample(width: number, height: number): number {
-  const longest = Math.max(width, height);
-  const fit = Math.floor(PUBLISH_PRESET.maxCanvasEdge / longest);
-  return Math.max(1, Math.min(PUBLISH_PRESET.maxSupersample, fit));
+  const { maxSupersample, maxCanvasEdge, maxCanvasArea } = PUBLISH_PRESET;
+  for (let factor = maxSupersample; factor > 1; factor--) {
+    const longest = Math.max(width, height) * factor;
+    if (longest <= maxCanvasEdge && width * height * factor * factor <= maxCanvasArea) return factor;
+  }
+  return 1;
 }
 
 const NAMED_BACKGROUNDS: Record<string, string> = {
@@ -93,12 +116,18 @@ const NAMED_BACKGROUNDS: Record<string, string> = {
   light: '#f3f4f6',
   dark: '#1f2328',
   black: '#000000',
+  neutral: '#e8ecf1',
+  /** Sentinel: the page bakes a soft radial studio gradient sweep. */
+  studio: 'studio',
 };
 
 /** Normalise a background option: 'transparent', a named backdrop, or a
  *  '#rgb' / '#rrggbb' hex colour. Returns undefined for anything else. */
-export function parsePublishBackground(raw: string | undefined): string | undefined {
-  if (raw === undefined) return PUBLISH_PRESET.background;
+export function parsePublishBackground(
+  raw: string | undefined,
+  fallback: string = PUBLISH_PRESET.background,
+): string | undefined {
+  if (raw === undefined) return fallback;
   const value = raw.trim().toLowerCase();
   if (value === 'transparent') return 'transparent';
   if (NAMED_BACKGROUNDS[value] !== undefined) return NAMED_BACKGROUNDS[value];
@@ -114,30 +143,32 @@ export function parsePublishBackground(raw: string | undefined): string | undefi
 export type PublishLookRefusal = 'unknown-preset' | 'look-without-publish' | 'invalid-background';
 
 export type PublishLookResolution =
-  | { ok: true; publish: PublishStageSpec | undefined }
+  | { ok: true; preset: RenderPreset; publish: PublishStageSpec | undefined }
   | { ok: false; reason: PublishLookRefusal };
 
 /** Resolve preset + background + shadow into the publish stage spec (or
  *  undefined for the engineering look). background and shadow are refused,
- *  not ignored, outside the 'publish' preset. One rule set for every
- *  surface that takes these options. */
+ *  not ignored, outside the 'publish' / 'studio' presets. One rule set for
+ *  every surface that takes these options. */
 export function resolvePublishLook(
   input: { preset?: string; background?: string; shadow?: boolean },
   defaultPreset: RenderPreset,
 ): PublishLookResolution {
-  const preset = input.preset ?? defaultPreset;
-  if (!(RENDER_PRESETS as readonly string[]).includes(preset)) return { ok: false, reason: 'unknown-preset' };
-  if (preset !== 'publish') {
+  const rawPreset = input.preset ?? defaultPreset;
+  if (!(RENDER_PRESETS as readonly string[]).includes(rawPreset)) return { ok: false, reason: 'unknown-preset' };
+  const preset = rawPreset as RenderPreset;
+  if (preset !== 'publish' && preset !== 'studio') {
     if (input.background !== undefined || input.shadow !== undefined) return { ok: false, reason: 'look-without-publish' };
-    return { ok: true, publish: undefined };
+    return { ok: true, preset, publish: undefined };
   }
-  const background = parsePublishBackground(input.background);
+  const defaults = preset === 'studio' ? STUDIO_PRESET : PUBLISH_PRESET;
+  const background = parsePublishBackground(input.background, defaults.background);
   if (background === undefined) return { ok: false, reason: 'invalid-background' };
-  return { ok: true, publish: { background, shadow: input.shadow ?? PUBLISH_PRESET.shadow } };
+  return { ok: true, preset, publish: { background, shadow: input.shadow ?? defaults.shadow } };
 }
 
 export const PUBLISH_BACKGROUND_HINT =
-  "Pass background as 'white' (default), 'light', 'dark', 'black', 'transparent', or a hex colour like '#f5f5f0'.";
+  "Pass background as 'white', 'light', 'dark', 'black', 'neutral', 'studio' (soft studio gradient, the studio preset default), 'transparent', or a hex colour like '#f5f5f0'.";
 
 /** Unit camera direction (target → camera) for an az/el pose. az=0,el=0 is
  *  the front view (camera on -Y); +az rotates CCW around +Z; +el lifts. */

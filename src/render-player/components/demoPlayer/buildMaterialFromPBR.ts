@@ -188,6 +188,18 @@ function resolveAttenuationColor(pbr: PBRMaterial | undefined): string {
     : '#ffffff';
 }
 
+/** Emissive tint and strength: default intensity 1 when a tint is set,
+ *  0 (no glow) otherwise. */
+function resolveEmissive(pbr: PBRMaterial | undefined): { emissive: THREE.ColorRepresentation; emissiveIntensity: number } {
+  const emissive = pbr?.emissive !== undefined
+    ? resolveColor(pbr.emissive) ?? '#000000'
+    : '#000000';
+  return {
+    emissive,
+    emissiveIntensity: pbr?.emissive !== undefined ? pbr.emissiveIntensity ?? 1 : pbr?.emissiveIntensity ?? 0,
+  };
+}
+
 function resolveSurfaceOptions(
   pbr: PBRMaterial | undefined,
 ): THREE.MeshPhysicalMaterialParameters {
@@ -242,9 +254,11 @@ function resolveVolumeOptions(
 export function buildMaterialFromPBR(pbr: PBRMaterial | undefined): THREE.Material {
   const resolved = resolveBaseColor(pbr);
   const attenuationColorResolved = resolveAttenuationColor(pbr);
+  const emissive = resolveEmissive(pbr);
 
   const material = new THREE.MeshPhysicalMaterial({
     color: resolved,
+    ...emissive,
     ...resolveSurfaceOptions(pbr),
     ...resolveTransparencyOptions(pbr),
     ...resolveVolumeOptions(pbr, attenuationColorResolved),

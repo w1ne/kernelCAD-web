@@ -38,6 +38,12 @@ export interface PBRMaterial {
   anisotropy?: number;
   /** Anisotropy direction in degrees. Normalized to [0, 360) at capture. */
   anisotropyRotation?: number;
+  /** Emissive tint (CSS color or role token). Lights the surface from its
+   *  own colour: LEDs, displays, illuminated indicators, backlit panels. */
+  emissive?: string;
+  /** Emissive strength (multiplier). Defaults to 1 when `emissive` is set,
+   *  else 0. */
+  emissiveIntensity?: number;
   /** Image-map slots (albedo / normal / roughness / metalness / anisotropy /
    *  emissive). Paths resolved by `src/shared/textures/index.ts` at render
    *  time. */

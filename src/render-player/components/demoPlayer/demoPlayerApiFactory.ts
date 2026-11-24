@@ -823,6 +823,7 @@ function applyGlassEnvironmentIfNeeded(
     });
     // applyEnvironment(null) clears synchronously, before its first await.
     if (defaultRoom) installDefaultRoomEnvironment(ctx.renderer, ctx.scene);
+    else ctx.scene.userData.kCadDefaultEnv = false;
   } catch (e) {
     console.warn(
       '[kernelcad] applyEnvironment failed; glass will render flat:',
@@ -890,6 +891,14 @@ async function setRenderEnvironment(deps: DemoPlayerApiDeps, spec: RenderEnviron
   if (!deps.sceneRef.current) return;
   const ctx = deps.sceneRef.current;
   await applyEnvironment(ctx.renderer, ctx.scene, spec);
+  // A script-declared / CLI HDRI is authoritative; the publish stage only
+  // replaces the unrotated default room probe (kCadDefaultEnv). Clearing the
+  // environment restores that default and marks it again.
+  if (spec === null) {
+    installDefaultRoomEnvironment(ctx.renderer, ctx.scene);
+  } else {
+    ctx.scene.userData.kCadDefaultEnv = false;
+  }
   ctx.renderer.render(ctx.scene, ctx.camera);
 }
 

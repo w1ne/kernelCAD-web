@@ -21,7 +21,6 @@
 // lit from the same side (a physical turntable under fixed studio lights).
 
 import * as THREE from 'three';
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { PublishFrameCapture, PublishFrameRequest, PublishStageSpec } from '../../../shared/render/publishPreset';
 import { poseCameraDir } from '../../../shared/render/publishPreset';
 import { CONTACT_SHADOW_LAYERS, buildContactShadow, type ContactShadow } from './contactShadow';
@@ -36,35 +35,56 @@ export const STAGE_HELPER_KEY = 'kCadStageHelper';
  *  camera flattens perspective distortion the way a studio lens does. */
 export const PUBLISH_FOV_DEG = 30;
 
-/** Room IBL strength under the publish rig. */
-const PUBLISH_ENV_INTENSITY = 0.55;
+/** Procedural studio softbox IBL strength under the studio rig. Balanced so
+ *  metals and glass reflect bright softbox cards while the shadow-casting key
+ *  light drives >60% of diffuse lighting for crisp inter-part self-shadowing. */
+const PUBLISH_ENV_INTENSITY = 0.88;
+/** AgX tone mapping: clean highlight roll-off for metals, glass and brass. */
+const PUBLISH_TONE_MAPPING = THREE.AgXToneMapping;
+const PUBLISH_TONE_MAPPING_EXPOSURE = 1.06;
 
 interface LightSpec {
   kind: 'directional' | 'hemisphere';
   color: number;
+  groundColor?: number;
   intensity: number;
   /** Degrees relative to the camera azimuth (+ = CCW around +Z). */
   azOffsetDeg: number;
   elDeg: number;
+  castShadow?: boolean;
 }
 
-/** Key upper-left of the camera, soft cool fill from the right, strong rim
- *  from behind for an edge highlight, and a sky/ground bounce. */
+/** Crisp 3-point studio rig: dominant warm key upper-front-left (shadow
+ *  caster), restrained cool fill front-right, grazing rear rim, and subtle
+ *  sky/ground bounce so cast shadows read crisply across parts and PCBs. */
+const PUBLISH_KEY = { color: 0xfff6ec, intensity: 2.2, azOffsetDeg: -38, elDeg: 46 } as const;
+
 const PUBLISH_LIGHTS: readonly LightSpec[] = [
-  { kind: 'directional', color: 0xfff4e8, intensity: 2.1, azOffsetDeg: -40, elDeg: 48 },
-  { kind: 'directional', color: 0xe6eeff, intensity: 0.75, azOffsetDeg: 65, elDeg: 18 },
-  { kind: 'directional', color: 0xffffff, intensity: 1.6, azOffsetDeg: 165, elDeg: 38 },
-  { kind: 'hemisphere', color: 0xffffff, intensity: 0.45, azOffsetDeg: 0, elDeg: 90 },
+  { kind: 'directional', ...PUBLISH_KEY, castShadow: true },
+  { kind: 'directional', color: 0xdce8ff, intensity: 0.85, azOffsetDeg: 65, elDeg: 20 },
+  { kind: 'directional', color: 0xf5f8ff, intensity: 1.75, azOffsetDeg: 158, elDeg: 36 },
+  { kind: 'hemisphere', color: 0xf8fafc, groundColor: 0xc8cfd9, intensity: 0.55, azOffsetDeg: 0, elDeg: 90 },
 ];
 
+interface MeshShadowState { mesh: THREE.Mesh; castShadow: boolean; receiveShadow: boolean }
+
 interface StageState {
+  renderer: THREE.WebGLRenderer;
   rig: THREE.Group;
+  keyLight?: THREE.DirectionalLight;
   shadows: ContactShadow[];
   hiddenLights: THREE.Light[];
   background: THREE.Scene['background'];
+  ownedBackdropTexture: THREE.Texture | undefined;
   environment: THREE.Texture | null;
   environmentIntensity: number;
+  environmentRotation: THREE.Euler;
   ownedEnvironment: THREE.Texture | undefined;
+  toneMapping: THREE.ToneMapping;
+  toneMappingExposure: number;
+  shadowMapEnabled: boolean;
+  shadowMapType: THREE.ShadowMapType;
+  meshShadows: MeshShadowState[];
 }
 
 const stages = new WeakMap<THREE.Scene, StageState>();
@@ -122,7 +142,7 @@ function boundsOf(meshes: readonly THREE.Mesh[]): THREE.Box3 {
 
 function makeLight(spec: LightSpec): THREE.Light {
   if (spec.kind === 'hemisphere') {
-    const hemi = new THREE.HemisphereLight(spec.color, 0xb8b4ac, spec.intensity);
+    const hemi = new THREE.HemisphereLight(spec.color, spec.groundColor ?? 0xc8cfd9, spec.intensity);
     hemi.position.set(0, 0, 1); // Z-up sky
     return hemi;
   }
@@ -131,30 +151,141 @@ function makeLight(spec: LightSpec): THREE.Light {
   // the (recentered) origin while the rig turns around +Z.
   const [x, y, z] = poseCameraDir(spec.azOffsetDeg, spec.elDeg);
   light.position.set(x * 100, y * 100, z * 100);
+  if (spec.castShadow) {
+    light.castShadow = true;
+    light.shadow.mapSize.set(1024, 1024);
+    light.shadow.radius = 2.5;
+    light.shadow.bias = -0.0004;
+  }
   return light;
 }
 
-function buildRig(): THREE.Group {
+function buildRig(): { rig: THREE.Group; keyLight?: THREE.DirectionalLight } {
   const rig = new THREE.Group();
   rig.name = '__publishRig';
   rig.userData[STAGE_HELPER_KEY] = true;
-  for (const spec of PUBLISH_LIGHTS) rig.add(makeLight(spec));
-  return rig;
+  let keyLight: THREE.DirectionalLight | undefined;
+  for (const spec of PUBLISH_LIGHTS) {
+    const light = makeLight(spec);
+    rig.add(light);
+    if (spec.castShadow && light instanceof THREE.DirectionalLight) {
+      // The target must live in the graph for its world matrix to update.
+      rig.add(light.target);
+      keyLight = light;
+    }
+  }
+  return { rig, ...(keyLight !== undefined ? { keyLight } : {}) };
 }
 
-function roomEnvironment(renderer: THREE.WebGLRenderer): THREE.Texture | undefined {
+/** Procedural Z-up studio light tent: bright overhead softbox, warm key at
+ *  upper-front-left, cool fill panel front-right, rear-left/rear-right rim
+ *  strips for metal and glass highlights, and a neutral floor bounce. Baked
+ *  through PMREM so every PBR surface has a consistent studio reflection. */
+export function buildStudioSoftboxEnvironment(renderer: THREE.WebGLRenderer): THREE.Texture | undefined {
   if (typeof (renderer as unknown as { compile?: unknown }).compile !== 'function') return undefined;
-  const pmrem = new THREE.PMREMGenerator(renderer);
+  const envScene = new THREE.Scene();
+  // Mid-dark studio walls prevent pitch-black crushes on vertical dark metals
+  // while keeping crisp contrast against the horizon & overhead softbox cards.
+  envScene.background = new THREE.Color(0x2a303a);
+  const geometries: THREE.BufferGeometry[] = [];
+  const materials: THREE.Material[] = [];
+  const addPanel = (
+    width: number,
+    height: number,
+    color: number,
+    intensity: number,
+    position: readonly [number, number, number],
+  ): void => {
+    const geometry = new THREE.PlaneGeometry(width, height);
+    const material = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(color).multiplyScalar(intensity),
+      side: THREE.DoubleSide,
+    });
+    const panel = new THREE.Mesh(geometry, material);
+    panel.position.set(position[0], position[1], position[2]);
+    panel.lookAt(0, 0, 0);
+    envScene.add(panel);
+    geometries.push(geometry);
+    materials.push(material);
+  };
+  addPanel(7.5, 7.5, 0xffffff, 2.2, [0, 0, 10]);        // overhead softbox (+Z, balanced so top shadows stay crisp)
+  addPanel(4.5, 7.5, 0xfff0da, 3.2, [-7, -6, 2.2]);     // warm key vertical strip (catches vertical metal faces)
+  addPanel(4.5, 6.5, 0xd8e6ff, 1.8, [7, -5, 1.2]);      // cool fill horizon card (lifts dark front-side faces)
+  addPanel(3.5, 8.5, 0xffffff, 3.4, [-6, 7, 2.5]);      // rear-left rim strip
+  addPanel(3.5, 8.5, 0xffffff, 3.4, [6, 7, 2.5]);       // rear-right rim strip
+  addPanel(12, 12, 0x9aa4b2, 0.35, [0, 0, -8]);         // subtle floor bounce (-Z)
+
+  const pmrem = (() => {
+    try {
+      return new THREE.PMREMGenerator(renderer);
+    } catch {
+      return undefined;
+    }
+  })();
   try {
-    return pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    return pmrem === undefined ? undefined : pmrem.fromScene(envScene, 0.04).texture;
   } catch {
     return undefined;
   } finally {
-    pmrem.dispose();
+    pmrem?.dispose();
+    for (const geometry of geometries) geometry.dispose();
+    for (const material of materials) material.dispose();
   }
 }
 
-/** Remove the stage and restore the scene's own lights, backdrop and IBL. */
+/** Soft radial studio gradient sweep: bright upper centre falling to a cool
+ *  grey horizon, so the silhouette separates without a hard backdrop edge.
+ *  Falls back to a flat colour where there is no DOM (node / jsdom tests). */
+export function buildStudioBackdropTexture(): THREE.Texture | THREE.Color {
+  if (typeof document === 'undefined') return new THREE.Color('#eef2f7');
+  const size = 512;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return new THREE.Color('#eef2f7');
+  const gradient = ctx.createRadialGradient(size * 0.5, size * 0.42, size * 0.06, size * 0.5, size * 0.58, size * 0.85);
+  gradient.addColorStop(0, '#f7f9fc');
+  gradient.addColorStop(0.62, '#eef2f7');
+  gradient.addColorStop(1, '#dde4ee');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+/** Transmissive surfaces (glass, acrylic) neither cast nor occlude usefully in
+ *  the depth-map pass; they still receive so highlights stay grounded. */
+export function isTransmissiveMaterial(material: THREE.Material | THREE.Material[]): boolean {
+  const materials = Array.isArray(material) ? material : [material];
+  return materials.some((entry) => ((entry as THREE.MeshPhysicalMaterial).transmission ?? 0) > 0);
+}
+
+/** Mark materials dirty so three.js recompiles with/without USE_SHADOWMAP
+ *  when shadow mapping is toggled after initial WebGL shader compilation. */
+function markMaterialsNeedsUpdate(material: THREE.Material | THREE.Material[]): void {
+  const materials = Array.isArray(material) ? material : [material];
+  for (const entry of materials) entry.needsUpdate = true;
+}
+
+/** Enable real inter-part self-shadowing on every visible model mesh.
+ *  Transmissive glass does not cast a useful depth-map shadow, but it still
+ *  receives so highlights stay grounded on the part. */
+function configureMeshShadows(meshes: readonly THREE.Mesh[]): MeshShadowState[] {
+  const saved: MeshShadowState[] = [];
+  for (const mesh of meshes) {
+    saved.push({ mesh, castShadow: mesh.castShadow, receiveShadow: mesh.receiveShadow });
+    mesh.castShadow = !isTransmissiveMaterial(mesh.material);
+    mesh.receiveShadow = true;
+    markMaterialsNeedsUpdate(mesh.material);
+  }
+  return saved;
+}
+
+/** Remove the stage and restore the scene's own lights, backdrop, IBL, tone
+ *  mapping, shadow state and per-mesh shadow flags. */
 export function clearPublishStage(scene: THREE.Scene): void {
   const state = stages.get(scene);
   if (!state) return;
@@ -165,16 +296,70 @@ export function clearPublishStage(scene: THREE.Scene): void {
     shadow.dispose();
   }
   for (const light of state.hiddenLights) light.visible = true;
+  for (const saved of state.meshShadows) {
+    saved.mesh.castShadow = saved.castShadow;
+    saved.mesh.receiveShadow = saved.receiveShadow;
+    markMaterialsNeedsUpdate(saved.mesh.material);
+  }
   scene.background = state.background;
+  state.ownedBackdropTexture?.dispose();
   scene.environment = state.environment;
   scene.environmentIntensity = state.environmentIntensity;
+  scene.environmentRotation.copy(state.environmentRotation);
   state.ownedEnvironment?.dispose();
+  state.renderer.toneMapping = state.toneMapping;
+  state.renderer.toneMappingExposure = state.toneMappingExposure;
+  state.renderer.shadowMap.enabled = state.shadowMapEnabled;
+  state.renderer.shadowMap.type = state.shadowMapType;
+}
+
+function hideSceneLights(scene: THREE.Scene): THREE.Light[] {
+  const hidden: THREE.Light[] = [];
+  for (const child of scene.children) {
+    if (child instanceof THREE.Light && child.visible) {
+      child.visible = false;
+      hidden.push(child);
+    }
+  }
+  return hidden;
+}
+
+function applyStageBackdrop(scene: THREE.Scene, state: StageState, background: string): void {
+  if (background === 'transparent') {
+    scene.background = null;
+    return;
+  }
+  if (background === 'studio') {
+    const backdrop = buildStudioBackdropTexture();
+    if (backdrop instanceof THREE.Texture) state.ownedBackdropTexture = backdrop;
+    scene.background = backdrop;
+    return;
+  }
+  scene.background = new THREE.Color(background);
+}
+
+function bakeContactShadows(
+  renderer: THREE.WebGLRenderer,
+  scene: THREE.Scene,
+  casters: readonly THREE.Mesh[],
+): ContactShadow[] {
+  const bounds = boundsOf(casters);
+  if (bounds.isEmpty()) return [];
+  const baked: ContactShadow[] = [];
+  for (const layer of CONTACT_SHADOW_LAYERS) {
+    const shadow = buildContactShadow(renderer, scene, casters, bounds, layer);
+    shadow.plane.userData[STAGE_HELPER_KEY] = true;
+    baked.push(shadow);
+  }
+  // Add after every bake so no layer bakes the previous one.
+  for (const shadow of baked) scene.add(shadow.plane);
+  return baked;
 }
 
 /**
- * Apply (or, with null, remove) the publish stage. Re-applying rebuilds it,
- * so call again after the visible model changes (reload, visibility filter)
- * to re-bake the contact shadow.
+ * Apply (or, with null, remove) the publish / studio stage. Re-applying
+ * rebuilds it, so call again after the visible model changes (reload,
+ * visibility filter) to re-bake the contact shadow.
  */
 export function applyPublishStage(
   ctx: { scene: THREE.Scene; renderer: THREE.WebGLRenderer },
@@ -187,47 +372,82 @@ export function applyPublishStage(
     return;
   }
 
-  const hiddenLights: THREE.Light[] = [];
-  for (const child of scene.children) {
-    if (child instanceof THREE.Light && child.visible) {
-      child.visible = false;
-      hiddenLights.push(child);
-    }
-  }
+  const { rig, keyLight } = buildRig();
   const state: StageState = {
-    rig: buildRig(),
+    renderer,
+    rig,
+    ...(keyLight !== undefined ? { keyLight } : {}),
     shadows: [],
-    hiddenLights,
+    hiddenLights: hideSceneLights(scene),
     background: scene.background,
+    ownedBackdropTexture: undefined,
     environment: scene.environment,
     environmentIntensity: scene.environmentIntensity,
+    environmentRotation: scene.environmentRotation.clone(),
     ownedEnvironment: undefined,
+    toneMapping: renderer.toneMapping,
+    toneMappingExposure: renderer.toneMappingExposure,
+    shadowMapEnabled: renderer.shadowMap.enabled,
+    shadowMapType: renderer.shadowMap.type,
+    meshShadows: [],
   };
   stages.set(scene, state);
   scene.add(state.rig);
 
-  // A script-declared / --environment HDRI stays authoritative; otherwise
-  // light reflections with the neutral procedural room.
-  if (scene.environment === null) {
-    state.ownedEnvironment = roomEnvironment(renderer);
+  // ENVIRONMENT BUG FIX: a script-declared / --environment HDRI stays
+  // authoritative, but the unrotated default room probe (or no environment at
+  // all) is ALWAYS replaced with the studio softbox.
+  if (scene.environment === null || scene.userData.kCadDefaultEnv === true) {
+    state.ownedEnvironment = buildStudioSoftboxEnvironment(renderer);
     scene.environment = state.ownedEnvironment ?? null;
     scene.environmentIntensity = PUBLISH_ENV_INTENSITY;
+    scene.environmentRotation.set(0, 0, 0);
   }
-  scene.background = spec.background === 'transparent' ? null : new THREE.Color(spec.background);
 
-  if (spec.shadow) {
-    const casters = visibleModelMeshes(scene);
-    const bounds = boundsOf(casters);
-    if (!bounds.isEmpty()) {
-      for (const layer of CONTACT_SHADOW_LAYERS) {
-        const shadow = buildContactShadow(renderer, scene, casters, bounds, layer);
-        shadow.plane.userData[STAGE_HELPER_KEY] = true;
-        state.shadows.push(shadow);
-      }
-      // Add after every bake so no layer bakes the previous one.
-      for (const shadow of state.shadows) scene.add(shadow.plane);
-    }
-  }
+  renderer.toneMapping = PUBLISH_TONE_MAPPING;
+  renderer.toneMappingExposure = PUBLISH_TONE_MAPPING_EXPOSURE;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.autoUpdate = true;
+  renderer.shadowMap.needsUpdate = true;
+
+  applyStageBackdrop(scene, state, spec.background);
+
+  const casters = visibleModelMeshes(scene);
+  state.meshShadows = configureMeshShadows(casters);
+  if (spec.shadow) state.shadows = bakeContactShadows(renderer, scene, casters);
+}
+
+/** Fit the key light and its orthographic shadow camera tightly around the
+ *  visible model's bounding sphere for crisp inter-part self-shadowing. */
+function fitKeyLightShadow(
+  keyLight: THREE.DirectionalLight,
+  centre: THREE.Vector3,
+  radius: number,
+  azDeg: number,
+): void {
+  const azRad = (azDeg * Math.PI) / 180;
+  const zAxis = new THREE.Vector3(0, 0, 1);
+  const localCentre = centre.clone().applyAxisAngle(zAxis, -azRad);
+  const [dx, dy, dz] = poseCameraDir(PUBLISH_KEY.azOffsetDeg, PUBLISH_KEY.elDeg);
+  // Local direction is fixed; the rig's +Z rotation turns it with the camera,
+  // so the key stays upper-front-left of every turntable frame.
+  const localDir = new THREE.Vector3(dx, dy, dz);
+  const distance = Math.max(radius * 2.6, radius + 1);
+  keyLight.position.copy(localCentre).addScaledVector(localDir, distance);
+  keyLight.target.position.copy(localCentre);
+  keyLight.target.updateMatrixWorld();
+
+  const extent = Math.max(radius * 1.45, 1e-3);
+  const shadowCamera = keyLight.shadow.camera;
+  shadowCamera.left = -extent;
+  shadowCamera.right = extent;
+  shadowCamera.top = extent;
+  shadowCamera.bottom = -extent;
+  shadowCamera.near = 0.1;
+  shadowCamera.far = radius * 8;
+  shadowCamera.updateProjectionMatrix();
+  keyLight.shadow.normalBias = Math.max(0.02, radius * 0.004);
 }
 
 function azimuthOfDir(dir: readonly [number, number, number]): number {
@@ -263,6 +483,13 @@ function aimCamera(camera: THREE.PerspectiveCamera, scene: THREE.Scene, req: Pub
   const meshes = visibleModelMeshes(scene);
   const box = boundsOf(meshes);
   if (box.isEmpty()) throw new Error('demo-player: publish capture has no visible model geometry');
+  const state = stages.get(scene);
+  const fitShadow = (azDeg: number): void => {
+    if (state?.keyLight === undefined) return;
+    const sphere = box.getBoundingSphere(new THREE.Sphere());
+    const radius = Math.max(sphere.radius, 1e-3);
+    fitKeyLightShadow(state.keyLight, sphere.center, radius, azDeg);
+  };
   if (req.view !== undefined) {
     const bounds = {
       min: [box.min.x, box.min.y, box.min.z] as Vec3,
@@ -271,7 +498,9 @@ function aimCamera(camera: THREE.PerspectiveCamera, scene: THREE.Scene, req: Pub
     fitCameraToBounds(camera, bounds, req.view, camera.aspect, req.margin);
     const centre = box.getCenter(new THREE.Vector3());
     const dir = camera.position.clone().sub(centre).normalize();
-    return { azDeg: azimuthOfDir([dir.x, dir.y, dir.z]), distance: camera.position.distanceTo(centre) };
+    const azDeg = azimuthOfDir([dir.x, dir.y, dir.z]);
+    fitShadow(azDeg);
+    return { azDeg, distance: camera.position.distanceTo(centre) };
   }
   const { target, camDir, distance } = frameForRequest(modelPoints(meshes), req, {
     fovYDeg: camera.fov, aspect: camera.aspect, margin: req.margin,
@@ -282,7 +511,9 @@ function aimCamera(camera: THREE.PerspectiveCamera, scene: THREE.Scene, req: Pub
   camera.near = Math.max(0.1, distance / 100);
   camera.far = distance * 20;
   camera.updateProjectionMatrix();
-  return { azDeg: req.azDeg ?? 0, distance };
+  const azDeg = req.azDeg ?? 0;
+  fitShadow(azDeg);
+  return { azDeg, distance };
 }
 
 /**

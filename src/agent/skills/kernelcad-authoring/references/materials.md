@@ -70,6 +70,7 @@ against `FINISH_TOKENS`; keep the two in sync.
 | metals | `aluminium`, `aluminium-brushed`, `anodized-black`, `anodized`, `steel`, `stainless`, `brass`, `copper`, `titanium` |
 | plastics | `abs`, `pla`, `nylon`, `delrin`, `polycarbonate`, `rubber`, `plastic-glossy` |
 | glass | `glass`, `glass-tinted`, `acrylic` |
+| electronics / PCB | `pcb-green`, `pcb-black`, `pcb-blue`, `pcb-red`, `pcb-white`, `fr4`, `pcb-copper`, `gold-enig`, `solder`, `ic-epoxy`, `silkscreen` |
 | paint / neutral | `paint-matte`, `paint-gloss`, `default` |
 <!-- FINISH-VOCABULARY:END -->
 
@@ -79,6 +80,13 @@ the paints, `abs`, `plastic-glossy`, and `anodized` (dyed anodising); for raw
 metals the colour is intrinsic, so an override is accepted but rarely wanted.
 An unknown finish name throws `feature.finish.unknown-token` and lists the valid
 finishes — it does not fall back to a default.
+
+The electronics group covers bare and populated boards: solder masks
+(`pcb-green`, `pcb-black`, `pcb-blue`, `pcb-red`, `pcb-white`), the laminate
+edge (`fr4`), exposed copper and pad finishes (`pcb-copper`, `gold-enig`,
+`solder`), matte component bodies (`ic-epoxy`) and the printed legend
+(`silkscreen`). Combine them on one body or assembly part exactly like the
+mechanical finishes above.
 
 ### Advanced: raw PBR via `.material()`
 
@@ -141,6 +149,15 @@ hinge.material({
   anisotropy: 0.8,
   anisotropyRotation: 90,
 });
+```
+
+**Emissive surfaces.** `emissive` (CSS colour or role token) plus optional
+`emissiveIntensity` (default 1 when `emissive` is set, else 0) lights LEDs,
+displays, indicators and backlit panels from their own colour.
+
+```typescript
+led.material({ baseColor: '#0a2a12', emissive: '#39ff88', emissiveIntensity: 2.5 });
+display.material({ baseColor: '#0b0d10', emissive: '#9fd8ff', emissiveIntensity: 0.8 });
 ```
 
 **Image-texture maps.** `textures` attaches up to six maps — `albedo`,

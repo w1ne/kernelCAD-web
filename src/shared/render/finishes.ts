@@ -13,10 +13,9 @@
 // role-token render fallback. This file is keyed by MATERIAL, not by mechanical
 // role, and backs the first-class `.finish()` verb.
 //
-// The table is deliberately small (~22 entries). It is a curated DEFAULT
-// library, the same way Fusion/Onshape ship a short appearance list you extend,
-// not a 7000-grade ISO catalogue. Resist inflating it: a new archetype earns a
-// token only when a named finish genuinely reads better than raw PBR.
+// The table is a curated DEFAULT library (~33 entries: mechanical finishes
+// plus a physically calibrated PCB / electronics set that keeps bare-board
+// assemblies and populated boards readable in studio renders).
 
 import type { PBRMaterial } from '../intent/material';
 import { KernelError } from '../intent/kernelError';
@@ -47,6 +46,18 @@ export type FinishToken =
   | 'glass'
   | 'glass-tinted'
   | 'acrylic'
+  // Electronics / PCB — solder mask, laminate, copper, gold finish, paste.
+  | 'pcb-green'
+  | 'pcb-black'
+  | 'pcb-blue'
+  | 'pcb-red'
+  | 'pcb-white'
+  | 'fr4'
+  | 'pcb-copper'
+  | 'gold-enig'
+  | 'solder'
+  | 'ic-epoxy'
+  | 'silkscreen'
   // Painted / neutral — hue is the whole point for the paints.
   | 'paint-matte'
   | 'paint-gloss'
@@ -80,9 +91,29 @@ export const FINISHES: Record<FinishToken, PBRMaterial> = {
   'plastic-glossy':    { baseColor: '#101010', metalness: 0.0, roughness: 0.15, clearcoat: 0.8 },
 
   // --- Glass / transmissive ---
-  'glass':             { baseColor: '#ffffff', metalness: 0.0, roughness: 0.0, transmission: 0.95, ior: 1.5 },
-  'glass-tinted':      { baseColor: '#1a1a2a', metalness: 0.0, roughness: 0.0, transmission: 0.85, ior: 1.5, thickness: 3 },
-  'acrylic':           { baseColor: '#ffffff', metalness: 0.0, roughness: 0.05, transmission: 0.9, ior: 1.49 },
+  // Clearcoat 1 + low roughness gives the crisp window reflection; the
+  // transmission path carries the refraction through the volume.
+  'glass':             { baseColor: '#ffffff', metalness: 0.0, roughness: 0.02, clearcoat: 1.0, clearcoatRoughness: 0.02, transmission: 0.94, ior: 1.5, thickness: 2 },
+  'glass-tinted':      { baseColor: '#d4e2f2', metalness: 0.0, roughness: 0.05, clearcoat: 1.0, clearcoatRoughness: 0.04, transmission: 0.88, ior: 1.5, thickness: 3, attenuationColor: '#2d3f5e', attenuationDistance: 8 },
+  'acrylic':           { baseColor: '#f8fbff', metalness: 0.0, roughness: 0.04, clearcoat: 0.9, clearcoatRoughness: 0.04, transmission: 0.92, ior: 1.49, thickness: 2.5 },
+
+  // --- Electronics / PCB ---
+  // Solder masks: pigmented epoxy with a thin glossy clearcoat over the weave.
+  'pcb-green':         { baseColor: '#1b6b47', metalness: 0.0, roughness: 0.42, clearcoat: 0.45, clearcoatRoughness: 0.18 },
+  'pcb-black':         { baseColor: '#111417', metalness: 0.0, roughness: 0.40, clearcoat: 0.45, clearcoatRoughness: 0.16 },
+  'pcb-blue':          { baseColor: '#174a8a', metalness: 0.0, roughness: 0.42, clearcoat: 0.42, clearcoatRoughness: 0.18 },
+  'pcb-red':           { baseColor: '#8a1c1c', metalness: 0.0, roughness: 0.42, clearcoat: 0.42, clearcoatRoughness: 0.18 },
+  'pcb-white':         { baseColor: '#e9ece9', metalness: 0.0, roughness: 0.44, clearcoat: 0.40, clearcoatRoughness: 0.20 },
+  // Bare laminate edge — the yellowish FR-4 substrate, not the mask.
+  'fr4':               { baseColor: '#b7a469', metalness: 0.0, roughness: 0.62 },
+  // Exposed traces / pours under the mask and the ENIG pad finish.
+  'pcb-copper':        { baseColor: '#b87333', metalness: 1.0, roughness: 0.22 },
+  'gold-enig':         { baseColor: '#d4af37', metalness: 1.0, roughness: 0.18 },
+  'solder':            { baseColor: '#c8ccd0', metalness: 1.0, roughness: 0.20 },
+  // Moulded IC body: matte black epoxy.
+  'ic-epoxy':          { baseColor: '#23272e', metalness: 0.0, roughness: 0.62 },
+  // Printed legend on the mask.
+  'silkscreen':        { baseColor: '#f4f5f2', metalness: 0.0, roughness: 0.58 },
 
   // --- Painted / neutral ---
   'paint-matte':       { baseColor: '#c0c0c0', metalness: 0.0, roughness: 0.70 },
