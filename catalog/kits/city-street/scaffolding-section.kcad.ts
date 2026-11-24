@@ -63,10 +63,10 @@ for (let i = 1; i <= n; i++) {
     const y0 = -D / 2 + 20 + p * pw;
     sc.part(`plank-${i}-${p + 1}`, blk(-L / 2 + t, y0 + 4, z + t, L / 2 - t, y0 + pw - 4, z + t + 40).color(boards));
   }
-  sc.part(`toe-board-${i}`, blk(-L / 2 + t / 2, -D / 2 - t / 2 - 30, z + t, L / 2 - t / 2, -D / 2 - t / 2, z + t + 160).color(boards));
+  sc.part(`toe-board-${i}`, blk(-L / 2 + t / 2, -D / 2 - 5, z + t, L / 2 - t / 2, -D / 2 + 25, z + t + 160).color(boards));
   sc.part(`guard-rail-${i}`, blk(-L / 2 - 60, -D / 2 - t / 2 - t, z + 950, L / 2 + 60, -D / 2 - t / 2, z + 1000).color(tube));
   sc.part(`mid-rail-${i}`, blk(-L / 2 - 60, -D / 2 - t / 2 - t, z + 500, L / 2 + 60, -D / 2 - t / 2, z + 550).color(tube));
-  sc.part(`brace-${i}`, bar(-L / 2, z - lh + 100, L / 2, z - 60, 44, D / 2 + t).color(tube));
+  sc.part(`brace-${i}`, bar(-L / 2, z - lh + 100, L / 2, z - 60, 44, D / 2 + t / 2).color(tube));
 }
 
 return sc.model();
