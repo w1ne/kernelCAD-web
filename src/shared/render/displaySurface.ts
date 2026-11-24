@@ -90,7 +90,7 @@ export type DisplaySurfacesValidation =
   | { ok: false; message: string; hint: string };
 
 export const DISPLAY_SURFACE_HINT =
-  "Pass displays as [{ part, image, face?, region?, rotation?, mode?, emissiveIntensity?, offsetMm? }]: face is one of +x/-x/+y/-y/+z/-z (default +z), region is [u0, v0, u1, v1] in [0, 1], image is a PNG/JPEG/WebP path (script-relative) or a data: URI.";
+  "Pass displays as [{ part, image, sub_mesh?, face?, region?, rotation?, mode?, emissive_intensity?, offset_mm? }]: face is one of +x/-x/+y/-y/+z/-z (default +z), region is [u0, v0, u1, v1] in [0, 1], image is a PNG/JPEG/WebP path (script-relative) or a data: URI.";
 
 const FULL_REGION: DisplayRegion = [0, 0, 1, 1];
 
@@ -366,7 +366,7 @@ export type IndicatorStatesValidation =
   | { ok: false; message: string; hint: string };
 
 export const INDICATOR_STATE_HINT =
-  "Pass indicators as [{ part, color, level?, intensity?, subMesh? }]: color is '#rrggbb', level is 0 (off) to 1 (full), intensity is the emissive multiplier in [0, 10].";
+  "Pass indicators as [{ part, color, level?, intensity?, sub_mesh? }]: color is '#rrggbb', level is 0 (off) to 1 (full), intensity is the emissive multiplier in [0, 10].";
 
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 

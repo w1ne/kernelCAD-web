@@ -45,6 +45,11 @@ function encodeDataImage(bytes: Buffer, image: string): string {
   if (bytes.length === 0) {
     throw new Error(`display-surface: image '${image}' is empty.`);
   }
+  if (bytes.length > MAX_DISPLAY_IMAGE_BYTES) {
+    throw new Error(
+      `display-surface: image '${image}' is ${bytes.length} bytes; the limit is ${MAX_DISPLAY_IMAGE_BYTES} bytes.`,
+    );
+  }
   return `data:${sniffDisplayImageMime(bytes)};base64,${bytes.toString('base64')}`;
 }
 

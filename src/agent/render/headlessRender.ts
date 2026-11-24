@@ -384,13 +384,6 @@ export interface PageDisplayOverlays {
   indicators?: readonly ResolvedIndicatorState[];
 }
 
-/** The studio stage replaces the scene light rig; re-seat the indicator point
- *  lights after it so a lit LED still spills colour into the shot. */
-async function reseatIndicatorLights(page: Page, opts: HeadlessRenderOpts): Promise<void> {
-  if (opts.publish === undefined || opts.indicators === undefined || opts.indicators.length === 0) return;
-  await page.evaluate((indicators) => window.__demoPlayer!.setIndicatorStates(indicators), opts.indicators);
-}
-
 /**
  * Apply display-surface planes and indicator states to the page scene, then
  * wait for every texture that is still decoding. Safe to call with neither
@@ -686,8 +679,9 @@ export async function openRenderPage(
 
     // 3a2. Display surfaces + LED states, after the visible set is settled.
     //      Also waits for pending texture decodes before any capture.
+    //      Part-local indicator point lights live inside feature groups so
+    //      applyPublishStage (which hides only top-level scene lights) keeps them lit.
     const displayOverlays = await applyDisplayOverlaysOnPage(page, { displays: opts.displays, indicators: opts.indicators });
-    await reseatIndicatorLights(page, opts);
 
     // 3b. Optionally hide reference-image overlays for clean engineering views.
     if (opts.hideReferenceImages) {

@@ -574,7 +574,8 @@ async function resolvePreviewOverlays(input: RenderPreviewInput, scriptPath: str
 }
 
 /** What a call captures when it names no views: the sheet's seven views,
- *  the publish hero (no views, one pose), or the canonical four. */function resolvePreviewShots(
+ *  the publish hero (no views, one pose), or the canonical four. */
+function resolvePreviewShots(
   input: RenderPreviewInput,
   publish: PublishStageSpec | undefined,
 ): { hero: boolean; defaultViews: readonly RenderView[] } {

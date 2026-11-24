@@ -298,7 +298,7 @@ function configureMeshShadows(meshes: readonly THREE.Mesh[]): MeshShadowState[] 
     saved.push({ mesh, castShadow: mesh.castShadow, receiveShadow: mesh.receiveShadow });
     const displayPlane = mesh.userData[KCAD_DISPLAY_SURFACE_KEY] === true;
     mesh.castShadow = !displayPlane && !isTransmissiveMaterial(mesh.material);
-    mesh.receiveShadow = true;
+    mesh.receiveShadow = displayPlane ? mesh.receiveShadow : true;
     markMaterialsNeedsUpdate(mesh.material);
   }
   return saved;

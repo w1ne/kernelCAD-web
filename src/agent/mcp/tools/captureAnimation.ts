@@ -212,7 +212,7 @@ function toOutput(r: CaptureAnimationResult): CaptureAnimationOutput {
       'cli.invalid-args',
       `capture_animation: ${missing.length} overlay target(s) matched no visible part: ${missing.join(', ')}. `
         + 'The capture was written, but those display/indicator overlays are NOT in it.',
-      'Name a loaded assembly part or feature id (inspect({ of: "features" })), or pass subMesh to pick '
+      'Name a loaded assembly part or feature id (inspect({ of: "features" })), or pass sub_mesh to pick '
         + 'one material group of an imported GLB. Part names match case-insensitively against the feature id, '
         + 'assembly part name, display name and filter names.',
       'model',

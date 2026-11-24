@@ -88,8 +88,13 @@ describe('resolveDisplaySurfaceImages', () => {
       .rejects.toThrow(/display-surface:/);
   });
 
-  it('caps one image at the documented byte limit', () => {
+  it('caps one image at the documented byte limit (including inline data URIs)', async () => {
     expect(MAX_DISPLAY_IMAGE_BYTES).toBe(16 * 1024 * 1024);
+    const oversized = Buffer.alloc(MAX_DISPLAY_IMAGE_BYTES + 1);
+    PNG_1X1.copy(oversized, 0, 0, 8);
+    const inlineOversized = `data:image/png;base64,${oversized.toString('base64')}`;
+    await expect(resolveDisplaySurfaceImages([{ part: 'a', image: inlineOversized }], '/nonexistent'))
+      .rejects.toThrow(/display-surface:.*limit/);
   });
 });
 

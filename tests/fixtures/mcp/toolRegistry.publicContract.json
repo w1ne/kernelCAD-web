@@ -7920,7 +7920,7 @@
                 "type": "number",
                 "minimum": 0,
                 "maximum": 10,
-                "description": "Emissive multiplier at level 1 (default 2.2)."
+                "description": "Emissive multiplier at level 1 (default 5.5)."
               }
             },
             "required": [
@@ -8288,7 +8288,7 @@
                 "type": "number",
                 "minimum": 0,
                 "maximum": 10,
-                "description": "Emissive multiplier at level 1 (default 2.2)."
+                "description": "Emissive multiplier at level 1 (default 5.5)."
               }
             },
             "required": [

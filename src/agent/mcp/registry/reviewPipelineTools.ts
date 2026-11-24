@@ -58,7 +58,7 @@ const INDICATOR_STATES_SCHEMA = {
       sub_mesh: { type: 'string', description: 'Sub-mesh name inside a composite GLB part (e.g. the LED lens).' },
       color: { type: 'string', description: "LED colour as '#rrggbb'." },
       level: { type: 'number', minimum: 0, maximum: 1, description: 'Brightness 0 (off) to 1 (full, default 1).' },
-      intensity: { type: 'number', minimum: 0, maximum: 10, description: 'Emissive multiplier at level 1 (default 2.2).' },
+      intensity: { type: 'number', minimum: 0, maximum: 10, description: 'Emissive multiplier at level 1 (default 5.5).' },
     },
     required: ['part', 'color'],
     additionalProperties: false,

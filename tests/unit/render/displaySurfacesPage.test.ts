@@ -173,4 +173,24 @@ describe('publish stage and indicator lights', () => {
     expect(indicatorLights).toHaveLength(1);
     expect(indicatorLights[0]!.visible).toBe(true);
   });
+
+  it('preserves display-plane receiveShadow (false for emissive OLED, true for reflective e-paper)', async () => {
+    vi.spyOn(THREE.TextureLoader.prototype, 'loadAsync').mockResolvedValue(new THREE.Texture());
+    const renderer = {
+      toneMapping: THREE.NeutralToneMapping,
+      toneMappingExposure: 1,
+      shadowMap: { enabled: false, type: THREE.PCFShadowMap },
+      getSize: () => new THREE.Vector2(800, 600),
+      setSize: () => undefined,
+    } as unknown as THREE.WebGLRenderer;
+
+    for (const [mode, expectedReceive] of [['oled', false], ['epaper', true]] as const) {
+      const { scene, group } = displayScene();
+      await applyDisplaySurfaces(scene, [{ ...DISPLAY, mode }]);
+      applyPublishStage({ scene, renderer }, { background: '#ffffff', shadow: false });
+      const plane = group.children.find((c) => c.userData[KCAD_DISPLAY_SURFACE_KEY] === true) as THREE.Mesh;
+      expect(plane.castShadow).toBe(false);
+      expect(plane.receiveShadow).toBe(expectedReceive);
+    }
+  });
 });
