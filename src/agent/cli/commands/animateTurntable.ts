@@ -16,6 +16,7 @@ import type { HeadlessObjectFilter } from '../../render/headlessRender';
 import {
   resolveTurntableSettings,
   turntableCaptureOpts,
+  turntableStartAzDeg,
   type TurntableInputFields,
   type TurntableRefusal,
 } from '../../mcp/tools/captureTurntableInput';
@@ -123,6 +124,7 @@ export function captureTurntableFromCli(
         objectFilter,
         environment: input.environment,
         baseUrl: input.baseUrl,
+        startAzDeg: turntableStartAzDeg(input.preset as RenderPreset | undefined),
         onProgress: input.onProgress,
       }),
     }),
@@ -133,7 +135,7 @@ export function captureTurntableFromCli(
 export function configureTurntableOptions(cmd: Command): Command {
   return cmd
     .option('--turntable', 'capture a seamless 360° orbit of the (static) model instead of the animationView timeline')
-    .option('--preset <name>', "--turntable only: look, 'publish' (default; studio product shot) or 'default' (engineering look)")
+    .option('--preset <name>', "--turntable only: look, 'publish' (default; share-ready studio product shot), 'studio' (standard studio graphical mode), or 'default' (engineering look)")
     .option('--width <n>', '--turntable only: frame width in px (default 1080; even for MP4)', (v) => Number(v))
     .option('--height <n>', '--turntable only: frame height in px (default 1080; even for MP4)', (v) => Number(v))
     .option('--duration-ms <ms>', '--turntable only: one revolution in ms (default 6000)', (v) => Number(v))

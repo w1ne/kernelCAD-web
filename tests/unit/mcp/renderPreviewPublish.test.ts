@@ -10,7 +10,7 @@ import { rm } from 'node:fs/promises';
 import sharp from 'sharp';
 import { PUBLISH_HERO_NAME, renderPreviewTool, type RenderPreviewDeps } from '../../../src/agent/mcp/tools/renderPreview';
 import type { HeadlessRenderOpts, HeadlessRenderResult } from '../../../src/agent/render/headlessRender';
-import { PUBLISH_PRESET } from '../../../src/shared/render/publishPreset';
+import { PUBLISH_PRESET, STUDIO_PRESET } from '../../../src/shared/render/publishPreset';
 import { getToolDefinition } from '../../../src/agent/mcp/toolRegistry';
 
 const tmpDirs: string[] = [];
@@ -52,6 +52,18 @@ describe("render_preview preset: 'publish'", () => {
     expect([opts.viewportWidth, opts.viewportHeight]).toEqual([1600, 1200]);
     expect(r.images.map((i) => i.name)).toEqual([PUBLISH_HERO_NAME]);
     expect(r.images[0].path.endsWith('/hero.png')).toBe(true);
+  });
+
+  it('studio preset: 1280×960 hero, studio-gradient backdrop, studio hero pose', async () => {
+    const { deps, calls } = recordingDeps();
+    const r = await renderPreviewTool({ code: CODE, preset: 'studio' }, deps);
+    if (r.out_dir) tmpDirs.push(r.out_dir);
+    expect(r.ok, r.error).toBe(true);
+    const opts = calls[0];
+    expect(opts.publish).toEqual({ background: 'studio', shadow: true, stage: 'studio' });
+    expect(opts.poses).toEqual([`${STUDIO_PRESET.heroAzDeg},${STUDIO_PRESET.heroElDeg}`]);
+    expect([opts.viewportWidth, opts.viewportHeight]).toEqual([1280, 960]);
+    expect(r.images.map((i) => i.name)).toEqual([PUBLISH_HERO_NAME]);
   });
 
   it('forwards transparent background, shadow: false and a 2048 px size', async () => {
@@ -105,7 +117,7 @@ describe("render_preview preset: 'publish'", () => {
   it('is advertised on the registry schema', () => {
     const def = getToolDefinition('render_preview')!;
     const props = (def.inputSchema as { properties: Record<string, unknown> }).properties;
-    expect(props.preset).toMatchObject({ enum: ['default', 'publish'] });
+    expect(props.preset).toMatchObject({ enum: ['default', 'publish', 'studio'] });
     expect(props.background).toBeDefined();
     expect(props.shadow).toBeDefined();
     expect(def.description).toContain("preset: 'publish'");

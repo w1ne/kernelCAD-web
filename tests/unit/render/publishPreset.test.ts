@@ -11,9 +11,11 @@ import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
 import {
   PUBLISH_PRESET,
+  STUDIO_PRESET,
   parsePublishBackground,
   poseCameraDir,
   publishSupersample,
+  resolvePublishLook,
   turntableAzimuths,
 } from '../../../src/shared/render/publishPreset';
 import { PUBLISH_FOV_DEG } from '../../../src/render-player/components/demoPlayer/publishStage';
@@ -22,7 +24,10 @@ import { frameForRequest } from '../../../src/render-player/components/demoPlaye
 describe('publish preset — parameters', () => {
   it('normalises backdrops: named, hex, short hex, transparent; rejects junk', () => {
     expect(parsePublishBackground(undefined)).toBe('#ffffff');
+    expect(parsePublishBackground(undefined, STUDIO_PRESET.background)).toBe('studio');
     expect(parsePublishBackground('white')).toBe('#ffffff');
+    expect(parsePublishBackground('neutral')).toBe('#e8ecf1');
+    expect(parsePublishBackground('studio')).toBe('studio');
     expect(parsePublishBackground('Transparent')).toBe('transparent');
     expect(parsePublishBackground('#F5F5F0')).toBe('#f5f5f0');
     expect(parsePublishBackground('#abc')).toBe('#aabbcc');
@@ -30,12 +35,37 @@ describe('publish preset — parameters', () => {
     expect(parsePublishBackground('#12345')).toBeUndefined();
   });
 
-  it('supersamples 2× up to the largest tile and never exceeds the canvas cap', () => {
-    expect(publishSupersample(1600, 1200)).toBe(2);
-    expect(publishSupersample(2048, 2048)).toBe(2);
+  it('studio is a first-class preset: 4:3 defaults, studio backdrop, higher hero', () => {
+    expect(STUDIO_PRESET).toMatchObject({
+      stillWidth: 1280,
+      stillHeight: 960,
+      heroAzDeg: 32,
+      heroElDeg: 24,
+      margin: 1.28,
+      background: 'studio',
+      shadow: true,
+    });
+    expect(resolvePublishLook({ preset: 'studio' }, 'default')).toEqual({
+      ok: true,
+      preset: 'studio',
+      publish: { background: 'studio', shadow: true, stage: 'studio' },
+    });
+    expect(resolvePublishLook({ preset: 'publish' }, 'default')).toEqual({
+      ok: true,
+      preset: 'publish',
+      publish: { background: '#ffffff', shadow: true },
+    });
+  });
+
+  it('supersamples 2× only inside the memory-safe canvas cap', () => {
+    expect(publishSupersample(1280, 960)).toBe(2);
+    expect(publishSupersample(1600, 1200)).toBe(1);
+    expect(publishSupersample(2048, 2048)).toBe(1);
     expect(publishSupersample(64, 64)).toBe(2);
-    for (const edge of [64, 777, 1600, 2048]) {
-      expect(edge * publishSupersample(edge, edge)).toBeLessThanOrEqual(PUBLISH_PRESET.maxCanvasEdge);
+    for (const [w, h] of [[64, 64], [777, 777], [1280, 960], [1600, 1200], [2048, 2048]] as const) {
+      const factor = publishSupersample(w, h);
+      expect(Math.max(w, h) * factor).toBeLessThanOrEqual(PUBLISH_PRESET.maxCanvasEdge);
+      expect(w * h * factor * factor).toBeLessThanOrEqual(PUBLISH_PRESET.maxCanvasArea);
     }
   });
 

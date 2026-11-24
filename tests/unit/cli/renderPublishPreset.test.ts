@@ -21,7 +21,7 @@ vi.mock('../../../src/agent/render/headlessRender', () => ({
 
 import { renderCommand, renderScript, type RenderInput } from '../../../src/agent/cli/commands/render';
 import { headlessRender } from '../../../src/agent/render/headlessRender';
-import { PUBLISH_PRESET } from '../../../src/shared/render/publishPreset';
+import { PUBLISH_PRESET, STUDIO_PRESET } from '../../../src/shared/render/publishPreset';
 
 const mockRender = headlessRender as ReturnType<typeof vi.fn>;
 const HERO_POSE = `${PUBLISH_PRESET.heroAzDeg},${PUBLISH_PRESET.heroElDeg}`;
@@ -94,6 +94,21 @@ describe('render --preset publish', () => {
     });
     expect(existsSync(join(tmp, 'demo.hero.png'))).toBe(true);
     expect(existsSync(join(tmp, 'demo.png'))).toBe(false);
+  });
+
+  it('a bare --preset studio renders one studio hero (1280×960, gradient backdrop)', async () => {
+    const studioPose = `${STUDIO_PRESET.heroAzDeg},${STUDIO_PRESET.heroElDeg}`;
+    mockRender.mockResolvedValue(mockResult([studioPose]));
+    await runCli('--preset', 'studio');
+    expect(process.exitCode).toBe(0);
+    expect(mockRender.mock.calls[0][0]).toMatchObject({
+      publish: { background: 'studio', shadow: true },
+      views: [],
+      poses: [studioPose],
+      viewportWidth: STUDIO_PRESET.stillWidth,
+      viewportHeight: STUDIO_PRESET.stillHeight,
+    });
+    expect(existsSync(join(tmp, 'demo.hero.png'))).toBe(true);
   });
 
   it('--background and --no-shadow reach the renderer as the publish stage (CLI parse)', async () => {

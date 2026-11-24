@@ -4,13 +4,51 @@ Track competitors by the engineering job they compete for. Distinguish vendor cl
 roadmap items, independently exercised behavior, and proposals for kernelCAD.
 
 This is a repository watchlist; no scheduled kernelCAD refresh was configured in this change.
-Review the entry below monthly, with the next check due 2026-11-11.
+Review the entries below monthly, with the next check due 2026-12-23.
 
 ## Watchlist
 
 | Company / product | Competitive overlap | Last checked | Source |
 |---|---|---|---|
 | **Weave 2D Inc / CADalyst** (one entry) | Production drawing automation; narrower than kernelCAD's design-to-export workflow. Primary relevance: kernelCAD. LabWired relevance: workflow ideas only. | 2026-10-11 | [Official site](https://weave2d.com/) |
+| **Blueprint Labs / Blueprint.io** | Browser CAD plus AI-assisted generation; overlaps kernelCAD's model-generation entry path, not its verified/manufacturable CAD+electronics loop. Primary relevance: kernelCAD. LabWired relevance: none demonstrated. | 2026-11-23 | [Official site](https://www.blueprint.io/) |
+
+## Blueprint.io by Blueprint Labs
+
+### Public evidence
+
+Blueprint Labs is a San Francisco company backed by a16z Speedrun. On 2026-11-23
+its site reported 376,710 projects, 296,733 accounts and 17,495 published
+community projects. These are vendor-published counters; we did not audit them
+or exercise the product.
+
+The product is a browser CAD surface with AI-assisted model generation, a
+ForgeCAD integration announced in August 2026, and vendor-published tiers:
+Basic $0, Pro $20/month and Ultra $100/month (captured 2026-11-23). The site
+describes an LLM plan-and-generate flow; we did not verify it, its geometric
+validity, any manufacturable constraint, or an electronics/firmware workflow.
+
+### Assessment
+
+Blueprint.io competes at the entry to model generation: a prompt or sketch
+becomes a 3D model in a browser with a community gallery. kernelCAD's
+differentiator is the verified, manufacturable CAD+electronics loop: scripted
+geometry that compiles, deterministic review, and artifacts a shop can inspect.
+That advantage is verified for kernelCAD; the LLM plan claim for Blueprint.io is
+unverified. Do not repeat the vendor's counters as independent adoption evidence.
+
+No LabWired overlap is demonstrated: a CAD model is not firmware simulation.
+### Refresh checklist
+
+| Signal | Record / action |
+|---|---|
+| Counters or pricing change | Record the date, exact figures and data-handling terms; counters are not audited adoption. |
+| LLM generation becomes inspectable | Try one prompt; check geometric validity, dimensions and manufacturable export. |
+| ForgeCAD integration ships | Name the version, export formats, and whether geometry round-trips. |
+| Electronics or firmware scope appears | Reassess LabWired relevance only on an explicit circuit, firmware or simulation workflow. |
+
+Update the check date and append material findings below. An unreachable source is
+an incomplete check, not evidence of no change.
 
 ## CADalyst by Weave 2D
 
@@ -82,6 +120,12 @@ claim without comparable, reproducible evidence.
 
 ## Change log
 
+- **2026-11-23:** Added Blueprint Labs / Blueprint.io as a kernelCAD competitor entry
+  focused on browser model generation. Recorded vendor-published counters (376,710
+  projects, 296,733 accounts, 17,495 published community projects), the August 2026
+  ForgeCAD integration, and Basic $0 / Pro $20/mo / Ultra $100/mo tiers. The LLM
+  plan/verification claim is unverified; kernelCAD's verified manufacturable CAD+electronics
+  advantage is stated as our position, not as a measured head-to-head result.
 - **2026-10-11:** Added CADalyst and its maker Weave 2D as one kernelCAD competitor entry,
   focused on manufacturing documentation. Recorded transferable LabWired ideas separately.
   Checked the public homepage and its referenced component source; no product installation

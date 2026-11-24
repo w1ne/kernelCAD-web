@@ -57,17 +57,12 @@ export function ViewerPane({ version, onSceneReady, width, height, noWatermark =
     // correctly under Neutral.
     renderer.toneMapping = THREE.NeutralToneMapping;
     renderer.toneMappingExposure = 1.0;
-    // Transmission render target resolution: drop to 0.25× viewport so glass
-    // materials (sapphire crystal, clear plastic, etc.) don't tank the frame
-    // rate during multi-part assembly capture. The transmission shader
-    // samples the opaque backbuffer per-transmissive-fragment; at 1.0× full
-    // 1080p the per-frame cost in a 96-part scene exceeds 5 s under SwiftShader
-    // (no GPU acceleration in CI / Playwright headless). 0.25× is visually
-    // indistinguishable at the kCAD demo's iso/front pose (parts ≥ 1 mm
-    // project to many pixels even at the reduced transmission target) and
-    // trims per-frame cost dramatically — important for captureDemo, which
-    // renders ~1100 frames sequentially for the build + rotate timeline.
-    renderer.transmissionResolutionScale = 1.0;
+    // Transmission render target resolution: 0.5× viewport keeps glass/optics
+    // transmissive without a 4× memory cost. The transmission pass samples the
+    // opaque backbuffer per fragment; at 1.0× a 96-part assembly under
+    // SwiftShader (CI / Playwright, no GPU) exceeded the frame deadline and
+    // the old 3200×2400 publish buffers were SIGKILLed for OOM.
+    renderer.transmissionResolutionScale = 0.5;
     mount.appendChild(renderer.domElement);
 
     // PMREM environment map: required for MeshPhysicalMaterial.transmission
@@ -93,6 +88,9 @@ export function ViewerPane({ version, onSceneReady, width, height, noWatermark =
         const roomEnv = new RoomEnvironment();
         envTex = pmrem.fromScene(roomEnv, 0.04).texture;
         scene.environment = envTex;
+        // This is the unrotated default probe, not a script-authored HDRI.
+        // The publish/studio stage may replace it with the studio softbox.
+        scene.userData.kCadDefaultEnv = true;
         // Knock the IBL contribution down so it complements (not replaces) the
         // three-point directional lighting calibrated for saturated CAD colors.
         // At full intensity the room IBL washes out pink/yellow/teal palettes
