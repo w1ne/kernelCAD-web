@@ -25,10 +25,12 @@ import { mkdir, rm } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { PUBLISH_PRESET, turntableAzimuths, type PublishStageSpec } from '../../shared/render/publishPreset';
+import type { ResolvedDisplaySurface, ResolvedIndicatorState } from '../../shared/render/displaySurface';
 import {
   meshForHeadlessRender,
   openRenderPage,
   type DemoPlayerPageHandle,
+  type DisplayOverlayResult,
   type HeadlessObjectFilter,
 } from './headlessRender';
 import { resolveRenderBaseUrl, type ResolvedRenderBase } from './playerServer';
@@ -65,6 +67,10 @@ export interface CaptureTurntableOpts {
   publish?: PublishStageSpec;
   objectFilter?: HeadlessObjectFilter;
   environment?: string;
+  /** Resolved display surfaces (textured planes on part faces). */
+  displays?: readonly ResolvedDisplaySurface[];
+  /** Resolved LED / indicator emissive states. */
+  indicators?: readonly ResolvedIndicatorState[];
   baseUrl?: string;
   onProgress?: (msg: string) => void;
 }
@@ -172,7 +178,7 @@ async function openTurntablePage(
   opts: CaptureTurntableOpts,
   deps: CaptureTurntableDeps,
   meshed: Awaited<ReturnType<typeof meshForHeadlessRender>>,
-  track: { surface?: ResolvedRenderBase; handle?: DemoPlayerPageHandle },
+  track: { surface?: ResolvedRenderBase; handle?: DemoPlayerPageHandle; overlays?: DisplayOverlayResult },
 ): Promise<DemoPlayerPageHandle> {
   track.surface = await (deps.resolveBaseUrl ?? resolveRenderBaseUrl)(opts.baseUrl);
   const openPage = deps.openPage ?? openRenderPage;
@@ -182,10 +188,13 @@ async function openTurntablePage(
       ...(opts.publish !== undefined ? { publish: opts.publish } : {}),
       ...(opts.objectFilter !== undefined ? { objectFilter: opts.objectFilter } : {}),
       ...(opts.environment !== undefined ? { environment: opts.environment } : {}),
+      ...(opts.displays !== undefined ? { displays: opts.displays } : {}),
+      ...(opts.indicators !== undefined ? { indicators: opts.indicators } : {}),
     },
     track.surface.baseUrl, meshed.serialized, meshed.meshing,
   );
   track.handle = opened.pageHandle;
+  track.overlays = opened.displayOverlays;
   return opened.pageHandle;
 }
 
@@ -223,7 +232,7 @@ export async function captureTurntable(
   if ('failure' in meshResult) return meshResult.failure;
 
   const enc: { ffmpeg?: FfmpegProcessLike } = {};
-  const track: { surface?: ResolvedRenderBase; handle?: DemoPlayerPageHandle } = {};
+  const track: { surface?: ResolvedRenderBase; handle?: DemoPlayerPageHandle; overlays?: DisplayOverlayResult } = {};
   const abortFfmpeg = ffmpegAborter(enc, outPath);
   try {
     if (framesDir === undefined) await mkdir(dirname(outPath), { recursive: true });
@@ -244,7 +253,7 @@ export async function captureTurntable(
       durationMs: opts.durationMs, fps: opts.fps, stashedWarns, verifyFields: noVerify, onProgress: opts.onProgress ?? (() => undefined),
     });
     if (finalFailure) return finalFailure;
-    return { ok: true, outPath, frameCount: loop.written, durationMs: opts.durationMs, fps: opts.fps, diagnostics: stashedWarns, ...noVerify() };
+    return { ok: true, outPath, frameCount: loop.written, durationMs: opts.durationMs, fps: opts.fps, diagnostics: stashedWarns, ...noVerify(), ...(track.overlays !== undefined ? { displayOverlays: track.overlays } : {}) };
   } catch (e) {
     await abortFfmpeg();
     return failure(

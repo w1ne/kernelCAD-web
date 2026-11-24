@@ -151,7 +151,7 @@ export function attachTextures(
   for (const slot of TEXTURE_SLOTS) {
     const ref = textures[slot.key];
     if (ref === undefined) continue;
-    cachedTexture(browserTextureUrl(ref.path), ref, slot.colorSpace).then(
+    const load = cachedTexture(browserTextureUrl(ref.path), ref, slot.colorSpace).then(
       (tex) => {
         // Cast: TS sees keyof Material; we already validated `prop` is a known
         // map slot on MeshPhysicalMaterial.
@@ -169,6 +169,38 @@ export function attachTextures(
         // transient network blip on a URL-cached texture.
       },
     );
+    trackPendingTexture(load);
+  }
+}
+
+/** Texture loads still in flight, so a capture can wait for them instead of
+ *  screenshotting a material whose map has not decoded yet. */
+const pendingTextureLoads = new Set<Promise<void>>();
+
+function trackPendingTexture(load: Promise<void>): void {
+  pendingTextureLoads.add(load);
+  void load.then(() => pendingTextureLoads.delete(load), () => pendingTextureLoads.delete(load));
+}
+
+/**
+ * Wait for every texture load that is pending RIGHT NOW, bounded by
+ * `timeoutMs` so a broken URL can never hang a capture. Loads started while
+ * waiting are picked up by the next call (textures attached after the scene
+ * load are not this call's responsibility).
+ */
+export async function waitForPendingTextures(timeoutMs = 5000): Promise<void> {
+  const pending = [...pendingTextureLoads];
+  if (pending.length === 0) return;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([
+      Promise.all(pending).then(() => undefined),
+      new Promise<void>((resolve) => {
+        timer = setTimeout(resolve, Math.max(0, timeoutMs));
+      }),
+    ]);
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
   }
 }
 

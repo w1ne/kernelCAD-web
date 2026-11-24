@@ -28,7 +28,7 @@
 import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../../script-runtime/sceneSummary';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { isAbsolute, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 import {
   headlessRender,
   compositeSheet,
@@ -48,6 +48,7 @@ import {
   watermarkBrokenMechanism,
 } from '../../cli/commands/render';
 import { mechanismErrors } from '../../cli/lib/mechanismBanner';
+import { overlayRefusalFor } from './renderPreviewOverlayRefusal';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { parseExplodeInput, type ParsedExplode } from '../../../modeling/runtime/explodedPoses';
 import { loadScriptFeatures } from '../../../composition/scriptLoader';
@@ -65,6 +66,15 @@ import {
   SURFACE_QUALITY_OVERLAYS,
   type SurfaceQualityOverlay,
 } from './surfaceQualityOverlay';
+import {
+  validateDisplaySurfaces,
+  validateIndicatorStates,
+  type DisplaySurfaceSpec,
+  type IndicatorStateSpec,
+  type ResolvedDisplaySurface,
+  type ResolvedIndicatorState,
+} from '../../../shared/render/displaySurface';
+import { resolveDisplaySurfaceImages } from '../../render/displaySurfaceImages';
 
 /** Generous request/response deadline for one preview (5 minutes — a cold
  *  render is ~20-30 s; the deadline only catches a wedged browser). */
@@ -149,6 +159,11 @@ export interface RenderPreviewInput {
   background?: string;
   /** 'publish' / 'studio' only: soft contact shadow under the model (default true). */
   shadow?: boolean;
+  /** Display surfaces: textured planes seated on loaded part faces (real
+   *  display PNGs on an OLED/LCD/e-paper module, a label, a decal). */
+  displays?: DisplaySurfaceSpec[];
+  /** Live / simulated LED and indicator emissive states (0 = off, 1 = full). */
+  indicators?: IndicatorStateSpec[];
 }
 
 export interface RenderPreviewImage {
@@ -179,6 +194,17 @@ export interface RenderPreviewOutput {
   render_source?: 'static-player' | 'dev-server' | 'explicit';
   /** Wall-clock render time in ms (provisioning + browser + captures). */
   render_ms?: number;
+  /** Requested display parts whose textured plane was seated on a visible
+   *  part. Present only when `displays` was passed. */
+  displays_applied?: string[];
+  /** Requested display parts that matched no visible part/feature, or whose
+   *  face had no usable extent. A non-empty list fails the call: a texture
+   *  that never landed must not be reported as rendered. */
+  displays_missing?: string[];
+  /** Requested indicator parts whose LED state was applied. */
+  indicators_applied?: string[];
+  /** Requested indicator parts that matched nothing — same rule as displays. */
+  indicators_missing?: string[];
   diagnostics: CompilerDiagnostic[];
   error?: string;
   errorCode?: string;
@@ -511,6 +537,42 @@ async function preparePreviewSession(input: RenderPreviewInput, hasCode: boolean
   return { ok: true, outDir, scriptPath };
 }
 
+/** Validate `displays` / `indicators` and turn display images into data URLs
+ *  (they resolve against the script's directory). */
+async function resolvePreviewOverlays(input: RenderPreviewInput, scriptPath: string): Promise<
+  | { ok: true; displays?: ResolvedDisplaySurface[]; indicators?: ResolvedIndicatorState[] }
+  | { ok: false; result: RenderPreviewOutput }
+> {
+  const displayCheck = validateDisplaySurfaces(input.displays);
+  if (!displayCheck.ok) {
+    return { ok: false, result: refusal('cli.invalid-args', `render_preview: ${displayCheck.message}`, displayCheck.hint) };
+  }
+  const indicatorCheck = validateIndicatorStates(input.indicators);
+  if (!indicatorCheck.ok) {
+    return { ok: false, result: refusal('cli.invalid-args', `render_preview: ${indicatorCheck.message}`, indicatorCheck.hint) };
+  }
+  let displays: ResolvedDisplaySurface[] | undefined;
+  if (displayCheck.displays.length > 0) {
+    try {
+      displays = await resolveDisplaySurfaceImages(displayCheck.displays, dirname(scriptPath));
+    } catch (e) {
+      return {
+        ok: false,
+        result: refusal(
+          'cli.invalid-args',
+          `render_preview: ${e instanceof Error ? e.message : String(e)}`,
+          'Pass image as a PNG/JPEG/WebP path relative to the script, an absolute path, or a data:image/... URI.',
+        ),
+      };
+    }
+  }
+  return {
+    ok: true,
+    ...(displays !== undefined ? { displays } : {}),
+    ...(indicatorCheck.indicators.length > 0 ? { indicators: indicatorCheck.indicators } : {}),
+  };
+}
+
 /** What a call captures when it names no views: the sheet's seven views,
  *  the publish hero (no views, one pose), or the canonical four. */
 function resolvePreviewShots(
@@ -556,9 +618,14 @@ export async function renderPreviewTool(
   if (!session.ok) return session.result;
   const { outDir, scriptPath } = session;
 
+  const overlays = await resolvePreviewOverlays(input, scriptPath);
+  if (!overlays.ok) return overlays.result;
+
   const work = renderPreviewWork({
     input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode, overlay, publish, hero,
     heroDescription: hero ? heroDescription(preset) : undefined,
+    displays: overlays.displays,
+    indicators: overlays.indicators,
   });
   // Swallow the losing chain's rejection if the timeout wins (same pattern as
   // capture_animation) so it never surfaces as an unhandled rejection.
@@ -692,43 +759,60 @@ async function resolveRenderBase(
   }
 }
 
+interface PreviewRenderRequest {
+  renderScriptPath: string;
+  views: RenderView[];
+  pose?: { az: number; el: number };
+  objectFilter: ReturnType<typeof buildObjectFilter>;
+  width: number;
+  height: number;
+  section?: { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean };
+  explode?: ParsedExplode;
+  publish?: PublishStageSpec;
+  displays?: readonly ResolvedDisplaySurface[];
+  indicators?: readonly ResolvedIndicatorState[];
+}
+
+/** The renderer request for one preview: view/pose/dimension options plus the
+ *  CLI overrides and the resolved display / indicator overlays. */
+function previewRenderOptions(
+  input: RenderPreviewInput,
+  base: ResolvedRenderBase,
+  req: PreviewRenderRequest,
+  onBuild: NonNullable<HeadlessRenderOpts['onBuild']>,
+): HeadlessRenderOpts {
+  return {
+    onBuild,
+    scriptPath: req.renderScriptPath,
+    viewportWidth: req.width,
+    viewportHeight: req.height,
+    views: req.views,
+    ...(req.pose !== undefined ? { poses: [`${req.pose.az},${req.pose.el}`] } : {}),
+    baseUrl: base.baseUrl,
+    hideReferenceImages: false,
+    objectFilter: req.objectFilter,
+    ...(input.environment !== undefined ? { environment: input.environment } : {}),
+    ...(input.shading !== undefined ? { shading: input.shading } : {}),
+    ...(input.screenshot_timeout_ms !== undefined ? { screenshotTimeoutMs: input.screenshot_timeout_ms } : {}),
+    ...(input.no_watermark === true ? { noWatermark: true } : {}),
+    ...(req.section !== undefined ? { section: req.section } : {}),
+    ...(req.explode !== undefined ? { explode: req.explode } : {}),
+    ...(req.publish !== undefined ? { publish: req.publish } : {}),
+    ...(req.displays !== undefined ? { displays: req.displays } : {}),
+    ...(req.indicators !== undefined ? { indicators: req.indicators } : {}),
+  };
+}
+
 async function runHeadlessRenderPhase(
   input: RenderPreviewInput,
   deps: RenderPreviewDeps,
   base: ResolvedRenderBase,
-  opts: {
-    renderScriptPath: string;
-    views: RenderView[];
-    pose?: { az: number; el: number };
-    objectFilter: ReturnType<typeof buildObjectFilter>;
-    width: number;
-    height: number;
-    section?: { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean };
-    explode?: ParsedExplode;
-    publish?: PublishStageSpec;
-  },
+  opts: PreviewRenderRequest,
 ): Promise<{ result: HeadlessRenderResult; renderSource: ResolvedRenderBase['source']; sceneSummary: SceneSummary } | { refusal: RenderPreviewOutput }> {
   let result: HeadlessRenderResult;
   let sceneSummary = unavailableSceneSummary();
   try {
-    result = await deps.render({
-      onBuild: root => { sceneSummary = summarizeScene(root); },
-      scriptPath: opts.renderScriptPath,
-      viewportWidth: opts.width,
-      viewportHeight: opts.height,
-      views: opts.views,
-      ...(opts.pose !== undefined ? { poses: [`${opts.pose.az},${opts.pose.el}`] } : {}),
-      baseUrl: base.baseUrl,
-      hideReferenceImages: false,
-      ...(input.environment !== undefined ? { environment: input.environment } : {}),
-      ...(input.shading !== undefined ? { shading: input.shading } : {}),
-      ...(input.screenshot_timeout_ms !== undefined ? { screenshotTimeoutMs: input.screenshot_timeout_ms } : {}),
-      ...(input.no_watermark === true ? { noWatermark: true } : {}),
-      ...(opts.objectFilter !== undefined ? { objectFilter: opts.objectFilter } : {}),
-      ...(opts.section !== undefined ? { section: opts.section } : {}),
-      ...(opts.explode !== undefined ? { explode: opts.explode } : {}),
-      ...(opts.publish !== undefined ? { publish: opts.publish } : {}),
-    });
+    result = await deps.render(previewRenderOptions(input, base, opts, (root) => { sceneSummary = summarizeScene(root); }));
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     // Model faults raised while building the scene (an import that will not read, parts that
@@ -816,8 +900,10 @@ async function renderPreviewWork(args: {
   publish?: PublishStageSpec;
   hero: boolean;
   heroDescription?: string;
+  displays?: readonly ResolvedDisplaySurface[];
+  indicators?: readonly ResolvedIndicatorState[];
 }): Promise<RenderPreviewOutput> {
-  const { input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode, overlay, publish, hero, heroDescription: description } = args;
+  const { input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode, overlay, publish, hero, heroDescription: description, displays, indicators } = args;
   const t0 = Date.now();
 
   const explodeRefusal = await validateExplodeAssembly(explode, scriptPath);
@@ -843,6 +929,8 @@ async function renderPreviewWork(args: {
     section,
     explode,
     publish,
+    displays,
+    indicators,
   });
   if ('refusal' in renderPhase) return renderPhase.refusal;
   const { result, renderSource, sceneSummary } = renderPhase;
@@ -857,8 +945,10 @@ async function renderPreviewWork(args: {
   if ('refusal' in imagePhase) return { ...imagePhase.refusal, sceneSummary };
   const { images } = imagePhase;
 
+  const overlays = result.displayOverlays;
+  const overlayRefusal = overlayRefusalFor(overlays);
   return {
-    ok: true,
+    ok: overlayRefusal === undefined,
     images,
     out_dir: outDir,
     bounds: result.bounds,
@@ -867,6 +957,18 @@ async function renderPreviewWork(args: {
     ...(probe.mechanism === 'broken' ? { mechanism_failure_codes: failureCodes } : {}),
     render_source: renderSource,
     render_ms: Date.now() - t0,
-    diagnostics: probe.mechanism === 'broken' ? [...probe.failures] : [],
+    ...(overlays !== undefined
+      ? {
+          displays_applied: overlays.displaysApplied,
+          displays_missing: overlays.displaysMissing,
+          indicators_applied: overlays.indicatorsApplied,
+          indicators_missing: overlays.indicatorsMissing,
+        }
+      : {}),
+    ...(overlayRefusal !== undefined ? { error: overlayRefusal.message, errorCode: overlayRefusal.code, errorHint: overlayRefusal.hint } : {}),
+    diagnostics: [
+      ...(probe.mechanism === 'broken' ? probe.failures : []),
+      ...(overlayRefusal !== undefined ? [overlayRefusal] : []),
+    ],
   };
 }

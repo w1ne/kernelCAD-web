@@ -22,6 +22,7 @@ import {
 } from '../../../shared/render/publishPreset';
 import type { CaptureTurntableOpts } from '../../render/captureTurntable';
 import type { HeadlessObjectFilter } from '../../render/headlessRender';
+import type { ResolvedDisplaySurface, ResolvedIndicatorState } from '../../../shared/render/displaySurface';
 
 export interface TurntableInputFields {
   turntable?: boolean;
@@ -165,6 +166,8 @@ export function turntableCaptureOpts(
     framesDir?: string;
     objectFilter?: HeadlessObjectFilter;
     environment?: string;
+    displays?: readonly ResolvedDisplaySurface[];
+    indicators?: readonly ResolvedIndicatorState[];
     baseUrl?: string;
     startAzDeg?: number;
     onProgress?: (msg: string) => void;
@@ -183,6 +186,8 @@ export function turntableCaptureOpts(
     ...(settings.publish !== undefined ? { publish: settings.publish } : {}),
     ...(site.objectFilter !== undefined ? { objectFilter: site.objectFilter } : {}),
     ...(site.environment !== undefined ? { environment: site.environment } : {}),
+    ...(site.displays !== undefined ? { displays: site.displays } : {}),
+    ...(site.indicators !== undefined ? { indicators: site.indicators } : {}),
     ...(site.baseUrl !== undefined ? { baseUrl: site.baseUrl } : {}),
     ...(site.onProgress !== undefined ? { onProgress: site.onProgress } : {}),
   };

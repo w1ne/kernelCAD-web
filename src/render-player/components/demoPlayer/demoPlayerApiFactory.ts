@@ -16,10 +16,11 @@ import type { RenderEnvironmentSpec } from '../../../shared/intent/renderEnviron
 import type { CameraTargetMetadata } from '../../../shared/intent/cameraTargetRecord';
 import { applyEnvironment } from '../../../shared/render/environment';
 import { installDefaultRoomEnvironment } from './defaultRoomEnvironment';
-import { buildMaterialFromPBR, disposeMaterialDeep, DEFAULT_MESH_COLOR } from './buildMaterialFromPBR';
+import { buildMaterialFromPBR, disposeMaterialDeep, DEFAULT_MESH_COLOR, waitForPendingTextures } from './buildMaterialFromPBR';
 import { buildReferenceImagePlane } from './buildReferenceImagePlane';
 import { fitDistanceForBounds } from './cameraFit';
 import { buildIndexedDisplayMesh, disposeMeshResources } from './demoPlayerGeometry';
+import { applyDisplaySurfaces, applyIndicatorStates } from './displaySurfaces';
 import { updateFeatureTransforms } from './demoPlayerPose';
 import { applyFeatureAppearance } from './demoPlayerAppearance';
 import { dumpScene } from './demoPlayerDiagnostics';
@@ -955,6 +956,23 @@ export function createDemoPlayerWindowApi(deps: DemoPlayerApiDeps): DemoPlayerWi
     setReferenceImagesVisible: (visible) => setReferenceImagesVisible(deps, visible),
     setRenderEnvironment: (spec) => setRenderEnvironment(deps, spec),
     setPublishStage: (spec) => applyPublishStage(requireScene(deps), spec),
+    setDisplaySurfaces: async (specs) => {
+      const ctx = requireScene(deps);
+      const result = await applyDisplaySurfaces(ctx.scene, specs);
+      ctx.renderer.render(ctx.scene, ctx.camera);
+      return result;
+    },
+    setIndicatorStates: (specs) => {
+      const ctx = requireScene(deps);
+      const result = applyIndicatorStates(ctx.scene, specs);
+      ctx.renderer.render(ctx.scene, ctx.camera);
+      return result;
+    },
+    waitForPendingTextures: async (timeoutMs) => {
+      await waitForPendingTextures(timeoutMs);
+      const ctx = requireScene(deps);
+      ctx.renderer.render(ctx.scene, ctx.camera);
+    },
     capturePublishFrame: (req) => capturePublishFrame(requireScene(deps), req),
     dumpScene: () => dumpScene(deps.sceneRef),
   };
