@@ -154,6 +154,24 @@ describe('holeLowerer — drill-point blind holes', () => {
     expect(isValidShape(getOC(), wrapped(shape))).toBe(true);
   });
 
+  it('names the conical bottom as the blind-hole floor ref', async () => {
+    const { shape, diagnostics } = await lowerScript(`
+      return box(40, 40, 20).hole('top', {
+        u: 0, v: 0, diameter: 8, depth: 10, drillPoint: true, name: 'pilot',
+      });
+    `);
+    expect(diagnostics).toEqual([]);
+    const labelled = shape.getReplicadShape().faces.map((face) => {
+      const h = (face as unknown as { wrapped: { HashCode(n: number): number } })
+        .wrapped.HashCode(2147483647).toString(16);
+      const lineage = shape.historyMap?.get(h);
+      return { face, label: lineage?.labelName, featureName: lineage?.featureName };
+    });
+    const floor = labelled.find((f) => f.featureName === 'pilot' && f.label === 'floor');
+    expect(floor, 'pilot.floor created ref').toBeDefined();
+    expect(floor!.face.geomType).toBe('CONE');
+  });
+
   it('applies the drill point to every bore in holes()', async () => {
     const { shape, diagnostics } = await lowerScript(`
       return box(60, 40, 8).holes('top', {
@@ -170,31 +188,34 @@ describe('holeLowerer — drill-point blind holes', () => {
     expect(isValidShape(getOC(), wrapped(shape))).toBe(true);
   });
 
+  async function captureError(code: string): Promise<{ code: string; message: string }> {
+    try {
+      await lowerScript(code);
+      throw new Error('expected the hole capture to fail');
+    } catch (error) {
+      const err = error as { code?: string; message: string };
+      expect(err.code).toBe('feature.invalid-args');
+      return { code: err.code, message: err.message };
+    }
+  }
+
   it.each([
     ["depth: 'through'", "depth: 'through', drillPoint: true"],
     ['upToFace', "upToFace: 'bottom', drillPoint: true"],
   ])('refuses a drill point with %s', async (_name, opts) => {
-    const { diagnostics } = await lowerScript(`
+    const err = await captureError(`
       return box(40, 40, 20).hole('top', { u: 0, v: 0, diameter: 8, ${opts} });
     `);
-    const errs = (diagnostics as { severity: string; code: string; message: string }[])
-      .filter(d => d.severity === 'error');
-    expect(errs.length).toBeGreaterThan(0);
-    expect(errs[0].code).toBe('feature.invalid-args');
-    expect(errs[0].message).toMatch(/drillPoint/);
+    expect(err.message).toMatch(/drillPoint/);
   });
 
   it('refuses a drill-point angle outside (0, 180)', async () => {
-    const { diagnostics } = await lowerScript(`
+    const err = await captureError(`
       return box(40, 40, 20).hole('top', {
         u: 0, v: 0, diameter: 8, depth: 10, drillPoint: { angleDeg: 200 },
       });
     `);
-    const errs = (diagnostics as { severity: string; code: string; message: string }[])
-      .filter(d => d.severity === 'error');
-    expect(errs.length).toBeGreaterThan(0);
-    expect(errs[0].code).toBe('feature.invalid-args');
-    expect(errs[0].message).toMatch(/angleDeg/);
+    expect(err.message).toMatch(/angleDeg/);
   });
 });
 

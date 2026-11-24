@@ -11,15 +11,16 @@ import type { FeatureId } from '../../shared/intent/types';
 
 const HOLE_KEYS = [
   'u', 'v', 'at', 'axis', 'diameter', 'depth', 'upToFace',
-  'counterbore', 'countersink', 'thread', 'name', 'enabled',
+  'counterbore', 'countersink', 'drillPoint', 'thread', 'name', 'enabled',
 ] as const;
 const HOLES_KEYS = [
   'positions', 'diameter', 'depth', 'upToFace',
-  'counterbore', 'countersink', 'thread', 'name', 'enabled',
+  'counterbore', 'countersink', 'drillPoint', 'thread', 'name', 'enabled',
 ] as const;
 const NESTED_KEYS: Record<string, readonly string[]> = {
   counterbore: ['diameter', 'depth'],
   countersink: ['diameter', 'angleDeg'],
+  drillPoint: ['angleDeg'],
   thread: ['pitch', 'modeled', 'clearance', 'fromDiameter'],
 };
 

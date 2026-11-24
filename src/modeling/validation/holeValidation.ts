@@ -26,6 +26,7 @@ import type { CanonicalFace } from '../capture/faceEditCapture';
 import type { Editable } from '../../shared/runtime/paramRef';
 import { currentValue, currentBool } from '../../shared/runtime/editableHelpers';
 import type { ParamTable } from '../../shared/runtime/paramTable';
+import { DEFAULT_DRILL_POINT_ANGLE_DEG } from '../../shared/intent/holeDrillPoint';
 
 // User-facing opts allow Editable<number> for editable numeric fields. The
 // validator + serializer machinery internally splits into a "resolved" view
@@ -53,6 +54,12 @@ export interface EditableHoleCountersink { diameter: Editable<number>; angleDeg?
 export interface HoleCounterbore { diameter: number; depth: number }
 export interface HoleCountersink { diameter: number; angleDeg?: number }
 
+/** Blind-hole bottom. `true` uses the standard 118° twist-drill point;
+ *  `{ angleDeg }` sets the included angle. `depth` remains the full-diameter
+ *  depth, so the cone apex sits below it by radius / tan(angleDeg / 2). */
+export interface EditableHoleDrillPoint { angleDeg?: Editable<number> }
+export interface HoleDrillPoint { angleDeg: number }
+
 /** End face for `upToFace` on hole, holes and cutout. Every form the entry
  *  `face` accepts is valid: a FaceRef, a canonical face name, a label or
  *  created ref string, a FaceQuery (`{ containsPoint: [x, y, z] }`) or a
@@ -72,6 +79,7 @@ export interface EditableHoleOpts {
   upToFace?: UpToFaceSelector;
   counterbore?: EditableHoleCounterbore;
   countersink?: EditableHoleCountersink;
+  drillPoint?: boolean | EditableHoleDrillPoint;
   /** Internal ISO metric thread; `diameter` becomes the nominal size. */
   thread?: EditableHoleThread;
   /** Optional agent-chosen feature name. When set, downstream selectors can
@@ -93,6 +101,7 @@ export interface HoleOpts {
   upToFace?: UpToFaceSelector;
   counterbore?: HoleCounterbore;
   countersink?: HoleCountersink;
+  drillPoint?: HoleDrillPoint;
   thread?: HoleThread;
   name?: string;
   enabled?: boolean;
@@ -105,6 +114,7 @@ export interface EditableHolesOpts {
   upToFace?: UpToFaceSelector;
   counterbore?: EditableHoleCounterbore;
   countersink?: EditableHoleCountersink;
+  drillPoint?: boolean | EditableHoleDrillPoint;
   thread?: EditableHoleThread;
   name?: string;
   enabled?: Editable<boolean>;
@@ -117,9 +127,23 @@ export interface HolesOpts {
   upToFace?: UpToFaceSelector;
   counterbore?: HoleCounterbore;
   countersink?: HoleCountersink;
+  drillPoint?: HoleDrillPoint;
   thread?: HoleThread;
   name?: string;
   enabled?: boolean;
+}
+
+function resolveDrillPoint(
+  drillPoint: boolean | EditableHoleDrillPoint | undefined,
+  table: ParamTable,
+): HoleDrillPoint | undefined {
+  if (drillPoint === undefined || drillPoint === false) return undefined;
+  if (drillPoint === true) return { angleDeg: DEFAULT_DRILL_POINT_ANGLE_DEG };
+  return {
+    angleDeg: drillPoint.angleDeg === undefined
+      ? DEFAULT_DRILL_POINT_ANGLE_DEG
+      : currentValue(drillPoint.angleDeg, table),
+  };
 }
 
 function resolveThread(thread: EditableHoleThread | undefined, table: ParamTable): HoleThread | undefined {
@@ -163,6 +187,7 @@ export function resolveHoleOpts(opts: EditableHoleOpts, table: ParamTable): Hole
         : undefined,
     };
   }
+  if (opts.drillPoint !== undefined) out.drillPoint = resolveDrillPoint(opts.drillPoint, table);
   if (opts.thread !== undefined) out.thread = resolveThread(opts.thread, table);
   if (opts.enabled !== undefined) {
     out.enabled = currentBool(opts.enabled, table);
@@ -209,6 +234,7 @@ export function resolveHolesOpts(opts: EditableHolesOpts, table: ParamTable): Ho
         : undefined,
     };
   }
+  if (opts.drillPoint !== undefined) out.drillPoint = resolveDrillPoint(opts.drillPoint, table);
   if (opts.thread !== undefined) out.thread = resolveThread(opts.thread, table);
   if (opts.enabled !== undefined) {
     out.enabled = currentBool(opts.enabled, table);
@@ -409,7 +435,39 @@ function validateCommonHoleFields(
   validateHoleDiameter(opts, featureId);
   validateHoleCounterbore(opts, featureId);
   validateHoleCountersink(opts, featureId);
+  validateHoleDrillPoint(opts, featureId);
   if (opts.thread !== undefined) validateThread(opts, featureId);
+}
+
+function validateHoleDrillPoint(
+  opts: HoleOpts | HolesOpts,
+  featureId: FeatureId | undefined,
+): void {
+  const drillPoint = opts.drillPoint;
+  if (drillPoint === undefined) return;
+  if (opts.depth === undefined || opts.depth === 'through') {
+    invalidArgs({
+      api: holeApi(opts, 'drillPoint'),
+      path: 'opts.drillPoint',
+      gotText: opts.depth === 'through' ? "drillPoint with depth: 'through'" : 'drillPoint with upToFace',
+      requires: 'drillPoint only on a blind hole with a numeric depth: a through hole and an upToFace bore have no floor',
+      example: 'plate.hole(top, { u: 10, v: 10, diameter: 6, depth: 12, drillPoint: true })',
+      featureId,
+    });
+  }
+  const angleDeg = drillPoint.angleDeg;
+  if (!isFiniteNumber(angleDeg) || angleDeg <= 0 || angleDeg >= 180) {
+    invalidArgs({
+      api: holeApi(opts, 'drillPoint'),
+      path: 'opts.drillPoint.angleDeg',
+      got: angleDeg,
+      requires:
+        'a finite included angle in (0, 180) degrees; use 118 for a standard twist drill, or 135 for a flat-bottom drill point',
+      unit: 'deg',
+      example: 'plate.hole(top, { u: 10, v: 10, diameter: 6, depth: 12, drillPoint: { angleDeg: 135 } })',
+      featureId,
+    });
+  }
 }
 
 /** Hint for a thread clearance above the pitch/8 cap: say why the cap exists
@@ -614,6 +672,14 @@ function paramUnitless(value: string | number): Param {
   };
 }
 
+/** Preserve a symbolic or literal drill-point angle for the serializer. */
+function drillPointAngleOf(opts: EditableHoleOpts | EditableHolesOpts): Editable<number> | undefined {
+  const drillPoint = opts.drillPoint;
+  if (drillPoint === undefined || drillPoint === false) return undefined;
+  if (drillPoint === true) return DEFAULT_DRILL_POINT_ANGLE_DEG;
+  return drillPoint.angleDeg ?? DEFAULT_DRILL_POINT_ANGLE_DEG;
+}
+
 // `face` and `upToFace` are captured under FeatureRef inputs by the proxy.
 // Their raw selectors remain in metadata so serialized features round-trip.
 
@@ -634,6 +700,8 @@ export function serializeHoleParams(_face: FaceSelector, opts: EditableHoleOpts)
     params.countersinkDiameter = paramMm(opts.countersink.diameter);
     params.countersinkAngleDeg = paramDeg(opts.countersink.angleDeg ?? DEFAULT_CSK_ANGLE_DEG);
   }
+  const drillPointAngleDeg = drillPointAngleOf(opts);
+  if (drillPointAngleDeg !== undefined) params.drillPointAngleDeg = paramDeg(drillPointAngleDeg);
   if (opts.thread) {
     params.threadPitch = paramMm(opts.thread.pitch);
     params.threadClearance = paramMm(opts.thread.clearance ?? 0);
@@ -668,6 +736,8 @@ export function serializeHolesParams(_face: FaceSelector, opts: EditableHolesOpt
     params.countersinkDiameter = paramMm(opts.countersink.diameter);
     params.countersinkAngleDeg = paramDeg(opts.countersink.angleDeg ?? DEFAULT_CSK_ANGLE_DEG);
   }
+  const drillPointAngleDeg = drillPointAngleOf(opts);
+  if (drillPointAngleDeg !== undefined) params.drillPointAngleDeg = paramDeg(drillPointAngleDeg);
   if (opts.thread) {
     params.threadPitch = paramMm(opts.thread.pitch);
     params.threadClearance = paramMm(opts.thread.clearance ?? 0);

@@ -33,6 +33,8 @@ export interface BoreFrame {
   counterbore?: { diameter: number; depth: number };
   /** Optional countersink. */
   countersink?: { diameter: number; angleDeg: number };
+  /** Optional drill-point bottom, below `effectiveDepth`. */
+  drillPoint?: { angleDeg: number };
 }
 
 const RADIUS_TOL = 1e-3;
@@ -129,7 +131,7 @@ export function classifyHoleFace(face: Face, bore: BoreFrame): HoleRefName | nul
   }
 
   if (surfaceType === 'CONE') {
-    return classifyConicalFace(face, bore, csRadius);
+    return classifyConicalFace(face, bore, csRadius, center, axis);
   }
 
   if (surfaceType === 'PLANE') {
@@ -170,7 +172,15 @@ function classifyConicalFace(
   face: Face,
   bore: BoreFrame,
   csRadius: number | null,
+  center: Vec3,
+  axis: Vec3,
 ): HoleRefName | null {
+  // The drill-point cone lives below the full-diameter floor, so its centroid
+  // is deeper than `effectiveDepth`; a countersink cone opens at the entry
+  // face and stays well above it. Check position first: both cones can carry
+  // a boundary radius close to the bore radius.
+  const along = distanceAlongAxis(center, bore.entryPoint, axis);
+  if (bore.drillPoint !== undefined && along > bore.effectiveDepth - 0.05) return 'floor';
   if (csRadius === null) return null;
   const r = radiusFromBoreAxis(face, bore);
   if (r < csRadius + RADIUS_TOL) return 'countersink-cone';

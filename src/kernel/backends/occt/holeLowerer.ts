@@ -45,6 +45,7 @@ import { isoInternalGrooveProfile, isoMinorRadius, profileHalfExtent } from './i
 import { faceFrameOrigin } from './faceFrame';
 import { firstExitDepth } from './holeExitDepth';
 import { isPointPlacedHole, resolvePointEntry } from './holeAtPoint';
+import { drillPointTipDepth } from '../../../shared/intent/holeDrillPoint';
 import {
   findEntryMisses,
   findUncutBores,
@@ -357,6 +358,7 @@ function buildOneTool(
   throughDepth: number,
   counterbore: { diameter: number; depth: number } | undefined,
   countersink: { diameter: number; angleDeg: number } | undefined,
+  drillPoint: { angleDeg: number } | undefined,
   thread?: { params: ThreadParams; nominalDiameter: number },
 ): OneToolBuild {
   const entryPoint: Vec3 = add(
@@ -374,16 +376,30 @@ function buildOneTool(
   // Position the cylinder so its base sits OVERSHOOT (+ lead) above the entry
   // plane, extending into the body for `cylinderLength`.
   const cylinderBase = add(entryPoint, scale(entry.axisIntoBody, -OVERSHOOT - lead));
-  // Replicad's `makeCylinder(radius, height, location?, direction?)` treats
-  // location as the base center and direction as the cylinder axis (unit
-  // vector). Both Point arguments accept Vec3-shape arrays.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let tool = (replicad as any).makeCylinder(
-    diameter / 2,
-    cylinderLength,
-    cylinderBase,
-    entry.axisIntoBody,
-  ) as replicad.Shape3D;
+  // A drill point is the same cylinder plus a conical tip. Revolving one
+  // profile keeps the wall/cone junction an exact shared edge instead of a
+  // fused coincident disk. Capture validation guarantees a numeric blind
+  // depth, so the cone apex always sits below the requested floor.
+  let tool = drillPoint !== undefined && !through
+    ? buildDrillPointTool(
+        entryPoint,
+        entry.axisIntoBody,
+        entry.uBasis,
+        diameter / 2,
+        effectiveDepth,
+        OVERSHOOT + lead,
+        drillPoint.angleDeg,
+      )
+    // Replicad's `makeCylinder(radius, height, location?, direction?)` treats
+    // location as the base center and direction as the cylinder axis (unit
+    // vector). Both Point arguments accept Vec3-shape arrays.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    : (replicad as any).makeCylinder(
+        diameter / 2,
+        cylinderLength,
+        cylinderBase,
+        entry.axisIntoBody,
+      ) as replicad.Shape3D;
 
   // Counterbore: a wider cylinder stacked at the entry plane, depth = cb.depth.
   if (counterbore) {
@@ -428,6 +444,7 @@ function buildOneTool(
     through,
     counterbore,
     countersink,
+    drillPoint: drillPoint !== undefined && !through ? drillPoint : undefined,
   };
   return { tool, bore };
 }
@@ -453,19 +470,58 @@ export function buildCountersinkCone(
   angleDeg: number,
   overshoot: number,
 ): replicad.Shape3D {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const oc = (replicad as any).getOC();
   const halfAngle = (angleDeg / 2) * Math.PI / 180;
   const apexDepth = rimRadius / Math.tan(halfAngle);
   const outerRadius = rimRadius + overshoot * Math.tan(halfAngle);
   const at = (radial: number, axial: number): Vec3 =>
     add(entryPoint, add(scale(uBasis, radial), scale(axisIntoBody, axial)));
   const corners: Vec3[] = [at(0, -overshoot), at(outerRadius, -overshoot), at(0, apexDepth)];
+  return revolveProfileAboutAxis(corners, entryPoint, axisIntoBody, 'countersink cone');
+}
+
+/**
+ * Blind-bore tool with a drill-point tip: one revolved profile holds the
+ * cylinder from `above` the entry face to `depth` and the cone from the
+ * full-diameter shoulder to its apex. `depth` is the shoulder depth, matching
+ * the public `hole()` contract and the drill-point reading in drawings.
+ */
+export function buildDrillPointTool(
+  entryPoint: Vec3,
+  axisIntoBody: Vec3,
+  uBasis: Vec3,
+  radius: number,
+  depth: number,
+  above: number,
+  angleDeg: number,
+): replicad.Shape3D {
+  const tipDepth = drillPointTipDepth(radius, angleDeg);
+  const at = (radial: number, axial: number): Vec3 =>
+    add(entryPoint, add(scale(uBasis, radial), scale(axisIntoBody, axial)));
+  const corners: Vec3[] = [
+    at(0, -above),
+    at(radius, -above),
+    at(radius, depth),
+    at(0, depth + tipDepth),
+  ];
+  return revolveProfileAboutAxis(corners, entryPoint, axisIntoBody, 'drill-point tip');
+}
+
+/** Revolve a closed planar profile (defined in the axis/u plane) a full turn
+ *  about `axis`. OCCT turns a straight generatrix into an exact conical face;
+ *  the caller keeps the returned solid and owns the temporary OCCT objects. */
+function revolveProfileAboutAxis(
+  corners: readonly Vec3[],
+  origin: Vec3,
+  axisIntoBody: Vec3,
+  label: string,
+): replicad.Shape3D {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = (replicad as any).getOC();
   const created: Array<{ delete(): void }> = [];
   const keep = <T extends { delete(): void }>(o: T): T => { created.push(o); return o; };
   try {
     if (typeof oc.BRepPrimAPI_MakeRevol_2 !== 'function') {
-      throw new Error('this OCCT build does not provide BRepPrimAPI_MakeRevol, so the countersink cone cannot be built.');
+      throw new Error(`this OCCT build does not provide BRepPrimAPI_MakeRevol, so the ${label} cannot be built.`);
     }
     const wire = keep(new oc.BRepBuilderAPI_MakeWire_1());
     for (let i = 0; i < corners.length; i++) {
@@ -477,18 +533,18 @@ export function buildCountersinkCone(
       wire.Add_1(edge.Edge());
     }
     const face = keep(new oc.BRepBuilderAPI_MakeFace_15(wire.Wire(), true));
-    if (!face.IsDone()) throw new Error('the countersink profile face could not be built.');
-    const origin = keep(new oc.gp_Pnt_3(entryPoint[0], entryPoint[1], entryPoint[2]));
+    if (!face.IsDone()) throw new Error(`the ${label} profile face could not be built.`);
+    const originPoint = keep(new oc.gp_Pnt_3(origin[0], origin[1], origin[2]));
     const dir = keep(new oc.gp_Dir_4(axisIntoBody[0], axisIntoBody[1], axisIntoBody[2]));
-    const axis = keep(new oc.gp_Ax1_2(origin, dir));
+    const axis = keep(new oc.gp_Ax1_2(originPoint, dir));
     const revol = keep(new oc.BRepPrimAPI_MakeRevol_2(face.Face(), axis, true));
-    if (!revol.IsDone()) throw new Error('BRepPrimAPI_MakeRevol did not build the countersink cone.');
+    if (!revol.IsDone()) throw new Error(`BRepPrimAPI_MakeRevol did not build the ${label}.`);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const cone = (replicad as any).cast(revol.Shape()) as replicad.Shape3D;
-    if (Math.abs(replicad.measureVolume(cone)) < 1e-9) {
-      throw new Error('the countersink cone came out empty.');
+    const solid = (replicad as any).cast(revol.Shape()) as replicad.Shape3D;
+    if (Math.abs(replicad.measureVolume(solid)) < 1e-9) {
+      throw new Error(`the ${label} came out empty.`);
     }
-    return cone;
+    return solid;
   } finally {
     for (const o of created.reverse()) o.delete();
   }
@@ -622,7 +678,7 @@ export function lowerHole(
   records: readonly FeatureRecord[] | undefined,
 ): HoleLowerResult {
   const diagnostics: CompilerDiagnostic[] = [];
-  const { thread, nominalDiameter, diameter, through, numericDepth, counterbore, countersink } = resolveHoleGeometryParams(feature);
+  const { thread, nominalDiameter, diameter, through, numericDepth, counterbore, countersink, drillPoint } = resolveHoleGeometryParams(feature);
   const placed = placeSingleHole(feature, target, records, { diameter, through, counterbore, countersink });
   if ('error' in placed) {
     diagnostics.push(placed.error);
@@ -635,7 +691,7 @@ export function lowerHole(
     const upToFace = buildHoleUpToFace(
       feature, target, records, entry, u, v,
       (depth) => buildOneTool(
-        entry, u, v, diameter, numericDepth, true, depth, counterbore, countersink,
+        entry, u, v, diameter, numericDepth, true, depth, counterbore, countersink, undefined,
         thread ? { params: thread, nominalDiameter } : undefined,
       ),
       (error) => toolBuildDiagnostic(error, feature.id),
@@ -648,7 +704,7 @@ export function lowerHole(
   } else {
     try {
       built = buildOneTool(
-        entry, u, v, diameter, numericDepth, through, throughDepth, counterbore, countersink,
+        entry, u, v, diameter, numericDepth, through, throughDepth, counterbore, countersink, drillPoint,
         thread ? { params: thread, nominalDiameter } : undefined,
       );
     } catch (e) {
@@ -753,6 +809,7 @@ interface HoleGeometryParams {
   numericDepth: number | undefined;
   counterbore: { diameter: number; depth: number } | undefined;
   countersink: { diameter: number; angleDeg: number } | undefined;
+  drillPoint: { angleDeg: number } | undefined;
 }
 
 function resolveHolePositions(feature: FeatureRecord): HolePosition[] {
@@ -787,7 +844,11 @@ function resolveHoleGeometryParams(feature: FeatureRecord): HoleGeometryParams {
   const countersink = feature.params.countersinkDiameter
     ? { diameter: feature.params.countersinkDiameter.evaluated, angleDeg: feature.params.countersinkAngleDeg.evaluated }
     : undefined;
-  return { thread, nominalDiameter, diameter, through, numericDepth, counterbore, countersink };
+  // Capture validation only stores this on a blind numeric-depth bore.
+  const drillPoint = feature.params.drillPointAngleDeg && !through && numericDepth !== undefined
+    ? { angleDeg: feature.params.drillPointAngleDeg.evaluated }
+    : undefined;
+  return { thread, nominalDiameter, diameter, through, numericDepth, counterbore, countersink, drillPoint };
 }
 
 /** Through-bore depth per position (each cast from its own entry point). A
@@ -825,7 +886,7 @@ function buildBatchTools(
     for (const [i, p] of positions.entries()) {
       const built = buildOneTool(
         entry, p.u, p.v, params.diameter, params.numericDepth, params.through, throughDepths[i],
-        params.counterbore, params.countersink,
+        params.counterbore, params.countersink, params.drillPoint,
         params.thread ? { params: params.thread, nominalDiameter: params.nominalDiameter } : undefined,
       );
       tools.push(built.tool);
@@ -881,7 +942,7 @@ export function lowerHoles(
         feature, target, records, entry, position.u, position.v,
         (depth) => buildOneTool(
           entry, position.u, position.v, params.diameter, params.numericDepth, true, depth,
-          params.counterbore, params.countersink,
+          params.counterbore, params.countersink, undefined,
           params.thread ? { params: params.thread, nominalDiameter: params.nominalDiameter } : undefined,
         ),
         (error) => toolBuildDiagnostic(error, feature.id),
