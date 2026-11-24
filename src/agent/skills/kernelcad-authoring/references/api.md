@@ -247,7 +247,9 @@ lib.meshFromSTL(path: string): Promise<Shape>;
 // Node transforms are flattened, glTF Y-up becomes kernelCAD Z-up, and each
 // primitive keeps its PBR material, UVs and vertex colours (PCB assemblies
 // keep solder mask, copper, gold pads and component bodies). Units come from
-// asset.extras.kernelcad.units or the raw extent; override with opts.
+// asset.extras.kernelcad.units, else the glTF metre default; override with
+// opts. The decision is recorded on the shape metadata as units, unitScale
+// and unitSource ('option' | 'extras' | 'gltf-default').
 // No BRep: booleans, volume, face queries and solid export are unavailable.
 lib.meshFromGLB(path: string, opts?: {
   units?: 'auto' | 'mm' | 'm';   // default 'auto'

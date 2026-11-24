@@ -16,6 +16,32 @@ import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 const tmpDir = mkdtempSync(join(tmpdir(), 'kcad-glb-'));
 afterAll(() => rmSync(tmpDir, { recursive: true, force: true }));
 
+/** One right triangle whose legs are `width` raw units; no scene extras. */
+async function buildUndeclaredGlb(width: number, extras?: unknown): Promise<Uint8Array> {
+  const doc = new Document();
+  if (extras !== undefined) doc.getRoot().getAsset().extras = extras as never;
+  const buffer = doc.createBuffer();
+  const positions = doc.createAccessor().setType('VEC3')
+    .setArray(new Float32Array([0, 0, 0, width, 0, 0, 0, width, 0])).setBuffer(buffer);
+  const primitive = doc.createPrimitive().setAttribute('POSITION', positions);
+  doc.createScene('beam').addChild(
+    doc.createNode('beam').setMesh(doc.createMesh('beam').addPrimitive(primitive)),
+  );
+  return new NodeIO().writeBinary(doc);
+}
+
+function sizeOf(positions: Float32Array): [number, number, number] {
+  const min = [Infinity, Infinity, Infinity];
+  const max = [-Infinity, -Infinity, -Infinity];
+  for (let i = 0; i < positions.length; i += 3) {
+    for (let k = 0; k < 3; k++) {
+      min[k] = Math.min(min[k]!, positions[i + k]!);
+      max[k] = Math.max(max[k]!, positions[i + k]!);
+    }
+  }
+  return [max[0]! - min[0]!, max[1]! - min[1]!, max[2]! - min[2]!];
+}
+
 async function buildGlb(): Promise<Uint8Array> {
   const doc = new Document();
   doc.getRoot().getAsset().extras = { kernelcad: { units: 'mm' } };
@@ -68,6 +94,49 @@ describe('decodeGlbMesh / lib.meshFromGLB', () => {
     const second = decoded.subMeshes[1]!.positions;
     expect([second[0], second[1], second[2]].map((v) => Math.round(v) + 0)).toEqual([10, 0, 0]);
   });
+  it('reads an undeclared GLB in glTF metres, not by a guessed extent', async () => {
+    // glTF 2.0 defines scene coordinates in metres. Raw 3.0 is a 3 m beam,
+    // so the display mesh must span 3000 mm. The old extent heuristic only
+    // scaled raw values below 2 and imported this 1000x too small.
+    const decoded = await decodeGlbMesh(await buildUndeclaredGlb(3));
+    expect(sizeOf(decoded.positions)[0]).toBeCloseTo(3000, 6);
+    expect(decoded.units).toBe('m');
+    expect(decoded.unitScale).toBe(1000);
+    expect(decoded.unitSource).toBe('gltf-default');
+  });
+
+  it('scales a small undeclared GLB by the same metre rule', async () => {
+    const decoded = await decodeGlbMesh(await buildUndeclaredGlb(0.3));
+    expect(sizeOf(decoded.positions)[0]).toBeCloseTo(300, 6);
+    expect(decoded.unitSource).toBe('gltf-default');
+  });
+
+  it('keeps declared extras and explicit options authoritative', async () => {
+    const declaredMm = await decodeGlbMesh(
+      await buildUndeclaredGlb(3000, { kernelcad: { units: 'mm' } }),
+    );
+    expect(declaredMm.unitScale).toBe(1);
+    expect(declaredMm.unitSource).toBe('extras');
+    expect(sizeOf(declaredMm.positions)[0]).toBeCloseTo(3000, 6);
+
+    const forcedMm = await decodeGlbMesh(
+      await buildUndeclaredGlb(3, { kernelcad: { units: 'm' } }),
+      { units: 'mm' },
+    );
+    expect(forcedMm.unitScale).toBe(1);
+    expect(forcedMm.unitSource).toBe('option');
+    expect(sizeOf(forcedMm.positions)[0]).toBeCloseTo(3, 6);
+  });
+
+  it('records the unit decision on the imported shape', async () => {
+    const path = join(tmpDir, 'metre-beam.glb');
+    writeFileSync(path, await buildUndeclaredGlb(3));
+    const session = new CaptureSession();
+    const shape = await meshFromGLB({ session, scriptDir: tmpDir }, 'metre-beam.glb');
+    expect(session.getRecords().find((r) => r.id === shape.id)?.metadata)
+      .toMatchObject({ units: 'm', unitScale: 1000, unitSource: 'gltf-default' });
+  });
+
   it('imports the GLB as a display mesh with sub-meshes', async () => {
     const path = join(tmpDir, 'board.glb');
     writeFileSync(path, await buildGlb());

@@ -12,7 +12,7 @@ import type { PBRMaterial } from '../../shared/intent/material';
 import type { RuntimeSubMesh } from './runtimeMesh';
 
 export interface DecodeGlbMeshOptions {
-  /** 'auto' uses asset.extras.kernelcad.units, else the raw extent. */
+  /** 'auto' uses asset.extras.kernelcad.units, else the glTF metre default. */
   units?: 'auto' | 'mm' | 'm';
   /** glTF Y-up ('y', default, rotates +90° about X) or keep Z-up ('z'). */
   upAxis?: 'y' | 'z';
@@ -23,6 +23,12 @@ export interface DecodedGlbMesh {
   indices: Uint32Array;
   /** One entry per glTF primitive, carrying its own material. */
   subMeshes: RuntimeSubMesh[];
+  /** Unit of the source coordinates; kernelCAD output is always millimetres. */
+  units: 'mm' | 'm';
+  /** Millimetre factor applied to every source coordinate. */
+  unitScale: number;
+  /** Where `units` came from: explicit option, asset extras, or the glTF default. */
+  unitSource: 'option' | 'extras' | 'gltf-default';
 }
 
 type Mat4 = ArrayLike<number>;
@@ -242,18 +248,6 @@ function toPbrMaterial(material: GltfMaterial | null, nodeName: string): PBRMate
   return pbr;
 }
 
-function meshExtent(positions: readonly Float32Array[]): number {
-  let minX = Infinity, minY = Infinity, minZ = Infinity;
-  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
-  for (const p of positions) for (let i = 0; i < p.length; i += 3) {
-    minX = Math.min(minX, p[i]!); maxX = Math.max(maxX, p[i]!);
-    minY = Math.min(minY, p[i + 1]!); maxY = Math.max(maxY, p[i + 1]!);
-    minZ = Math.min(minZ, p[i + 2]!); maxZ = Math.max(maxZ, p[i + 2]!);
-  }
-  if (!Number.isFinite(minX)) return 0;
-  return Math.max(maxX - minX, maxY - minY, maxZ - minZ);
-}
-
 /** Units declared in asset.extras.kernelcad.units ('mm' | 'm'). */
 function declaredUnitScale(extras: Record<string, unknown> | undefined): number | undefined {
   const kernelcad = extras?.kernelcad;
@@ -262,10 +256,24 @@ function declaredUnitScale(extras: Record<string, unknown> | undefined): number 
   return units === 'mm' ? 1 : units === 'm' ? 1000 : undefined;
 }
 
-function resolveUnitScale(opts: DecodeGlbMeshOptions, extras: Record<string, unknown> | undefined, extent: number): number {
-  if (opts.units === 'mm') return 1;
-  if (opts.units === 'm') return 1000;
-  return declaredUnitScale(extras) ?? (extent > 2 ? 1 : 1000);
+interface UnitResolution {
+  readonly units: 'mm' | 'm';
+  readonly unitScale: number;
+  readonly unitSource: 'option' | 'extras' | 'gltf-default';
+}
+
+/**
+ * glTF 2.0 scene coordinates are metres. An undeclared asset therefore takes
+ * the metre rule even when its raw extent is large: guessing millimetres from
+ * size silently shrank a spec-compliant 3 m beam to 3 mm. Assets authored in
+ * millimetres must declare extras or pass `{ units: 'mm' }`.
+ */
+function resolveUnits(opts: DecodeGlbMeshOptions, extras: Record<string, unknown> | undefined): UnitResolution {
+  if (opts.units === 'mm') return { units: 'mm', unitScale: 1, unitSource: 'option' };
+  if (opts.units === 'm') return { units: 'm', unitScale: 1000, unitSource: 'option' };
+  const declared = declaredUnitScale(extras);
+  if (declared !== undefined) return { units: declared === 1 ? 'mm' : 'm', unitScale: declared, unitSource: 'extras' };
+  return { units: 'm', unitScale: 1000, unitSource: 'gltf-default' };
 }
 
 interface CollectedSubMesh {
@@ -338,9 +346,9 @@ export async function decodeGlbMesh(bytes: Uint8Array, opts: DecodeGlbMeshOption
   for (const node of topNodes) collectNode(node, IDENTITY, upAxis, collected);
   if (collected.length === 0) throw new Error('GLB contains no triangle mesh primitives.');
 
-  const unitScale = resolveUnitScale(opts, extras, meshExtent(collected.map((sub) => sub.positions)));
-  if (unitScale !== 1) {
-    for (const sub of collected) for (let i = 0; i < sub.positions.length; i++) sub.positions[i]! *= unitScale;
+  const resolution = resolveUnits(opts, extras);
+  if (resolution.unitScale !== 1) {
+    for (const sub of collected) for (let i = 0; i < sub.positions.length; i++) sub.positions[i]! *= resolution.unitScale;
   }
 
   const subMeshes: RuntimeSubMesh[] = collected.map(finalizeSubMeshGeometry);
@@ -356,5 +364,12 @@ export async function decodeGlbMesh(bytes: Uint8Array, opts: DecodeGlbMeshOption
     vertexOffset += sub.positions.length / 3;
     indexOffset += sub.indices.length;
   }
-  return { positions, indices, subMeshes };
+  return {
+    positions,
+    indices,
+    subMeshes,
+    units: resolution.units,
+    unitScale: resolution.unitScale,
+    unitSource: resolution.unitSource,
+  };
 }
