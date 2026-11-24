@@ -43,6 +43,7 @@ import { detectInterferences } from '../modeling/runtime/detectInterferences';
 import { buildSweepProxies, relativePoseKey } from '../modeling/runtime/sweepCollisionProxy';
 import { proxyPairsNeedingExactConfirm } from '../modeling/runtime/convexHullBroadphase';
 import { initOcct, OcctBackend } from '../kernel/backends/occt/occtBackend';
+import { isMeshBackend } from '../kernel/backends/meshBackend';
 import { isSceneBackend, type SceneBackend } from '../kernel/backends/sceneBackend';
 import {
   DIAGNOSTIC_REGISTRY,
@@ -325,17 +326,18 @@ async function sampleSweepPose(
     });
   }
   const unknownPairs = new Map<string, { a: string; b: string }>();
-  // Display-mesh pairs are never BREP-checked at any pose; they stay out of
-  // the per-pose unknown list, as in the static check.
+  // A pair whose mesh extraction failed stays unknown at every pose. Display
+  // mesh pairs that were measured cleanly are never listed here.
   for (const p of result.unconfirmedPairs ?? []) {
     unknownPairs.set(pairKey(p.a, p.b), { a: p.a, b: p.b });
   }
   return { state: { hits, unknownPairs, poseKeys: pairPoseKeys(scene) } };
 }
 
-/** Relative pose key of every BRep part pair in one posed scene. */
+/** Relative pose key of every BRep or display-mesh part pair in one posed
+ *  scene. Mesh-involving pairs share the same fixed-pair reasoning. */
 function pairPoseKeys(scene: SceneBackend): Map<string, string> {
-  const parts = scene.parts.filter((p) => p.shape instanceof OcctBackend);
+  const parts = scene.parts.filter((p) => p.shape instanceof OcctBackend || isMeshBackend(p.shape));
   const keys = new Map<string, string>();
   for (let i = 0; i < parts.length; i++) {
     for (let j = i + 1; j < parts.length; j++) {

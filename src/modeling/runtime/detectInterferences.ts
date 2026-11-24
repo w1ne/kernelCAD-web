@@ -28,6 +28,7 @@ import { overlapThicknessMm } from './jointContactCap';
 import { Transform } from '../../shared/runtime/se3';
 import { relativePoseKey } from './sweepCollisionProxy';
 import { hullsProveSeparated } from './convexHullBroadphase';
+import { extractPosedWorldMesh, measureMeshPairOverlap } from './meshPairCheck';
 
 /** A single (part_a, part_b) pair whose intersection has non-trivial volume. */
 export interface InterferencePair {
@@ -65,7 +66,8 @@ export interface CheckInterferenceResult {
   readonly partCount: number;
   readonly comparisonCount: number;
   readonly diagnostics: CompilerDiagnostic[];
-  /** Mesh-involving pairs were not checked because exact intersection requires BRep. */
+  /** Mesh-involving pairs that could not be measured because no triangle mesh
+   *  could be extracted (empty/unreadable display mesh). */
   readonly uncheckedPairs: Array<{ readonly a: string; readonly b: string; readonly reason: 'display-mesh' }>;
   readonly partial: boolean;
   /** Exact BOOLEAN probes actually run this pass. Absent on legacy calls. */
@@ -222,22 +224,46 @@ function overlapFromMemo(
   };
 }
 
-/** Pairs involving a non-BRep (display mesh) part: exact intersection needs
- *  BRep, so these are reported as unchecked instead of silently skipped. */
-function listDisplayMeshPairs(
-  parts: ReadonlyArray<{ readonly name: string; readonly shape: unknown }>,
-): CheckInterferenceResult['uncheckedPairs'] {
-  const pairs: CheckInterferenceResult['uncheckedPairs'] = [];
-  for (let i = 0; i < parts.length; i++) {
-    for (let j = i + 1; j < parts.length; j++) {
-      const a = parts[i]!;
-      const b = parts[j]!;
-      if (!(a.shape instanceof OcctBackend) || !(b.shape instanceof OcctBackend)) {
-        pairs.push({ a: a.name, b: b.name, reason: 'display-mesh' });
+/** Pairs where at least one part is not an OCCT BRep. Each is measured by the
+ *  triangle-BVH mesh engine (display meshes, or a BRep posed as triangles);
+ *  a pair whose mesh cannot be extracted is reported unchecked instead of
+ *  silently skipped. */
+interface MeshPairSweep {
+  readonly pairs: InterferencePair[];
+  readonly unchecked: CheckInterferenceResult['uncheckedPairs'];
+}
+
+function checkMeshInvolvingPairs(
+  scene: SceneBackend,
+  epsilonMm3: number,
+  ignored: ReadonlySet<string>,
+): MeshPairSweep {
+  const pairs: InterferencePair[] = [];
+  const unchecked: CheckInterferenceResult['uncheckedPairs'] = [];
+  for (let i = 0; i < scene.parts.length; i++) {
+    for (let j = i + 1; j < scene.parts.length; j++) {
+      const a = scene.parts[i]!;
+      const b = scene.parts[j]!;
+      if (a.shape instanceof OcctBackend && b.shape instanceof OcctBackend) continue;
+      if (ignored.has(pairKey(a.name, b.name))) continue;
+      const meshA = extractPosedWorldMesh(a.shape, a.worldTransform);
+      const meshB = extractPosedWorldMesh(b.shape, b.worldTransform);
+      if (meshA === undefined || meshB === undefined) {
+        unchecked.push({ a: a.name, b: b.name, reason: 'display-mesh' });
+        continue;
       }
+      const overlap = measureMeshPairOverlap(meshA, meshB, epsilonMm3);
+      if (!overlap.intersecting) continue;
+      pairs.push({
+        a: a.name,
+        b: b.name,
+        volumeMm3: overlap.volumeMm3,
+        thicknessMm: overlap.thicknessMm,
+        ...(overlap.overlapBounds !== undefined ? { overlapBounds: overlap.overlapBounds } : {}),
+      });
     }
   }
-  return pairs;
+  return { pairs, unchecked };
 }
 
 /** Pure detection over an already-resolved SceneBackend. Exposed for tests
@@ -261,7 +287,8 @@ export function detectInterferences(
   // (applyTransform) cost ~8 MB and ~0.15 s for each 7k-face STL part of the
   // SO-100 arm and, with GC-deferred frees, fragmented the WASM heap until
   // OCCT aborted on pose 8 of 14. The originals are never touched.
-  const uncheckedPairs = listDisplayMeshPairs(scene.parts);
+  const meshSweep = checkMeshInvolvingPairs(scene, epsilonMm3, ignored);
+  const uncheckedPairs = meshSweep.unchecked;
   // Each part is measured through its analysis body: a catalog fastener with
   // a modeled thread is checked as its nominal envelope (analysisBodyOf).
   const transformed: PosedPart[] = scene.parts.filter((p) => p.shape instanceof OcctBackend).map((p) => {
@@ -282,7 +309,7 @@ export function detectInterferences(
   // data OCCT attached to them).
   try {
     return probeCandidates(
-      transformed, epsilonMm3, ignored, diagnostics, uncheckedPairs, incremental, explicitPairs,
+      transformed, epsilonMm3, ignored, diagnostics, uncheckedPairs, meshSweep.pairs, incremental, explicitPairs,
     );
   } finally {
     for (const part of transformed) part.shape.dispose();
@@ -418,10 +445,11 @@ function probeCandidates(
   ignored: ReadonlySet<string>,
   diagnostics: CompilerDiagnostic[],
   uncheckedPairs: CheckInterferenceResult['uncheckedPairs'],
+  meshPairs: readonly InterferencePair[],
   incremental?: IncrementalInterferenceOptions,
   explicitPairs?: readonly (readonly [number, number])[],
 ): CheckInterferenceResult {
-  const pairs: InterferencePair[] = [];
+  const pairs: InterferencePair[] = [...meshPairs];
   const unconfirmed: ExplicitProbeFailure[] = [];
   const candidates = explicitPairs === undefined
     ? collectInterferenceCandidates(transformed, ignored)
@@ -466,7 +494,7 @@ function probeCandidates(
   return {
     pairs,
     partCount: transformed.length,
-    comparisonCount: candidates.length,
+    comparisonCount: candidates.length + meshPairs.length,
     diagnostics,
     uncheckedPairs,
     partial: uncheckedPairs.length > 0,

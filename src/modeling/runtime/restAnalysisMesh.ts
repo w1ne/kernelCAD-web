@@ -3,6 +3,7 @@
 // Cached world-space analysis meshes for required rest-pose checks.
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { OcctBackend, analysisBodyOf } from '../../kernel/backends/occt/occtBackend';
+import { isMeshBackend } from '../../kernel/backends/meshBackend';
 import type { Transform } from '../../shared/runtime/se3';
 import { TriangleBvh } from './dfm/meshBvh';
 
@@ -63,19 +64,52 @@ export interface RestAnalysisMesh {
 
 type RestBodySource = 'shape' | 'analysis';
 type CachedRestMesh = RestAnalysisMesh & { bvh?: TriangleBvh | null };
-const cache = new WeakMap<SceneBackend['parts'][number], WeakMap<OcctBackend, CachedRestMesh | null>>();
+const cache = new WeakMap<SceneBackend['parts'][number], WeakMap<object, CachedRestMesh | null>>();
+
+/** The body rest checks read for one scene part: a display mesh as-is, an
+ *  OCCT part or its analysis body. */
+function restBody(part: SceneBackend['parts'][number], source: RestBodySource): object | undefined {
+  if (isMeshBackend(part.shape)) return part.shape;
+  if (!(part.shape instanceof OcctBackend)) return undefined;
+  return source === 'shape' ? part.shape : analysisBodyOf(part.shape) as OcctBackend;
+}
+
+/** World-space display-mesh triangles; `closed` stays false because a display
+ *  mesh carries no exact BRep volume to validate parity against. */
+function displayWorldMesh(
+  mesh: { positions: Float32Array; indices: Uint32Array },
+  worldTransform: Transform,
+): WorldMesh | undefined {
+  const n = mesh.positions.length / 3;
+  if (n === 0 || mesh.indices.length === 0) return undefined;
+  const positions = new Float64Array(n * 3);
+  const min: [number, number, number] = [Infinity, Infinity, Infinity];
+  const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  for (let i = 0; i < n; i++) {
+    const p = worldTransform.point([mesh.positions[3 * i], mesh.positions[3 * i + 1], mesh.positions[3 * i + 2]]);
+    for (let k = 0; k < 3; k++) {
+      positions[3 * i + k] = p[k];
+      if (p[k] < min[k]) min[k] = p[k];
+      if (p[k] > max[k]) max[k] = p[k];
+    }
+  }
+  if (!Number.isFinite(min[0])) return undefined;
+  return { closed: false, positions, indices: mesh.indices, min, max };
+}
 
 /** One world mesh per selected lowered body. BVH packing is deferred. */
 export function restWorldMesh(part: SceneBackend['parts'][number], source: RestBodySource): RestAnalysisMesh | undefined {
-  if (!(part.shape instanceof OcctBackend)) return undefined;
-  const body = source === 'shape' ? part.shape : analysisBodyOf(part.shape) as OcctBackend;
+  const body = restBody(part, source);
+  if (body === undefined) return undefined;
   let byBody = cache.get(part);
   if (byBody === undefined) {
     byBody = new WeakMap();
     cache.set(part, byBody);
   }
   if (byBody.has(body)) return byBody.get(body) ?? undefined;
-  const mesh = worldMesh(body, part.worldTransform);
+  const mesh = isMeshBackend(body)
+    ? displayWorldMesh(body.getMesh(), part.worldTransform)
+    : worldMesh(body as OcctBackend, part.worldTransform);
   const result = mesh === undefined ? undefined : { mesh };
   byBody.set(body, result ?? null);
   return result;
@@ -83,8 +117,8 @@ export function restWorldMesh(part: SceneBackend['parts'][number], source: RestB
 
 /** Read a rest-check mesh without triggering another analysis tessellation. */
 export function cachedRestWorldMesh(part: SceneBackend['parts'][number], source: RestBodySource): RestAnalysisMesh | undefined {
-  if (!(part.shape instanceof OcctBackend)) return undefined;
-  const body = source === 'shape' ? part.shape : analysisBodyOf(part.shape) as OcctBackend;
+  const body = restBody(part, source);
+  if (body === undefined) return undefined;
   return cache.get(part)?.get(body) ?? undefined;
 }
 

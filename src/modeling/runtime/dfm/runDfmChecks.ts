@@ -86,6 +86,7 @@ import { TriangleBvh, type DfmMesh } from './meshBvh';
 import { checkFdmPrintability, type FdmPartReport } from './fdmCheck';
 import { checkMouldability, type MouldingPartReport } from './mouldingCheck';
 import { checkIfLatticePart, type LatticeDfmResult } from './latticeCheck';
+import { isMeshBackend } from '../../../kernel/backends/meshBackend';
 
 export interface DfmCheckReport {
   /** Every part pair of the scene with its measured status — including
@@ -166,8 +167,11 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
   const lattices: LatticeDfmResult[] = [];
   const excluded = excludeMatcher(spec.exclude);
   for (const part of parts) {
-    // Excluded parts are not printed; lattice parts get their own check.
-    if (excluded(part.name) || checkIfLatticePart(part.name, part.shape, spec, diagnostics, lattices)) continue;
+    // Excluded parts are not printed. Display meshes are off-the-shelf
+    // hardware (a KiCad PCB, sensor or relay), not fabricated BRep solids;
+    // they still participate in clearance above. Lattice parts get their own
+    // check.
+    if (isMeshBackend(part.shape) || excluded(part.name) || checkIfLatticePart(part.name, part.shape, spec, diagnostics, lattices)) continue;
     checkPrintedPart(part, spec, sweep, diagnostics);
   }
   Object.assign(timings, sweepTimings(spec, sweep));

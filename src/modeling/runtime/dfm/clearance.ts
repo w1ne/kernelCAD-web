@@ -41,9 +41,12 @@
 import { getOC } from 'replicad';
 import type { SceneBackend } from '../../../kernel/backends/sceneBackend';
 import { analysisBodyOf, type OcctBackend } from '../../../kernel/backends/occt/occtBackend';
+import { isMeshBackend } from '../../../kernel/backends/meshBackend';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import { Transform } from '../../../shared/runtime/se3';
 import { pairKey } from '../detectInterferences';
 import { brepExtremaDistance, wrappedShape } from '../brepDistance';
+import { extractPosedWorldMesh, measureMeshPairDistance, type PosedWorldMesh } from '../meshPairCheck';
 
 export interface ClearancePairReport {
   a: string;
@@ -75,12 +78,14 @@ export interface ClearanceCheckOptions {
   distanceOnly?: boolean;
 }
 
-/** One scene part, cloned into the world frame for measurement. `shape` and
- *  `bbox` are undefined when the up-front clone/applyTransform stage failed
- *  for the part — its pairs are recorded as 'unknown'. */
+/** One scene part, posed into the world frame for measurement. `shape` is
+ *  the cloned BRep; `mesh` is the posed display-mesh triangle set. Both are
+ *  undefined when the up-front pose stage failed for the part — its pairs are
+ *  recorded as 'unknown'. */
 export interface TransformedPart {
   name: string;
   shape?: OcctBackend;
+  mesh?: PosedWorldMesh;
   bbox?: { min: [number, number, number]; max: [number, number, number] };
 }
 
@@ -173,40 +178,58 @@ export function* iterateClearance(
   }
 }
 
-/** One scene part whose clone/applyTransform stage succeeded: `shape` and
- *  `bbox` are present and measurable. */
+/** One scene part whose pose stage succeeded: BRep geometry or a display
+ *  mesh is present, plus its world AABB. */
 interface MeasuredPart extends TransformedPart {
-  shape: OcctBackend;
   bbox: { min: [number, number, number]; max: [number, number, number] };
 }
 
 function hasMeasurableGeometry(part: TransformedPart): part is MeasuredPart {
-  return part.shape !== undefined && part.bbox !== undefined;
+  return part.bbox !== undefined && (part.shape !== undefined || part.mesh !== undefined);
 }
 
-/** Clone + apply one part's worldTransform; a kernel failure emits ONE warn
- *  diagnostic and leaves the part unmeasurable (`shape`/`bbox` undefined). */
+/** Transform one part into the world frame. Display meshes (KiCad / LabWired
+ *  GLB hardware, STL boards) are posed as triangles; BRep parts keep the
+ *  clone + applyTransform path. A failure emits ONE warn diagnostic and leaves
+ *  the part unmeasurable. */
 export function transformScenePart(
   p: SceneBackend['parts'][number],
   diagnostics: CompilerDiagnostic[],
 ): TransformedPart {
+  if (isMeshBackend(p.shape)) return transformDisplayMeshPart(p, diagnostics);
   try {
     const clone = (analysisBodyOf(p.shape) as OcctBackend).clone().applyTransform(p.worldTransform);
     return { name: p.name, shape: clone, bbox: clone.boundingBox() };
   } catch (e) {
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.kernel-failed',
-      severity: 'warn',
-      message:
-        `dfm.clearance: clone/transform failed for part '${p.name}' ` +
-        `(${e instanceof Error ? e.message : String(e)}); its pairs are recorded as 'unknown'.`,
-      hint:
-        'The OCCT kernel could not clone or transform this part — check it for degenerate ' +
-        'geometry with evaluate; pairs not touching it were still measured.',
-    });
+    diagnostics.push(poseFailure(p.name, e));
     return { name: p.name };
   }
+}
+
+function transformDisplayMeshPart(
+  p: SceneBackend['parts'][number],
+  diagnostics: CompilerDiagnostic[],
+): TransformedPart {
+  const mesh = extractPosedWorldMesh(p.shape, p.worldTransform);
+  if (mesh === undefined) {
+    diagnostics.push(poseFailure(p.name, new Error('display mesh has no triangles')));
+    return { name: p.name };
+  }
+  return { name: p.name, mesh, bbox: { min: mesh.min, max: mesh.max } };
+}
+
+function poseFailure(name: string, error: unknown): CompilerDiagnostic {
+  return {
+    target: 'export-occt',
+    code: 'feature.kernel-failed',
+    severity: 'warn',
+    message:
+      `dfm.clearance: clone/transform failed for part '${name}' ` +
+      `(${error instanceof Error ? error.message : String(error)}); its pairs are recorded as 'unknown'.`,
+    hint:
+      'The OCCT kernel could not clone or transform this part — check it for degenerate ' +
+      'geometry with evaluate; pairs not touching it were still measured.',
+  };
 }
 
 /** Measure one non-exempt pair with measurable geometry: bbox pre-filter,
@@ -219,6 +242,14 @@ function classifyMeasuredPair(
   oc: unknown,
   diagnostics: CompilerDiagnostic[],
 ): ClearancePairReport {
+  if (a.mesh !== undefined || b.mesh !== undefined) {
+    return classifyMeshPair(a, b, minClearance, options, diagnostics);
+  }
+  const shapeA = a.shape;
+  const shapeB = b.shape;
+  if (shapeA === undefined || shapeB === undefined) {
+    return { a: a.name, b: b.name, distanceMm: NaN, status: 'unknown', exact: false };
+  }
   const lowerBound = bboxGap(a.bbox, b.bbox);
   if (!options.forceExact && lowerBound >= minClearance) {
     return { a: a.name, b: b.name, distanceMm: lowerBound, status: 'ok', exact: false };
@@ -226,7 +257,7 @@ function classifyMeasuredPair(
 
   let d: number | undefined;
   try {
-    d = brepExtremaDistance(oc, wrappedShape(a.shape), wrappedShape(b.shape));
+    d = brepExtremaDistance(oc, wrappedShape(shapeA), wrappedShape(shapeB));
   } catch {
     d = undefined;
   }
@@ -249,7 +280,7 @@ function classifyMeasuredPair(
     // which (volume-only; neither operand is consumed).
     let volume: number | undefined;
     try {
-      volume = a.shape.intersectionVolume(b.shape);
+      volume = shapeA.intersectionVolume(shapeB);
     } catch {
       volume = undefined;
     }
@@ -282,6 +313,68 @@ function classifyMeasuredPair(
     distanceMm: d,
     status: d < minClearance ? 'violated' : 'ok',
     exact: true,
+  };
+}
+
+/** Display-mesh pair (or a BRep paired with a display mesh): the triangle
+ *  BVH engine measures the exact surface distance and overlap. The exact
+ *  BRep-vs-BRep path above is never used here, so its semantics stay intact. */
+function classifyMeshPair(
+  a: MeasuredPart,
+  b: MeasuredPart,
+  minClearance: number,
+  options: ClearanceCheckOptions,
+  diagnostics: CompilerDiagnostic[],
+): ClearancePairReport {
+  const lowerBound = bboxGap(a.bbox, b.bbox);
+  if (!options.forceExact && lowerBound >= minClearance) {
+    return { a: a.name, b: b.name, distanceMm: lowerBound, status: 'ok', exact: false };
+  }
+  const meshA = posedMeshOf(a);
+  const meshB = posedMeshOf(b);
+  if (meshA === undefined || meshB === undefined) {
+    diagnostics.push(meshPoseFailure(a.name, b.name));
+    return { a: a.name, b: b.name, distanceMm: NaN, status: 'unknown', exact: false };
+  }
+  const measured = measureMeshPairDistance(meshA, meshB, minClearance, options);
+  if (!Number.isFinite(measured.distanceMm)) {
+    diagnostics.push(meshPoseFailure(a.name, b.name));
+    return { a: a.name, b: b.name, distanceMm: NaN, status: 'unknown', exact: false };
+  }
+  if (measured.overlapping) {
+    return {
+      a: a.name,
+      b: b.name,
+      distanceMm: 0,
+      status: 'interfering',
+      exact: true,
+      interferenceVolumeMm3: measured.overlapVolumeMm3 ?? 0,
+    };
+  }
+  return {
+    a: a.name,
+    b: b.name,
+    distanceMm: measured.distanceMm,
+    status: measured.distanceMm < minClearance ? 'violated' : 'ok',
+    exact: true,
+  };
+}
+
+/** World-space mesh of one measured part: the pre-posed display mesh, or the
+ *  already-world BRep clone (identity transform). */
+function posedMeshOf(part: MeasuredPart): PosedWorldMesh | undefined {
+  if (part.mesh !== undefined) return part.mesh;
+  if (part.shape === undefined) return undefined;
+  return extractPosedWorldMesh(part.shape, Transform.identity());
+}
+
+function meshPoseFailure(a: string, b: string): CompilerDiagnostic {
+  return {
+    target: 'export-occt',
+    code: 'feature.kernel-failed',
+    severity: 'warn',
+    message: `dfm.clearance: mesh distance could not be measured on pair (${a}, ${b}); distance not measured.`,
+    hint: 'Check the display mesh for empty or degenerate triangles, or list the pair in dfmSpec.ignore if its clearance is established another way.',
   };
 }
 
