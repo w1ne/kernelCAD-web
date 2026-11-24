@@ -2780,7 +2780,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/aircraft-fuel-truck.kcad.ts",
       "preview": "/assets/airfield-aircraft-fuel-truck.png",
-      "sourceSha256": "3f06851a6f51a5347531308dbc6bc4d168ef626174f7059e2973910fe3baf0db",
+      "sourceSha256": "9b3448fe900bb07cd81b19a363944c82ff8bdd6d1eec673152fb66a764a43d06",
       "triangleBudget": 1800,
       "params": [
         {
@@ -2832,11 +2832,11 @@
         }
       },
       "stats": {
-        "triangles": 310,
+        "triangles": 840,
         "sizeM": [
-          0.55725,
-          0.275256,
-          0.2552
+          7.81,
+          2.87,
+          2.74
         ],
         "minUpM": 0,
         "materials": 1
@@ -2847,8 +2847,19 @@
           "color": "#a9b4b6",
           "parts": [
             "chassis",
+            "front-bumper",
             "tanker",
-            "hose-reel"
+            "tank-end--3380",
+            "tank-end-600",
+            "fill-hatch",
+            "axle--2720",
+            "hub--2720--1",
+            "hub--2720-1",
+            "axle-2420",
+            "hub-2420--1",
+            "hub-2420-1",
+            "step--1",
+            "step-1"
           ],
           "param": "stainlessSteel"
         },
@@ -2856,7 +2867,11 @@
           "name": "vehiclePaint",
           "color": "#d9ae27",
           "parts": [
-            "cab"
+            "cab",
+            "cab-roof",
+            "saddle--2600",
+            "saddle--400",
+            "hose-cabinet"
           ],
           "param": "vehiclePaint"
         },
@@ -2866,7 +2881,9 @@
           "parts": [
             "cab-windscreen",
             "cab-side-window-left",
-            "cab-side-window-right"
+            "cab-side-window-right",
+            "headlamp--1",
+            "headlamp-1"
           ],
           "param": "windshieldGlass"
         },
@@ -2874,10 +2891,12 @@
           "name": "rubber",
           "color": "#282e31",
           "parts": [
-            "wheel-1-left",
-            "wheel-1-right",
-            "wheel-2-left",
-            "wheel-2-right"
+            "radiator-grille",
+            "hose-reel",
+            "wheel--2720--1",
+            "wheel--2720-1",
+            "wheel-2420--1",
+            "wheel-2420-1"
           ],
           "param": "rubber"
         }
@@ -2908,7 +2927,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/aircraft-hangar.kcad.ts",
       "preview": "/assets/airfield-aircraft-hangar.png",
-      "sourceSha256": "39d10d1bbd3f9b94cb44fa582fcb97e939a155724b4494df4ede3898516062a6",
+      "sourceSha256": "95cf009d5be05796fe0033d2dcdce457ac1c35d8c37f53b198efb17db7bf0a9f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -2952,11 +2971,11 @@
         }
       },
       "stats": {
-        "triangles": 76,
+        "triangles": 428,
         "sizeM": [
-          0.7,
-          0.407,
-          0.6
+          22.249152,
+          10.18,
+          18.8
         ],
         "minUpM": 0,
         "materials": 1
@@ -2967,27 +2986,57 @@
           "color": "#f0ead8",
           "parts": [
             "left-wall",
-            "right-wall"
+            "right-wall",
+            "rear-wall",
+            "rear-gable"
           ],
           "param": "cladding"
-        },
-        {
-          "name": "concrete",
-          "color": "#bcb8ad",
-          "parts": [
-            "rear-wall"
-          ],
-          "param": "concrete"
         },
         {
           "name": "roofMetal",
           "color": "#39799c",
           "parts": [
-            "roof",
+            "left-roof",
+            "right-roof",
             "ridge",
-            "door-header"
+            "door-header",
+            "wall-seam--1--6750",
+            "wall-seam--1--2250",
+            "wall-seam--1-2250",
+            "wall-seam--1-6750",
+            "wall-seam-1--6750",
+            "wall-seam-1--2250",
+            "wall-seam-1-2250",
+            "wall-seam-1-6750"
           ],
           "param": "roofMetal"
+        },
+        {
+          "name": "concrete",
+          "color": "#bcb8ad",
+          "parts": [
+            "column--1--8800",
+            "column--1--4400",
+            "column--1-0",
+            "column--1-4400",
+            "column--1-8800",
+            "column-1--8800",
+            "column-1--4400",
+            "column-1-0",
+            "column-1-4400",
+            "column-1-8800",
+            "left-rafter--8800",
+            "right-rafter--8800",
+            "left-rafter--4400",
+            "right-rafter--4400",
+            "left-rafter-0",
+            "right-rafter-0",
+            "left-rafter-4400",
+            "right-rafter-4400",
+            "left-rafter-8800",
+            "right-rafter-8800"
+          ],
+          "param": "concrete"
         }
       ]
     },
@@ -3016,7 +3065,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/aircraft-maintenance-lift.kcad.ts",
       "preview": "/assets/airfield-aircraft-maintenance-lift.png",
-      "sourceSha256": "af0111e878fed9ff4136854942a16d9da9679bceb680721a8e21d53335334985",
+      "sourceSha256": "cac407ba2f5b3a8e0bc26ad7237bcfcf02f87ba523a7c9757782b49b13317a8c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -3060,11 +3109,11 @@
         }
       },
       "stats": {
-        "triangles": 292,
+        "triangles": 760,
         "sizeM": [
-          0.3655,
-          0.5392,
-          0.2344
+          4.3,
+          4.805,
+          2.5
         ],
         "minUpM": 0,
         "materials": 1
@@ -3075,9 +3124,10 @@
           "color": "#d6a72d",
           "parts": [
             "chassis",
-            "scissor-arm-left",
-            "scissor-arm-right",
-            "scissor-pivot"
+            "scissor-ascending--1",
+            "scissor-descending--1",
+            "scissor-ascending-1",
+            "scissor-descending-1"
           ],
           "param": "powderCoat"
         },
@@ -3086,8 +3136,30 @@
           "color": "#89989c",
           "parts": [
             "lower-platform",
+            "end-pivot-860--1500",
+            "end-pivot-860-1500",
+            "end-pivot-3540--1500",
+            "end-pivot-3540-1500",
+            "scissor-pivot",
             "upper-platform",
-            "guardrail-front"
+            "guard-post--1--1660",
+            "guard-post--1-0",
+            "guard-post--1-1660",
+            "side-rail--1-4250",
+            "end-rail--1-4250",
+            "side-rail--1-4770",
+            "end-rail--1-4770",
+            "toe-board--1",
+            "guard-post-1--1660",
+            "guard-post-1-0",
+            "guard-post-1-1660",
+            "side-rail-1-4250",
+            "end-rail-1-4250",
+            "side-rail-1-4770",
+            "end-rail-1-4770",
+            "toe-board-1",
+            "axle--1550",
+            "axle-1550"
           ],
           "param": "galvanizedSteel"
         },
@@ -3095,10 +3167,10 @@
           "name": "rubber",
           "color": "#292f32",
           "parts": [
-            "wheel-1-left",
-            "wheel-1-right",
-            "wheel-2-left",
-            "wheel-2-right"
+            "wheel--1550--1",
+            "wheel--1550-1",
+            "wheel-1550--1",
+            "wheel-1550-1"
           ],
           "param": "rubber"
         }
