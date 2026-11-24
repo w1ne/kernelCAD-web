@@ -59171,7 +59171,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/scaffolding-section.kcad.ts",
       "preview": "/assets/city-street-scaffolding-section.png",
-      "sourceSha256": "d102aa9c53c01e2c473526201c53e749095d5aded3eeba928729a509989a1742",
+      "sourceSha256": "9bf31a31a191e8a7b099c7cf64c1da629bb80bbeda68bef896f850d2a6a884aa",
       "triangleBudget": 600,
       "params": [
         {
@@ -59897,7 +59897,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/street-clock.kcad.ts",
       "preview": "/assets/city-street-street-clock.png",
-      "sourceSha256": "32ae412254a2d9538cf6e10a40712940214a2f2749537d527491c8b5c29afcba",
+      "sourceSha256": "3fd8b053bfe293753080d7251f090701497e4b6facf6f76fc968b8a3b6244b08",
       "triangleBudget": 450,
       "params": [
         {
@@ -61122,7 +61122,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/utility-pole.kcad.ts",
       "preview": "/assets/city-street-utility-pole.png",
-      "sourceSha256": "b11931ee8b704b1d26aca78da476437bdc7f0f98df299381904e1ca7a5e53629",
+      "sourceSha256": "bde8f13589eef22ac18d9173e4c78de33e358558750b2f2d35735bc0d18b68c0",
       "triangleBudget": 520,
       "params": [
         {

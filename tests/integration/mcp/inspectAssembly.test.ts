@@ -98,6 +98,29 @@ describe('inspect_assembly MCP tool', () => {
     }
   });
 
+  it('does not report an imported multi-solid mesh part as disconnected', async () => {
+    // A real hardware GLB (a KiCad/LabWired board, a purchased model, a
+    // low-poly asset) ships its solids as separate glTF nodes joined in reality
+    // by solder, fasteners or glue that the visual model does not tessellate.
+    // Its solids being separate is the model being faithful, not a missing load
+    // path in a part we fabricate, so the fabricated-part connectivity gate does
+    // not apply to a mesh-backed part.
+    const result = await inspectAssemblyTool({
+      code: `
+        const tree = await lib.meshFromGLB('docs/demos/glb-lowpoly/pine-default.glb');
+        const arm = assembly('imported mesh inventory');
+        arm.part('imported-tree', tree);
+        return arm.model();
+      `,
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.parts[0].disconnected).toBeUndefined();
+      expect(result.reviewFacts.map((f) => f.code)).not.toContain('assembly.mechanical.part-disconnected');
+    }
+  });
+
   it('reports sub-millimeter clearance gaps inside a single functional part', async () => {
     const result = await inspectAssemblyTool({
       code: `

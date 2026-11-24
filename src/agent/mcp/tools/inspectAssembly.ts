@@ -15,6 +15,8 @@ import {
   type MechanicalTransmissionDiagnostic,
 } from '../../../modeling/mates/mechanicalTransmission';
 import { formatTopoRef, type TopoKind, type TopoModifier } from '../../../kernel/naming';
+import type { ShapeBackend } from '../../../kernel/backends/backend';
+import { partBackend } from '../../../modeling/mates/partBackend';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { resolveTopologyOriginOnBackend } from '../../../modeling/backends/occt/connectorTopology';
 
@@ -172,7 +174,7 @@ export async function inspectAssemblyTool(
       .map((diagnostic) => [diagnostic.partName, diagnostic]),
   );
   const parts = await Promise.all(
-    arm.__parts().map((part) => summarizePart(part, disconnectedByPart.get(part.name))),
+    arm.__parts().map((part) => summarizePart(arm, part, disconnectedByPart.get(part.name))),
   );
   const reviewFacts = [
     ...evaluation.diagnostics.filter((d) => d.code.startsWith('union.')).map(toReviewFact),
@@ -215,12 +217,16 @@ function summarizeMates(arm: Assembly): InspectAssemblyMateSummary[] {
 }
 
 async function summarizePart(
+  arm: Assembly,
   part: AssemblyPartStored,
   disconnected?: PartDisconnectedDiagnostic,
 ): Promise<InspectAssemblyPartSummary> {
-  const lowered = await part.originalShape.lower();
-  const bbox = lowered.boundingBox();
-  const connectors = part.mateConnectors.map((c) => summarizeConnector(part.name, c, lowered));
+  // `partBackend` also returns an imported mesh body, which has no BRep
+  // topology: an inventory of a real hardware assembly must not fail on its
+  // GLB parts.
+  const backend = await partBackend(arm, part.originalShape);
+  const bbox = backend.boundingBox();
+  const connectors = part.mateConnectors.map((c) => summarizeConnector(part.name, c, backend));
   return {
     ...summarizePartMaterial(part),
     bbox,
@@ -252,7 +258,7 @@ const QUERY_KIND_TO_MODIFIER: Record<string, TopoModifier | undefined> = {
 function summarizeConnector(
   partName: string,
   connector: AssemblyMateConnector,
-  lowered: OcctBackend,
+  lowered: ShapeBackend,
 ): InspectAssemblyConnectorSummary {
   if (connector.origin.kind === 'vec3') {
     return {
@@ -279,6 +285,7 @@ function summarizeConnector(
   // existing review-facts channel rather than crashing inspect output.
   let resolved: [number, number, number] | undefined;
   try {
+    if (!(lowered instanceof OcctBackend)) throw new Error('imported mesh body has no named topology');
     const v = resolveTopologyOriginOnBackend(lowered, q, {});
     resolved = v as [number, number, number];
   } catch {

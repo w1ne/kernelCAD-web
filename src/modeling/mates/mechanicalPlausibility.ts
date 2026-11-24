@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import { partBackend } from './partBackend';
+import { isMeshBackend } from '../../kernel/backends/meshBackend';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { FeatureId, Vec3 } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/registry';
@@ -288,6 +289,12 @@ async function collectDisconnectedPartDiagnostics(
   for (const part of context.arm.__parts()) {
     const backend = await context.backendFor(part.name);
     if (backend === undefined) continue;
+    // An imported display mesh is a PURCHASED hardware assembly: a KiCad GLB
+    // ships the PCB, its panel and its pin headers as separate glTF nodes,
+    // joined in reality by solder and fasteners the visual model does not
+    // tessellate. Its solids being separate is the model being faithful, not a
+    // missing load path in a part we fabricate.
+    if (isMeshBackend(backend)) continue;
     const disconnected = isSingleSolid(backend) ? undefined : analyzeDisconnectedMesh(backend.getMesh());
     if (disconnected === undefined) continue;
     const bbox = await context.localBoundsFor(part.name);
