@@ -14,7 +14,7 @@ import { LOWERERS } from './lowerers/index';
 import { applyVariableEdgeFeature } from './lowerers/edgeFeatures';
 import { normalizeAxis } from './lowerers/helpers';
 import { finishLowering } from './lowerers/transforms';
-import { MeshBackend } from '../../../kernel/backends/meshBackend';
+import { isMeshBackend } from '../../../kernel/backends/meshBackend';
 import { SolidMeshBackend } from '../../../kernel/backends/solidMeshBackend';
 import { invalidArgsText } from '../../../shared/intent/invalidArgs';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -121,7 +121,7 @@ export class OcctLowerer implements FeatureLowerer {
     if (requiresBrepInput(r.kind) && Object.values(inputs.byKey).some((shape) => shape instanceof SolidMeshBackend)) {
       return { shape: undefined as unknown as ShapeBackend, diagnostics: [solidMeshInputDiagnostic(ctx.target, r)] };
     }
-    if (requiresBrepInput(r.kind) && Object.values(inputs.byKey).some((shape) => shape instanceof MeshBackend)) {
+    if (requiresBrepInput(r.kind) && Object.values(inputs.byKey).some((shape) => isMeshBackend(shape))) {
       return {
         shape: undefined as unknown as ShapeBackend,
         diagnostics: [{

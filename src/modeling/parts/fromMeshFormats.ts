@@ -24,6 +24,7 @@ import { importStlBytes, StlParseError } from '../../kernel/backends/occt/import
 import { import3mfBytes, ThreeMfImportError, type Import3mfOptions } from '../../kernel/backends/occt/import3mf';
 import { Shape } from '../capture/proxy';
 import { MeshBackend, decodeStlMesh } from '../../kernel/backends/meshBackend';
+import { decodeGlbMesh, type DecodeGlbMeshOptions } from '../../kernel/backends/glbMesh';
 import { KernelError } from '../../shared/intent/kernelError';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { FromSTEPContext } from './fromSTEP';
@@ -34,7 +35,7 @@ const DISPLAY_STL_MAX_BYTES = DISPLAY_STL_MAX_MIB * 1024 * 1024;
 /** Shared context shape with `lib.fromSTEP`. */
 export type FromFileContext = FromSTEPContext;
 
-function requirePath(path: string, fn: 'fromBREP' | 'fromSTL' | 'from3MF' | 'meshFromSTL', ext: string): void {
+function requirePath(path: string, fn: 'fromBREP' | 'fromSTL' | 'from3MF' | 'meshFromSTL' | 'meshFromGLB', ext: string): void {
   if (typeof path !== 'string' || path.length === 0) {
     throw new KernelError(
       'feature.invalid-args',
@@ -48,7 +49,7 @@ function requirePath(path: string, fn: 'fromBREP' | 'fromSTL' | 'from3MF' | 'mes
 async function readOrThrow(
   absPath: string,
   path: string,
-  fn: 'fromBREP' | 'fromSTL' | 'from3MF' | 'meshFromSTL',
+  fn: 'fromBREP' | 'fromSTL' | 'from3MF' | 'meshFromSTL' | 'meshFromGLB',
 ): Promise<Buffer> {
   try {
     return await readFile(absPath);
@@ -210,6 +211,59 @@ export async function meshFromSTL(ctx: FromFileContext, path: string): Promise<S
   catch (e) { throw new KernelError('feature.kernel-failed', `lib.meshFromSTL: ${absPath} — ${e instanceof Error ? e.message : String(e)}`, undefined, 'kernel-failed.lib.meshFromSTL.parse — provide a readable ASCII or binary STL.'); }
   const shape = ctx.session.createShape({ kind: 'importedMesh', params: {}, inputs: {}, metadata: { sourcePath: absPath, geometryKind: 'display-mesh', triangleCount: mesh.indices.length / 3 } });
   ctx.session.importedGeometry.set(shape.id, new MeshBackend(mesh.positions, mesh.indices));
+  return shape;
+}
+
+/** Options for `lib.meshFromGLB`. */
+export type MeshFromGLBOptions = DecodeGlbMeshOptions;
+
+/**
+ * `lib.meshFromGLB(path, opts?)` — import a composite GLB as a display-only
+ * body. Each glTF primitive becomes a RuntimeSubMesh with its own PBR
+ * material, UVs and vertex colours (PCB assemblies keep solder mask, copper,
+ * gold pads and component bodies). Transforms are flattened, glTF Y-up is
+ * rotated to kernelCAD Z-up, and units come from the asset extras or extent.
+ * No BRep: booleans, volume, face queries and solid exports are unavailable.
+ */
+export async function meshFromGLB(
+  ctx: FromFileContext,
+  path: string,
+  opts: MeshFromGLBOptions = {},
+): Promise<Shape> {
+  requirePath(path, 'meshFromGLB', '.glb');
+  const absPath = resolveScriptRelativePath(ctx.scriptDir, path);
+  const buf = await readOrThrow(absPath, path, 'meshFromGLB');
+  if (buf.byteLength > DISPLAY_STL_MAX_BYTES) {
+    invalidArgs({
+      api: 'lib.meshFromGLB(path)',
+      path: 'path',
+      gotText: `${absPath} (${buf.byteLength} bytes)`,
+      requires: `a GLB file no larger than ${DISPLAY_STL_MAX_MIB} MiB`,
+      example: "lib.meshFromGLB('./parts/board.glb')",
+      hintSlug: 'invalid-args.lib.meshFromGLB.file-too-large',
+    });
+  }
+  let mesh: Awaited<ReturnType<typeof decodeGlbMesh>>;
+  try {
+    mesh = await decodeGlbMesh(buf, opts);
+  } catch (e) {
+    throw new KernelError(
+      'feature.kernel-failed',
+      `lib.meshFromGLB: ${absPath} — ${e instanceof Error ? e.message : String(e)}`,
+      undefined,
+      'kernel-failed.lib.meshFromGLB.parse — provide a valid binary .glb with triangle mesh primitives.',
+    );
+  }
+  const shape = ctx.session.createShape({
+    kind: 'importedMesh',
+    params: {},
+    inputs: {},
+    metadata: {
+      sourcePath: absPath, sourceFormat: 'glb', geometryKind: 'display-mesh',
+      triangleCount: mesh.indices.length / 3, materialGroupCount: mesh.subMeshes.length,
+    },
+  });
+  ctx.session.importedGeometry.set(shape.id, new MeshBackend(mesh.positions, mesh.indices, mesh.subMeshes));
   return shape;
 }
 

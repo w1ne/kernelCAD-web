@@ -11,6 +11,7 @@ import {
   fromSTLViaHost,
   from3MFViaHost,
   meshFromSTLViaHost,
+  meshFromGLBViaHost,
   findPartViaHost,
   fetchPartViaHost,
   partViaHost,
@@ -32,6 +33,8 @@ export function makePartsLib(ctx: ApiContext): Pick<KernelCadApi, 'lib'> {
       from3MF: (path, opts) =>
         from3MFViaHost({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
       meshFromSTL: (path) => meshFromSTLViaHost({ session, scriptDir: ctx.scriptDir }, path),
+      meshFromGLB: (path, opts) =>
+        meshFromGLBViaHost({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
       fromDXF: (path, opts) =>
         fromDXFViaHost({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
       fromSVG: (path, opts) =>

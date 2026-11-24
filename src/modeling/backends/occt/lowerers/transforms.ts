@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { LowerResult, ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend, remapMemberOriginByIndex } from '../../../../kernel/backends/occt/occtBackend';
-import { MeshBackend } from '../../../../kernel/backends/meshBackend';
+import { isMeshBackend, type MeshBackend } from '../../../../kernel/backends/meshBackend';
 import { propagateEdgeTransformHistory, propagateTransformHistory } from '../../../../kernel/naming/evolutionRecord';
 import type { FaceHash, EdgeHash } from '../../../../kernel/naming/evolutionRecord';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
@@ -88,7 +88,7 @@ export function applyTransforms(
 ): ShapeBackend {
   let shape = input;
   for (const t of r.transforms) {
-    if (shape instanceof MeshBackend) {
+    if (isMeshBackend(shape)) {
       if (t.op === 'scale' && resolvePositiveScaleFactors(ctx, r, t) === null) {
         continue;
       }

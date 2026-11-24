@@ -655,7 +655,19 @@ function buildGeometryGroup(ser: FeatureMeshSerialized): THREE.Group {
   if (fm.assemblyPartName !== undefined) group.userData.assemblyPartName = fm.assemblyPartName;
   group.visible = true;
   const pbrForFaces = resolveFacePbr(fm);
-  if (fm.mesh) group.add(buildIndexedDisplayMesh(fm.featureId, fm.mesh, buildMaterialFromPBR(pbrForFaces)));
+  if (fm.mesh) {
+    // A feature's own .material()/.color() wins over imported sub-mesh
+    // materials; otherwise a composite GLB keeps one material per primitive.
+    const authored = fm.material !== undefined || fm.color !== undefined;
+    const materialForSubMesh = (subMaterial: PBRMaterial | undefined): THREE.Material =>
+      buildMaterialFromPBR(authored ? pbrForFaces : subMaterial);
+    group.add(buildIndexedDisplayMesh(
+      fm.featureId,
+      fm.mesh,
+      buildMaterialFromPBR(pbrForFaces),
+      { materialForSubMesh },
+    ));
+  }
   for (const face of fm.faces) {
     // Per-face material override (Shape.material({ face: '<label>', ... }))
     // takes precedence over the shape-level default. Unmatched faces fall

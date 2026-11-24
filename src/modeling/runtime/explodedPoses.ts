@@ -10,7 +10,7 @@ import { parseConnectorRef } from '../mates/mate';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
-import { MeshBackend } from '../../kernel/backends/meshBackend';
+import { isMeshBackend } from '../../kernel/backends/meshBackend';
 import { Transform, type Vec3 } from '../../shared/runtime/se3';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { detectInterferences } from './detectInterferences';
@@ -92,7 +92,7 @@ function partGeometry(scene: SceneBackend): PartGeom[] {
     if (p.shape instanceof OcctBackend) {
       const world = p.shape.clone().applyTransform(p.worldTransform);
       bb = world.boundingBox({ exact: true });
-    } else if (p.shape instanceof MeshBackend) {
+    } else if (isMeshBackend(p.shape)) {
       bb = p.shape.transform(p.worldTransform).boundingBox();
     } else {
       return [];
