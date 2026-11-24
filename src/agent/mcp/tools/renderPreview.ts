@@ -193,6 +193,17 @@ export interface RenderPreviewOutput {
   render_source?: 'static-player' | 'dev-server' | 'explicit';
   /** Wall-clock render time in ms (provisioning + browser + captures). */
   render_ms?: number;
+  /** Requested display parts whose textured plane was seated on a visible
+   *  part. Present only when `displays` was passed. */
+  displays_applied?: string[];
+  /** Requested display parts that matched no visible part/feature, or whose
+   *  face had no usable extent. A non-empty list fails the call: a texture
+   *  that never landed must not be reported as rendered. */
+  displays_missing?: string[];
+  /** Requested indicator parts whose LED state was applied. */
+  indicators_applied?: string[];
+  /** Requested indicator parts that matched nothing — same rule as displays. */
+  indicators_missing?: string[];
   diagnostics: CompilerDiagnostic[];
   error?: string;
   errorCode?: string;
@@ -932,8 +943,10 @@ async function renderPreviewWork(args: {
   if ('refusal' in imagePhase) return { ...imagePhase.refusal, sceneSummary };
   const { images } = imagePhase;
 
+  const overlays = result.displayOverlays;
+  const overlayRefusal = overlayRefusalFor(overlays);
   return {
-    ok: true,
+    ok: overlayRefusal === undefined,
     images,
     out_dir: outDir,
     bounds: result.bounds,
@@ -942,6 +955,41 @@ async function renderPreviewWork(args: {
     ...(probe.mechanism === 'broken' ? { mechanism_failure_codes: failureCodes } : {}),
     render_source: renderSource,
     render_ms: Date.now() - t0,
-    diagnostics: probe.mechanism === 'broken' ? [...probe.failures] : [],
+    ...(overlays !== undefined
+      ? {
+          displays_applied: overlays.displaysApplied,
+          displays_missing: overlays.displaysMissing,
+          indicators_applied: overlays.indicatorsApplied,
+          indicators_missing: overlays.indicatorsMissing,
+        }
+      : {}),
+    ...(overlayRefusal !== undefined ? { error: overlayRefusal.message, errorCode: overlayRefusal.code, errorHint: overlayRefusal.hint } : {}),
+    diagnostics: [
+      ...(probe.mechanism === 'broken' ? probe.failures : []),
+      ...(overlayRefusal !== undefined ? [overlayRefusal] : []),
+    ],
+  };
+}
+
+/** A requested overlay that matched no visible part is a REFUSAL, not a
+ *  silent no-op: the caller asked for a texture/LED state and must not be
+ *  told a render succeeded without it. */
+function overlayRefusalFor(
+  overlays: import('../../render/headlessRender').DisplayOverlayResult | undefined,
+): CompilerDiagnostic | undefined {
+  if (overlays === undefined) return undefined;
+  const missing = [...overlays.displaysMissing, ...overlays.indicatorsMissing];
+  if (missing.length === 0) return undefined;
+  return {
+    target: 'export-occt',
+    code: 'cli.invalid-args',
+    severity: 'error',
+    message:
+      `render_preview: ${missing.length} overlay target(s) matched no visible part: ${missing.join(', ')}. `
+      + 'The PNGs were still written, but those display/indicator overlays are NOT in them.',
+    hint:
+      'Name a loaded assembly part or feature id (use inspect({ of: "features" }) / inspect({ of: "assembly" })), '
+      + 'or pass subMesh to pick one material group of an imported GLB. Part names are matched case-insensitively '
+      + 'against the feature id, assembly part name, display name and filter names.',
   };
 }

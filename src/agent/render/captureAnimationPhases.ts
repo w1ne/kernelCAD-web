@@ -28,6 +28,7 @@ import { verifyAnimation, type AnimationCollision } from '../../modeling/animati
 import {
   HEADLESS_VIEWPORT,
   applyDisplayOverlaysOnPage,
+  type DisplayOverlayResult,
   loadFeatureMeshesIntoPage,
   updateFeatureTransformsOnPage,
   openDemoPlayerPage,
@@ -421,7 +422,7 @@ export async function bootstrapPagePhase(
   onProgress: (msg: string) => void,
   openPage: typeof openDemoPlayerPage,
   overlays: PageDisplayOverlays = {},
-): Promise<DemoPlayerPageHandle> {
+): Promise<{ pageHandle: DemoPlayerPageHandle; displayOverlays?: DisplayOverlayResult }> {
   // 6. Demo-player page via the shared bootstrap — CDP attach to an
   //    existing Chrome first (PW_CDP_URL ?? 127.0.0.1:9222), fresh
   //    chromium fallback.
@@ -462,9 +463,9 @@ export async function bootstrapPagePhase(
   await page.evaluate(() => window.__demoPlayer!.showOnlyTailFeatures());
   // The initial load rebuilt every feature group: seat display planes, set
   // indicator states and settle texture decodes before frame 0.
-  await applyDisplayOverlaysOnPage(page, overlays);
+  const displayOverlays = await applyDisplayOverlaysOnPage(page, overlays);
   await page.evaluate(() => window.__demoPlayer!.setRenderView('iso'));
-  return pageHandle;
+  return { pageHandle, displayOverlays };
 }
 
 async function updateFrameModelPhase(params: {

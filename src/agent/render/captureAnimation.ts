@@ -170,6 +170,10 @@ export interface CaptureAnimationResult {
   collisions: AnimationCollision[];
   /** True when `skipVerify` suppressed verification. */
   verifySkipped?: boolean;
+  /** Which requested display / indicator overlays actually landed on the
+   *  page. A non-empty `*Missing` list means that texture or LED state is NOT
+   *  in the frames; the tool reports it as a refusal, never a success. */
+  displayOverlays?: import('./headlessRender').DisplayOverlayResult;
   /** Set on every ok:false result; absent on success. */
   failureKind?: CaptureFailureKind;
 }
@@ -372,6 +376,7 @@ export async function captureAnimation(
   if ('failure' in targetResult) return targetResult.failure;
 
   let pageHandle: DemoPlayerPageHandle | undefined;
+  let overlays: import('./headlessRender').DisplayOverlayResult | undefined;
   /** Provisioned render surface (bundled static player unless opts.baseUrl
    *  overrides it). Torn down in the same `finally` as the page so a failed
    *  capture never leaks a listening socket. */
@@ -412,10 +417,12 @@ export async function captureAnimation(
     if (renderSurface.source !== 'explicit') {
       onProgress(`render surface = ${renderSurface.source} (${renderSurface.baseUrl})`);
     }
-    pageHandle = await bootstrapPagePhase(renderSurface.baseUrl, initial, t0, onProgress, openPage, {
+    const bootstrapped = await bootstrapPagePhase(renderSurface.baseUrl, initial, t0, onProgress, openPage, {
       displays: opts.displays,
       indicators: opts.indicators,
     });
+    pageHandle = bootstrapped.pageHandle;
+    overlays = bootstrapped.displayOverlays;
 
     const loopResult = await runFrameLoopPhase({
       frames, model, page: pageHandle.page, ffmpeg, framesDir, durationMs, fps, stashedWarns, verifyFields, onProgress, opts, t0, abortFfmpeg,
@@ -430,7 +437,7 @@ export async function captureAnimation(
     if (finalFailure) return finalFailure;
 
     onProgress(`total ${Date.now() - t0}ms`);
-    return { ok: true, outPath, frameCount: written, durationMs, fps, diagnostics: [...stashedWarns], ...verifyFields() };
+    return { ok: true, outPath, frameCount: written, durationMs, fps, diagnostics: [...stashedWarns], ...verifyFields(), ...(overlays !== undefined ? { displayOverlays: overlays } : {}) };
   } catch (e) {
     // Unexpected non-frame failure (browser connect, page bootstrap, fs).
     await abortFfmpeg();

@@ -359,7 +359,7 @@ export interface ResolvedIndicatorState {
 export const MAX_INDICATOR_STATES = 64;
 
 /** Emissive multiplier that reads as a lit LED under the studio rig. */
-export const DEFAULT_INDICATOR_INTENSITY = 2.2;
+export const DEFAULT_INDICATOR_INTENSITY = 5.5;
 
 export type IndicatorStatesValidation =
   | { ok: true; indicators: ResolvedIndicatorState[] }

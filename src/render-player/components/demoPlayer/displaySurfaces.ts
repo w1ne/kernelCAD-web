@@ -186,10 +186,10 @@ function displaySurfaceParams(
       color: 0xffffff,
       emissive: 0xffffff,
       emissiveMap: tex,
-      emissiveIntensity: spec.emissiveIntensity ?? 0.65,
-      roughness: 0.16,
-      clearcoat: 0.75,
-      clearcoatRoughness: 0.08,
+      emissiveIntensity: spec.emissiveIntensity ?? 0.8,
+      roughness: 0.24,
+      clearcoat: 0.4,
+      clearcoatRoughness: 0.12,
     };
   }
   return {
@@ -197,10 +197,10 @@ function displaySurfaceParams(
     color: 0x05080d,
     emissive: 0xffffff,
     emissiveMap: tex,
-    emissiveIntensity: spec.emissiveIntensity ?? 1.1,
-    roughness: 0.12,
-    clearcoat: 0.9,
-    clearcoatRoughness: 0.06,
+    emissiveIntensity: spec.emissiveIntensity ?? 1.8,
+    roughness: 0.22,
+    clearcoat: 0.35,
+    clearcoatRoughness: 0.12,
   };
 }
 
@@ -359,7 +359,7 @@ function addIndicatorLight(
 ): void {
   if (spec.level <= 0 || meshes.length === 0) return;
   const centre = localBoundsOf(group, meshes).getCenter(new THREE.Vector3());
-  const light = new THREE.PointLight(spec.color, 0.35 * spec.level, 14, 2);
+  const light = new THREE.PointLight(spec.color, 14 * spec.level, 40, 1.2);
   light.position.copy(centre);
   light.userData[KCAD_INDICATOR_LIGHT_KEY] = true;
   light.castShadow = false;

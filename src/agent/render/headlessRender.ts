@@ -189,6 +189,10 @@ export interface HeadlessRenderResult {
   inspectionChannelMetadata?: HeadlessInspectionCapture['metadata'];
   bounds: { min: [number, number, number]; max: [number, number, number] };
   objectVisibility?: HeadlessObjectVisibility;
+  /** Which requested display / indicator overlays actually landed. Present
+   *  only when an overlay was requested; a non-empty `*Missing` list means the
+   *  caller must not report that texture or LED state. */
+  displayOverlays?: DisplayOverlayResult;
 }
 
 /** The demo-player's headless ViewerPane is fixed at this size; capturing
@@ -380,6 +384,13 @@ export interface PageDisplayOverlays {
   indicators?: readonly ResolvedIndicatorState[];
 }
 
+/** The studio stage replaces the scene light rig; re-seat the indicator point
+ *  lights after it so a lit LED still spills colour into the shot. */
+async function reseatIndicatorLights(page: Page, opts: HeadlessRenderOpts): Promise<void> {
+  if (opts.publish === undefined || opts.indicators === undefined || opts.indicators.length === 0) return;
+  await page.evaluate((indicators) => window.__demoPlayer!.setIndicatorStates(indicators), opts.indicators);
+}
+
 /**
  * Apply display-surface planes and indicator states to the page scene, then
  * wait for every texture that is still decoding. Safe to call with neither
@@ -389,17 +400,34 @@ export interface PageDisplayOverlays {
  * their group and move rigidly with the part. Indicator states are applied
  * after display surfaces so a display plane is never tinted as an LED.
  */
+export interface DisplayOverlayResult {
+  /** Requested display parts whose plane was seated on a visible part. */
+  displaysApplied: string[];
+  /** Requested display parts that matched no visible feature group, or whose
+   *  face had no usable extent. A non-empty list is a REFUSED overlay, not a
+   *  silent no-op: the caller must not report a texture that never landed. */
+  displaysMissing: string[];
+  indicatorsApplied: string[];
+  indicatorsMissing: string[];
+}
+
 export async function applyDisplayOverlaysOnPage(
   page: Pick<Page, 'evaluate'>,
   overlays: PageDisplayOverlays,
-): Promise<void> {
-  if (overlays.displays !== undefined && overlays.displays.length > 0) {
-    await page.evaluate((displays) => window.__demoPlayer!.setDisplaySurfaces(displays), overlays.displays);
-  }
-  if (overlays.indicators !== undefined && overlays.indicators.length > 0) {
-    await page.evaluate((indicators) => window.__demoPlayer!.setIndicatorStates(indicators), overlays.indicators);
-  }
+): Promise<DisplayOverlayResult> {
+  const displays = overlays.displays !== undefined && overlays.displays.length > 0
+    ? await page.evaluate((specs) => window.__demoPlayer!.setDisplaySurfaces(specs), overlays.displays)
+    : { applied: [], missing: [] };
+  const indicators = overlays.indicators !== undefined && overlays.indicators.length > 0
+    ? await page.evaluate((specs) => window.__demoPlayer!.setIndicatorStates(specs), overlays.indicators)
+    : { applied: [], missing: [] };
   await page.evaluate(() => window.__demoPlayer?.waitForPendingTextures?.());
+  return {
+    displaysApplied: displays.applied,
+    displaysMissing: displays.missing,
+    indicatorsApplied: indicators.applied,
+    indicatorsMissing: indicators.missing,
+  };
 }
 
 /** How long the page may spend loading + PMREM-prefiltering an HDRI before the
@@ -612,7 +640,11 @@ export async function openRenderPage(
   baseUrl: string,
   serialized: readonly FeatureMeshSerialized[],
   meshing: Awaited<ReturnType<typeof meshFeaturesPerFeature>>,
-): Promise<{ pageHandle: DemoPlayerPageHandle; objectVisibility: HeadlessObjectVisibility | undefined }> {
+): Promise<{
+  pageHandle: DemoPlayerPageHandle;
+  objectVisibility: HeadlessObjectVisibility | undefined;
+  displayOverlays: DisplayOverlayResult | undefined;
+}> {
   // 2. Launch headless chromium via the shared demo-player bootstrap.
   //    Build query string: headless=1 always (added by the helper),
   //    nowatermark=1 when requested.
@@ -654,7 +686,8 @@ export async function openRenderPage(
 
     // 3a2. Display surfaces + LED states, after the visible set is settled.
     //      Also waits for pending texture decodes before any capture.
-    await applyDisplayOverlaysOnPage(page, { displays: opts.displays, indicators: opts.indicators });
+    const displayOverlays = await applyDisplayOverlaysOnPage(page, { displays: opts.displays, indicators: opts.indicators });
+    await reseatIndicatorLights(page, opts);
 
     // 3b. Optionally hide reference-image overlays for clean engineering views.
     if (opts.hideReferenceImages) {
@@ -681,7 +714,7 @@ export async function openRenderPage(
     // Belt-and-suspenders dev-chrome removal, once after mesh load.
     await removeDevChrome(page);
 
-    return { pageHandle, objectVisibility };
+    return { pageHandle, objectVisibility, displayOverlays };
   } catch (e) {
     await pageHandle.close();
     throw e;
@@ -839,6 +872,12 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
         : {}),
       bounds: meshing.bounds,
       ...(opened.objectVisibility !== undefined ? { objectVisibility: opened.objectVisibility } : {}),
+      ...(opened.displayOverlays !== undefined && opened.displayOverlays.displaysApplied.length
+        + opened.displayOverlays.displaysMissing.length
+        + opened.displayOverlays.indicatorsApplied.length
+        + opened.displayOverlays.indicatorsMissing.length > 0
+        ? { displayOverlays: opened.displayOverlays }
+        : {}),
     };
   } finally {
     // captureDemo has a known timeout-on-close issue; the handle's close()

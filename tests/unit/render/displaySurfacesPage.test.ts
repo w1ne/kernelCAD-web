@@ -73,7 +73,7 @@ describe('applyDisplaySurfaces', () => {
     expect(plane.renderOrder).toBe(2);
     expect(plane.castShadow).toBe(false);
     const material = plane.material as THREE.MeshPhysicalMaterial;
-    expect(material.emissiveIntensity).toBeCloseTo(1.1, 6);
+    expect(material.emissiveIntensity).toBeCloseTo(1.8, 6);
     expect(material.userData.authoredOpacity).toBe(1);
     expect(material.side).toBe(THREE.FrontSide);
 
@@ -122,7 +122,7 @@ describe('applyIndicatorStates', () => {
 
     const lights = group.children.filter((c) => c.userData[KCAD_INDICATOR_LIGHT_KEY] === true);
     expect(lights).toHaveLength(1);
-    expect((lights[0] as THREE.PointLight).intensity).toBeCloseTo(0.35, 6);
+    expect((lights[0] as THREE.PointLight).intensity).toBeCloseTo(14, 6);
     expect((lights[0] as THREE.PointLight).castShadow).toBe(false);
 
     applyIndicatorStates(scene, [{ ...LED, level: 0 }]);

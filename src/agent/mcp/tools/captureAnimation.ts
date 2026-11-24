@@ -159,6 +159,15 @@ export interface CaptureAnimationOutput {
   errorHint?: string;
   /** Which side is at fault on ok:false: 'model' or 'environment'. */
   failure_kind?: CaptureFailureKind;
+  /** Requested display parts whose textured plane was seated on a visible
+   *  part. Present only when `displays` was passed. */
+  displays_applied?: string[];
+  /** Requested display parts that matched no visible part — the frames do NOT
+   *  contain that texture, so the call fails. */
+  displays_missing?: string[];
+  /** Requested indicator parts whose LED state was applied / not applied. */
+  indicators_applied?: string[];
+  indicators_missing?: string[];
 }
 
 function mapCollisions(collisions: readonly AnimationCollision[]): CaptureAnimationCollisionRow[] {
@@ -173,6 +182,7 @@ function mapCollisions(collisions: readonly AnimationCollision[]): CaptureAnimat
 /** Shape the engine result into the snake_case MCP envelope. ok, verified,
  *  collisions are carried through verbatim (collisions DON'T flip ok). */
 function toOutput(r: CaptureAnimationResult): CaptureAnimationOutput {
+  const overlays = r.displayOverlays;
   const base: CaptureAnimationOutput = {
     ok: r.ok,
     frame_count: r.frameCount,
@@ -183,7 +193,32 @@ function toOutput(r: CaptureAnimationResult): CaptureAnimationOutput {
     diagnostics: r.diagnostics,
     ...(r.outPath !== undefined ? { output_path: r.outPath } : {}),
     ...(r.verifySkipped === true ? { verify_skipped: true } : {}),
+    ...(overlays !== undefined
+      ? {
+          displays_applied: overlays.displaysApplied,
+          displays_missing: overlays.displaysMissing,
+          indicators_applied: overlays.indicatorsApplied,
+          indicators_missing: overlays.indicatorsMissing,
+        }
+      : {}),
   };
+  const missing = overlays === undefined
+    ? []
+    : [...overlays.displaysMissing, ...overlays.indicatorsMissing];
+  if (missing.length > 0 && r.ok) {
+    // The capture ran, but a requested overlay never landed on a part: report
+    // a refusal so the frames are never claimed to contain that texture/LED.
+    const refusal = toolRefusal(
+      'cli.invalid-args',
+      `capture_animation: ${missing.length} overlay target(s) matched no visible part: ${missing.join(', ')}. `
+        + 'The capture was written, but those display/indicator overlays are NOT in it.',
+      'Name a loaded assembly part or feature id (inspect({ of: "features" })), or pass subMesh to pick '
+        + 'one material group of an imported GLB. Part names match case-insensitively against the feature id, '
+        + 'assembly part name, display name and filter names.',
+      'model',
+    );
+    return { ...base, ok: false, error: refusal.error, errorCode: refusal.errorCode, errorHint: refusal.errorHint, diagnostics: [...base.diagnostics, ...refusal.diagnostics] };
+  }
   if (r.ok) return base;
 
   // Failure: surface the first error diagnostic's code/message/hint at the top
