@@ -303,7 +303,7 @@ Created refs emitted per feature kind (resolvable via `{ face: '<name>' }`):
 | Ref | Emitted when |
 |---|---|
 | `wall` | always (cylindrical bore wall, or cutout side walls) |
-| `floor` | blind only (no `'through'`, no `upToFace`) |
+| `floor` | blind only (no `'through'`, no `upToFace`); flat, or the cone with `drillPoint` |
 | `wall-back` | through (`'through'` set OR `upToFace` set) |
 | `counterbore-wall` | hole/holes with `counterbore: {...}` |
 | `counterbore-floor` | hole/holes with `counterbore: {...}` |
@@ -321,6 +321,21 @@ body until it meets the bore. Size it to the screw head (ISO 10642 M4: head
 Ø8.96) and a revolved flat head of that diameter sits flush with zero gap on
 the cone. If a hole sub-feature (cone, counterbore, thread groove) cannot be
 built, the hole fails with an error diagnostic; it is never cut without it.
+
+### Drill-point blind holes
+
+`drillPoint: true` adds the standard 118° twist-drill cone below a blind bore;
+`drillPoint: { angleDeg }` sets the included angle. It is valid only with a
+numeric blind `depth` (not `'through'` and not `upToFace`). `depth` remains the
+full-diameter depth, so the cone apex sits below it by
+`radius / tan(angleDeg / 2)` — the same convention drawings use when they read
+a drill-point bottom. The conical face is named `floor`, and its rim is
+`floor-rim`; `volume()`, `surfaceArea()` and STEP export see the real cone.
+
+```typescript
+// Ø8 blind bore, 10 mm to the shoulder, standard 118° point below it
+plate.hole('top', { u: 0, v: 0, diameter: 8, depth: 10, drillPoint: true });
+```
 
 ### Tapped holes (internal threads)
 

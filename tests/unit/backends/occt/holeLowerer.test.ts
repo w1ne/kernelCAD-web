@@ -7,10 +7,16 @@
 // via the existing FaceSelector resolver.
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { getOC } from 'replicad';
 import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
+import { isValidShape } from '../../../../src/kernel/backends/occt/booleanRecovery';
 import { runScript } from '../../../../src/modeling/runtime/runScript';
 import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
+
+function wrapped(shape: OcctBackend): unknown {
+  return (shape.getReplicadShape() as unknown as { wrapped: unknown }).wrapped;
+}
 
 async function lowerScript(code: string): Promise<{
   shape: OcctBackend;
@@ -97,6 +103,119 @@ describe('holeLowerer — single hole', () => {
     const errs = (diagnostics as { severity: string }[]).filter(d => d.severity === 'error');
     expect(errs).toEqual([]);
     expect(shape).toBeDefined();
+  });
+});
+
+describe('holeLowerer — drill-point blind holes', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  /** Cone-tip depth of a drill point with included angle `angleDeg`. */
+  function tipDepth(radius: number, angleDeg = 118): number {
+    return radius / Math.tan((angleDeg / 2) * Math.PI / 180);
+  }
+
+  it('adds the 118° drill-point cone below a blind bore and stays a valid solid', async () => {
+    const { shape, diagnostics } = await lowerScript(`
+      return box(40, 40, 20).hole('top', {
+        u: 0, v: 0, diameter: 8, depth: 10, drillPoint: true,
+      });
+    `);
+    expect(diagnostics).toEqual([]);
+
+    const r = 4;
+    const depth = 10;
+    const tip = tipDepth(r);
+    const removed = Math.PI * r * r * depth + (Math.PI * r * r * tip) / 3;
+    expect(shape.volume()).toBeCloseTo(40 * 40 * 20 - removed, 2);
+
+    const boxArea = 2 * (40 * 40) + 4 * (40 * 20);
+    const coneSlant = Math.hypot(r, tip);
+    const expectedArea = boxArea - Math.PI * r * r + 2 * Math.PI * r * depth + Math.PI * r * coneSlant;
+    expect(shape.surfaceArea()).toBeCloseTo(expectedArea, 1);
+
+    expect(isValidShape(getOC(), wrapped(shape))).toBe(true);
+    const bb = shape.boundingBox();
+    expect(bb.min).toEqual([0, 0, 0]);
+    expect(bb.max).toEqual([40, 40, 20]);
+  });
+
+  it('honours a custom drill-point angle', async () => {
+    const { shape, diagnostics } = await lowerScript(`
+      return box(40, 40, 20).hole('top', {
+        u: 0, v: 0, diameter: 8, depth: 10, drillPoint: { angleDeg: 90 },
+      });
+    `);
+    expect(diagnostics).toEqual([]);
+
+    const r = 4;
+    const tip = tipDepth(r, 90);
+    const removed = Math.PI * r * r * 10 + (Math.PI * r * r * tip) / 3;
+    expect(shape.volume()).toBeCloseTo(40 * 40 * 20 - removed, 2);
+    expect(isValidShape(getOC(), wrapped(shape))).toBe(true);
+  });
+
+  it('names the conical bottom as the blind-hole floor ref', async () => {
+    const { shape, diagnostics } = await lowerScript(`
+      return box(40, 40, 20).hole('top', {
+        u: 0, v: 0, diameter: 8, depth: 10, drillPoint: true, name: 'pilot',
+      });
+    `);
+    expect(diagnostics).toEqual([]);
+    const labelled = shape.getReplicadShape().faces.map((face) => {
+      const h = (face as unknown as { wrapped: { HashCode(n: number): number } })
+        .wrapped.HashCode(2147483647).toString(16);
+      const lineage = shape.historyMap?.get(h);
+      return { face, label: lineage?.labelName, featureName: lineage?.featureName };
+    });
+    const floor = labelled.find((f) => f.featureName === 'pilot' && f.label === 'floor');
+    expect(floor, 'pilot.floor created ref').toBeDefined();
+    expect(floor!.face.geomType).toBe('CONE');
+  });
+
+  it('applies the drill point to every bore in holes()', async () => {
+    const { shape, diagnostics } = await lowerScript(`
+      return box(60, 40, 8).holes('top', {
+        positions: [{ u: -15, v: 0 }, { u: 15, v: 0 }],
+        diameter: 6, depth: 5, drillPoint: true,
+      });
+    `);
+    expect(diagnostics).toEqual([]);
+
+    const r = 3;
+    const tip = tipDepth(r);
+    const one = Math.PI * r * r * 5 + (Math.PI * r * r * tip) / 3;
+    expect(shape.volume()).toBeCloseTo(60 * 40 * 8 - 2 * one, 2);
+    expect(isValidShape(getOC(), wrapped(shape))).toBe(true);
+  });
+
+  async function captureError(code: string): Promise<{ code: string; message: string }> {
+    try {
+      await lowerScript(code);
+      throw new Error('expected the hole capture to fail');
+    } catch (error) {
+      const err = error as { code?: string; message: string };
+      expect(err.code).toBe('feature.invalid-args');
+      return { code: err.code, message: err.message };
+    }
+  }
+
+  it.each([
+    ["depth: 'through'", "depth: 'through', drillPoint: true"],
+    ['upToFace', "upToFace: 'bottom', drillPoint: true"],
+  ])('refuses a drill point with %s', async (_name, opts) => {
+    const err = await captureError(`
+      return box(40, 40, 20).hole('top', { u: 0, v: 0, diameter: 8, ${opts} });
+    `);
+    expect(err.message).toMatch(/drillPoint/);
+  });
+
+  it('refuses a drill-point angle outside (0, 180)', async () => {
+    const err = await captureError(`
+      return box(40, 40, 20).hole('top', {
+        u: 0, v: 0, diameter: 8, depth: 10, drillPoint: { angleDeg: 200 },
+      });
+    `);
+    expect(err.message).toMatch(/angleDeg/);
   });
 });
 

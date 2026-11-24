@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "feature": "blind-hole drill points",
+  "date": "2026-11-24",
+  "environment": {
+    "kernelcadVersion": "0.17.4",
+    "backend": "occt",
+    "node": "v24.22.2",
+    "platform": "linux"
+  },
+  "evidenceKind": "local validation",
+  "notClaimed": [
+    "deployed behavior",
+    "hardware acceptance",
+    "parity with another CAD system"
+  ],
+  "source": {
+    "file": "hole-drill-point.kcad.ts",
+    "sha256": "3635ac6ab6065cb099b8bfd9f39017c5a1750275c79c829eec9d753bbe28dfde"
+  },
+  "invocations": {
+    "evaluate": "node dist/cli/index.js evaluate docs/demos/hole-drill-point/hole-drill-point.kcad.ts --json",
+    "measure": "npx tsx docs/demos/hole-drill-point/measure.mts",
+    "turntable": "node dist/cli/index.js animate docs/demos/hole-drill-point/hole-drill-point.kcad.ts docs/demos/hole-drill-point/demo.mp4 --turntable --width 960 --height 720 --duration-ms 6000 --elevation 22 --preset default",
+    "poster": "ffmpeg -y -ss 4.5 -i docs/demos/hole-drill-point/demo.mp4 -frames:v 1 docs/demos/hole-drill-point/poster.png"
+  },
+  "evaluation": {
+    "ok": true,
+    "featureCount": 6,
+    "diagnosticCount": 0
+  },
+  "measured": {
+    "volumeMm3": 18407.350540572945,
+    "surfaceAreaMm2": 5080.744564061856,
+    "boundingBoxMm": {
+      "min": [0, 19.999999883873887, 0],
+      "max": [60, 40, 16]
+    }
+  },
+  "design": {
+    "blankMm": [60, 40, 16],
+    "cutaway": "keep y >= 20",
+    "holes": [
+      { "diameterMm": 8, "depthMm": 6, "drillPointAngleDeg": 118 },
+      { "diameterMm": 8, "depthMm": 9, "drillPointAngleDeg": 118 },
+      { "diameterMm": 8, "depthMm": 12, "drillPointAngleDeg": 118 }
+    ],
+    "tipDepthMm": 2.4034
+  },
+  "video": {
+    "file": "demo.mp4",
+    "sha256": "8f26b5935fc01682e97c610c576367565b7fdcbb038df7daf4d3589ff9d07010",
+    "codec": "h264",
+    "width": 960,
+    "height": 720,
+    "fps": 30,
+    "frames": 180,
+    "durationSeconds": 6.0,
+    "bytes": 341401
+  },
+  "poster": {
+    "file": "poster.png",
+    "sha256": "51a5e84e6a4b5e7d970156bed34bf03ae1a82ee73a3e71efd9b115e7aebb7dc7",
+    "source": "demo.mp4 at 4.5 s",
+    "visualCheck": "The cut face shows half of each blind bore and its conical drill point; the three depths step down from left to right."
+  },
+  "measureScript": {
+    "file": "measure.mts",
+    "sha256": "39ddf5e8d3f4e50a3793fa1da3951ae16d2d24fba33652294cfe821edba1c6cb"
+  }
+}
