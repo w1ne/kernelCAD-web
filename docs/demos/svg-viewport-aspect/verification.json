@@ -1,0 +1,72 @@
+{
+  "fixture": "fixture.svg",
+  "fixtureSha256": "58f153a0dc6c42dcec5d071ae97b7016f3d2b1256d24d36ce2a8687899907401",
+  "before": {
+    "revision": "origin/develop 4cfd06ca7b382527c9503749d80a51d627c58e75 (base of this branch)",
+    "unitScale": 2,
+    "unitSource": "width='200mm' over viewBox width 100",
+    "regions": 2,
+    "bboxMm": {
+      "minX": 0,
+      "minY": 0,
+      "maxX": 200,
+      "maxY": 200,
+      "width": 200,
+      "height": 200
+    },
+    "areaMm2": [
+      40000,
+      7853.981633974483
+    ]
+  },
+  "after": {
+    "revision": "this branch (fix/import-svg-viewport-aspect-20261124)",
+    "unitScale": 1,
+    "unitSource": "width='200mm' and height='100mm' over viewBox 100 x 100, xMidYMid meet",
+    "regions": 2,
+    "bboxMm": {
+      "minX": 50,
+      "minY": 0,
+      "maxX": 150,
+      "maxY": 100,
+      "width": 100,
+      "height": 100
+    },
+    "areaMm2": [
+      10000,
+      1963.4954084936207
+    ]
+  },
+  "narrowTest": {
+    "command": "npx vitest run src/kernel/import/importSvg.test.ts",
+    "files": 1,
+    "passed": 47,
+    "failed": 0
+  },
+  "relatedTest": {
+    "command": "npx vitest run src/kernel/import src/modeling/parts/fromVectorFormats.test.ts tests/unit/diagnostics/codes.test.ts",
+    "files": 6,
+    "passed": 180,
+    "failed": 0
+  },
+  "typecheck": "npx tsc -b --noEmit (exit 0)",
+  "lint": "npx eslint src/kernel/import/importSvg.ts src/kernel/import/importSvg.test.ts src/agent/mcp/tools/listApi.ts (exit 0)",
+  "render": "node docs/demos/svg-viewport-aspect/render.mjs",
+  "limits": [
+    "Local parser and geometry measurement; no deployed server or browser run is claimed.",
+    "The before panel is the same fixture measured with the origin/develop reader, not a screenshot of another application.",
+    "The importer does not clip a slice viewport; the slice test keeps geometry outside the declared viewport."
+  ],
+  "artifacts": {
+    "demo.mp4": {
+      "sha256": "b89e7be765f9f65489f3112db81e539056f529dbf332099cc9642ff8a00361bc",
+      "durationS": 7,
+      "width": 920,
+      "height": 960,
+      "codec": "h264"
+    },
+    "poster.png": {
+      "sha256": "c60971188f905fd0e13efec423c1a5ff99786570eff724c1f133413eba2ee03c"
+    }
+  }
+}

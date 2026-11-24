@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="960" viewBox="0 0 920 960">
+  <rect x="0" y="0" width="920" height="960" fill="#ffffff"/>
+  
+  <rect x="56" y="440" width="800" height="400" fill="#eef4ff" stroke="#2c6ecb" stroke-width="0.6" stroke-dasharray="3 2"/>
+  <text x="456" y="457.6" text-anchor="middle" font-family="DejaVu Sans" font-size="12" fill="#2c6ecb">declared viewport 200 x 100 mm</text>
+  <rect x="256" y="440" width="400" height="400" fill="none" stroke="#111" stroke-width="2.8"/>
+  <circle cx="456" cy="640" r="100" fill="none" stroke="#c0392b" stroke-width="2.2"/>
+  <line x1="256" y1="864" x2="656" y2="864" stroke="#1e7b3c" stroke-width="0.5"/>
+  <text x="456" y="928" text-anchor="middle" font-family="DejaVu Sans" font-size="13.6" fill="#1e7b3c">centred square 100 x 100 mm</text>
+  
+  <line x1="56" y1="864" x2="856" y2="864" stroke="#333" stroke-width="0.35"/>
+  <line x1="56" y1="856" x2="56" y2="872" stroke="#333" stroke-width="0.35"/>
+  <line x1="856" y1="856" x2="856" y2="872" stroke="#333" stroke-width="0.35"/>
+  <text x="456" y="876" text-anchor="middle" font-family="DejaVu Sans" font-size="13.6" fill="#333">200 mm viewport width</text>
+  <line x1="32" y1="840" x2="32" y2="440" stroke="#333" stroke-width="0.35"/>
+  <line x1="40" y1="840" x2="24" y2="840" stroke="#333" stroke-width="0.35"/>
+  <line x1="40" y1="440" x2="24" y2="440" stroke="#333" stroke-width="0.35"/>
+  <text x="24" y="640" text-anchor="middle" transform="rotate(-90 24 640)" font-family="DejaVu Sans" font-size="12.8" fill="#333">100 mm height</text>
+  
+  <text x="72" y="72" font-family="DejaVu Sans" font-size="21.6" font-weight="700" fill="#111">After: 100 x 100 mm, xMidYMid meet</text>
+  <text x="72" y="104" font-family="DejaVu Sans" font-size="13.2" fill="#555">unitScale 1; bbox 50..150 x 0..100 mm; area 10000 mm²</text>
+  </svg>

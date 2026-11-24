@@ -488,6 +488,21 @@ describe('importSvgText — units', () => {
     expect(Math.max(...pts.map(p => p[1]))).toBeCloseTo(100, 9);
   });
 
+  it('scales by the larger axis for slice without clipping the profile', () => {
+    // slice uses max(200/100, 100/100) = 2 mm per unit. The importer keeps
+    // geometry that falls outside the viewport; it does not clip profiles.
+    const r = importSvgText(svg('<rect x="0" y="0" width="100" height="100"/>',
+      'width="200mm" height="100mm" viewBox="0 0 100 100" preserveAspectRatio="xMinYMin slice"'));
+    expect(r.unitScale).toBeCloseTo(2, 12);
+    expect(r.unitSource).toBe("width='200mm' and height='100mm' over viewBox 100 x 100, xMinYMin slice");
+    const pts = points(r.regions[0].commands);
+    expect(Math.min(...pts.map(p => p[0]))).toBeCloseTo(0, 9);
+    expect(Math.max(...pts.map(p => p[0]))).toBeCloseTo(200, 9);
+    expect(Math.min(...pts.map(p => p[1]))).toBeCloseTo(-100, 9);
+    expect(Math.max(...pts.map(p => p[1]))).toBeCloseTo(100, 9);
+    expect(r.regions[0].areaMm2).toBeCloseTo(40_000, 6);
+  });
+
   it('assumes 1 user unit = 1 CSS px when no physical width is given', () => {
     const r = importSvgText(svg('<polygon points="0,0 96,0 96,96 0,96"/>',
       'viewBox="0 0 96 96"'));
