@@ -501,17 +501,20 @@ export class CaptureSession {
     return this.surfaceRecords.find(s => s.id === id);
   }
 
+  /** Capture a signed normal offset of `surfaceId`. The distance Param is
+   *  resolved at lower time so a ParamRef edit rebuilds the offset. */
+  addSurfaceOffset(surfaceId: SurfaceId, distance: Param): SurfaceProxy {
+    const id = this.surfaceIdGen.next();
+    this.surfaceRecords.push({ id, kind: 'surfaceOffset', params: { distance }, data: { kind: 'surfaceOffset', surfaceId } });
+    return new SurfaceProxy(id, this);
+  }
+
   /** Capture a surface trim or split record. Returns a new SurfaceProxy whose
    *  lowerer (Task 3) runs BRepAlgoAPI_Section against `byRef` at build time. */
   addSurfaceTrim(surfaceId: SurfaceId, byRef: SurfaceTrimData['byRef'], op: 'trim' | 'split', piece?: 0 | 1): SurfaceProxy {
     const id = this.surfaceIdGen.next();
-    const data: SurfaceTrimData = {
-      kind: 'surfaceTrim',
-      surfaceId,
-      byRef,
-      op,
-      ...(piece !== undefined ? { piece } : {}),
-    };
+    const data: SurfaceTrimData = { kind: 'surfaceTrim', surfaceId, byRef, op,
+      ...(piece !== undefined ? { piece } : {}) };
     this.surfaceRecords.push({ id, kind: 'surfaceTrim', params: {}, data });
     return new SurfaceProxy(id, this);
   }

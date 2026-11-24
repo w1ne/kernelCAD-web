@@ -423,6 +423,11 @@ export const SCENE_METHODS: ApiEntry[] = [
  */
 export const SURFACE_METHODS: ApiEntry[] = [
   {
+    name: 'offset',
+    signature: '(distance: Editable<number>) => Surface',
+    description: 'Offset this surface by a signed `distance` mm along its normal and return a new Surface. Positive moves along the base face normal; negative moves against it. The result keeps the base boundary. A single-face result supports `.trimTo(...)` and `.split(...)`; every result supports `.thicken(t)` and `.toShape()`. `distance` must be a non-zero finite number or a ParamRef<number>; a resolved zero/non-finite distance or an invalid/self-intersecting OCCT result emits `feature.surface-offset.failed`.',
+  },
+  {
     name: 'thicken',
     signature: '(t: Editable<number>) => Shape',
     description: 'Offset both sides of this surface by `t` mm and return the closed solid Shape. `t` must be a positive finite number or a ParamRef<number>.',

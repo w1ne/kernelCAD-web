@@ -1,0 +1,113 @@
+{
+  "recordedDate": "2026-11-24",
+  "kernel": "Local OCCT model geometry",
+  "input": {
+    "surface": "nurbsSurface degree 2 x 2, 30 x 40 mm panel, measured peak z = 3.000 mm",
+    "controls": [
+      [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          20,
+          3
+        ],
+        [
+          0,
+          40,
+          0
+        ]
+      ],
+      [
+        [
+          15,
+          0,
+          3
+        ],
+        [
+          15,
+          20,
+          6
+        ],
+        [
+          15,
+          40,
+          3
+        ]
+      ],
+      [
+        [
+          30,
+          0,
+          0
+        ],
+        [
+          30,
+          20,
+          3
+        ],
+        [
+          30,
+          40,
+          0
+        ]
+      ]
+    ],
+    "offsetDistanceMm": 4,
+    "thickenMm": 3
+  },
+  "result": {
+    "baseBoundsMm": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        30,
+        40,
+        3.0000001
+      ]
+    ],
+    "offsetBoundsMm": [
+      [
+        -0.7844646405527361,
+        -0.5933619117209785,
+        3.880569900581328
+      ],
+      [
+        30.784464640552738,
+        40.59336191172098,
+        7.0000001
+      ]
+    ],
+    "solidBoundsMm": [
+      [
+        -1.3728130459672883,
+        -1.0383832705117126,
+        3.880569900581328
+      ],
+      [
+        31.37281304596729,
+        41.038383270511716,
+        10.0000001
+      ]
+    ],
+    "offsetPeakDeltaMm": 4,
+    "baseAreaMm2": 1212.408,
+    "offsetAreaMm2": 1313.18,
+    "coreVolumeMm3": 4056.051,
+    "coreThicknessMm": 3
+  },
+  "checks": {
+    "offsetPeakRisesByRequestedFourMm": true,
+    "offsetSurfaceAreaMeasuredMm2": 1313.18,
+    "offsetSurfaceHasNoSolidComponent": true,
+    "coreSolidVolumePositive": true,
+    "coreThicknessMm": 3
+  },
+  "scope": "Local model validation only; not a deployed-behavior or hardware-acceptance claim."
+}

@@ -3,7 +3,9 @@
 //
 // Real-part proof for live physics playback poses and honest closed-loop status.
 // The compact supported arm is the shipped tree-shaped 4-DOF example. The
-// scissor jack is the shipped closed loop. Each case stays under 60 seconds.
+// scissor jack is the shipped closed loop. The two MuJoCo probes carry a
+// 120 s timeout: they finish in about 40 s locally, and the shared CI shard
+// runner needs headroom above the former 60 s limit.
 
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -87,7 +89,7 @@ describe('live physics poses on real mechanisms', () => {
     } finally {
       session.dispose();
     }
-  }, 60_000);
+  }, 120_000);
 
   it('surfaces a missing required mate on the 4-DOF arm', async () => {
     const code = readFileSync(ARM_FILE, 'utf8').replace(/arm\.mate\('shoulder-pitch',[\s\S]*?\);\n/, '');
@@ -97,7 +99,7 @@ describe('live physics poses on real mechanisms', () => {
     const orphan = result.failures.find((failure) => failure.code === 'mechanism.orphan-part');
     expect(orphan?.severity).toBe('error');
     expect(orphan?.message).toContain('upper-link');
-  }, 60_000);
+  }, 120_000);
 
   it('keeps the scissor-jack closed loop unverified instead of physics-failed', async () => {
     const { result, summary } = await probeFile(SCISSOR_FILE);
