@@ -86,7 +86,7 @@ describe('display mesh assemblies', () => {
     }
   });
 
-  it('keeps a mated display mesh assembly unverified when joint continuity cannot be measured', async () => {
+  it('certifies a mated display mesh assembly from its triangles', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'kcad-mesh-assembly-'));
     try {
       // A closed 10 mm cube, so connectors at its centre sit in its material.
@@ -107,17 +107,17 @@ describe('display mesh assemblies', () => {
         "arm.mate('spin', 'chassis.axle', 'wheel.axle', 'revolute', { pose: spin });",
         'return arm.solvedModel();',
       ].join('\n'));
-      // Connector validation only needs each part's bounds, but display mesh
-      // parts do not provide BREP evidence for the rest-pose joint check.
+      // Display-mesh parts are first-class rigid bodies: the rest-pose joint
+      // continuity check now measures their triangles instead of leaving the
+      // mechanism unverified.
       const out = (await callMcpTool('evaluate_script', { file: scriptPath, autosave: false } as never)) as {
         ok: boolean; diagnostics: Array<{ code?: string; severity: string }>; mechanismSummary?: { verdict: string };
       };
       expect(out.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
       expect(out.ok).toBe(true);
-      expect(out.mechanismSummary?.verdict).toBe('unverified');
-      expect(out.diagnostics).toContainEqual(expect.objectContaining({
+      expect(out.mechanismSummary?.verdict).toBe('real');
+      expect(out.diagnostics).not.toContainEqual(expect.objectContaining({
         code: 'mechanism.joint-mesh-unverified',
-        severity: 'warn',
       }));
     } finally {
       rmSync(dir, { recursive: true, force: true });

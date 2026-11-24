@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "feature": "closed shell (sealed hollow body)",
+  "date": "2026-11-24",
+  "environment": {
+    "kernelcadVersion": "0.17.4",
+    "backend": "occt",
+    "node": "v22.23.4",
+    "platform": "linux"
+  },
+  "evidenceKind": "local validation",
+  "notClaimed": [
+    "deployed behavior",
+    "hardware acceptance",
+    "parity with another CAD system"
+  ],
+  "source": {
+    "file": "closed-shell.kcad.ts",
+    "sha256": "61f737ec75924425d2a11e45c6481ccf62127a46059fee2d86b6b4e3930a9758"
+  },
+  "invocations": {
+    "evaluate": "node dist/cli/index.js evaluate docs/demos/closed-shell/closed-shell.kcad.ts --json",
+    "measure": "npx tsx docs/demos/closed-shell/measure.mts",
+    "turntable": "node dist/cli/index.js animate docs/demos/closed-shell/closed-shell.kcad.ts docs/demos/closed-shell/demo.mp4 --turntable --width 960 --height 720 --duration-ms 6000 --elevation 22 --preset default",
+    "poster": "ffmpeg -y -ss 3.0 -i docs/demos/closed-shell/demo.mp4 -frames:v 1 docs/demos/closed-shell/poster.png"
+  },
+  "evaluation": {
+    "ok": true,
+    "featureCount": 4,
+    "diagnosticCount": 0
+  },
+  "measured": {
+    "sealedShell": {
+      "volumeMm3": 27936,
+      "surfaceAreaMm2": 18696,
+      "faceCount": 12
+    },
+    "cutaway": {
+      "volumeMm3": 13968,
+      "surfaceAreaMm2": 9852,
+      "faceCount": 11,
+      "boundingBoxMm": {
+        "min": [0, 0, 0],
+        "max": [60, 20, 30]
+      }
+    }
+  },
+  "design": {
+    "outerMm": [60, 40, 30],
+    "wallThicknessMm": 3,
+    "cavityMm": [54, 34, 24],
+    "expectedSealedVolumeMm3": 27936,
+    "cutaway": "keep y < 20, after the closed shell",
+    "shellCall": "box(60, 40, 30).shell(3, { closed: true })"
+  },
+  "video": {
+    "file": "demo.mp4",
+    "sha256": "05aea1128ce7607debfc141d8594e0ce295a57a24010265f27687d10b5cd3a5a",
+    "codec": "h264",
+    "width": 960,
+    "height": 720,
+    "fps": 30,
+    "frames": 180,
+    "durationSeconds": 6.0,
+    "bytes": 389013
+  },
+  "poster": {
+    "file": "poster.png",
+    "sha256": "6f8124f62597025d41419be4ad4444ad8f25f5061de5ff15f69c7191c4c35a8e",
+    "source": "demo.mp4 at 3.0 s",
+    "visualCheck": "The cut face shows the enclosed rectangular cavity and the 3 mm wall on the top, bottom and side sections; the intact outer skin wraps the uncut half."
+  },
+  "measureScript": {
+    "file": "measure.mts",
+    "sha256": "66d544712976b5849bef2c5b4038d4b096695beee176790c9a90bc109ae4bea9"
+  }
+}

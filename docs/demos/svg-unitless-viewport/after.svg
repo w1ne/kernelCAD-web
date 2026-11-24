@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="592" height="656" viewBox="0 0 592 656">
+  <rect x="0" y="0" width="592" height="656" fill="#ffffff"/>
+  <line x1="80" y1="576" x2="80" y2="96" stroke="#e8e8e8" stroke-width="1"/><line x1="80" y1="576" x2="560" y2="576" stroke="#e8e8e8" stroke-width="1"/><line x1="160" y1="576" x2="160" y2="96" stroke="#e8e8e8" stroke-width="1"/><line x1="80" y1="496" x2="560" y2="496" stroke="#e8e8e8" stroke-width="1"/><line x1="240" y1="576" x2="240" y2="96" stroke="#e8e8e8" stroke-width="1"/><line x1="80" y1="416" x2="560" y2="416" stroke="#e8e8e8" stroke-width="1"/><line x1="320" y1="576" x2="320" y2="96" stroke="#e8e8e8" stroke-width="1"/><line x1="80" y1="336" x2="560" y2="336" stroke="#e8e8e8" stroke-width="1"/><line x1="400" y1="576" x2="400" y2="96" stroke="#e8e8e8" stroke-width="1"/><line x1="80" y1="256" x2="560" y2="256" stroke="#e8e8e8" stroke-width="1"/><line x1="480" y1="576" x2="480" y2="96" stroke="#e8e8e8" stroke-width="1"/><line x1="80" y1="176" x2="560" y2="176" stroke="#e8e8e8" stroke-width="1"/><line x1="560" y1="576" x2="560" y2="96" stroke="#e8e8e8" stroke-width="1"/><line x1="80" y1="96" x2="560" y2="96" stroke="#e8e8e8" stroke-width="1"/>
+  <rect x="105.4" y="195" width="355.6" height="355.6" fill="none" stroke="#111" stroke-width="4.4"/>
+  <circle cx="283.2" cy="372.8" r="110.06666666666666" fill="none" stroke="#c0392b" stroke-width="4.4"/>
+  <line x1="80" y1="592" x2="435.6" y2="592" stroke="#1e7b3c" stroke-width="3.2"/>
+  <line x1="80" y1="604" x2="80" y2="580" stroke="#1e7b3c" stroke-width="2.4"/>
+  <line x1="435.6" y1="604" x2="435.6" y2="580" stroke="#1e7b3c" stroke-width="2.4"/>
+  <text x="257.8" y="585.6" text-anchor="middle" font-family="DejaVu Sans" font-size="22.4" fill="#1e7b3c">44.45 mm square</text>
+  
+  <line x1="368" y1="136" x2="448" y2="136" stroke="#333" stroke-width="3.6"/>
+  <line x1="368" y1="148" x2="368" y2="124" stroke="#333" stroke-width="2.8"/>
+  <line x1="448" y1="148" x2="448" y2="124" stroke="#333" stroke-width="2.8"/>
+  <text x="456" y="139.2" font-family="DejaVu Sans" font-size="20.8" fill="#333">10 mm</text>
+  
+  <text x="80" y="40" font-family="DejaVu Sans" font-size="30.4" font-weight="700" fill="#111">After: 44.45 mm</text>
+  <text x="80" y="80" font-family="DejaVu Sans" font-size="19.2" fill="#555">192 px = 50.8 mm wide (twice the old size)</text>
+  </svg>

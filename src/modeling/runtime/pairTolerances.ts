@@ -30,6 +30,7 @@ import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { invalidArgsText } from '../../shared/intent/invalidArgs';
 import { pairKey, type InterferencePair } from './detectInterferences';
 import { minDistanceBetweenShapes, wrappedShape } from './brepDistance';
+import { bboxesGapMm, extractPosedWorldMesh, measureMeshPairDistance } from './meshPairCheck';
 
 /** A pair that is allowed to share a bounded amount of material. At least
  *  one bound should be given; a declaration with neither is the explicit
@@ -171,7 +172,7 @@ function measureOnePair(
   diagnostics: CompilerDiagnostic[],
 ): PairClearanceResult {
   if (!(a.shape instanceof OcctBackend) || !(b.shape instanceof OcctBackend)) {
-    return { a: aName, b: bName, minMm, distanceMm: Number.NaN, status: 'unknown' };
+    return measureMeshPairTolerance(aName, bName, a, b, minMm, diagnostics);
   }
   let posedA: OcctBackend | undefined;
   let posedB: OcctBackend | undefined;
@@ -208,6 +209,46 @@ function measureOnePair(
     posedA?.dispose();
     posedB?.dispose();
   }
+}
+
+function measureMeshPairTolerance(
+  aName: string,
+  bName: string,
+  a: SceneBackend['parts'][number],
+  b: SceneBackend['parts'][number],
+  minMm: number,
+  diagnostics: CompilerDiagnostic[],
+): PairClearanceResult {
+  const meshA = extractPosedWorldMesh(a.shape, a.worldTransform);
+  const meshB = extractPosedWorldMesh(b.shape, b.worldTransform);
+  if (meshA === undefined || meshB === undefined) {
+    return { a: aName, b: bName, minMm, distanceMm: Number.NaN, status: 'unknown' };
+  }
+  const lowerBound = bboxesGapMm(meshA, meshB);
+  if (lowerBound >= minMm) {
+    return { a: aName, b: bName, minMm, distanceMm: lowerBound, status: 'ok' };
+  }
+  const measured = measureMeshPairDistance(meshA, meshB, minMm, { forceExact: true });
+  if (!Number.isFinite(measured.distanceMm)) {
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.kernel-failed',
+      severity: 'warn',
+      message: `clearance probe failed on pair (${aName}, ${bName}): mesh distance could not be measured.`,
+      hint: 'Check the display mesh for empty or degenerate triangles, or declare the pair as a contact if the parts are intended to touch.',
+    });
+    return { a: aName, b: bName, minMm, distanceMm: Number.NaN, status: 'unknown' };
+  }
+  if (measured.overlapping) {
+    return { a: aName, b: bName, minMm, distanceMm: 0, status: 'violated' };
+  }
+  return {
+    a: aName,
+    b: bName,
+    minMm,
+    distanceMm: measured.distanceMm,
+    status: measured.distanceMm + 1e-7 >= minMm ? 'ok' : 'violated',
+  };
 }
 
 function bboxGap(
