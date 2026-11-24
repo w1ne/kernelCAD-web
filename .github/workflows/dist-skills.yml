@@ -18,6 +18,7 @@ jobs:
         with:
           name: skills-package
           path: dist/skills-package
+          retention-days: 7
 
   publish:
     needs: generate
