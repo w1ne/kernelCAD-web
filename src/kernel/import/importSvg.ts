@@ -38,9 +38,11 @@
 // One SVG user unit becomes millimetres by this ladder, and the result is
 // always reported in `unitSource` — never assumed silently:
 //   1. `opts.units` — user units are that unit, whatever the file says.
-//   2. `viewBox` + a physically-dimensioned `width` (e.g. `width="120mm"`) —
-//      scale = width_in_mm / viewBox_width. This is the case that actually
-//      carries real-world size, and it is what Inkscape and Illustrator write.
+//   2. `viewBox` + physically-dimensioned `width` and `height` (e.g.
+//      `width="120mm" height="60mm"`) — the viewport-scale rule followed by
+//      SVG `preserveAspectRatio` (default `xMidYMid meet`), so a viewBox whose
+//      aspect differs from the viewport is letterboxed, not stretched.
+//      Width alone sets a uniform scale from the width.
 //   3. Otherwise a user unit is one CSS pixel = 1/96 inch, which is what the
 //      SVG spec says an undimensioned user unit resolves to.
 //
@@ -797,10 +799,8 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
   }
 
   const viewBox = parseViewBox(root.attrs.viewBox);
-  const { scale, unitSource } = resolveSvgScale(root, viewBox, opts);
-
-  const flipAbout = resolveFlipAbout(root, viewBox);
-  const rootMatrix = buildRootMatrix(scale, viewBox, flipAbout);
+  const placement = resolveSvgPlacement(root, viewBox, opts);
+  const rootMatrix = placement.matrix;
 
   // Validated for compatibility; every supported curve is exact, so the
   // value no longer reaches the geometry.
@@ -817,10 +817,10 @@ export function importSvgText(text: string, opts: ImportSvgOptions = {}): SvgImp
 
   return {
     regions: assembled.regions,
-    unitScale: scale,
-    unitSource,
+    unitScale: placement.scale,
+    unitSource: placement.unitSource,
     ignoredElements,
-    flippedAboutViewBox: flipAbout !== null,
+    flippedAboutViewBox: placement.flippedAboutViewBox,
     duplicatesDropped: assembled.duplicatesDropped,
     degeneratesDropped: assembled.degeneratesDropped,
     gapsClosed: assembled.gapsClosed,
@@ -852,32 +852,136 @@ function assembleSvgRegions(sink: ElementSink, opts: ImportSvgOptions): ReturnTy
   }
 }
 
-/** Resolve the millimetres-per-user-unit scale and the human-readable source
- *  that decided it (opts.units, a dimensioned width over the viewBox, or the
- *  CSS-pixel default). */
-function resolveSvgScale(
+/** Root transform plus the unit decision it encodes. */
+interface SvgPlacement {
+  /** User-unit → millimetre matrix, including the Y reflection. */
+  matrix: Matrix;
+  /** Millimetres per user unit on the X axis (the uniform scale unless
+   *  `preserveAspectRatio="none"`). */
+  scale: number;
+  unitSource: string;
+  flippedAboutViewBox: boolean;
+}
+
+interface AspectRatio {
+  /** 0 = Min, 0.5 = Mid, 1 = Max. */
+  alignX: number;
+  alignY: number;
+  mode: 'meet' | 'slice' | 'none';
+  token: string;
+}
+
+const DEFAULT_ASPECT_RATIO: AspectRatio = { alignX: 0.5, alignY: 0.5, mode: 'meet', token: 'xMidYMid' };
+
+/** SVG `preserveAspectRatio`: an alignment token plus `meet`/`slice`, or
+ *  `none`. Missing or invalid values use the spec default `xMidYMid meet`. */
+function parsePreserveAspectRatio(raw: string | undefined): AspectRatio {
+  if (raw === undefined) return DEFAULT_ASPECT_RATIO;
+  const tokens = raw.trim().split(/\s+/).filter(token => token.length > 0 && token !== 'defer');
+  const align = tokens[0];
+  if (align === 'none') return { alignX: 0, alignY: 0, mode: 'none', token: 'none' };
+  const match = align === undefined ? null : /^x(Min|Mid|Max)Y(Min|Mid|Max)$/.exec(align);
+  if (match === null) return DEFAULT_ASPECT_RATIO;
+  return {
+    alignX: axisFraction(match[1]),
+    alignY: axisFraction(match[2]),
+    mode: tokens[1] === 'slice' ? 'slice' : 'meet',
+    token: align,
+  };
+}
+
+function axisFraction(token: string | undefined): number {
+  return token === 'Min' ? 0 : token === 'Max' ? 1 : 0.5;
+}
+
+/** A `height` with a known absolute length unit. Percentage and unitless
+ *  heights have no absolute size here, so they stay null. */
+function physicalHeightMm(raw: string | undefined): number | null {
+  if (raw === undefined) return null;
+  const suffix = raw.trim().match(/[a-z%]+$/i)?.[0].toLowerCase();
+  if (suffix === undefined || !isLengthUnit(suffix)) return null;
+  return lengthToMm(raw, '<svg> height');
+}
+
+/** Decide the root matrix: `opts.units` first, then the physical viewport
+ *  (`width`/`height` over the viewBox with `preserveAspectRatio`), then the
+ *  width-only uniform scale, then the CSS-pixel default. */
+function resolveSvgPlacement(
   root: Tag,
   viewBox: ViewBox | null,
   opts: ImportSvgOptions,
-): { scale: number; unitSource: string } {
+): SvgPlacement {
+  const flipAbout = resolveFlipAbout(root, viewBox);
+  const flippedAboutViewBox = flipAbout !== null;
+  const frame = (sx: number, sy: number, tx: number, ty: number): Matrix => [sx, 0, 0, -sy, tx, ty];
+
   if (opts.units !== undefined) {
+    const s = MM_PER_UNIT[opts.units];
     return {
-      scale: MM_PER_UNIT[opts.units],
+      matrix: frame(s, s, viewBox ? -s * viewBox.minX : 0, s * (flipAbout ?? 0)),
+      scale: s,
       unitSource: `opts.units=${opts.units}`,
+      flippedAboutViewBox,
     };
   }
-  const widthMm = root.attrs.width !== undefined
-    ? lengthToMm(root.attrs.width, '<svg> width')
-    : null;
-  if (viewBox && widthMm !== null && root.attrs.width !== undefined && /[a-z]/i.test(root.attrs.width)) {
+
+  const widthAttr = root.attrs.width;
+  const widthMm = widthAttr !== undefined ? lengthToMm(widthAttr, '<svg> width') : null;
+  const widthIsPhysical = widthAttr !== undefined && /[a-z]/i.test(widthAttr);
+  const heightMm = physicalHeightMm(root.attrs.height);
+
+  if (viewBox && widthIsPhysical && widthMm !== null && heightMm !== null) {
+    return viewportPlacement(root, viewBox, widthMm, heightMm, flippedAboutViewBox);
+  }
+  if (viewBox && widthIsPhysical && widthMm !== null) {
+    const s = widthMm / viewBox.width;
     return {
-      scale: widthMm / viewBox.width,
-      unitSource: `width='${root.attrs.width.trim()}' over viewBox width ${viewBox.width}`,
+      matrix: frame(s, s, -s * viewBox.minX, s * (flipAbout ?? 0)),
+      scale: s,
+      unitSource: `width='${widthAttr!.trim()}' over viewBox width ${viewBox.width}`,
+      flippedAboutViewBox,
     };
   }
+  const s = MM_PER_UNIT.px;
   return {
-    scale: MM_PER_UNIT.px,
+    matrix: frame(s, s, viewBox ? -s * viewBox.minX : 0, s * (flipAbout ?? 0)),
+    scale: s,
     unitSource: 'assumed 1 user unit = 1 CSS px (1/96 in); no physically-dimensioned width',
+    flippedAboutViewBox,
+  };
+}
+
+/** `width` + `height` + `viewBox`: scale and align the viewBox inside the
+ *  physical viewport exactly as SVG `preserveAspectRatio` specifies. */
+function viewportPlacement(
+  root: Tag,
+  viewBox: ViewBox,
+  widthMm: number,
+  heightMm: number,
+  flippedAboutViewBox: boolean,
+): SvgPlacement {
+  const aspect = parsePreserveAspectRatio(root.attrs.preserveAspectRatio);
+  const sx = widthMm / viewBox.width;
+  const sy = heightMm / viewBox.height;
+  const source = `width='${root.attrs.width!.trim()}' and height='${root.attrs.height!.trim()}' ` +
+    `over viewBox ${viewBox.width} x ${viewBox.height}`;
+  if (aspect.mode === 'none') {
+    // Non-uniform: each axis fills the viewport, so there is no alignment.
+    return {
+      matrix: [sx, 0, 0, -sy, -sx * viewBox.minX, heightMm + sy * viewBox.minY],
+      scale: sx,
+      unitSource: `${source}, preserveAspectRatio='none' (non-uniform)`,
+      flippedAboutViewBox,
+    };
+  }
+  const s = aspect.mode === 'slice' ? Math.max(sx, sy) : Math.min(sx, sy);
+  const offsetX = (widthMm - s * viewBox.width) * aspect.alignX;
+  const offsetY = (heightMm - s * viewBox.height) * aspect.alignY;
+  return {
+    matrix: [s, 0, 0, -s, offsetX - s * viewBox.minX, heightMm - offsetY + s * viewBox.minY],
+    scale: s,
+    unitSource: `${source}, ${aspect.token} ${aspect.mode}`,
+    flippedAboutViewBox,
   };
 }
 
@@ -892,18 +996,6 @@ function resolveFlipAbout(root: Tag, viewBox: ViewBox | null): number | null {
     if (Number.isFinite(h) && h > 0) return h;
   }
   return null;
-}
-
-/** The root matrix IS the Y flip: scale by `scale`, negate Y, and translate
- *  so the drawing sits in positive Y starting at the origin. */
-function buildRootMatrix(scale: number, viewBox: ViewBox | null, flipAbout: number | null): Matrix {
-  const vbMinX = viewBox ? viewBox.minX : 0;
-  return [
-    scale, 0,
-    0, -scale,
-    -scale * vbMinX,
-    scale * (flipAbout ?? 0),
-  ];
 }
 
 /** Emit one geometry element into the sink; throws for elements kernelCAD
