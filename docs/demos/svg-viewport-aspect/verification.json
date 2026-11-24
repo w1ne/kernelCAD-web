@@ -46,7 +46,7 @@
   "relatedTest": {
     "command": "npx vitest run src/kernel/import src/modeling/parts/fromVectorFormats.test.ts tests/unit/diagnostics/codes.test.ts",
     "files": 6,
-    "passed": 180,
+    "passed": 181,
     "failed": 0
   },
   "typecheck": "npx tsc -b --noEmit (exit 0)",
