@@ -680,18 +680,12 @@ function drillPointAngleOf(opts: EditableHoleOpts | EditableHolesOpts): Editable
   return drillPoint.angleDeg ?? DEFAULT_DRILL_POINT_ANGLE_DEG;
 }
 
-// `face` and `upToFace` are captured under FeatureRef inputs by the proxy.
-// Their raw selectors remain in metadata so serialized features round-trip.
-
-export function serializeHoleParams(_face: FaceSelector, opts: EditableHoleOpts): SerializedHoleCapture {
-  const params: Record<string, Param> = opts.at !== undefined
-    ? { ...serializeHoleAt(opts.at, opts.axis), diameter: paramMm(opts.diameter) }
-    : { u: paramMm(opts.u as Editable<number>), v: paramMm(opts.v as Editable<number>), diameter: paramMm(opts.diameter) };
-  if (typeof opts.depth === 'number' || (typeof opts.depth === 'object' && opts.depth !== null)) {
-    params.depth = paramMm(opts.depth as Editable<number>);
-  } else if (opts.depth === 'through') {
-    params.depthMode = paramUnitless('through');
-  }
+/** Counterbore, countersink, drill point and thread params are identical for
+ *  `hole` and `holes`; serialize them once. */
+function appendEndTreatmentParams(
+  params: Record<string, Param>,
+  opts: EditableHoleOpts | EditableHolesOpts,
+): void {
   if (opts.counterbore) {
     params.counterboreDiameter = paramMm(opts.counterbore.diameter);
     params.counterboreDepth = paramMm(opts.counterbore.depth);
@@ -707,6 +701,21 @@ export function serializeHoleParams(_face: FaceSelector, opts: EditableHoleOpts)
     params.threadClearance = paramMm(opts.thread.clearance ?? 0);
     params.threadModeled = paramUnitless(opts.thread.modeled === true ? 1 : 0);
   }
+}
+
+// `face` and `upToFace` are captured under FeatureRef inputs by the proxy.
+// Their raw selectors remain in metadata so serialized features round-trip.
+
+export function serializeHoleParams(_face: FaceSelector, opts: EditableHoleOpts): SerializedHoleCapture {
+  const params: Record<string, Param> = opts.at !== undefined
+    ? { ...serializeHoleAt(opts.at, opts.axis), diameter: paramMm(opts.diameter) }
+    : { u: paramMm(opts.u as Editable<number>), v: paramMm(opts.v as Editable<number>), diameter: paramMm(opts.diameter) };
+  if (typeof opts.depth === 'number' || (typeof opts.depth === 'object' && opts.depth !== null)) {
+    params.depth = paramMm(opts.depth as Editable<number>);
+  } else if (opts.depth === 'through') {
+    params.depthMode = paramUnitless('through');
+  }
+  appendEndTreatmentParams(params, opts);
   const metadata: Record<string, unknown> = {};
   if (opts.upToFace !== undefined) metadata.upToFace = opts.upToFace;
   if (opts.name !== undefined) metadata.name = opts.name;
@@ -728,21 +737,7 @@ export function serializeHolesParams(_face: FaceSelector, opts: EditableHolesOpt
   } else if (opts.depth === 'through') {
     params.depthMode = paramUnitless('through');
   }
-  if (opts.counterbore) {
-    params.counterboreDiameter = paramMm(opts.counterbore.diameter);
-    params.counterboreDepth = paramMm(opts.counterbore.depth);
-  }
-  if (opts.countersink) {
-    params.countersinkDiameter = paramMm(opts.countersink.diameter);
-    params.countersinkAngleDeg = paramDeg(opts.countersink.angleDeg ?? DEFAULT_CSK_ANGLE_DEG);
-  }
-  const drillPointAngleDeg = drillPointAngleOf(opts);
-  if (drillPointAngleDeg !== undefined) params.drillPointAngleDeg = paramDeg(drillPointAngleDeg);
-  if (opts.thread) {
-    params.threadPitch = paramMm(opts.thread.pitch);
-    params.threadClearance = paramMm(opts.thread.clearance ?? 0);
-    params.threadModeled = paramUnitless(opts.thread.modeled === true ? 1 : 0);
-  }
+  appendEndTreatmentParams(params, opts);
   // Positions: preserve the Editable shape under metadata; emit each u/v as
   // a Param so the pre-resolver substitutes paramRefs at lower time.
   const positionParams = opts.positions.map((p) => ({

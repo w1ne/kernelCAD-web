@@ -19,7 +19,7 @@ import {
   inspectCylindricalHoles,
   type CylindricalHole,
 } from '../../kernel/backends/occt/holeDetection';
-import { buildCountersinkCone } from '../../kernel/backends/occt/holeLowerer';
+import { buildCountersinkCone } from '../../kernel/backends/occt/holeTipTools';
 import type { CaptureSession } from '../capture/captureSession';
 import type { Shape } from '../capture/proxy';
 import type { Vec3 } from '../../shared/intent/types';
