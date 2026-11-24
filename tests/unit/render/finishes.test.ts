@@ -17,9 +17,9 @@ import { isPBRMaterial } from '../../../src/shared/intent/material';
 import { isKernelError } from '../../../src/shared/intent/kernelError';
 
 describe('finish table', () => {
-  it('has the curated 22-entry vocabulary', () => {
-    // A ceiling, not a floor — the proposal caps the default library at ~22.
-    expect(FINISH_TOKENS.length).toBe(22);
+  it('has the curated finish vocabulary', () => {
+    // 22 mechanical/glass finishes plus 11 PCB / electronics finishes.
+    expect(FINISH_TOKENS.length).toBe(33);
   });
 
   it('every finish resolves to a valid PBR record', () => {
@@ -90,5 +90,38 @@ describe('finish table', () => {
     // Not fooled by Object.prototype members.
     expect(isFinishToken('toString')).toBe(false);
     expect(isFinishToken('constructor')).toBe(false);
+  });
+
+  it('PCB and electronics finishes are physically calibrated', () => {
+    for (const mask of ['pcb-green', 'pcb-black', 'pcb-blue', 'pcb-red', 'pcb-white'] as const) {
+      const pbr = expandFinish(mask);
+      expect(pbr.clearcoat, mask).toBeGreaterThanOrEqual(0.4);
+      expect(pbr.clearcoat, mask).toBeLessThanOrEqual(0.45);
+      expect(pbr.metalness, mask).toBe(0);
+    }
+    for (const metal of ['pcb-copper', 'gold-enig', 'solder'] as const) {
+      const pbr = expandFinish(metal);
+      expect(pbr.metalness, metal).toBe(1);
+      expect(pbr.roughness, metal).toBeGreaterThanOrEqual(0.18);
+      expect(pbr.roughness, metal).toBeLessThanOrEqual(0.22);
+    }
+    expect(expandFinish('ic-epoxy')).toMatchObject({ baseColor: '#23272e', roughness: 0.62, metalness: 0 });
+    expect(expandFinish('silkscreen')).toMatchObject({ baseColor: '#f4f5f2', roughness: 0.58 });
+    expect(expandFinish('fr4').baseColor).toBe('#b7a469');
+  });
+
+  it('glass finishes transmit and refract with crisp speculars', () => {
+    for (const token of ['glass', 'glass-tinted', 'acrylic'] as const) {
+      const pbr = expandFinish(token);
+      expect(pbr.transmission, token).toBeGreaterThan(0.85);
+      expect(pbr.clearcoat, token).toBeGreaterThanOrEqual(0.9);
+      expect(pbr.roughness, token).toBeLessThanOrEqual(0.05);
+      expect(pbr.ior, token).toBeGreaterThanOrEqual(1.49);
+    }
+    expect(expandFinish('glass-tinted')).toMatchObject({
+      attenuationColor: '#2d3f5e',
+      attenuationDistance: 8,
+      thickness: 3,
+    });
   });
 });

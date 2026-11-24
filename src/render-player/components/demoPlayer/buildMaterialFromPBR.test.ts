@@ -2,7 +2,23 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
-import { attachTextures, disposeMaterialDeep } from './buildMaterialFromPBR';
+import { attachTextures, buildMaterialFromPBR, disposeMaterialDeep } from './buildMaterialFromPBR';
+
+describe('buildMaterialFromPBR emissive', () => {
+  it('sets emissive colour and defaults intensity to 1 when only emissive is given', () => {
+    const material = buildMaterialFromPBR({ baseColor: '#101010', emissive: '#39ff88' }) as THREE.MeshPhysicalMaterial;
+    expect(material.emissive.getHexString()).toBe('39ff88');
+    expect(material.emissiveIntensity).toBe(1);
+  });
+
+  it('honours an explicit emissiveIntensity and leaves non-emissive materials dark', () => {
+    const bright = buildMaterialFromPBR({ baseColor: '#101010', emissive: '#9fd8ff', emissiveIntensity: 2.5 }) as THREE.MeshPhysicalMaterial;
+    expect(bright.emissiveIntensity).toBe(2.5);
+    const matte = buildMaterialFromPBR({ baseColor: '#888888' }) as THREE.MeshPhysicalMaterial;
+    expect(matte.emissive.getHexString()).toBe('000000');
+    expect(matte.emissiveIntensity).toBe(0);
+  });
+});
 
 describe('disposeMaterialDeep', () => {
   it('disposes material arrays and every texture map attached to each material', () => {

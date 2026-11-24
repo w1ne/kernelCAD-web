@@ -56,6 +56,7 @@ import {
   PUBLISH_PRESET,
   RENDER_PRESETS,
   resolvePublishLook,
+  STUDIO_PRESET,
   type PublishStageSpec,
   type RenderPreset,
 } from '../../../shared/render/publishPreset';
@@ -137,14 +138,16 @@ export interface RenderPreviewInput {
   /** Render look. 'default' is the engineering-review look. 'publish' is a
    *  studio product shot for sharing: key/fill/rim lights + room IBL, soft
    *  contact shadow, clean backdrop (or transparent), supersampled
-   *  anti-aliasing, 30° lens, auto-framed with margin, no watermark. With
-   *  no views/pose it renders ONE 'hero' image (3/4 front-right) at
-   *  1600×1200; width/height go up to 2048. */
+   *  anti-aliasing, 30° lens, auto-framed with margin, no watermark. 'studio'
+   *  is the standard KernelCAD studio graphical render mode (4:3 still,
+   *  studio lighting, AgX tone mapping, studio gradient backdrop). With
+   *  no views/pose either studio preset renders ONE 'hero' image. */
   preset?: RenderPreset;
-  /** 'publish' only: 'white' (default), 'light', 'dark', 'black',
-   *  'transparent' (PNG alpha), or a '#rrggbb' hex colour. */
+  /** 'publish' / 'studio' only: 'white', 'light', 'dark', 'black',
+   *  'neutral', 'studio' (soft gradient), 'transparent' (PNG alpha), or a
+   *  '#rrggbb' hex colour. */
   background?: string;
-  /** 'publish' only: soft contact shadow under the model (default true). */
+  /** 'publish' / 'studio' only: soft contact shadow under the model (default true). */
   shadow?: boolean;
 }
 
@@ -208,12 +211,25 @@ const SHEET_DESCRIPTION =
   'Inspection sheet — every rendered view tiled in one image, each labelled with its view name ' +
   '(see the per-view images for axis orientation). Check every tile, not just the overview.';
 
-/** Name of the single image a bare `preset: 'publish'` call renders. */
+/** Name of the single image a bare studio-preset call renders. */
 export const PUBLISH_HERO_NAME = 'hero';
-const PUBLISH_HERO_POSE = `${PUBLISH_PRESET.heroAzDeg},${PUBLISH_PRESET.heroElDeg}`;
-const PUBLISH_HERO_DESCRIPTION =
-  `Publish hero — 3/4 front-right product shot (az=${PUBLISH_PRESET.heroAzDeg}°, el=${PUBLISH_PRESET.heroElDeg}°), ` +
-  'silhouette centred and auto-framed with margin; kernelCAD is Z-up.';
+
+function presetDefaults(preset: RenderPreset): typeof PUBLISH_PRESET | typeof STUDIO_PRESET {
+  return preset === 'studio' ? STUDIO_PRESET : PUBLISH_PRESET;
+}
+
+function heroPose(preset: RenderPreset): string {
+  const p = presetDefaults(preset);
+  return `${p.heroAzDeg},${p.heroElDeg}`;
+}
+
+function heroDescription(preset: RenderPreset): string {
+  const p = presetDefaults(preset);
+  return (
+    `Publish hero — 3/4 front-right product shot (az=${p.heroAzDeg}°, el=${p.heroElDeg}°), ` +
+    'silhouette centred and auto-framed with margin; kernelCAD is Z-up.'
+  );
+}
 
 function poseDescription(az: number, el: number): string {
   return (
@@ -301,7 +317,7 @@ function resolvePreviewSource(input: RenderPreviewInput, defaultViews: readonly 
 }
 
 function resolvePreviewPreset(input: RenderPreviewInput):
-  | { ok: true; publish: PublishStageSpec | undefined }
+  | { ok: true; preset: RenderPreset; publish: PublishStageSpec | undefined }
   | { ok: false; result: RenderPreviewOutput } {
   const look = resolvePublishLook(input, 'default');
   if (look.ok) return look;
@@ -312,7 +328,7 @@ function resolvePreviewPreset(input: RenderPreviewInput):
         result: refusal(
           'cli.invalid-args',
           `render_preview: unknown preset '${String(input.preset)}'. Valid: ${RENDER_PRESETS.join(', ')}.`,
-          "Pass preset: 'publish' for a studio product shot, or omit it for the engineering look.",
+          "Pass preset: 'publish' or 'studio' for a studio product shot, or omit it for the engineering look.",
         ),
       };
     case 'look-without-publish':
@@ -320,8 +336,8 @@ function resolvePreviewPreset(input: RenderPreviewInput):
         ok: false,
         result: refusal(
           'cli.invalid-args',
-          "render_preview: background and shadow apply only to preset: 'publish'.",
-          "Add preset: 'publish', or drop background/shadow for the engineering look.",
+          "render_preview: background and shadow apply only to preset: 'publish' or 'studio'.",
+          "Add preset: 'publish' or 'studio', or drop background/shadow for the engineering look.",
         ),
       };
     case 'invalid-background':
@@ -374,18 +390,29 @@ function resolvePreviewFilter(input: RenderPreviewInput):
   return { ok: true, objectFilter };
 }
 
-function resolvePreviewDimensions(input: RenderPreviewInput, publish: boolean):
+function validDimension(value: number): boolean {
+  return Number.isInteger(value) && value >= 64 && value <= 2048;
+}
+
+function defaultPreviewSize(preset: RenderPreset | undefined): { width: number; height: number } {
+  if (preset === undefined || preset === 'default') return { width: 768, height: 768 };
+  const defaults = presetDefaults(preset);
+  return { width: defaults.stillWidth, height: defaults.stillHeight };
+}
+
+function resolvePreviewDimensions(input: RenderPreviewInput, preset: RenderPreset | undefined):
   | { ok: true; width: number; height: number }
   | { ok: false; result: RenderPreviewOutput } {
-  const width = input.width ?? (publish ? PUBLISH_PRESET.stillWidth : 768);
-  const height = input.height ?? (publish ? PUBLISH_PRESET.stillHeight : 768);
-  if (!Number.isInteger(width) || !Number.isInteger(height) || width < 64 || height < 64 || width > 2048 || height > 2048) {
+  const defaults = defaultPreviewSize(preset);
+  const width = input.width ?? defaults.width;
+  const height = input.height ?? defaults.height;
+  if (!validDimension(width) || !validDimension(height)) {
     return {
       ok: false,
       result: refusal(
         'cli.invalid-args',
         `render_preview: width/height must be integers in [64, 2048] (got ${width}×${height}).`,
-        'Pass width and height between 64 and 2048 pixels, or omit them for the 768×768 default.',
+        `Pass width and height between 64 and 2048 pixels, or omit them for the ${defaults.width}×${defaults.height} default.`,
       ),
     };
   }
@@ -502,14 +529,14 @@ export async function renderPreviewTool(
 ): Promise<RenderPreviewOutput> {
   const presetPhase = resolvePreviewPreset(input);
   if (!presetPhase.ok) return presetPhase.result;
-  const { publish } = presetPhase;
+  const { preset, publish } = presetPhase;
 
   const { hero, defaultViews } = resolvePreviewShots(input, publish);
   const source = resolvePreviewSource(input, defaultViews);
   if (!source.ok) return source.result;
   const { hasCode, views } = source;
 
-  const camera = resolvePreviewCamera(hero ? { ...input, pose: PUBLISH_HERO_POSE } : input);
+  const camera = resolvePreviewCamera(hero ? { ...input, pose: heroPose(preset) } : input);
   if (!camera.ok) return camera.result;
   const { pose } = camera;
 
@@ -517,7 +544,7 @@ export async function renderPreviewTool(
   if (!filter.ok) return filter.result;
   const { objectFilter } = filter;
 
-  const dimensions = resolvePreviewDimensions(input, publish !== undefined);
+  const dimensions = resolvePreviewDimensions(input, preset);
   if (!dimensions.ok) return dimensions.result;
   const { width, height } = dimensions;
 
@@ -531,6 +558,7 @@ export async function renderPreviewTool(
 
   const work = renderPreviewWork({
     input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode, overlay, publish, hero,
+    heroDescription: hero ? heroDescription(preset) : undefined,
   });
   // Swallow the losing chain's rejection if the timeout wins (same pattern as
   // capture_animation) so it never surfaces as an unhandled rejection.
@@ -730,7 +758,7 @@ async function writePreviewImages(
   views: RenderView[],
   result: HeadlessRenderResult,
   stamp: (buf: Buffer) => Promise<Buffer>,
-  hero: boolean,
+  hero: { name: string; description: string } | undefined,
   sheet?: { width: number; height: number },
 ): Promise<{ images: RenderPreviewImage[] } | { refusal: RenderPreviewOutput }> {
   const images: RenderPreviewImage[] = [];
@@ -749,10 +777,10 @@ async function writePreviewImages(
       images.push({ name: view, path, description: VIEW_DESCRIPTIONS[view] });
     }
     for (const [poseKey, buf] of Object.entries(result.pngsByPose)) {
-      if (hero) {
+      if (hero !== undefined) {
         const path = join(outDir, `${PUBLISH_HERO_NAME}.png`);
         await writeFile(path, await stamp(buf));
-        images.push({ name: PUBLISH_HERO_NAME, path, description: PUBLISH_HERO_DESCRIPTION });
+        images.push({ name: PUBLISH_HERO_NAME, path, description: hero.description });
         continue;
       }
       const [az, el] = poseKey.split(',').map(s => s.trim());
@@ -787,8 +815,9 @@ async function renderPreviewWork(args: {
   overlay?: SurfaceQualityOverlay;
   publish?: PublishStageSpec;
   hero: boolean;
+  heroDescription?: string;
 }): Promise<RenderPreviewOutput> {
-  const { input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode, overlay, publish, hero } = args;
+  const { input, deps, scriptPath, outDir, views, pose, objectFilter, width, height, section, explode, overlay, publish, hero, heroDescription: description } = args;
   const t0 = Date.now();
 
   const explodeRefusal = await validateExplodeAssembly(explode, scriptPath);
@@ -821,7 +850,9 @@ async function renderPreviewWork(args: {
   const stamp = async (buf: Buffer): Promise<Buffer> =>
     probe.mechanism === 'broken' ? watermarkBrokenMechanism(buf, probe.failures) : buf;
   const imagePhase = await writePreviewImages(
-    outDir, views, result, stamp, hero, input.sheet === true ? { width, height } : undefined,
+    outDir, views, result, stamp,
+    hero ? { name: PUBLISH_HERO_NAME, description: description ?? '' } : undefined,
+    input.sheet === true ? { width, height } : undefined,
   );
   if ('refusal' in imagePhase) return { ...imagePhase.refusal, sceneSummary };
   const { images } = imagePhase;

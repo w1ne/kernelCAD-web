@@ -239,10 +239,11 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
         'TURNTABLE MODE: pass { turntable: true } for a seamless 360° orbit of the model (no animationView record needed) — ' +
         'a share-ready loop for a README, social post or product page. It uses the \'publish\' studio look by default ' +
         '(same as render_preview preset: \'publish\': key/fill/rim lights, soft contact shadow, clean backdrop, 30° lens, ' +
-        'constant auto-framing over the whole orbit, light rig turns with the camera); { preset: \'default\' } keeps the ' +
-        'engineering look. Knobs: width/height (default 1080×1080, max 2048, even for MP4), duration_ms (one revolution, ' +
-        'default 6000), fps (default 30), elevation_deg (default 22), background (\'white\' default, \'light\', \'dark\', ' +
-        '\'black\', \'#rrggbb\', or \'transparent\' with frames_dir only), shadow (default true), environment. ' +
+        'constant auto-framing over the whole orbit, light rig turns with the camera); { preset: \'studio\' } uses the standard ' +
+        'KernelCAD studio graphical render mode; { preset: \'default\' } keeps the engineering look. Knobs: width/height ' +
+        '(default 1080×1080 for publish, 1280×960 for studio, max 2048, even for MP4), duration_ms (one revolution, ' +
+        'default 6000), fps (default 30), elevation_deg (default publish 22° / studio 24°), background (\'white\' publish default, ' +
+        '\'studio\' studio default, \'light\', \'dark\', \'black\', \'neutral\', \'#rrggbb\', or \'transparent\' with frames_dir only), shadow (default true), environment. ' +
         'output_path ending in .gif writes a looping GIF; otherwise MP4. Frame i sits at az 30° + 360°·i/N (the 360° ' +
         'endpoint is excluded, so the loop is seamless). A turntable has no poses to verify: it reports verify_skipped: true. ' +
         'ENVIRONMENT: needs playwright chromium (npx playwright install chromium) and ffmpeg for MP4/GIF (frames_dir needs ' +
@@ -260,7 +261,7 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
           focus: { type: 'array', items: { type: 'string' }, description: 'Show only matching feature ids / assembly part names in the rendered frames. Mutually exclusive with hide. Render-only; does not affect pose verification.' },
           hide: { type: 'array', items: { type: 'string' }, description: 'Hide matching feature ids / assembly part names in the rendered frames. Mutually exclusive with focus. Render-only; does not affect pose verification.' },
           turntable: { type: 'boolean', description: 'Seamless 360° orbit of the model instead of the animationView timeline.', default: false },
-          preset: { type: 'string', enum: ['default', 'publish'], description: "Turntable look: 'publish' (default; studio product shot) or 'default' (engineering look)." },
+          preset: { type: 'string', enum: ['default', 'publish', 'studio'], description: "Turntable look: 'publish' (default; share-ready studio product shot), 'studio' (standard KernelCAD studio graphical render mode), or 'default' (engineering look)." },
           width: { type: 'integer', minimum: 64, maximum: 2048, description: 'Turntable frame width in px (default 1080; even for MP4).' },
           height: { type: 'integer', minimum: 64, maximum: 2048, description: 'Turntable frame height in px (default 1080; even for MP4).' },
           duration_ms: { type: 'number', minimum: 500, maximum: 60000, description: 'Turntable: one full revolution in ms (default 6000).' },
@@ -300,13 +301,16 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
         'reports mechanism: "unverified"; ignored under strict mode). Pass { overlay: \'zebra\' | \'curvature\' | \'continuity\' } ' +
         'for a surface-quality visualisation (zebra stripes from vertex normals, curvature as vertex colours, continuity ' +
         'edges coloured by G0/G1/G2/broken) — numbers come from inspect({ of: \'continuity\' | \'curvature\' }); the overlay ' +
-        'is the picture. PUBLISH PRESET: pass { preset: \'publish\' } for a share-ready studio product shot (gallery tile, ' +
-        'social post, README image, product page): key/fill/rim lights + room reflections, soft contact shadow, clean ' +
-        'backdrop ({ background: \'white\' (default) | \'light\' | \'dark\' | \'black\' | \'#rrggbb\' | \'transparent\' } — ' +
-        'transparent gives a PNG with alpha), { shadow: false } to drop the shadow, 2× supersampled anti-aliasing, 30° lens, ' +
-        'the model silhouette centred and auto-framed with ~11% air (a script\'s setCameraTarget is ignored), per-part colours/materials ' +
-        'as authored, no watermark. With no views/pose it renders ONE image named \'hero\' (3/4 front-right, az=30°, el=22°) ' +
-        'at 1600×1200; width/height go up to 2048; views/pose still work under the preset. Output is deterministic for the ' +
+        'is the picture. PUBLISH / STUDIO PRESETS: pass { preset: \'publish\' } for a share-ready studio product shot ' +
+        '(gallery tile, social post, README image, product page) or { preset: \'studio\' } for the standard KernelCAD studio ' +
+        'graphical render mode. Both use studio key/fill/rim lights + procedural softbox IBL, real self-shadowing, AgX tone ' +
+        'mapping, soft contact shadow, clean backdrop ({ background: \'white\' (publish default) | \'light\' | \'dark\' | ' +
+        '\'black\' | \'neutral\' | \'studio\' (soft gradient, studio default) | \'#rrggbb\' | \'transparent\' } — ' +
+        'transparent gives a PNG with alpha), { shadow: false } to drop the shadow, supersampled anti-aliasing, 30° lens, ' +
+        'the model silhouette centred and auto-framed with margin (a script\'s setCameraTarget is ignored), per-part colours/materials ' +
+        'as authored, no watermark. With no views/pose it renders ONE image named \'hero\': publish at 3/4 front-right ' +
+        'az=30°, el=22°, 1600×1200; studio at az=32°, el=24°, 1280×960. width/height go up to 2048; views/pose still work ' +
+        'under either preset. Output is deterministic for the ' +
         'same input. For a 360° loop use capture_animation({ turntable: true }). INSPECTION SHEET: { sheet: true } renders all ' +
         'seven views (iso, front, back, left, right, top, bottom) and adds one labelled image named \'sheet\' tiling them — ' +
         'do not call a model done because it compiled; call it done when every tile of the sheet matches the request. Returns { ok, images: [{ name, path, description }], ' +
@@ -357,9 +361,9 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             enum: ['zebra', 'curvature', 'continuity'],
             description: "Surface-quality overlay: 'zebra' (reflection stripes), 'curvature' (Gaussian vertex colours), 'continuity' (edges coloured G2 green / G1 yellow / G0 orange / broken red). Built as coloured STL bands through this same pipeline.",
           },
-          preset: { type: 'string', enum: ['default', 'publish'], description: "Render look: 'default' (engineering review) or 'publish' (studio product shot for sharing; one 'hero' image unless views/pose are given)." },
-          background: { type: 'string', description: "preset 'publish' only: 'white' (default), 'light', 'dark', 'black', 'transparent' (PNG alpha), or '#rrggbb'." },
-          shadow: { type: 'boolean', description: "preset 'publish' only: soft contact shadow under the model (default true)." },
+          preset: { type: 'string', enum: ['default', 'publish', 'studio'], description: "Render look: 'default' (engineering review), 'publish' (share-ready studio product shot; one 'hero' image unless views/pose are given), or 'studio' (standard KernelCAD studio graphical render mode: studio lighting, AgX tone mapping, soft studio-gradient backdrop, 4:3 hero)." },
+          background: { type: 'string', description: "preset 'publish' / 'studio' only: 'white' (publish default), 'light', 'dark', 'black', 'neutral', 'studio' (soft gradient, studio default), 'transparent' (PNG alpha), or '#rrggbb'." },
+          shadow: { type: 'boolean', description: "preset 'publish' / 'studio' only: soft contact shadow under the model (default true)." },
         },
       },
     },

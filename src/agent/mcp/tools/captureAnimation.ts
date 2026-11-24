@@ -53,7 +53,7 @@ import {
 import { captureTurntable } from '../../render/captureTurntable';
 import { buildObjectFilter } from '../../cli/commands/render';
 import { type RenderPreset } from '../../../shared/render/publishPreset';
-import { checkTimelineModeFields, resolveTurntableSettings, turntableCaptureOpts } from './captureTurntableInput';
+import { checkTimelineModeFields, resolveTurntableSettings, turntableCaptureOpts, turntableStartAzDeg } from './captureTurntableInput';
 import type { HeadlessObjectFilter } from '../../render/headlessRender';
 import type { AnimationCollision } from '../../../modeling/animation/verifyAnimation';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -331,6 +331,7 @@ function turntableCapture(
       ...(input.frames_dir !== undefined ? { framesDir: input.frames_dir } : {}),
       ...(objectFilter !== undefined ? { objectFilter } : {}),
       ...(input.environment !== undefined ? { environment: input.environment } : {}),
+      startAzDeg: turntableStartAzDeg(input.preset),
     }),
   );
 }

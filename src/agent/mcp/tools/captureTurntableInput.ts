@@ -16,6 +16,7 @@ import {
   PUBLISH_PRESET,
   RENDER_PRESETS,
   resolvePublishLook,
+  STUDIO_PRESET,
   type PublishStageSpec,
   type RenderPreset,
 } from '../../../shared/render/publishPreset';
@@ -83,7 +84,7 @@ function checkSize(width: number, height: number, mp4: boolean): TurntableRefusa
   return undefined;
 }
 
-function checkTiming(durationMs: number, fps: number, elevationDeg: number): TurntableRefusal | undefined {
+function checkTiming(durationMs: number, fps: number, elevationDeg: number, heroElDeg: number): TurntableRefusal | undefined {
   if (!Number.isFinite(durationMs) || durationMs < 500 || durationMs > 60_000) {
     return { message: `capture_animation: duration_ms must be in [500, 60000] (got ${durationMs}).`, hint: 'One revolution of 4000-8000 ms reads well; omit duration_ms for 6000.' };
   }
@@ -94,7 +95,7 @@ function checkTiming(durationMs: number, fps: number, elevationDeg: number): Tur
     return { message: `capture_animation: the turntable would exceed ${TURNTABLE_MAX_FRAMES} frames.`, hint: 'Lower duration_ms or fps.' };
   }
   if (!Number.isFinite(elevationDeg) || elevationDeg < -89 || elevationDeg > 89) {
-    return { message: `capture_animation: elevation_deg must be in [-89, 89] (got ${elevationDeg}).`, hint: `Omit elevation_deg for the ${PUBLISH_PRESET.heroElDeg}° hero elevation.` };
+    return { message: `capture_animation: elevation_deg must be in [-89, 89] (got ${elevationDeg}).`, hint: `Omit elevation_deg for the ${heroElDeg}° hero elevation.` };
   }
   return undefined;
 }
@@ -104,9 +105,9 @@ function resolvePublish(input: TurntableInputFields, video: boolean): { publish:
   if (!look.ok) {
     switch (look.reason) {
       case 'unknown-preset':
-        return { message: `capture_animation: unknown preset '${String(input.preset)}'. Valid: ${RENDER_PRESETS.join(', ')}.`, hint: "Omit preset for the 'publish' studio look." };
+        return { message: `capture_animation: unknown preset '${String(input.preset)}'. Valid: ${RENDER_PRESETS.join(', ')}.`, hint: "Omit preset for the 'publish' studio look, or pass 'studio'." };
       case 'look-without-publish':
-        return { message: "capture_animation: background and shadow apply only to preset: 'publish'.", hint: 'Drop background/shadow, or omit preset.' };
+        return { message: "capture_animation: background and shadow apply only to preset: 'publish' or 'studio'.", hint: 'Drop background/shadow, or omit preset.' };
       case 'invalid-background':
         return { message: `capture_animation: invalid background '${String(input.background)}'.`, hint: PUBLISH_BACKGROUND_HINT };
     }
@@ -120,6 +121,13 @@ function resolvePublish(input: TurntableInputFields, video: boolean): { publish:
   return { publish: look.publish };
 }
 
+function turntableDefaults(preset: RenderPreset | undefined): { width: number; height: number; heroElDeg: number } {
+  if (preset === 'studio') {
+    return { width: STUDIO_PRESET.stillWidth, height: STUDIO_PRESET.stillHeight, heroElDeg: STUDIO_PRESET.heroElDeg };
+  }
+  return { width: PUBLISH_PRESET.turntableSize, height: PUBLISH_PRESET.turntableSize, heroElDeg: PUBLISH_PRESET.heroElDeg };
+}
+
 /** Validate + default the turntable fields. */
 export function resolveTurntableSettings(input: TurntableInputFields): TurntableSettings | TurntableRefusal {
   if (input.verify_every !== undefined) {
@@ -127,22 +135,28 @@ export function resolveTurntableSettings(input: TurntableInputFields): Turntable
   }
   const video = input.frames_dir === undefined;
   const mp4 = video && !/\.gif$/i.test(input.output_path ?? '');
-  const width = input.width ?? PUBLISH_PRESET.turntableSize;
-  const height = input.height ?? PUBLISH_PRESET.turntableSize;
+  const look = resolvePublish(input, video);
+  if ('message' in look) return look;
+  const defaults = turntableDefaults(input.preset);
+  const width = input.width ?? defaults.width;
+  const height = input.height ?? defaults.height;
   const sizeRefusal = checkSize(width, height, mp4);
   if (sizeRefusal) return sizeRefusal;
   const durationMs = input.duration_ms ?? PUBLISH_PRESET.turntableDurationMs;
   const fps = input.fps ?? PUBLISH_PRESET.turntableFps;
-  const elevationDeg = input.elevation_deg ?? PUBLISH_PRESET.heroElDeg;
-  const timingRefusal = checkTiming(durationMs, fps, elevationDeg);
+  const elevationDeg = input.elevation_deg ?? defaults.heroElDeg;
+  const timingRefusal = checkTiming(durationMs, fps, elevationDeg, defaults.heroElDeg);
   if (timingRefusal) return timingRefusal;
-  const look = resolvePublish(input, video);
-  if ('message' in look) return look;
   return { width, height, fps, durationMs, elevationDeg, publish: look.publish };
 }
 
+/** Frame 0 azimuth for a turntable: the preset's hero azimuth. */
+export function turntableStartAzDeg(preset: RenderPreset | undefined): number {
+  return (preset === 'studio' ? STUDIO_PRESET : PUBLISH_PRESET).heroAzDeg;
+}
+
 /** Validated settings + call-site fields → the turntable engine's options.
- *  Frame 0 sits at the publish hero azimuth. */
+ *  Frame 0 sits at the preset hero azimuth. */
 export function turntableCaptureOpts(
   settings: TurntableSettings,
   site: {
@@ -152,6 +166,7 @@ export function turntableCaptureOpts(
     objectFilter?: HeadlessObjectFilter;
     environment?: string;
     baseUrl?: string;
+    startAzDeg?: number;
     onProgress?: (msg: string) => void;
   },
 ): CaptureTurntableOpts {
@@ -164,7 +179,7 @@ export function turntableCaptureOpts(
     fps: settings.fps,
     durationMs: settings.durationMs,
     elevationDeg: settings.elevationDeg,
-    startAzDeg: PUBLISH_PRESET.heroAzDeg,
+    startAzDeg: site.startAzDeg ?? PUBLISH_PRESET.heroAzDeg,
     ...(settings.publish !== undefined ? { publish: settings.publish } : {}),
     ...(site.objectFilter !== undefined ? { objectFilter: site.objectFilter } : {}),
     ...(site.environment !== undefined ? { environment: site.environment } : {}),
