@@ -1,0 +1,35 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/legacy-migrated/kernelcad-catalog-2000[39m
+
+ [31m❯[39m tests/integration/catalog/hullSurveyGridFrameMaterial.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 549[2mms[22m[39m
+[31m     [31m×[31m gives both mirrored sill rails the yard finish and keeps the frame steel[39m[32m 257[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/catalog/hullSurveyGridFrameMaterial.test.ts[2m > [22mshipyard/hull-survey-grid-frame sill-rail finish[2m > [22mgives both mirrored sill rails the yard finish and keeps the frame steel
+[31m[1mAssertionError[22m: expected [ 'frame-rail-0' ] to deeply equal [ 'frame-rail-0', 'frame-rail-1' ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "frame-rail-0",[22m
+[32m-   "frame-rail-1",[39m
+[2m  ][22m
+
+[36m [2m❯[22m tests/integration/catalog/hullSurveyGridFrameMaterial.test.ts:[2m33:45[22m[39m
+    [90m 31| [39m    const yardPaint = asset.palette.find((zone) => zone.name === 'yard…
+    [90m 32| [39m    const structuralSteel = asset.palette.find((zone) => zone.name ===…
+    [90m 33| [39m    expect(yardPaint?.parts.slice().sort()).toEqual(['frame-rail-0', '…
+    [90m   | [39m                                            [31m^[39m
+    [90m 34| [39m    [34mexpect[39m(structuralSteel[33m?.[39mparts)[33m.[39m[34mtoEqual[39m(expect[33m.[39m[34marrayContaining[39m([
+    [90m 35| [39m      [32m'frame-rail-2'[39m[33m,[39m [32m'frame-rail-3'[39m[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 18:35:55
+[2m   Duration [22m 8.00s[2m (transform 5.84s, setup 149ms, import 7.11s, tests 549ms, environment 0ms)[22m
+

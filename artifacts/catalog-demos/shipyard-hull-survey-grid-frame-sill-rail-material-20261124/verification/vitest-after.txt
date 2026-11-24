@@ -1,0 +1,10 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/legacy-migrated/kernelcad-catalog-2000[39m
+
+ [32m✓[39m tests/integration/catalog/hullSurveyGridFrameMaterial.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 585[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 18:35:47
+[2m   Duration [22m 7.64s[2m (transform 5.52s, setup 103ms, import 6.78s, tests 585ms, environment 0ms)[22m
+

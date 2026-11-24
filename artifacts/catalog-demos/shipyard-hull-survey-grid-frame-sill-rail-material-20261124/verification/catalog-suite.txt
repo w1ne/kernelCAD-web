@@ -1,0 +1,15 @@
+Command: npx vitest run tests/integration/catalog/ --maxWorkers=2
+Run at: 2026-11-24T17:51:09Z (local worktree, node v22.23.4, vitest 4.0.18)
+
+Captured summary:
+
+ Test Files  222 passed (222)
+      Tests  374 passed (374)
+   Duration  910.92s
+
+Included checks:
+- catalogIndex.test.ts "every catalog source builds, exports inside its triangle budget on one
+  material, and the committed index is fresh" passed (754 s), so the regenerated index matches the
+  edited source.
+- lowPolyTriangleBudget.test.ts passed, so the shipyard row stays inside its 1,800-triangle budget.
+- hullSurveyGridFrameMaterial.test.ts passed.
