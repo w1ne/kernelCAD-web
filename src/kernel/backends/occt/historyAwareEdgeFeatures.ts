@@ -34,8 +34,9 @@ export interface EdgeFeatureHistoryResult {
   /** Input edge hashes that were entirely removed. */
   deletedEdges: Set<EdgeHash>;
   /** shell only: `offset-subtract` when every thick-solid join mode failed
-   *  and the offset-and-subtract fallback built the wall. */
-  strategy?: 'thick-solid' | 'offset-subtract';
+   *  and the offset-and-subtract fallback built the wall; `closed-hollow`
+   *  when no face was opened and the cavity was cut from the inward offset. */
+  strategy?: 'thick-solid' | 'offset-subtract' | 'closed-hollow';
 }
 
 export interface EdgeRefForFilleting {
@@ -422,6 +423,17 @@ export function shellWithHistory(
     { intersection: true, join: oc.GeomAbs_JoinType.GeomAbs_Arc },
     { intersection: true, join: oc.GeomAbs_JoinType.GeomAbs_Intersection },
   ];
+  // A closed shell keeps every face. MakeThickSolidByJoin with an empty
+  // removal list returns the inward-offset solid alone (the cavity), not the
+  // wall, so build the wall as body − inner offset instead.
+  if (facesToRemove.length === 0) {
+    const closed = shellByOffsetSubtract(bodyShape, [], thickness);
+    if (closed) return { ...closed, strategy: 'closed-hollow' };
+    throw new Error(
+      `shellWithHistory: closed shell with thickness ${thickness} could not build an inner cavity; ` +
+        'the wall is thicker than the thinnest body extent, or the inward offset could not close',
+    );
+  }
   // A strategy can also "finish" with a broken solid (runaway offset
   // surfaces, a hollow larger than the body). Reject those and try the next.
   const bodyVolume = shapeVolume(oc, bodyShape);
