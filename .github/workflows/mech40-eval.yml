@@ -81,6 +81,7 @@ jobs:
         with:
           name: mech40-results
           path: ${{ steps.run.outputs.results }}
+          retention-days: 14
       - name: pass@1 regression gate
         if: steps.key.outputs.skip == 'false' && !inputs.mock
         run: npx tsx eval/mech40/compare.ts "${{ steps.run.outputs.results }}" --threshold "${{ inputs.threshold || '0.05' }}"
