@@ -18,7 +18,6 @@ import {
 import { planeSplitCutters } from '../../../../kernel/geometry/planeSplitCutters';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { invalidArgsText } from '../../../../shared/intent/invalidArgs';
-import type { Vec3Param } from '../../../../shared/intent/types';
 import { emptyResultDiagnostic } from '../additiveNoOp';
 import { mergeEdges, wrapBooleanResult } from './boolean';
 import { built, noShape, type LowerContext, type LowerOutcome } from './context';
@@ -58,15 +57,16 @@ export function lowerSplitPlane(ctx: LowerContext, record: FeatureRecord): Lower
     return noShape();
   }
 
-  const normalParam = record.params.normal as Vec3Param | undefined;
-  if (
-    normalParam === undefined
-    || ![normalParam.x, normalParam.y, normalParam.z].every((p) => Number.isFinite(p?.evaluated))
-  ) {
+  const normalParts = [record.params.normalX, record.params.normalY, record.params.normalZ];
+  if (!normalParts.every((p) => Number.isFinite(p?.evaluated))) {
     invalidArg(ctx, record, 'normal', 'a normal with missing or non-finite components');
     return noShape();
   }
-  const normal = readVec3Param(normalParam);
+  const normal = readVec3Param({
+    x: normalParts[0]!,
+    y: normalParts[1]!,
+    z: normalParts[2]!,
+  });
   const offset = record.params.offset?.evaluated;
   if (!Number.isFinite(offset)) {
     invalidArg(ctx, record, 'offset', `a non-finite value (${String(offset)})`);

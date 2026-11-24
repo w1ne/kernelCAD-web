@@ -78,7 +78,9 @@ export function captureSplitByPlane(
     kind: 'splitPlane',
     inputs: inputs(),
     params: {
-      normal: vector,
+      normalX: vector.x,
+      normalY: vector.y,
+      normalZ: vector.z,
       offset: distance,
       side: { expression: `'${side}'`, unit: 'unitless', evaluated: 0 },
     },
