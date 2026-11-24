@@ -292569,7 +292569,7 @@
       "id": "surface-prep-drying-rack",
       "kit": "shipyard",
       "title": "Surface preparation drying rack",
-      "description": "Open rack for small hull panels with four uprights, removable cross bars, tray feet, and spacing stops. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "description": "Open drying rack about 2.2 m wide for small hull panels: four uprights on wide tray feet, four removable cross bars in two tiers, and four spacing stops. Material controls: yard-painted floor pads and bare structural steel; fresh-coat and weathered-yard presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -292593,7 +292593,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/surface-prep-drying-rack.kcad.ts",
       "preview": "/assets/shipyard-surface-prep-drying-rack.png",
-      "sourceSha256": "0ac5b86a2eedb6b7fc327e020adefbeb08c7a0804090e03ae9024aeb8648bd62",
+      "sourceSha256": "c8d0ef4b4f69fef56eb48ddc45b4a6d47ea0114d0d69de64a414f1e6229b7f54",
       "triangleBudget": 1800,
       "params": [
         {
@@ -292640,17 +292640,10 @@
       },
       "palette": [
         {
-          "name": "yardPaint",
-          "color": "#78847c",
-          "parts": [
-            "upright-0"
-          ],
-          "param": "yardPaint"
-        },
-        {
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
+            "upright-0",
             "upright-1",
             "upright-2",
             "upright-3",
@@ -292661,13 +292654,20 @@
             "panel-stop-0",
             "panel-stop-1",
             "panel-stop-2",
-            "panel-stop-3",
+            "panel-stop-3"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "yardPaint",
+          "color": "#78847c",
+          "parts": [
             "tray-foot-0",
             "tray-foot-1",
             "tray-foot-2",
             "tray-foot-3"
           ],
-          "param": "structuralSteel"
+          "param": "yardPaint"
         }
       ]
     },

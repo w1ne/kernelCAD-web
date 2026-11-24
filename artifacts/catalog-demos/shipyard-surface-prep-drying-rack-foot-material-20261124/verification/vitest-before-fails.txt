@@ -1,0 +1,38 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/legacy-migrated/kernelcad-catalog-2000[39m
+
+ [31m❯[39m tests/integration/catalog/surfacePrepDryingRackMaterial.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 646[2mms[22m[39m
+[31m     [31m×[31m gives all four floor pads the yard finish and keeps the rack steel[39m[33m 329[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/catalog/surfacePrepDryingRackMaterial.test.ts[2m > [22mshipyard/surface-prep-drying-rack floor-pad finish[2m > [22mgives all four floor pads the yard finish and keeps the rack steel
+[31m[1mAssertionError[22m: expected [ 'upright-0' ] to deeply equal [ 'tray-foot-0', 'tray-foot-1', …(2) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   "tray-foot-0",[39m
+[32m-   "tray-foot-1",[39m
+[32m-   "tray-foot-2",[39m
+[32m-   "tray-foot-3",[39m
+[31m+   "upright-0",[39m
+[2m  ][22m
+
+[36m [2m❯[22m tests/integration/catalog/surfacePrepDryingRackMaterial.test.ts:[2m33:45[22m[39m
+    [90m 31| [39m    const yardPaint = asset.palette.find((zone) => zone.name === 'yard…
+    [90m 32| [39m    const structuralSteel = asset.palette.find((zone) => zone.name ===…
+    [90m 33| [39m    [34mexpect[39m(yardPaint[33m?.[39mparts[33m.[39m[34mslice[39m()[33m.[39m[34msort[39m())[33m.[39m[34mtoEqual[39m([
+    [90m   | [39m                                            [31m^[39m
+    [90m 34| [39m      [32m'tray-foot-0'[39m[33m,[39m [32m'tray-foot-1'[39m[33m,[39m [32m'tray-foot-2'[39m[33m,[39m [32m'tray-foot-3'[39m[33m,[39m
+    [90m 35| [39m    ])[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 19:13:01
+[2m   Duration [22m 7.42s[2m (transform 5.32s, setup 135ms, import 6.53s, tests 646ms, environment 0ms)[22m
+
