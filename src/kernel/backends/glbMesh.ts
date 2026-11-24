@@ -27,8 +27,9 @@ export interface DecodedGlbMesh {
   units: 'mm' | 'm';
   /** Millimetre factor applied to every source coordinate. */
   unitScale: number;
-  /** Where `units` came from: explicit option, asset extras, or the glTF default. */
-  unitSource: 'option' | 'extras' | 'gltf-default';
+  /** Where `units` came from: explicit option, asset extras, a pre-0.17
+   *  kernelCAD export that wrote raw millimetres, or the glTF default. */
+  unitSource: 'option' | 'extras' | 'legacy-kernelcad' | 'gltf-default';
 }
 
 type Mat4 = ArrayLike<number>;
@@ -248,31 +249,38 @@ function toPbrMaterial(material: GltfMaterial | null, nodeName: string): PBRMate
   return pbr;
 }
 
-/** Units declared in asset.extras.kernelcad.units ('mm' | 'm'). */
-function declaredUnitScale(extras: Record<string, unknown> | undefined): number | undefined {
+/** The `kernelcad` extras object, or undefined when the asset has none. */
+function kernelcadExtras(extras: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
   const kernelcad = extras?.kernelcad;
-  if (typeof kernelcad !== 'object' || kernelcad === null) return undefined;
-  const units = (kernelcad as { units?: unknown }).units;
-  return units === 'mm' ? 1 : units === 'm' ? 1000 : undefined;
+  return typeof kernelcad === 'object' && kernelcad !== null ? (kernelcad as Record<string, unknown>) : undefined;
 }
 
 interface UnitResolution {
   readonly units: 'mm' | 'm';
   readonly unitScale: number;
-  readonly unitSource: 'option' | 'extras' | 'gltf-default';
+  readonly unitSource: 'option' | 'extras' | 'legacy-kernelcad' | 'gltf-default';
 }
 
 /**
  * glTF 2.0 scene coordinates are metres. An undeclared asset therefore takes
  * the metre rule even when its raw extent is large: guessing millimetres from
- * size silently shrank a spec-compliant 3 m beam to 3 mm. Assets authored in
+ * size silently shrank a spec-compliant 3 m beam to 3 mm.
+ *
+ * A kernelCAD asset from before 0.17 carries `extras.kernelcad` but no
+ * `units`; that exporter wrote raw millimetres, so it stays millimetres
+ * instead of being re-read as metres. Assets authored elsewhere in
  * millimetres must declare extras or pass `{ units: 'mm' }`.
  */
 function resolveUnits(opts: DecodeGlbMeshOptions, extras: Record<string, unknown> | undefined): UnitResolution {
   if (opts.units === 'mm') return { units: 'mm', unitScale: 1, unitSource: 'option' };
   if (opts.units === 'm') return { units: 'm', unitScale: 1000, unitSource: 'option' };
-  const declared = declaredUnitScale(extras);
-  if (declared !== undefined) return { units: declared === 1 ? 'mm' : 'm', unitScale: declared, unitSource: 'extras' };
+  const kernelcad = kernelcadExtras(extras);
+  const declared = kernelcad?.units;
+  if (declared === 'mm') return { units: 'mm', unitScale: 1, unitSource: 'extras' };
+  if (declared === 'm') return { units: 'm', unitScale: 1000, unitSource: 'extras' };
+  if (kernelcad !== undefined && declared === undefined) {
+    return { units: 'mm', unitScale: 1, unitSource: 'legacy-kernelcad' };
+  }
   return { units: 'm', unitScale: 1000, unitSource: 'gltf-default' };
 }
 

@@ -4,8 +4,9 @@
 declared no units: raw extent above 2 was treated as millimetres, anything
 smaller as metres. glTF 2.0 already defines scene coordinates in metres, so a
 valid 3 m beam imported as **3 mm**, and a valid 1.5 mm part imported as
-**1.5 m**. The reader now follows the spec: extras win, else metres, and
-`opts.units` still overrides both.
+**1.5 m**. The reader now follows the spec: extras win, a pre-0.17 kernelCAD
+export keeps its raw millimetres, else metres; `opts.units` still overrides
+every rule.
 
 The same 1108-byte `beam.glb` (raw 3.0 x 0.2 x 0.2, no scene extras) measures
 **3.00 x 0.20 x 0.20 mm** with the `origin/develop` reader and **3000 x 200 x
@@ -24,11 +25,13 @@ The same 1108-byte `beam.glb` (raw 3.0 x 0.2 x 0.2, no scene extras) measures
 ## Rules after the fix
 
 - `asset.extras.kernelcad.units: 'mm' | 'm'` is authoritative when present.
-- No declaration: raw coordinates are metres, as glTF 2.0 defines.
-- `opts.units: 'mm' | 'm'` overrides both and still works.
+- A pre-0.17 kernelCAD export carries `extras.kernelcad` but no `units`; it
+  wrote raw millimetres and stays millimetres.
+- No declaration at all: raw coordinates are metres, as glTF 2.0 defines.
+- `opts.units: 'mm' | 'm'` overrides all of the above and still works.
 - The decision is recorded on the shape metadata as `units`, `unitScale` and
-  `unitSource` (`option`, `extras` or `gltf-default`), so a downstream check can
-  see what was assumed instead of guessing from size.
+  `unitSource` (`option`, `extras`, `legacy-kernelcad` or `gltf-default`), so a
+  downstream check can see what was assumed instead of guessing from size.
 - Millimetre-authored GLBs without extras must declare the unit or pass
   `{ units: 'mm' }`; they are no longer guessed from extent.
 

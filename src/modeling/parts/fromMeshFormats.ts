@@ -222,8 +222,9 @@ export type MeshFromGLBOptions = DecodeGlbMeshOptions;
  * body. Each glTF primitive becomes a RuntimeSubMesh with its own PBR
  * material, UVs and vertex colours (PCB assemblies keep solder mask, copper,
  * gold pads and component bodies). Transforms are flattened, glTF Y-up is
- * rotated to kernelCAD Z-up, and units come from the asset extras, else the
- * glTF metre default; `opts.units` overrides both. The decision is recorded in
+ * rotated to kernelCAD Z-up, and units come from the asset extras, else a
+ * pre-0.17 kernelCAD export keeps its raw millimetres, else the glTF metre
+ * default; `opts.units` overrides all. The decision is recorded in
  * `metadata.units`, `metadata.unitScale` and `metadata.unitSource`.
  * No BRep: booleans, volume, face queries and solid exports are unavailable.
  */

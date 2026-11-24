@@ -27,7 +27,7 @@
     "units": "m",
     "unitScale": 1000,
     "unitSource": "gltf-default",
-    "rule": "glTF 2.0 metres when the asset declares no units",
+    "rule": "glTF 2.0 metres when the asset declares no units and is not a pre-0.17 kernelCAD export",
     "bboxMm": {
       "min": [0, -200, 0],
       "max": [3000, 0, 200],

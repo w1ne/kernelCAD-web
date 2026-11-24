@@ -126,9 +126,10 @@ export interface PartsLib {
    * intact. Node transforms are flattened, glTF Y-up is rotated to kernelCAD
    * Z-up, and each primitive keeps its own PBR material (a PCB assembly keeps
    * solder mask, copper, gold pads and component bodies). Units come from
-   * `asset.extras.kernelcad.units`, else the glTF metre default; override
-   * with `opts`. The decision is recorded on the shape metadata as `units`,
-   * `unitScale` and `unitSource` ('option' | 'extras' | 'gltf-default').
+   * `asset.extras.kernelcad.units`, else a pre-0.17 kernelCAD export keeps its
+   * raw millimetres, else the glTF metre default; override with `opts`. The
+   * decision is recorded on the shape metadata as `units`, `unitScale` and
+   * `unitSource` ('option' | 'extras' | 'legacy-kernelcad' | 'gltf-default').
    * No BRep: booleans, volume and solid exports are unavailable.
    */
   meshFromGLB(path: string, opts?: MeshFromGLBOptions): Promise<Shape>;

@@ -128,6 +128,17 @@ describe('decodeGlbMesh / lib.meshFromGLB', () => {
     expect(sizeOf(forcedMm.positions)[0]).toBeCloseTo(3, 6);
   });
 
+  it('keeps a pre-0.17 kernelCAD export in its raw millimetres', async () => {
+    // Old kernelCAD exporters wrote `extras.kernelcad` without `units` and
+    // used raw millimetre coordinates; they must not be re-read as metres.
+    const legacy = await decodeGlbMesh(
+      await buildUndeclaredGlb(3000, { kernelcad: { version: '0.15.0' } }),
+    );
+    expect(legacy.unitScale).toBe(1);
+    expect(legacy.unitSource).toBe('legacy-kernelcad');
+    expect(sizeOf(legacy.positions)[0]).toBeCloseTo(3000, 6);
+  });
+
   it('records the unit decision on the imported shape', async () => {
     const path = join(tmpDir, 'metre-beam.glb');
     writeFileSync(path, await buildUndeclaredGlb(3));
