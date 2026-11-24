@@ -499,8 +499,9 @@ function assertPlanar(oc: OC, face: unknown, op: string, geomType: string): Vec3
   throw new FaceEditError(
     'FACE_EDIT_NOT_PLANAR',
     `${op}: this face is ${geomType || 'not a plane'}. OCCT moves a planar face along its normal ` +
-      `(a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change ` +
-      `radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.`,
+      `(a prism of that face, fused or cut). A cone, sphere or free-form face would change shape ` +
+      `differently, so this call stops. Select a planar face, a full cylindrical face (offsetFaces), ` +
+      `or change the solid with a boolean.`,
   );
 }
 
@@ -689,6 +690,207 @@ function certifyPlanarOffset(
   return { faceHashes, landed: landed.hash };
 }
 
+interface CylinderAxis {
+  origin: Vec3;
+  dir: Vec3;
+  radius: number;
+}
+
+interface CylinderFace extends CylinderAxis {
+  /** Axis point at the face's low V bound. */
+  base: Vec3;
+  /** Axial length of the face, mm. */
+  height: number;
+  /** Angular coverage, radians. */
+  arc: number;
+  /** A point on the surface at the middle of the face. */
+  point: Vec3;
+  /** Surface normal at `point`; its sign follows the face orientation. */
+  normal: Vec3;
+}
+
+function unit(v: Vec3): Vec3 {
+  const length = Math.hypot(v[0], v[1], v[2]);
+  if (!(length > 0)) return [0, 0, 0];
+  return [v[0] / length, v[1] / length, v[2] / length];
+}
+
+function readCylinderAxis(face: Face): CylinderAxis | undefined {
+  if (face.geomType !== 'CYLINDRE') return undefined;
+  const oc = getOC();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const adaptor = new (oc as any).BRepAdaptor_Surface_2((face as any).wrapped, true);
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cylinder = (adaptor as any).Cylinder();
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const axis = (cylinder as any).Position();
+      const location = axis.Location();
+      const direction = axis.Direction();
+      return {
+        origin: [location.X(), location.Y(), location.Z()],
+        dir: [direction.X(), direction.Y(), direction.Z()],
+        radius: cylinder.Radius() as number,
+      };
+    } finally {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (cylinder as any).delete?.();
+    }
+  } finally {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (adaptor as any).delete?.();
+  }
+}
+
+function readCylinderFace(face: Face): CylinderFace | undefined {
+  const axis = readCylinderAxis(face);
+  if (!axis) return undefined;
+  const bounds = (face as unknown as {
+    UVBounds: { uMin: number; uMax: number; vMin: number; vMax: number };
+    pointOnSurface: (u: number, v: number) => { x: number; y: number; z: number };
+    normalAt: (point: Vec3) => { x: number; y: number; z: number };
+  }).UVBounds;
+  // replicad's pointOnSurface takes normalized [0, 1] parameters.
+  const p = (face as unknown as { pointOnSurface: (u: number, v: number) => { x: number; y: number; z: number } })
+    .pointOnSurface(0.5, 0.5);
+  const point: Vec3 = [p.x, p.y, p.z];
+  const n = (face as unknown as { normalAt: (point: Vec3) => { x: number; y: number; z: number } })
+    .normalAt(point);
+  const under = (face as unknown as { normalAt: (point?: Vec3) => { x: number; y: number; z: number } })
+    .normalAt();
+  const useUnder = Math.hypot(n.x, n.y, n.z) < 1e-9 && Math.hypot(under.x, under.y, under.z) > 0;
+  const normal: Vec3 = useUnder ? [under.x, under.y, under.z] : [n.x, n.y, n.z];
+  return {
+    ...axis,
+    base: [
+      axis.origin[0] + axis.dir[0] * bounds.vMin,
+      axis.origin[1] + axis.dir[1] * bounds.vMin,
+      axis.origin[2] + axis.dir[2] * bounds.vMin,
+    ],
+    height: bounds.vMax - bounds.vMin,
+    arc: bounds.uMax - bounds.uMin,
+    point,
+    normal,
+  };
+}
+
+function axesCoincident(a: CylinderAxis, b: CylinderAxis): boolean {
+  const parallel = Math.abs(dot(unit(a.dir), unit(b.dir)));
+  if (parallel < 1 - 1e-6) return false;
+  const rel = sub(b.origin, a.origin);
+  const along = dot(rel, unit(a.dir));
+  const off = Math.hypot(
+    rel[0] - unit(a.dir)[0] * along,
+    rel[1] - unit(a.dir)[1] * along,
+    rel[2] - unit(a.dir)[2] * along,
+  );
+  return off < 1e-4;
+}
+
+function offsetCylinderOne(
+  body: OcctBackend,
+  face: Face,
+  distance: number,
+  featureId: string,
+): { backend: OcctBackend; history: Map<string, string[]> } {
+  const oc = getOC();
+  const info = readCylinderFace(face);
+  if (!info) {
+    throw new FaceEditError('FACE_EDIT_NOT_PLANAR', 'offsetFaces: the selected face is not a cylinder.');
+  }
+  // A sleeve over a partial cylinder would change geometry outside the face.
+  // Full bores and bosses are the common edit, so this slice supports those.
+  if (info.arc < 2 * Math.PI - 1e-6) {
+    throw new FaceEditError(
+      'FACE_EDIT_INCONSISTENT',
+      `offsetFaces: this cylindrical face covers only ${(info.arc * 180 / Math.PI).toFixed(1)}°; ` +
+        `a partial cylinder is refused because a radial sleeve would also change the geometry outside it. ` +
+        `Select a full 360° bore or boss, or rebuild the partial wall with a boolean.`,
+    );
+  }
+  if (!(info.height > 1e-9)) {
+    throw new FaceEditError('FACE_EDIT_FAILED', 'offsetFaces: the selected cylinder has no axial length.');
+  }
+  const rel = sub(info.point, info.origin);
+  const along = dot(rel, info.dir);
+  const radial: Vec3 = [
+    info.point[0] - (info.origin[0] + info.dir[0] * along),
+    info.point[1] - (info.origin[1] + info.dir[1] * along),
+    info.point[2] - (info.origin[2] + info.dir[2] * along),
+  ];
+  // The face normal is oriented outward from the solid. On a bore it points
+  // toward the axis and on a boss away from it; that sign sets whether a
+  // positive distance raises or lowers the radius.
+  const side = dot(unit(info.normal), unit(radial)) >= 0 ? 1 : -1;
+  const rNew = info.radius + distance * side;
+  if (!(rNew > 1e-6)) {
+    throw new FaceEditError(
+      'FACE_EDIT_INCONSISTENT',
+      `offsetFaces: distance ${distance} mm would collapse the ${info.radius} mm cylindrical face ` +
+        `to radius ${rNew} mm. Use a smaller distance so the wall keeps a positive radius.`,
+    );
+  }
+  const inner = Math.min(info.radius, rNew);
+  const outer = Math.max(info.radius, rNew);
+  // A full cylinder sleeve between the old and new radii. Positive distance
+  // grows the solid, so the sleeve sits in the air side of the face; negative
+  // distance cuts the sleeve out of the material side.
+  const outerSolid = replicad.makeCylinder(outer, info.height, info.base, info.dir);
+  const innerSolid = replicad.makeCylinder(inner, info.height, info.base, info.dir);
+  const ring = outerSolid.cut(innerSolid);
+  const tool = (ring as unknown as { wrapped: unknown }).wrapped;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const bodyShape = (body.getReplicadShape() as any).wrapped;
+  const { result } = booleanOffset(oc, bodyShape, tool, distance);
+  const before = volumeOf(oc, bodyShape);
+  const after = volumeOf(oc, result.shape);
+  const faceHashes = hashesOf(oc, result.shape, 'face');
+  if (faceHashes.length === 0 || !(after > 0)) {
+    throw new FaceEditError(
+      'FACE_EDIT_FAILED',
+      `offsetFaces: moving the ${info.radius} mm cylindrical face by ${distance} mm removed the solid. ` +
+        `Use a smaller distance so some material remains.`,
+    );
+  }
+  const expected = Math.sign(distance) * Math.PI * Math.abs(rNew * rNew - info.radius * info.radius) * info.height;
+  const tolerance = Math.max(1e-4, Math.abs(expected) * 1e-3);
+  if (Math.abs((after - before) - expected) > tolerance) {
+    throw new FaceEditError(
+      'FACE_EDIT_INCONSISTENT',
+      `offsetFaces: moving the ${info.radius} mm cylindrical face by ${distance} mm should change the volume ` +
+        `by ${expected.toFixed(3)} mm³, but OCCT produced ${(after - before).toFixed(3)} mm³. ` +
+        `The face did not become a coaxial ${rNew} mm cylinder.`,
+    );
+  }
+  // Read the result's analytic faces through faceInfos (raw TopoDS_Shape) so
+  // no second owning wrapper is created for the shape adopt() stores.
+  const landed = faceInfos(oc, result.shape).find((candidate) => {
+    const axis = candidate.cylinder;
+    return axis !== undefined &&
+      Math.abs(axis.radius - rNew) < 1e-4 &&
+      axesCoincident(info, { origin: axis.loc, dir: axis.dir, radius: axis.radius });
+  });
+  if (!landed) {
+    throw new FaceEditError(
+      'FACE_EDIT_INCONSISTENT',
+      `offsetFaces: the body has no coaxial ${rNew} mm cylindrical face after the edit. ` +
+        `The face did not move along its normal. Use a smaller distance, or change the solid with a boolean.`,
+    );
+  }
+  const consumed = body.historyMap?.get(hashOf((face as unknown as { wrapped: unknown }).wrapped));
+  const faceMap = mergeBooleanHistory(body.historyMap, undefined, result);
+  if (consumed) faceMap.set(landed.hash, consumed);
+  const edgeMap = keepLive(
+    mergeEdges(body.edgeHistoryMap, result.edgeHistory, result.deletedEdges),
+    hashesOf(oc, result.shape, 'edge'),
+  );
+  return {
+    backend: adopt(result.shape, keepLive(faceMap, faceHashes), edgeMap, featureId),
+    history: result.faceHistory,
+  };
+}
+
 function offsetOne(
   body: OcctBackend,
   face: Face,
@@ -770,11 +972,18 @@ function resolvePlanarStep(
   current: OcctBackend,
   step: { hash: string; edit: PlanarFaceEdit },
   op: 'moveFaces' | 'offsetFaces',
-): { face: Face; distance: number } | undefined {
+): { face: Face; distance: number; cylindrical?: boolean } | undefined {
   const face = findFace(current, step.hash);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const topo = (face as any).wrapped as unknown;
   const geomType = String((face as { geomType?: string }).geomType ?? '');
+  if (op === 'offsetFaces' && geomType === 'CYLINDRE') {
+    const distance = step.edit.distance;
+    if (distance === undefined || !Number.isFinite(distance)) {
+      throw new FaceEditError('FACE_EDIT_FAILED', `${op}: distance must be a finite number.`);
+    }
+    return Math.abs(distance) <= 1e-9 ? undefined : { face, distance, cylindrical: true };
+  }
   const normal = assertPlanar(oc, topo, op, geomType);
   const distance = step.edit.by ? distanceAlongNormal(step.edit.by, normal) : step.edit.distance;
   if (distance === undefined || !Number.isFinite(distance)) {
@@ -802,6 +1011,13 @@ export function editPlanarFaces(
   if (edits.length === 0) {
     throw new FaceEditError('FACE_EDIT_EMPTY', `${op}: select at least one face.`);
   }
+  if (edits.length > 1 && edits.some((edit) => (edit.face as { geomType?: string }).geomType === 'CYLINDRE')) {
+    throw new FaceEditError(
+      'FACE_EDIT_INCONSISTENT',
+      `${op}: select one cylindrical face at a time. A radial sleeve for each face in a set can overlap, ` +
+        `so offset the bore or boss alone; planar faces in the same call are not affected.`,
+    );
+  }
   const oc = getOC();
   const pending = edits.map((edit) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -815,7 +1031,9 @@ export function editPlanarFaces(
     try {
       const resolved = resolvePlanarStep(oc, current, step, op);
       if (!resolved) continue;
-      const { backend, history } = offsetOne(current, resolved.face, resolved.distance, featureId);
+      const { backend, history } = resolved.cylindrical
+        ? offsetCylinderOne(current, resolved.face, resolved.distance, featureId)
+        : offsetOne(current, resolved.face, resolved.distance, featureId);
       for (const other of pending) other.hash = imageHash(other.hash, history);
       current = backend;
       applied += 1;

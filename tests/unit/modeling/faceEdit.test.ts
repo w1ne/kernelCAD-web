@@ -217,10 +217,15 @@ describe('offsetFaces and moveFaces', () => {
     }
   });
 
-  it('rejects a cylindrical face instead of returning a wrong solid', async () => {
-    const rejected = await solidOf(`cylinder(10, 4).offsetFaces({ ofSurfaceType: 'CYLINDER' }, 1)`);
-    expect(rejected.codes.join('\n')).toMatch(/FACE_EDIT_NOT_PLANAR/);
-    expect(rejected.volume).toBeCloseTo(Math.PI * 16 * 10, 2);
+  it('offsets a full cylindrical face by changing its radius', async () => {
+    const grown = await solidOf(`cylinder(10, 4).offsetFaces({ ofSurfaceType: 'CYLINDER' }, 1)`);
+    const shrunk = await solidOf(`cylinder(10, 4).offsetFaces({ ofSurfaceType: 'CYLINDER' }, -1)`);
+    expect(grown.codes).toEqual([]);
+    expect(shrunk.codes).toEqual([]);
+    expect(grown.volume).toBeCloseTo(Math.PI * 25 * 10, 2);
+    expect(shrunk.volume).toBeCloseTo(Math.PI * 9 * 10, 2);
+    expect(grown.faces).toBe(3);
+    expect(shrunk.faces).toBe(3);
   });
 
   it('keeps the OCCT solid when SMLib agrees but STEP cannot carry the face lineage', async () => {
