@@ -80,6 +80,32 @@ export function extractPosedWorldMesh(
   return { positions, indices: local.indices, min, max, bvh };
 }
 
+/** Local TRIANGLE count of a display mesh, 0 for a BRep or an empty mesh. */
+export function displayMeshTriangleCount(shape: ShapeBackend): number {
+  if (!isMeshBackend(shape)) return 0;
+  const indices = localMeshOf(shape)?.indices.length ?? 0;
+  return indices / 3;
+}
+
+/** Total imported-mesh triangles this pass will probe exactly. A triangle BVH
+ *  plus voxel integral per pair costs O(triangles), and a 26-link robot
+ *  rebuilt from 30k-triangle STLs took ~95 s for one interference pass. The
+ *  cost is therefore bounded UP FRONT and the whole mesh sweep is declined
+ *  (each pair reported unchecked with its own reason, `partial: true`) rather
+ *  than measured for an arbitrary prefix. Typical hardware stays far inside
+ *  the budget: a KiCad PCB / sensor / relay / display GLB is 2-10k triangles. */
+export const MESH_PAIR_TRIANGLE_BUDGET = 250_000;
+
+/** True when the imported meshes in this pass are small enough to measure. */
+export function meshPairWorkWithinBudget(shapes: Iterable<ShapeBackend>): boolean {
+  let total = 0;
+  for (const shape of shapes) {
+    total += displayMeshTriangleCount(shape);
+    if (total > MESH_PAIR_TRIANGLE_BUDGET) return false;
+  }
+  return true;
+}
+
 /** Exact Euclidean gap between two AABBs; 0 when they overlap or touch. */
 export function bboxesGapMm(
   a: { min: readonly [number, number, number]; max: readonly [number, number, number] },
@@ -176,7 +202,12 @@ export interface MeshOverlapResult {
 }
 
 const NO_OVERLAP: MeshOverlapResult = { intersecting: false, volumeMm3: 0, thicknessMm: 0 };
-const CONTACT_THICKNESS_MM = 0.15;
+/** Contact floor for TESSELATED pairs. Imported meshes carry no analytic
+ *  surface, so coincident or sub-tessellation-offset faces read as thin
+ *  overlaps; 0.3 mm is the same mesh noise floor `restPoseContact` uses
+ *  (REST_PENETRATION_DEPTH_MM) and well above the analysis-mesh deflection.
+ *  Anything thinner is surface contact, not a collision. */
+const CONTACT_THICKNESS_MM = 0.3;
 const TOUCH_DISTANCE_MM = 1e-4;
 const noWork = (): void => {};
 

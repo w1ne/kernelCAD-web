@@ -46,7 +46,7 @@ import { JOINT_MESH_GAP_TOLERANCE_MM, measureBodyToBodyGap } from './jointMeshCo
 import { restWorldMesh, restMeshContact, type WorldMesh } from './restAnalysisMesh';
 import { meshOverlapVolume } from './meshVolumeOverlap';
 import { isMeshBackend } from '../../kernel/backends/meshBackend';
-import { extractPosedWorldMesh, measureMeshPairDistance, measureMeshPairOverlap } from './meshPairCheck';
+import { extractPosedWorldMesh, measureMeshPairDistance, measureMeshPairOverlap, meshPairWorkWithinBudget } from './meshPairCheck';
 export { worldMesh } from './restAnalysisMesh';
 export type { WorldMesh } from './restAnalysisMesh';
 export { meshOverlapVolume } from './meshVolumeOverlap';
@@ -126,10 +126,15 @@ interface RestMeshEntry {
 /** Every part pair that really overlaps at rest (`isActionableOverlap`). */
 export function restPosePenetrations(scene: SceneBackend): RestPenetration[] {
   const meshes: RestMeshEntry[] = [];
+  // An imported assembly larger than the mesh-probe budget is declined up
+  // front (its interference sweep reports reason 'mesh-budget') instead of
+  // being measured for an arbitrary prefix of its pairs.
+  const withinBudget = meshPairWorkWithinBudget(scene.parts.map((part) => part.shape));
   for (const p of scene.parts) {
     // Display-only triangle soups are measured by the mesh-pair engine below;
     // BRep parts keep the voxel/exact path.
     if (!(p.shape instanceof OcctBackend) && !isMeshBackend(p.shape)) continue;
+    if (isMeshBackend(p.shape) && !withinBudget) continue;
     const mesh = restWorldMesh(p, 'analysis')?.mesh;
     if (mesh !== undefined) meshes.push({ name: p.name, mesh, part: p });
   }

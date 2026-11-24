@@ -28,7 +28,7 @@ import { overlapThicknessMm } from './jointContactCap';
 import { Transform } from '../../shared/runtime/se3';
 import { relativePoseKey } from './sweepCollisionProxy';
 import { hullsProveSeparated } from './convexHullBroadphase';
-import { extractPosedWorldMesh, measureMeshPairOverlap } from './meshPairCheck';
+import { extractPosedWorldMesh, measureMeshPairOverlap, meshPairWorkWithinBudget } from './meshPairCheck';
 
 /** A single (part_a, part_b) pair whose intersection has non-trivial volume. */
 export interface InterferencePair {
@@ -67,8 +67,13 @@ export interface CheckInterferenceResult {
   readonly comparisonCount: number;
   readonly diagnostics: CompilerDiagnostic[];
   /** Mesh-involving pairs that could not be measured because no triangle mesh
-   *  could be extracted (empty/unreadable display mesh). */
-  readonly uncheckedPairs: Array<{ readonly a: string; readonly b: string; readonly reason: 'display-mesh' }>;
+   *  could be extracted (empty/unreadable display mesh), or because the
+   *  imported assembly is larger than the mesh-probe triangle budget. */
+  readonly uncheckedPairs: Array<{
+    readonly a: string;
+    readonly b: string;
+    readonly reason: 'display-mesh' | 'mesh-budget';
+  }>;
   readonly partial: boolean;
   /** Exact BOOLEAN probes actually run this pass. Absent on legacy calls. */
   readonly probedPairCount?: number;
@@ -233,6 +238,11 @@ interface MeshPairSweep {
   readonly unchecked: CheckInterferenceResult['uncheckedPairs'];
 }
 
+/** Total imported-mesh triangles this sweep will probe exactly. A triangle
+ *  BVH + voxel integral per pair costs O(triangles), so the cost is bounded UP
+ *  FRONT and the whole sweep is declined (every pair reported unchecked with
+ *  reason 'mesh-budget', `partial: true`) rather than measured for an arbitrary
+ *  prefix. See meshPairCheck.ts MESH_PAIR_TRIANGLE_BUDGET. */
 function checkMeshInvolvingPairs(
   scene: SceneBackend,
   epsilonMm3: number,
@@ -240,12 +250,17 @@ function checkMeshInvolvingPairs(
 ): MeshPairSweep {
   const pairs: InterferencePair[] = [];
   const unchecked: CheckInterferenceResult['uncheckedPairs'] = [];
+  const budgetExceeded = !meshPairWorkWithinBudget(scene.parts.map((part) => part.shape));
   for (let i = 0; i < scene.parts.length; i++) {
     for (let j = i + 1; j < scene.parts.length; j++) {
       const a = scene.parts[i]!;
       const b = scene.parts[j]!;
       if (a.shape instanceof OcctBackend && b.shape instanceof OcctBackend) continue;
       if (ignored.has(pairKey(a.name, b.name))) continue;
+      if (budgetExceeded) {
+        unchecked.push({ a: a.name, b: b.name, reason: 'mesh-budget' });
+        continue;
+      }
       const meshA = extractPosedWorldMesh(a.shape, a.worldTransform);
       const meshB = extractPosedWorldMesh(b.shape, b.worldTransform);
       if (meshA === undefined || meshB === undefined) {

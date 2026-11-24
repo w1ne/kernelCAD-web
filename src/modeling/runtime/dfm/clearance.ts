@@ -46,7 +46,7 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { Transform } from '../../../shared/runtime/se3';
 import { pairKey } from '../detectInterferences';
 import { brepExtremaDistance, wrappedShape } from '../brepDistance';
-import { extractPosedWorldMesh, measureMeshPairDistance, type PosedWorldMesh } from '../meshPairCheck';
+import { extractPosedWorldMesh, measureMeshPairDistance, meshPairWorkWithinBudget, type PosedWorldMesh } from '../meshPairCheck';
 
 export interface ClearancePairReport {
   a: string;
@@ -145,7 +145,12 @@ export function* iterateClearance(
   // detectInterferences / STEP-exporter pattern). Guarded per part: a
   // clone/transform kernel failure leaves `shape` undefined — every pair
   // touching that part is recorded 'unknown' below; the sweep continues.
-  const transformed: TransformedPart[] = scene.parts.map((p) => transformScenePart(p, diagnostics));
+  // An imported assembly larger than the mesh-probe budget is declined up
+  // front for the same reason: every pair touching it stays 'unknown'
+  // rather than being measured for an arbitrary prefix of pairs.
+  const withinBudget = meshPairWorkWithinBudget(scene.parts.map((p) => p.shape));
+  const transformed: TransformedPart[] = scene.parts.map((p) =>
+    (isMeshBackend(p.shape) && !withinBudget ? { name: p.name } : transformScenePart(p, diagnostics)));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
