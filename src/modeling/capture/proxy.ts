@@ -4,7 +4,7 @@ import type { DrawingReviewPlan } from '../../shared/intent/drawingReview';
 import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3, Vec3 } from '../../shared/intent/types';
 import { isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
-import { MeshBackend } from '../../kernel/backends/meshBackend';
+import { isMeshBackend } from '../../kernel/backends/meshBackend';
 import { trackFullLower } from './fullLowerTracker';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { axisNameToVec } from '../../shared/intent/queryNormalize';
@@ -1501,7 +1501,7 @@ export class Shape {
     // it (`params.update`) with the new solids; prefer that over this Shape's
     // private cache, which was filled on the previous lower.
     const reused = this.session.reusableLoweredShape(this.id);
-    if (reused instanceof MeshBackend) {
+    if (isMeshBackend(reused)) {
       this._loweredMeshBackend = reused;
       this._loweredAtRecordCount = records.length;
       this._loweredAtTransformCount = transformCount;

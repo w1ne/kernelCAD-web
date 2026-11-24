@@ -7,9 +7,10 @@
 
 import { getHostFs } from '../../shared/runtime/hostFs';
 
-// `meshFromSTL` must be listed whole: a `\bfromSTL` boundary does not see it.
-// `fromGLB` / `fromGLTF` are not loaders. `fetchPart` is resolved below.
-const IMPORT_CALL = /\b(?:meshFromSTL|fromSTEP|fromBREP|fromSTL|from3MF|fromDXF|fromSVG|referenceImage|fontPath|fetchPart)\s*\(\s*/g;
+// `meshFromSTL` / `meshFromGLB` must be listed whole: a `\bfromSTL` boundary
+// does not see them. `fromGLB` / `fromGLTF` are not loaders. `fetchPart` is
+// resolved below.
+const IMPORT_CALL = /\b(?:meshFromSTL|meshFromGLB|fromSTEP|fromBREP|fromSTL|from3MF|fromDXF|fromSVG|referenceImage|fontPath|fetchPart)\s*\(\s*/g;
 
 function hashBytes(bytes: Uint8Array): string {
   let h1 = 0x811c9dc5;

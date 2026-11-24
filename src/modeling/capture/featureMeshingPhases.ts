@@ -18,7 +18,7 @@ import type { ShapeBackend } from '../../kernel/backends/backend';
 import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../../kernel/backends/sceneBackend';
 import { OcctBackend, pbrFromMetadata } from '../../kernel/backends/occt/occtBackend';
 import { clearTriangulation } from '../../kernel/backends/occt/backendMesh';
-import { MeshBackend } from '../../kernel/backends/meshBackend';
+import { isMeshBackend } from '../../kernel/backends/meshBackend';
 import { meshShape, type MeshOptions } from '../../kernel/backends/occt/meshing';
 import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
 import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
@@ -100,7 +100,7 @@ export function resolvePerFaceMaterialOverrides(
   // Walk shape.faces ONCE and hash every face so resolution is O(F + L)
   // not O(F * L). The replicad shape.faces iteration order matches
   // meshShape's faceId assignment (see meshing.ts:meshShape).
-  if (base instanceof MeshBackend) return {};
+  if (isMeshBackend(base)) return {};
   const replicadFaces = (base.getReplicadShape() as unknown as { faces: unknown[] }).faces;
   const faceIdByHash = new Map<string, number>();
   replicadFaces.forEach((f, idx) => {
@@ -613,7 +613,7 @@ export function deriveFreshLoweredSeeds(
     if (!own.has(r)) continue;
     const shape = fresh.get(r.id);
     if (shape === undefined) continue;
-    if (!(shape instanceof OcctBackend) && !(shape instanceof MeshBackend) && !isSceneBackend(shape)) continue;
+    if (!(shape instanceof OcctBackend) && !isMeshBackend(shape) && !isSceneBackend(shape)) continue;
     out.set(r.id, shape);
   }
   return out;

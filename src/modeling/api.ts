@@ -34,7 +34,7 @@ import type { HermiteEndpoint } from '../kernel/geometry/hermiteG2';
 import type { SketchModule } from './sketch/index';
 import type { FontPath } from '../shared/fonts/fontPath';
 import type { FromStepOptions } from './parts/fromSTEP';
-import type { From3MFOptions, FromSTLOptions } from './parts/fromMeshFormats';
+import type { From3MFOptions, FromSTLOptions, MeshFromGLBOptions } from './parts/fromMeshFormats';
 import type { FetchPartOpts } from './parts/fetchPart';
 import type { FindPartOpts, FindPartResult } from './parts/findPart';
 import type { StandardParts } from './parts/standardParts';
@@ -121,6 +121,15 @@ export interface PartsLib {
   from3MF(path: string, opts?: From3MFOptions): Promise<Shape>;
   /** Import full-detail STL triangles as a display-only body, without BRep sewing. */
   meshFromSTL(path: string): Promise<Shape>;
+  /**
+   * Import a composite GLB as a display-only body with material groups
+   * intact. Node transforms are flattened, glTF Y-up is rotated to kernelCAD
+   * Z-up, and each primitive keeps its own PBR material (a PCB assembly keeps
+   * solder mask, copper, gold pads and component bodies). Units come from
+   * `asset.extras.kernelcad.units` or the raw extent; override with `opts`.
+   * No BRep: booleans, volume and solid exports are unavailable.
+   */
+  meshFromGLB(path: string, opts?: MeshFromGLBOptions): Promise<Shape>;
   /**
    * Import a 2D DXF drawing as closed profiles.
    *

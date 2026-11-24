@@ -26,7 +26,7 @@ import type { Shape } from '../capture/proxy';
 import type { Sketch } from '../capture/sketch';
 import type { CaptureSession } from '../capture/captureSession';
 import type { FromStepOptions } from './fromSTEP';
-import type { FromSTLOptions } from './fromMeshFormats';
+import type { FromSTLOptions, MeshFromGLBOptions } from './fromMeshFormats';
 import type { From3MFOptions } from './fromMeshFormats';
 import type { FromDXFOptions, FromSVGOptions } from './fromVectorFormats';
 import type { FetchPartOpts } from './fetchPart';
@@ -83,6 +83,16 @@ export async function meshFromSTLViaHost(
   requireHostFs('lib.meshFromSTL()');
   const { meshFromSTL } = await import('./fromMeshFormats');
   return meshFromSTL(ctx, path);
+}
+
+export async function meshFromGLBViaHost(
+  ctx: HostPartsCtx,
+  path: string,
+  opts: MeshFromGLBOptions,
+): Promise<Shape> {
+  requireHostFs('lib.meshFromGLB()');
+  const { meshFromGLB } = await import('./fromMeshFormats');
+  return meshFromGLB(ctx, path, opts);
 }
 
 export async function fromDXFViaHost(

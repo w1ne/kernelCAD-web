@@ -1,26 +1,47 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ShapeBackend } from './backend';
-import type { RuntimeMesh } from './runtimeMesh';
+import type { RuntimeMesh, RuntimeSubMesh } from './runtimeMesh';
 import type { Vec3 } from '../../shared/intent/types';
 import type { Transform } from '../../shared/runtime/se3';
 import type { GyrationAxis, MassProperties } from '../properties/massProperties';
 
+type PointTransform = (x: number, y: number, z: number) => [number, number, number];
+
+/** Apply `fn` to every (x,y,z) triple of a flat Float32Array. */
+function transformTriples(values: Float32Array, fn: PointTransform): Float32Array {
+  const out = new Float32Array(values.length);
+  for (let i = 0; i < values.length; i += 3) {
+    const [x, y, z] = fn(values[i]!, values[i + 1]!, values[i + 2]!);
+    out[i] = x; out[i + 1] = y; out[i + 2] = z;
+  }
+  return out;
+}
+
+function mapSubMeshPositions(subMeshes: RuntimeSubMesh[] | undefined, fn: PointTransform): RuntimeSubMesh[] | undefined {
+  return subMeshes?.map((sub) => ({ ...sub, positions: transformTriples(sub.positions, fn) }));
+}
+
 /** Indexed triangle geometry for display and rigid assembly placement only. */
 export class MeshBackend implements ShapeBackend {
   readonly target = 'export-occt' as const;
+  readonly isDisplayMesh = true as const;
   readonly positions: Float32Array;
   readonly indices: Uint32Array;
   readonly normals: Float32Array;
+  readonly subMeshes?: RuntimeSubMesh[];
 
-  constructor(positions: Float32Array, indices: Uint32Array) {
+  constructor(positions: Float32Array, indices: Uint32Array, subMeshes?: RuntimeSubMesh[]) {
     this.positions = positions;
     this.indices = indices;
     this.normals = computeNormals(positions, indices);
+    if (subMeshes !== undefined) this.subMeshes = subMeshes;
   }
-  clone(): MeshBackend { return this.withPositions(this.positions); }
+  clone(): MeshBackend { return new MeshBackend(this.positions, this.indices, this.subMeshes); }
   /** Same mesh, new vertex positions; subclasses keep their own type. */
-  protected withPositions(p: Float32Array): MeshBackend { return new MeshBackend(p, this.indices); }
+  protected withPositions(p: Float32Array, subMeshes: RuntimeSubMesh[] | undefined = this.subMeshes): MeshBackend {
+    return new MeshBackend(p, this.indices, subMeshes);
+  }
 
   protected unsupported(operation: string): never {
     throw new Error(`Display mesh bodies do not support ${operation}; convert to BRep explicitly when solid operations are needed.`);
@@ -28,7 +49,7 @@ export class MeshBackend implements ShapeBackend {
   translate(x: number, y: number, z: number): MeshBackend {
     const p = this.positions.slice();
     for (let i = 0; i < p.length; i += 3) { p[i]! += x; p[i + 1]! += y; p[i + 2]! += z; }
-    return this.withPositions(p);
+    return this.withPositions(p, mapSubMeshPositions(this.subMeshes, (px, py, pz) => [px + x, py + y, pz + z]));
   }
   rotate(axis: Vec3, degrees: number, pivot: Vec3 = [0, 0, 0]): MeshBackend {
     const [ax, ay, az] = axis; const n = Math.hypot(ax, ay, az);
@@ -42,13 +63,32 @@ export class MeshBackend implements ShapeBackend {
       p[i + 1] = pivot[1] + py * c + (z * px - x * pz) * s + y * (x * px + y * py + z * pz) * (1 - c);
       p[i + 2] = pivot[2] + pz * c + (x * py - y * px) * s + z * (x * px + y * py + z * pz) * (1 - c);
     }
-    return this.withPositions(p);
+    const rotatePoint: PointTransform = (px, py, pz) => {
+      const dx = px - pivot[0], dy = py - pivot[1], dz = pz - pivot[2];
+      return [
+        pivot[0] + dx * c + (y * dz - z * dy) * s + x * (x * dx + y * dy + z * dz) * (1 - c),
+        pivot[1] + dy * c + (z * dx - x * dz) * s + y * (x * dx + y * dy + z * dz) * (1 - c),
+        pivot[2] + dz * c + (x * dy - y * dx) * s + z * (x * dx + y * dy + z * dz) * (1 - c),
+      ];
+    };
+    const rotateNormal: PointTransform = (nx, ny, nz) => {
+      const rx = nx * c + (y * nz - z * ny) * s + x * (x * nx + y * ny + z * nz) * (1 - c);
+      const ry = ny * c + (z * nx - x * nz) * s + y * (x * nx + y * ny + z * nz) * (1 - c);
+      const rz = nz * c + (x * ny - y * nx) * s + z * (x * nx + y * ny + z * nz) * (1 - c);
+      const len = Math.hypot(rx, ry, rz) || 1;
+      return [rx / len, ry / len, rz / len];
+    };
+    return this.withPositions(p, this.subMeshes?.map((sub) => ({
+      ...sub,
+      positions: transformTriples(sub.positions, rotatePoint),
+      normals: transformTriples(sub.normals, rotateNormal),
+    })));
   }
   scale(s: number | Vec3): MeshBackend {
     const v = typeof s === 'number' ? [s, s, s] : s;
     const p = this.positions.slice();
     for (let i = 0; i < p.length; i += 3) { p[i]! *= v[0]!; p[i + 1]! *= v[1]!; p[i + 2]! *= v[2]!; }
-    return this.withPositions(p);
+    return this.withPositions(p, mapSubMeshPositions(this.subMeshes, (px, py, pz) => [px * v[0]!, py * v[1]!, pz * v[2]!]));
   }
   transform(t: Transform): MeshBackend { const d = t.decomposeToTranslateAndRotate(); return this.rotate([d.rotateAxis[0], d.rotateAxis[1], d.rotateAxis[2]], d.rotateDeg).translate(d.translate[0], d.translate[1], d.translate[2]); }
   union(): never { return this.unsupported('booleans'); }
@@ -68,9 +108,26 @@ export class MeshBackend implements ShapeBackend {
   }
   isEmpty(): boolean { return this.indices.length === 0; }
   solidComponents(): readonly ShapeBackend[] { return this.unsupported('solid component queries'); }
-  getMesh(): RuntimeMesh { return { positions: this.positions, indices: this.indices, normals: this.normals }; }
+  getMesh(): RuntimeMesh {
+    return {
+      positions: this.positions,
+      indices: this.indices,
+      normals: this.normals,
+      ...(this.subMeshes !== undefined ? { subMeshes: this.subMeshes } : {}),
+    };
+  }
   exportSTL(): Uint8Array { return this.unsupported('solid exports'); }
   exportSTEP(): never { return this.unsupported('STEP export'); }
+}
+
+/** Structural guard that works across ESM/CJS dynamic-import boundaries where
+ *  `instanceof MeshBackend` can split across two module instances. */
+export function isMeshBackend(value: unknown): value is MeshBackend {
+  return value instanceof MeshBackend || (
+    typeof value === 'object'
+    && value !== null
+    && (value as { isDisplayMesh?: unknown }).isDisplayMesh === true
+  );
 }
 
 function computeNormals(p: Float32Array, ix: Uint32Array): Float32Array {

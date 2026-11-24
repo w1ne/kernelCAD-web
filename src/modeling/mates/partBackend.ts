@@ -11,7 +11,7 @@
 import type { Assembly } from '../capture/assembly';
 import type { Shape } from '../capture/proxy';
 import type { ShapeBackend } from '../../kernel/backends/backend';
-import { MeshBackend } from '../../kernel/backends/meshBackend';
+import { isMeshBackend } from '../../kernel/backends/meshBackend';
 
 export async function partBackend(arm: Assembly, shape: Shape): Promise<ShapeBackend> {
   try {
@@ -20,7 +20,7 @@ export async function partBackend(arm: Assembly, shape: Shape): Promise<ShapeBac
     if (!/display mesh bod/i.test(err instanceof Error ? err.message : String(err))) throw err;
     const session = arm.__session();
     const mesh = session.cachedShapes.get(shape.id) ?? session.reusableLoweredShape(shape.id);
-    if (mesh instanceof MeshBackend) return mesh;
+    if (isMeshBackend(mesh)) return mesh;
     throw err;
   }
 }

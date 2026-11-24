@@ -18,7 +18,8 @@ import { RecomputeEngine, predecessorsByRecord, compiledEventForRecord, type Rec
 import { meshShape, type MeshOptions } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { resolveFeatureAppearance } from './featureAppearance';
-import { MeshBackend } from '../../kernel/backends/meshBackend';
+import { isMeshBackend, type MeshBackend } from '../../kernel/backends/meshBackend';
+import type { RuntimeSubMesh } from '../../kernel/backends/runtimeMesh';
 import { buildHelixTubeIndices, buildRibbonMesh, buildRoundSweep, flatWidthDirs, helixTubeTangents, wrapArcPoints, writeHelixTubeRings, type WrapCylinderWorld } from './tendonSweepMesh';
 import { attachMaterialUVs, generatePlanarUVs } from './planarUv';
 import { computeFeatureOwnership, hasFeatureOwnership } from './featureOwnership';
@@ -94,7 +95,7 @@ export interface FeatureMesh {
   op?: 'subtract' | 'union' | 'intersect';
   faces: FaceGeometry[];
   /** Direct indexed display buffer for display-only mesh bodies. */
-  mesh?: { positions: Float32Array; normals: Float32Array; indices: Uint32Array };
+  mesh?: { positions: Float32Array; normals: Float32Array; indices: Uint32Array; subMeshes?: RuntimeSubMesh[] };
   /** Number of BREP solids represented by this feature mesh. Unlike mesh or
    *  feature counts, this follows OCCT's TopAbs_SOLID exploration and therefore
    *  agrees with STEP inspection for disconnected compounds. */
@@ -1114,7 +1115,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     });
     return;
   }
-  if (event.shape instanceof MeshBackend) {
+  if (isMeshBackend(event.shape)) {
     emitDisplayMeshFeature(event, event.shape, ctx);
     return;
   }

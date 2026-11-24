@@ -243,6 +243,17 @@ lib.meshFromSTL(path: string): Promise<Shape>;
 // Rigid transforms, assembly placement, finish and color are supported.
 lib.meshFromSTL(path: string): Promise<Shape>;
 
+// Composite GLB import as a display-only body with material groups intact.
+// Node transforms are flattened, glTF Y-up becomes kernelCAD Z-up, and each
+// primitive keeps its PBR material, UVs and vertex colours (PCB assemblies
+// keep solder mask, copper, gold pads and component bodies). Units come from
+// asset.extras.kernelcad.units or the raw extent; override with opts.
+// No BRep: booleans, volume, face queries and solid export are unavailable.
+lib.meshFromGLB(path: string, opts?: {
+  units?: 'auto' | 'mm' | 'm';   // default 'auto'
+  upAxis?: 'y' | 'z';            // default 'y' (glTF Y-up)
+}): Promise<Shape>;
+
 // Reference-image overlay — virtual node (no solid). The renderer draws
 // the image on the chosen plane for tracing or design review. Path resolved
 // relative to the calling .kcad.ts file. Supported formats: .png .jpg .jpeg .webp.
