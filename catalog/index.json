@@ -288670,7 +288670,7 @@
       "id": "hull-survey-grid-frame",
       "kit": "shipyard",
       "title": "Hull survey grid frame",
-      "description": "Portable reference frame with an open rectangle, graduated crossbars, leveling feet, and target mounts. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "description": "Portable hull survey grid frame at about real size: two open portal rectangles 2.3 m wide and 1.8 m tall, each framed by a sill rail, a top rail and two uprights, joined by three cross-reference bars at staggered heights. Material controls: yard-painted sill rails and bare structural steel; fresh-coat and weathered-yard presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -288694,7 +288694,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/hull-survey-grid-frame.kcad.ts",
       "preview": "/assets/shipyard-hull-survey-grid-frame.png",
-      "sourceSha256": "bac2ae2981498afa0f54d2d33b1a364d4c07fc829637da546f9ead312ef88d1b",
+      "sourceSha256": "e1562c8efb5771476e548b9c9bfe8cd598f3274821dccca85aabb9449110e5be",
       "triangleBudget": 1800,
       "params": [
         {
@@ -288744,7 +288744,8 @@
           "name": "yardPaint",
           "color": "#6e817a",
           "parts": [
-            "frame-rail-0"
+            "frame-rail-0",
+            "frame-rail-1"
           ],
           "param": "yardPaint"
         },
@@ -288752,7 +288753,6 @@
           "name": "structuralSteel",
           "color": "#b6c1c4",
           "parts": [
-            "frame-rail-1",
             "frame-rail-2",
             "frame-rail-3",
             "upright-0",
