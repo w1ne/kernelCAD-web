@@ -63,6 +63,8 @@ import type { Transform, Vec3 } from '../../shared/runtime/se3';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { brepExtremaContact, brepExtremaDistance, wrappedShape } from './brepDistance';
 import { restMeshBvh, restMeshContact } from './restAnalysisMesh';
+import { isMeshBackend } from '../../kernel/backends/meshBackend';
+import { extractPosedWorldMesh } from './meshPairCheck';
 
 /**
  * Per-spec tolerance (mm) for the joint-mesh-continuity check. Wide
@@ -269,7 +271,7 @@ function buildSideRow(
     pivotWorld,
     clearanceRadiusMm: connector.jointClearanceRadius ?? 0,
   };
-  if (!(scenePart.shape instanceof OcctBackendClass)) {
+  if (!(scenePart.shape instanceof OcctBackendClass) && !isMeshBackend(scenePart.shape)) {
     return { ...base, status: 'unavailable', reason: 'the lowered body has no supported solid BREP representation' };
   }
   const probePoint: [number, number, number] = [pivotWorld[0], pivotWorld[1], pivotWorld[2]];
@@ -301,6 +303,7 @@ function pointGapToPart(
   point: [number, number, number],
   allowed: number,
 ): number | undefined {
+  if (isMeshBackend(scenePart.shape)) return pointGapToDisplayMesh(scenePart, point);
   if (!(scenePart.shape instanceof OcctBackendClass)) return undefined;
   const bvh = restMeshBvh(scenePart, 'shape');
   const closest = bvh?.closestPoint(point);
@@ -309,6 +312,19 @@ function pointGapToPart(
   return meshGap !== undefined && Math.abs(meshGap - allowed) > 0.25
     ? meshGap
     : measureGapToBody(scenePart.shape as OcctBackend, scenePart.worldTransform, point);
+}
+
+/** Distance from the pivot to a display mesh: 0 when inside, else the
+ *  nearest triangle distance. Imported hardware has no BREP fallback. */
+function pointGapToDisplayMesh(
+  scenePart: SceneBackend['parts'][number],
+  point: [number, number, number],
+): number | undefined {
+  const mesh = extractPosedWorldMesh(scenePart.shape, scenePart.worldTransform);
+  if (mesh === undefined) return undefined;
+  if (mesh.bvh.pointInside(point)) return 0;
+  const closest = mesh.bvh.closestPoint(point);
+  return closest === null ? undefined : closest.distance;
 }
 
 /** Nearest material at the pivot among the parts fastened to `partName`. */
