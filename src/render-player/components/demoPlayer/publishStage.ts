@@ -33,6 +33,7 @@ import {
 } from './contactShadow';
 import { frameForRequest, type Vec3 } from './publishFraming';
 import { fitCameraToBounds, isInsideFeatureGroup, isVisibleInScene } from './demoPlayerGeometry';
+import { KCAD_DISPLAY_SURFACE_KEY } from './displaySurfaces';
 
 /** userData flag on every object the stage adds; scene-bounds and mask
  *  passes skip flagged subtrees so the stage never affects framing. */
@@ -288,12 +289,15 @@ function markMaterialsNeedsUpdate(material: THREE.Material | THREE.Material[]): 
 
 /** Enable real inter-part self-shadowing on every visible model mesh.
  *  Transmissive glass does not cast a useful depth-map shadow, but it still
- *  receives so highlights stay grounded on the part. */
+ *  receives so highlights stay grounded on the part. A display plane sits
+ *  0.035 mm off its part face: it must not cast, or its own shadow would
+ *  darken the screen it carries. */
 function configureMeshShadows(meshes: readonly THREE.Mesh[]): MeshShadowState[] {
   const saved: MeshShadowState[] = [];
   for (const mesh of meshes) {
     saved.push({ mesh, castShadow: mesh.castShadow, receiveShadow: mesh.receiveShadow });
-    mesh.castShadow = !isTransmissiveMaterial(mesh.material);
+    const displayPlane = mesh.userData[KCAD_DISPLAY_SURFACE_KEY] === true;
+    mesh.castShadow = !displayPlane && !isTransmissiveMaterial(mesh.material);
     mesh.receiveShadow = true;
     markMaterialsNeedsUpdate(mesh.material);
   }

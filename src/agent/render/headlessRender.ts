@@ -20,6 +20,7 @@ import { meshFeaturesPerFeature } from '../../modeling/capture/featureMeshing';
 import { serializeForBridge, type FeatureMeshSerialized } from '../../modeling/capture/featureMeshSerialize';
 import { CANONICAL_VIEWS, SHEET_VIEWS, type RenderView } from '../../shared/render/views';
 import type { PublishStageSpec } from '../../shared/render/publishPreset';
+import type { ResolvedDisplaySurface, ResolvedIndicatorState } from '../../shared/render/displaySurface';
 import { PUBLISH_QUERY_PARTS, applyPublishStageOnPage, capturePublishTile } from './publishCapture';
 
 export type { RenderView };
@@ -47,6 +48,13 @@ declare const window: {
     setRenderPose: (azDeg: number, elDeg: number, outputAspect?: number) => void;
     setReferenceImagesVisible: (visible: boolean) => void;
     setRenderEnvironment: (spec: unknown) => Promise<void>;
+    setDisplaySurfaces: (
+      specs: readonly ResolvedDisplaySurface[],
+    ) => Promise<{ applied: string[]; missing: string[] }>;
+    setIndicatorStates: (
+      specs: readonly ResolvedIndicatorState[],
+    ) => { applied: string[]; missing: string[] };
+    waitForPendingTextures: (timeoutMs?: number) => Promise<void>;
   };
 };
 
@@ -164,6 +172,11 @@ export interface HeadlessRenderOpts {
    *  and the camera is auto-framed with the preset margin. RGB only — the
    *  inspection channels are engineering evidence and keep the default look. */
   publish?: PublishStageSpec;
+  /** Resolved display surfaces: textured planes seated on loaded part faces.
+   *  Images are already data URLs (see displaySurfaceImages.ts). */
+  displays?: readonly ResolvedDisplaySurface[];
+  /** Resolved LED / indicator emissive states applied to loaded parts. */
+  indicators?: readonly ResolvedIndicatorState[];
 }
 
 export interface HeadlessRenderResult {
@@ -360,6 +373,33 @@ export async function updateFeatureTransformsOnPage(
     ({ t, b }) => window.__demoPlayer!.updateFeatureTransforms(t, b),
     { t: transforms, b: bounds },
   );
+}
+
+export interface PageDisplayOverlays {
+  displays?: readonly ResolvedDisplaySurface[];
+  indicators?: readonly ResolvedIndicatorState[];
+}
+
+/**
+ * Apply display-surface planes and indicator states to the page scene, then
+ * wait for every texture that is still decoding. Safe to call with neither
+ * list (it only settles pending textures). MUST run after every full
+ * `loadFeatureMeshes` — that rebuilds every feature group and its materials —
+ * and is unnecessary on transform-only frames, where both stay attached to
+ * their group and move rigidly with the part. Indicator states are applied
+ * after display surfaces so a display plane is never tinted as an LED.
+ */
+export async function applyDisplayOverlaysOnPage(
+  page: Pick<Page, 'evaluate'>,
+  overlays: PageDisplayOverlays,
+): Promise<void> {
+  if (overlays.displays !== undefined && overlays.displays.length > 0) {
+    await page.evaluate((displays) => window.__demoPlayer!.setDisplaySurfaces(displays), overlays.displays);
+  }
+  if (overlays.indicators !== undefined && overlays.indicators.length > 0) {
+    await page.evaluate((indicators) => window.__demoPlayer!.setIndicatorStates(indicators), overlays.indicators);
+  }
+  await page.evaluate(() => window.__demoPlayer?.waitForPendingTextures?.());
 }
 
 /** How long the page may spend loading + PMREM-prefiltering an HDRI before the
@@ -611,6 +651,10 @@ export async function openRenderPage(
     const objectVisibility = opts.objectFilter
       ? await page.evaluate((filter) => window.__demoPlayer!.applyObjectVisibilityFilter(filter), opts.objectFilter)
       : undefined;
+
+    // 3a2. Display surfaces + LED states, after the visible set is settled.
+    //      Also waits for pending texture decodes before any capture.
+    await applyDisplayOverlaysOnPage(page, { displays: opts.displays, indicators: opts.indicators });
 
     // 3b. Optionally hide reference-image overlays for clean engineering views.
     if (opts.hideReferenceImages) {

@@ -53,6 +53,16 @@ import {
 import { captureTurntable } from '../../render/captureTurntable';
 import { buildObjectFilter } from '../../cli/commands/render';
 import { type RenderPreset } from '../../../shared/render/publishPreset';
+import {
+  validateDisplaySurfaces,
+  validateIndicatorStates,
+  type DisplaySurfaceSpec,
+  type IndicatorStateSpec,
+  type ResolvedDisplaySurface,
+  type ResolvedIndicatorState,
+} from '../../../shared/render/displaySurface';
+import { resolveDisplaySurfaceImages } from '../../render/displaySurfaceImages';
+import { dirname, resolve } from 'node:path';
 import { checkTimelineModeFields, resolveTurntableSettings, turntableCaptureOpts, turntableStartAzDeg } from './captureTurntableInput';
 import type { HeadlessObjectFilter } from '../../render/headlessRender';
 import type { AnimationCollision } from '../../../modeling/animation/verifyAnimation';
@@ -108,6 +118,11 @@ export interface CaptureAnimationInput {
   shadow?: boolean;
   /** Turntable: HDRI environment override (same values as render_preview). */
   environment?: string;
+  /** Display surfaces: textured planes seated on loaded part faces. Works in
+   *  timeline and turntable mode. */
+  displays?: DisplaySurfaceSpec[];
+  /** Live / simulated LED and indicator emissive states (0 = off, 1 = full). */
+  indicators?: IndicatorStateSpec[];
 }
 
 export interface CaptureAnimationCollisionRow {
@@ -271,10 +286,55 @@ function objectFilterSource(input: CaptureAnimationInput): { focus?: string[]; h
   };
 }
 
+/** Validated display/indicator overlays for a capture (images as data URLs
+ *  resolved against the script directory). */
+interface CaptureOverlays {
+  displays?: readonly ResolvedDisplaySurface[];
+  indicators?: readonly ResolvedIndicatorState[];
+}
+
+async function resolveCaptureOverlays(
+  input: CaptureAnimationInput,
+  file: string,
+): Promise<{ ok: true; overlays: CaptureOverlays } | { ok: false; refusal: CaptureAnimationOutput }> {
+  const displayCheck = validateDisplaySurfaces(input.displays);
+  if (!displayCheck.ok) {
+    return { ok: false, refusal: toolRefusal('cli.invalid-args', `capture_animation: ${displayCheck.message}`, displayCheck.hint, 'environment') };
+  }
+  const indicatorCheck = validateIndicatorStates(input.indicators);
+  if (!indicatorCheck.ok) {
+    return { ok: false, refusal: toolRefusal('cli.invalid-args', `capture_animation: ${indicatorCheck.message}`, indicatorCheck.hint, 'environment') };
+  }
+  let displays: ResolvedDisplaySurface[] | undefined;
+  if (displayCheck.displays.length > 0) {
+    try {
+      displays = await resolveDisplaySurfaceImages(displayCheck.displays, dirname(resolve(file)));
+    } catch (e) {
+      return {
+        ok: false,
+        refusal: toolRefusal(
+          'cli.invalid-args',
+          `capture_animation: ${e instanceof Error ? e.message : String(e)}`,
+          'Pass image as a PNG/JPEG/WebP path relative to the script, an absolute path, or a data:image/... URI.',
+          'environment',
+        ),
+      };
+    }
+  }
+  return {
+    ok: true,
+    overlays: {
+      ...(displays !== undefined ? { displays } : {}),
+      ...(indicatorCheck.indicators.length > 0 ? { indicators: indicatorCheck.indicators } : {}),
+    },
+  };
+}
+
 function captureRequest(
   input: CaptureAnimationInput,
   file: string,
   objectFilter: HeadlessObjectFilter | undefined,
+  overlays: CaptureOverlays = {},
 ): CaptureAnimationOpts {
   return {
     scriptPath: file,
@@ -284,6 +344,7 @@ function captureRequest(
     ...(input.no_verify === true ? { skipVerify: true } : {}),
     ...(input.verify_every !== undefined ? { verifyEveryNthFrame: input.verify_every } : {}),
     ...(objectFilter !== undefined ? { objectFilter } : {}),
+    ...overlays,
     // No onProgress: MCP is request/response with no streaming channel.
   };
 }
@@ -321,6 +382,7 @@ function turntableCapture(
   input: CaptureAnimationInput,
   file: string,
   objectFilter: HeadlessObjectFilter | undefined,
+  overlays: CaptureOverlays = {},
 ): Promise<CaptureAnimationResult> | CaptureAnimationOutput {
   const settings = resolveTurntableSettings(input);
   if ('message' in settings) return toolRefusal('cli.invalid-args', settings.message, settings.hint, 'environment');
@@ -331,6 +393,7 @@ function turntableCapture(
       ...(input.frames_dir !== undefined ? { framesDir: input.frames_dir } : {}),
       ...(objectFilter !== undefined ? { objectFilter } : {}),
       ...(input.environment !== undefined ? { environment: input.environment } : {}),
+      ...overlays,
       startAzDeg: turntableStartAzDeg(input.preset),
     }),
   );
@@ -361,13 +424,16 @@ export async function captureAnimationTool(
     );
   }
 
+  const overlayPhase = await resolveCaptureOverlays(input, inputCheck.file);
+  if (!overlayPhase.ok) return overlayPhase.refusal;
+
   let capturePromise: Promise<CaptureAnimationResult>;
   if (input.turntable === true) {
-    const started = turntableCapture(input, inputCheck.file, objectFilter);
+    const started = turntableCapture(input, inputCheck.file, objectFilter, overlayPhase.overlays);
     if (!(started instanceof Promise)) return started;
     capturePromise = started;
   } else {
-    capturePromise = captureAnimation(captureRequest(input, inputCheck.file, objectFilter));
+    capturePromise = captureAnimation(captureRequest(input, inputCheck.file, objectFilter, overlayPhase.overlays));
   }
 
   const deadline = captureDeadline();

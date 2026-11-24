@@ -25,6 +25,7 @@ import { mkdir, rm } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { PUBLISH_PRESET, turntableAzimuths, type PublishStageSpec } from '../../shared/render/publishPreset';
+import type { ResolvedDisplaySurface, ResolvedIndicatorState } from '../../shared/render/displaySurface';
 import {
   meshForHeadlessRender,
   openRenderPage,
@@ -65,6 +66,10 @@ export interface CaptureTurntableOpts {
   publish?: PublishStageSpec;
   objectFilter?: HeadlessObjectFilter;
   environment?: string;
+  /** Resolved display surfaces (textured planes on part faces). */
+  displays?: readonly ResolvedDisplaySurface[];
+  /** Resolved LED / indicator emissive states. */
+  indicators?: readonly ResolvedIndicatorState[];
   baseUrl?: string;
   onProgress?: (msg: string) => void;
 }
@@ -182,6 +187,8 @@ async function openTurntablePage(
       ...(opts.publish !== undefined ? { publish: opts.publish } : {}),
       ...(opts.objectFilter !== undefined ? { objectFilter: opts.objectFilter } : {}),
       ...(opts.environment !== undefined ? { environment: opts.environment } : {}),
+      ...(opts.displays !== undefined ? { displays: opts.displays } : {}),
+      ...(opts.indicators !== undefined ? { indicators: opts.indicators } : {}),
     },
     track.surface.baseUrl, meshed.serialized, meshed.meshing,
   );

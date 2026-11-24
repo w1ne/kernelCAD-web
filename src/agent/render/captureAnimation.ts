@@ -55,6 +55,7 @@ import type { BuiltModel } from '../../composition/buildModel';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { AnimationViewMetadata } from '../../shared/intent/animationViewRecord';
 import type { AnimationCollision } from '../../modeling/animation/verifyAnimation';
+import type { ResolvedDisplaySurface, ResolvedIndicatorState } from '../../shared/render/displaySurface';
 import { sampleTracks } from '../../modeling/animation/animationSampler';
 import { openDemoPlayerPage, type DemoPlayerPageHandle, type HeadlessObjectFilter } from './headlessRender';
 import { resolveRenderBaseUrl, type ResolvedRenderBase } from './playerServer';
@@ -128,6 +129,12 @@ export interface CaptureAnimationOpts {
   /** Opaque '#rrggbb' publish backdrop applied on every timeline frame.
    *  Omit to keep the engineering gray viewport. */
   backdrop?: string;
+  /** Resolved display surfaces (textured planes on part faces). Re-applied
+   *  after every full mesh reload; transform-only frames keep them attached. */
+  displays?: readonly ResolvedDisplaySurface[];
+  /** Resolved LED / indicator emissive states. Re-applied after every full
+   *  mesh reload (a reload rebuilds every material). */
+  indicators?: readonly ResolvedIndicatorState[];
 }
 
 /** Which side is at fault when a capture refuses or aborts. Lets CLI/MCP
@@ -405,7 +412,10 @@ export async function captureAnimation(
     if (renderSurface.source !== 'explicit') {
       onProgress(`render surface = ${renderSurface.source} (${renderSurface.baseUrl})`);
     }
-    pageHandle = await bootstrapPagePhase(renderSurface.baseUrl, initial, t0, onProgress, openPage);
+    pageHandle = await bootstrapPagePhase(renderSurface.baseUrl, initial, t0, onProgress, openPage, {
+      displays: opts.displays,
+      indicators: opts.indicators,
+    });
 
     const loopResult = await runFrameLoopPhase({
       frames, model, page: pageHandle.page, ffmpeg, framesDir, durationMs, fps, stashedWarns, verifyFields, onProgress, opts, t0, abortFfmpeg,

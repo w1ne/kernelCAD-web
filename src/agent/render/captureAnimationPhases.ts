@@ -27,11 +27,13 @@ import { keyframeSampleSet, sampleTracks } from '../../modeling/animation/animat
 import { verifyAnimation, type AnimationCollision } from '../../modeling/animation/verifyAnimation';
 import {
   HEADLESS_VIEWPORT,
+  applyDisplayOverlaysOnPage,
   loadFeatureMeshesIntoPage,
   updateFeatureTransformsOnPage,
   openDemoPlayerPage,
   type DemoPlayerPageHandle,
   type HeadlessObjectFilter,
+  type PageDisplayOverlays,
 } from './headlessRender';
 import { canReuseLoadedMeshes } from './rigidFrameReuse';
 import { appearanceEntriesForFrame, resolveAppearanceTargets } from '../../modeling/animation/appearanceTargets';
@@ -60,6 +62,9 @@ declare const window: {
     applyObjectVisibilityFilter: (filter: HeadlessObjectFilter) => unknown;
     setFeatureAppearance: (overrides: Array<{ featureId: string; color?: string; emissive?: string }>) => unknown;
     setPublishStage: (spec: { background: string; shadow: boolean } | null) => void;
+    setDisplaySurfaces: (specs: unknown) => Promise<unknown>;
+    setIndicatorStates: (specs: unknown) => unknown;
+    waitForPendingTextures: (timeoutMs?: number) => Promise<void>;
   };
 };
 
@@ -415,6 +420,7 @@ export async function bootstrapPagePhase(
   t0: number,
   onProgress: (msg: string) => void,
   openPage: typeof openDemoPlayerPage,
+  overlays: PageDisplayOverlays = {},
 ): Promise<DemoPlayerPageHandle> {
   // 6. Demo-player page via the shared bootstrap — CDP attach to an
   //    existing Chrome first (PW_CDP_URL ?? 127.0.0.1:9222), fresh
@@ -454,6 +460,9 @@ export async function bootstrapPagePhase(
   await page.evaluate(() => window.__demoPlayer!.advance(2000));
   await page.evaluate(() => window.__demoPlayer!.forceFullOpacity());
   await page.evaluate(() => window.__demoPlayer!.showOnlyTailFeatures());
+  // The initial load rebuilt every feature group: seat display planes, set
+  // indicator states and settle texture decodes before frame 0.
+  await applyDisplayOverlaysOnPage(page, overlays);
   await page.evaluate(() => window.__demoPlayer!.setRenderView('iso'));
   return pageHandle;
 }
@@ -521,6 +530,7 @@ async function renderFramePhase(params: {
   const { frame, i, page, meshing, opts, bounds, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg, loadedFeatures } = params;
   // (b) browser render ops — ENVIRONMENT fault.
   let png: Buffer;
+  let reloaded = false;
   try {
     if (loadedFeatures !== undefined && loadedFeatures === meshing.features) {
       // Same meshing object as the loaded frame (no param tracks): the page
@@ -530,12 +540,19 @@ async function renderFramePhase(params: {
       await updateFeatureTransformsOnPage(page, meshing.features, bounds ?? meshing.bounds);
     } else {
       await loadFeatureMeshesIntoPage(page, meshing.features.map(serializeForBridge), bounds ?? meshing.bounds);
+      reloaded = true;
     }
     if (opts.backdrop !== undefined) {
       await page.evaluate(
         (background) => window.__demoPlayer!.setPublishStage({ background, shadow: false }),
         opts.backdrop,
       );
+    }
+    // A full mesh reload rebuilds every feature group and material, so display
+    // planes and indicator states must be re-applied. On transform-only frames
+    // both stay attached inside the group and move rigidly with the part.
+    if (reloaded) {
+      await applyDisplayOverlaysOnPage(page, { displays: opts.displays, indicators: opts.indicators });
     }
     // Re-apply the object-visibility filter AFTER each reload:
     // loadFeatureMeshes rebuilds every feature group with visible:true
