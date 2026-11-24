@@ -1,0 +1,52 @@
+{
+  "recordedDate": "2026-11-24",
+  "kernel": "Local OCCT model geometry",
+  "fixture": "cylindrical-face-offset.kcad.ts",
+  "input": {
+    "plateMm": [
+      40,
+      40,
+      10
+    ],
+    "boreDiameterMm": 10,
+    "boreGrowMm": 1,
+    "bossMm": [
+      20,
+      20
+    ]
+  },
+  "before": {
+    "boreVolumeMm3": 15214.6018,
+    "boreRadiusMm": 5,
+    "boreSolidComponents": 1,
+    "boreValid": true
+  },
+  "after": {
+    "boreVolumeMm3": 15497.3452,
+    "boreRadiusMm": 4,
+    "boreSolidComponents": 1,
+    "boreValid": true
+  },
+  "boss": {
+    "beforeVolumeMm3": 6283.1853,
+    "beforeRadiusMm": 10,
+    "afterVolumeMm3": 7602.6542,
+    "afterRadiusMm": 11
+  },
+  "checks": {
+    "boreRadiusBeforeMm": 5,
+    "boreRadiusAfterMm": 4,
+    "boreNarrowedByOneMm": true,
+    "measuredBoreVolumeDeltaMm3": 282.7433,
+    "exactAnnularVolumeDeltaMm3": 282.7433,
+    "boreVolumeDeltaMatchesAnnulus": true,
+    "boreSolidValid": true,
+    "boreSolidComponents": 1,
+    "bossRadiusBeforeMm": 10,
+    "bossRadiusAfterMm": 11,
+    "bossGrewByOneMm": true,
+    "bossVolumeMm3": 7602.6542,
+    "bossVolumeMatchesCylinder": true
+  },
+  "scope": "Local model validation only; not a deployed-behavior or hardware-acceptance claim."
+}
