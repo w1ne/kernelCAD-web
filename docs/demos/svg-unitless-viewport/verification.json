@@ -1,0 +1,49 @@
+{
+  "fixture": "fixture.svg",
+  "fixtureSha256": "b607aa0177e590e91893753e9072fc2d4bf68d5632f912631dad6ee5c40137fa",
+  "before": {
+    "revision": "origin/develop 964fa6cfe (base of this branch)",
+    "unitScale": 0.26458333333333334,
+    "unitSource": "assumed 1 user unit = 1 CSS px (1/96 in); no physically-dimensioned width",
+    "regions": 2,
+    "bboxMm": {
+      "minX": 1.5875,
+      "minY": 1.5875,
+      "maxX": 23.8125,
+      "maxY": 23.8125,
+      "width": 22.225,
+      "height": 22.225
+    },
+    "areaMm2": [
+      493.95062500000006,
+      148.6693818879811
+    ]
+  },
+  "after": {
+    "revision": "this branch (fix/svg-unitless-viewport-20261124)",
+    "unitScale": 0.5291666666666667,
+    "unitSource": "width='192' and height='192' over viewBox 96 x 96, xMidYMid meet",
+    "regions": 2,
+    "bboxMm": {
+      "minX": 3.175,
+      "minY": 3.175,
+      "maxX": 47.625,
+      "maxY": 47.625,
+      "width": 44.45,
+      "height": 44.45
+    },
+    "areaMm2": [
+      1975.8025000000002,
+      594.6775275519244
+    ]
+  },
+  "narrowTest": {
+    "command": "npx vitest run src/kernel/import src/modeling/parts/fromVectorFormats.test.ts tests/unit/diagnostics/codes.test.ts",
+    "result": "6 files, 186 tests passed, 0 failed"
+  },
+  "limits": [
+    "Local parser and geometry results; no deployed-server or browser claim.",
+    "The before panel measures the same bytes with the origin/develop reader.",
+    "No clipping, fit or manufacturing claim is made from the demo."
+  ]
+}

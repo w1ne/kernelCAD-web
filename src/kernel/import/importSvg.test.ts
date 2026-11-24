@@ -450,6 +450,43 @@ describe('importSvgText — units', () => {
     expect(r.unitScale).toBeCloseTo(2.54, 12);
   });
 
+  it('reads a unitless width and height as CSS pixels over the viewBox', () => {
+    // 192 unitless = 192 px = 50.8 mm. The same file with "192px" already
+    // scaled this way; the unitless form must not fall back to 1 unit = 1 px.
+    const r = importSvgText(svg('<rect x="0" y="0" width="96" height="96"/>',
+      'width="192" height="192" viewBox="0 0 96 96"'));
+    expect(r.unitScale).toBeCloseTo(2 * 25.4 / 96, 12);
+    expect(r.unitSource).toBe("width='192' and height='192' over viewBox 96 x 96, xMidYMid meet");
+    expect(r.regions[0].areaMm2).toBeCloseTo(50.8 * 50.8, 6);
+  });
+
+  it('scales a unitless width with no height from the width', () => {
+    const r = importSvgText(svg('<rect x="0" y="0" width="96" height="96"/>',
+      'width="192" viewBox="0 0 96 96"'));
+    expect(r.unitScale).toBeCloseTo(2 * 25.4 / 96, 12);
+    expect(r.unitSource).toBe("width='192' over viewBox width 96");
+    expect(r.regions[0].areaMm2).toBeCloseTo(50.8 * 50.8, 6);
+  });
+
+  it('letterboxes a unitless viewport whose aspect differs from the viewBox', () => {
+    // 192 x 96 px = 50.8 x 25.4 mm holding a square viewBox. The meet scale
+    // is 25.4 / 96 mm per unit and the square is centred in X.
+    const r = importSvgText(svg('<rect x="0" y="0" width="96" height="96"/>',
+      'width="192" height="96" viewBox="0 0 96 96"'));
+    const pts = points(r.regions[0].commands);
+    expect(Math.min(...pts.map(p => p[0]))).toBeCloseTo(12.7, 9);
+    expect(Math.max(...pts.map(p => p[0]))).toBeCloseTo(38.1, 9);
+    expect(Math.min(...pts.map(p => p[1]))).toBeCloseTo(0, 9);
+    expect(Math.max(...pts.map(p => p[1]))).toBeCloseTo(25.4, 9);
+  });
+
+  it('ignores a percentage height and keeps a unitless width scale', () => {
+    const r = importSvgText(svg('<rect x="0" y="0" width="96" height="96"/>',
+      'width="192" height="50%" viewBox="0 0 96 96"'));
+    expect(r.unitScale).toBeCloseTo(2 * 25.4 / 96, 12);
+    expect(r.unitSource).toBe("width='192' over viewBox width 96");
+  });
+
   it('letterboxes a mismatched viewport with the default xMidYMid meet', () => {
     // A 200 x 100 mm viewport holds a square viewBox: the default meet scale
     // is 1 mm per unit (height-limited), and the square is centred in X.
