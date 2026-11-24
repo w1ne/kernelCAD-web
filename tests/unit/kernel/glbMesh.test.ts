@@ -75,6 +75,30 @@ async function buildGlb(): Promise<Uint8Array> {
   return new NodeIO().writeBinary(doc);
 }
 
+/** One single-primitive node per name, each with an unauthored glTF material
+ *  (metallic 0, roughness 1) so `inferSurface` decides the finish. */
+async function buildNamedGlb(names: readonly string[]): Promise<Uint8Array> {
+  const doc = new Document();
+  doc.getRoot().getAsset().extras = { kernelcad: { units: 'mm' } };
+  const buffer = doc.createBuffer();
+  const scene = doc.createScene('named');
+  const accessor = (array: Float32Array | Uint16Array, type: 'VEC3' | 'SCALAR') =>
+    doc.createAccessor().setType(type).setArray(array as never).setBuffer(buffer);
+  const positions = accessor(new Float32Array([0, 0, 0, 10, 0, 0, 0, 0, 10]), 'VEC3');
+  const indices = accessor(new Uint16Array([0, 1, 2]), 'SCALAR');
+  names.forEach((name, index) => {
+    const material = doc.createMaterial(name)
+      .setBaseColorFactor([0.5, 0.5, 0.5, 1]).setMetallicFactor(0).setRoughnessFactor(1);
+    const primitive = doc.createPrimitive()
+      .setAttribute('POSITION', positions).setIndices(indices).setMaterial(material);
+    const node = doc.createNode(name)
+      .setMesh(doc.createMesh(name).addPrimitive(primitive))
+      .setTranslation([index * 20, 0, 0]);
+    scene.addChild(node);
+  });
+  return new NodeIO().writeBinary(doc);
+}
+
 describe('decodeGlbMesh / lib.meshFromGLB', () => {
   it('keeps primitive material groups and infers PCB surfaces', async () => {
     const decoded = await decodeGlbMesh(await buildGlb());
@@ -157,5 +181,21 @@ describe('decodeGlbMesh / lib.meshFromGLB', () => {
       .toMatchObject({ sourceFormat: 'glb', materialGroupCount: 2 });
     const backend = session.importedGeometry.get(shape.id) as { getMesh: () => { subMeshes?: unknown[] } };
     expect(backend.getMesh().subMeshes).toHaveLength(2);
+  });
+
+  it('infers glass, e-paper, housing and hardware-metal finishes by name', async () => {
+    const names = ['oled-cover', 'epaper-panel', 'housing-shroud', 'battery-holder', 'steel-screw', 'mcu-chip'];
+    const decoded = await decodeGlbMesh(await buildNamedGlb(names));
+    const finish = new Map(decoded.subMeshes.map((sub) => [sub.name, sub.material]));
+    // Sleek glass: low roughness, a light clearcoat, no milky washout.
+    expect(finish.get('oled-cover')).toMatchObject({ metalness: 0, roughness: 0.08, clearcoat: 0.35 });
+    // Matte reflective e-ink paper.
+    expect(finish.get('epaper-panel')).toMatchObject({ metalness: 0, roughness: 0.85 });
+    // Moulded housing / IC body: satin, not glossy.
+    expect(finish.get('housing-shroud')).toMatchObject({ metalness: 0, roughness: 0.58 });
+    expect(finish.get('mcu-chip')).toMatchObject({ metalness: 0, roughness: 0.58 });
+    // Metallic hardware.
+    expect(finish.get('battery-holder')).toMatchObject({ metalness: 0.9, roughness: 0.28 });
+    expect(finish.get('steel-screw')).toMatchObject({ metalness: 0.9, roughness: 0.28 });
   });
 });

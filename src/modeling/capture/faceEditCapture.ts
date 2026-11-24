@@ -46,7 +46,7 @@ function faceEditList(
   return list;
 }
 
-/** Push or pull planar faces along their outward normals by `distance` mm. */
+/** Push or pull planar faces, or a full cylindrical face, by `distance` mm. */
 export function captureOffsetFaces(
   session: CaptureSession,
   shape: Shape,

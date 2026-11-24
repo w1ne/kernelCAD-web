@@ -81,15 +81,30 @@ export interface SurfaceTrimData {
 }
 
 /**
+ * Data payload for `surface.offset(distance)`. The base surface is resolved
+ * through the same `SurfaceId` recursion as `surfaceTrim`; the signed
+ * distance lives on `SurfaceRecord.params.distance` so a ParamRef is
+ * resolved against the run's param table at lower time.
+ *
+ * Positive distance offsets along the base face normal; negative offsets
+ * against it. Offset surfaces are untrimmed in parameter space and keep the
+ * base face's boundary, matching OCCT's `BRepOffsetAPI_MakeOffsetShape`.
+ */
+export interface SurfaceOffsetData {
+  kind: 'surfaceOffset';
+  surfaceId: SurfaceId;
+}
+
+/**
  * Capture-time record for a Surface. Parallel to `FeatureRecord` but lives
  * on `CaptureSession.surfaceRecords`. Carries enough data for the lowerer
  * to rebuild the surface from session state alone.
  */
 export interface SurfaceRecord {
   id: SurfaceId;
-  kind: 'nurbsSurface' | 'surfaceFromCurves' | 'coonsPatch' | 'surfaceTrim';
+  kind: 'nurbsSurface' | 'surfaceFromCurves' | 'coonsPatch' | 'surfaceTrim' | 'surfaceOffset';
   params: Record<string, Param>;
-  data: NurbsSurfaceData | SurfaceFromCurvesData | CoonsPatchData | SurfaceTrimData;
+  data: NurbsSurfaceData | SurfaceFromCurvesData | CoonsPatchData | SurfaceTrimData | SurfaceOffsetData;
   scriptLocation?: ScriptLocation;
   /** Optional structured diagnostics from capture-time validation. */
   diagnostics?: import('../diagnostics/diagnostic').CompilerDiagnostic[];

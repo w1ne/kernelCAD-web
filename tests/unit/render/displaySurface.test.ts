@@ -220,11 +220,22 @@ describe('pickIndicatorSubMeshNames', () => {
     expect(pickIndicatorSubMeshNames(['body', 'led-lens', 'pin'])).toEqual(['led-lens']);
     expect(pickIndicatorSubMeshNames(['dome', 'emitter'])).toEqual(['dome', 'emitter']);
     expect(pickIndicatorSubMeshNames(['indicator', 'bulb', 'lamp'])).toEqual(['indicator', 'bulb', 'lamp']);
+    expect(pickIndicatorSubMeshNames(['optic', 'diffuser'])).toEqual(['optic', 'diffuser']);
+  });
+
+  it('never picks pin/lead/terminal/contact names as emitters, even with "led" in them', () => {
+    expect(pickIndicatorSubMeshNames(['led-pins', 'led-dome'])).toEqual(['led-dome']);
+    expect(pickIndicatorSubMeshNames(['led_leads', 'lens'])).toEqual(['lens']);
+    expect(pickIndicatorSubMeshNames(['LED-Pins', 'LED-Lens'])).toEqual(['LED-Lens']);
+    expect(pickIndicatorSubMeshNames(['led-pins'])).toBeUndefined();
+    expect(pickIndicatorSubMeshNames(['led_contact', 'led_terminal'])).toBeUndefined();
+    expect(pickIndicatorSubMeshNames(['led-pins', 'body'])).toEqual(['body']);
   });
 
   it('otherwise drops pins/leads/pads and keeps the body', () => {
     expect(pickIndicatorSubMeshNames(['plastic-body', 'metal-lead'])).toEqual(['plastic-body']);
     expect(pickIndicatorSubMeshNames(['pin', 'leg', 'pad', 'solder'])).toBeUndefined();
+    expect(pickIndicatorSubMeshNames(['terminal', 'contact', 'body'])).toEqual(['body']);
   });
 
   it('returns undefined when every mesh is a candidate (apply to all)', () => {

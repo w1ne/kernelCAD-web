@@ -34,7 +34,7 @@
     <text x="48" y="422" font-family="DejaVu Sans" font-size="18" fill="#374151">imported display mesh</text>
     <rect x="48" y="330" width="532" height="34" fill="#2d6cdf" fill-opacity="0.18" stroke="#1d4ed8" stroke-width="2"/>
        <text x="314" y="314" text-anchor="middle" font-family="DejaVu Sans" font-size="20" font-weight="700" fill="#1d4ed8">imported 3000 mm, exactly on the source</text>
-    
+
 
     <line x1="48" y1="408" x2="48" y2="422" stroke="#9aa0a6" stroke-width="2"/><text x="48" y="444" text-anchor="middle" font-family="DejaVu Sans" font-size="16" fill="#6b7280">0 m</text><line x1="225.33333333333334" y1="408" x2="225.33333333333334" y2="422" stroke="#9aa0a6" stroke-width="2"/><text x="225.33333333333334" y="444" text-anchor="middle" font-family="DejaVu Sans" font-size="16" fill="#6b7280">1 m</text><line x1="402.6666666666667" y1="408" x2="402.6666666666667" y2="422" stroke="#9aa0a6" stroke-width="2"/><text x="402.6666666666667" y="444" text-anchor="middle" font-family="DejaVu Sans" font-size="16" fill="#6b7280">2 m</text><line x1="580" y1="408" x2="580" y2="422" stroke="#9aa0a6" stroke-width="2"/><text x="580" y="444" text-anchor="middle" font-family="DejaVu Sans" font-size="16" fill="#6b7280">3 m</text>
 

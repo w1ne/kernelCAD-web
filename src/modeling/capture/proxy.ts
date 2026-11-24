@@ -1034,8 +1034,10 @@ export class Shape {
   }
 
   /**
-   * Push or pull planar faces along their outward normals by `distance` mm.
-   * Positive grows the solid. A non-planar face is rejected by name.
+   * Push or pull faces along their outward normals by `distance` mm. Positive
+   * grows the solid. A planar face slides; a full 360° cylindrical face
+   * changes radius (a bore narrows, a boss widens). Partial cylinders, cones
+   * and free-form faces are rejected by name.
    */
   offsetFaces(faces: FaceEditInput, distance: Editable<number>): Shape {
     return captureOffsetFaces(this.session, this, faces, distance);

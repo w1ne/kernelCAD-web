@@ -170,37 +170,57 @@ function displaySurfaceParams(
   tex: THREE.Texture,
   spec: ResolvedDisplaySurface,
 ): THREE.MeshPhysicalMaterialParameters {
-  const base: THREE.MeshPhysicalMaterialParameters = {
-    map: tex,
+  // Coplanar overlay flags are shared by every mode; the screen finish is not.
+  const overlay: THREE.MeshPhysicalMaterialParameters = {
     metalness: 0,
     polygonOffset: true,
     polygonOffsetFactor: -1,
     polygonOffsetUnits: -1,
   };
   if (spec.mode === 'epaper') {
-    return { ...base, color: 0xffffff, roughness: 0.84, clearcoat: 0, emissive: 0x000000, emissiveIntensity: 0 };
-  }
-  if (spec.mode === 'lcd') {
+    // Matte reflective e-ink paper: a diffuse print, no backlight.
     return {
-      ...base,
+      ...overlay,
+      map: tex,
       color: 0xffffff,
-      emissive: 0xffffff,
-      emissiveMap: tex,
-      emissiveIntensity: spec.emissiveIntensity ?? 0.8,
-      roughness: 0.24,
-      clearcoat: 0.4,
-      clearcoatRoughness: 0.12,
+      roughness: 0.92,
+      specularIntensity: 0.08,
+      envMapIntensity: 0.35,
+      clearcoat: 0,
+      emissive: 0x000000,
+      emissiveIntensity: 0,
     };
   }
+  if (spec.mode === 'lcd') {
+    // Dark polariser albedo keeps backlit contrast; a low specular floor stops
+    // the key light from washing the panel out.
+    return {
+      ...overlay,
+      map: tex,
+      color: 0x1c222b,
+      emissive: 0xffffff,
+      emissiveMap: tex,
+      emissiveIntensity: spec.emissiveIntensity ?? 1.05,
+      roughness: 0.14,
+      specularIntensity: 0.22,
+      envMapIntensity: 0.2,
+      clearcoat: 0.12,
+      clearcoatRoughness: 0.1,
+    };
+  }
+  // OLED: near-black anti-reflective polariser base, no diffuse albedo at all
+  // (the panel only emits), so unlit pixels stay black instead of grey.
   return {
-    ...base,
-    color: 0x05080d,
+    ...overlay,
+    color: 0x05070a,
     emissive: 0xffffff,
     emissiveMap: tex,
-    emissiveIntensity: spec.emissiveIntensity ?? 1.8,
-    roughness: 0.22,
-    clearcoat: 0.35,
-    clearcoatRoughness: 0.12,
+    emissiveIntensity: spec.emissiveIntensity ?? 1.6,
+    roughness: 0.08,
+    specularIntensity: 0.15,
+    envMapIntensity: 0.12,
+    clearcoat: 0.08,
+    clearcoatRoughness: 0.06,
   };
 }
 
@@ -290,9 +310,10 @@ export async function applyDisplaySurfaces(
   return { applied, missing };
 }
 
-/** Full-brightness epoxy lens tint of the LED colour. */
+/** Full-brightness epoxy lens tint: keep the LED hue saturated so AgX does not
+ *  desaturate lit domes into chalky white. */
 function litLensTint(color: string): THREE.Color {
-  return new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.55);
+  return new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.22);
 }
 
 /** Unlit resin tint: the LED colour darkened toward its plastic body. */
@@ -329,37 +350,105 @@ function applyLensFinish(material: THREE.MeshStandardMaterial, lit: boolean): vo
 
 function applyIndicatorMaterial(material: THREE.MeshStandardMaterial, spec: ResolvedIndicatorState): void {
   const lit = spec.level > 0;
+  const authoredOpacity = typeof material.userData.authoredOpacity === 'number'
+    ? material.userData.authoredOpacity
+    : material.opacity;
   material.emissive = new THREE.Color(spec.color);
   material.emissiveIntensity = lit ? spec.level * spec.intensity : 0;
   material.color = lit ? litLensTint(spec.color) : unlitResinTint(spec.color);
+  // Translucent epoxy domes blend their emission by alpha when left at low
+  // opacity, which washes lit LEDs out. Raise opacity while lit and restore the
+  // authored lens translucency when turned off.
+  if (lit && authoredOpacity < 0.94) {
+    material.opacity = 0.94;
+    material.transparent = true;
+  } else if (!lit) {
+    material.opacity = authoredOpacity;
+    material.transparent = authoredOpacity < 1 || ((material as THREE.MeshPhysicalMaterial).transmission ?? 0) > 0;
+  }
   applyLensFinish(material, lit);
   material.needsUpdate = true;
 }
 
-function indicatorMeshesFor(group: THREE.Group, subMeshName: string | undefined): THREE.Mesh[] {
-  const meshes = groupModelMeshes(group);
-  if (subMeshName !== undefined) return selectBySubMesh(meshes, subMeshName);
-  const names = uniqueSubMeshNames(meshes);
-  if (names.length === 0) return meshes;
-  const picked = pickIndicatorSubMeshNames(names);
-  if (picked === undefined || picked.length === 0) return meshes;
-  const wanted = new Set(picked.map((name) => name.toLowerCase()));
+/** Sub-mesh names that are hardware, never the light: pins, leads, pads. */
+const PIN_SUBMESH_NAME = /pin|lead|leg|pad|solder|metal|terminal|contact/i;
+
+function standardMaterialsOf(mesh: THREE.Mesh): THREE.MeshStandardMaterial[] {
+  const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+  return materials.filter((entry): entry is THREE.MeshStandardMaterial => entry instanceof THREE.MeshStandardMaterial);
+}
+
+/** Glass / epoxy lens: transmissive, or authored / material alpha below opaque. */
+function isTranslucentMaterial(material: THREE.MeshStandardMaterial): boolean {
+  const authored = material.userData.authoredOpacity;
+  const transmission = (material as THREE.MeshPhysicalMaterial).transmission ?? 0;
+  return transmission > 0
+    || (typeof authored === 'number' && authored < 0.99)
+    || (material.transparent && material.opacity < 0.99);
+}
+
+/** A mesh is hardware metal when every material is metallic and none is a
+ *  translucent lens. Imported GLBs share one material across sub-meshes, so
+ *  the material test has to back up the (often missing) sub-mesh name. */
+function isMetallicMesh(mesh: THREE.Mesh): boolean {
+  const materials = standardMaterialsOf(mesh);
+  return materials.length > 0
+    && materials.every((material) => material.metalness >= 0.5 && !isTranslucentMaterial(material));
+}
+
+function isTranslucentMesh(mesh: THREE.Mesh): boolean {
+  return standardMaterialsOf(mesh).some(isTranslucentMaterial);
+}
+
+/** Drop pins/leads and metal hardware; fall back to every mesh when that would
+ *  leave nothing to light. */
+function indicatorCandidates(meshes: readonly THREE.Mesh[]): THREE.Mesh[] {
+  const filtered = meshes.filter((mesh) => {
+    const name = subMeshNameOf(mesh);
+    if (name !== undefined && PIN_SUBMESH_NAME.test(name)) return false;
+    return !isMetallicMesh(mesh);
+  });
+  return filtered.length > 0 ? filtered : [...meshes];
+}
+
+function namedSubMeshes(meshes: readonly THREE.Mesh[], names: readonly string[]): THREE.Mesh[] {
+  const wanted = new Set(names.map((name) => name.toLowerCase()));
   return meshes.filter((mesh) => {
     const name = subMeshNameOf(mesh);
     return name !== undefined && wanted.has(name.toLowerCase());
   });
 }
 
-/** Local light at the LED so lit indicators spill colour onto nearby PCB and
- *  enclosure surfaces, and move with the part. */
+function indicatorMeshesFor(group: THREE.Group, subMeshName: string | undefined): THREE.Mesh[] {
+  const meshes = groupModelMeshes(group);
+  if (subMeshName !== undefined) return selectBySubMesh(meshes, subMeshName);
+  if (meshes.length <= 1) return meshes;
+  const candidates = indicatorCandidates(meshes);
+  const picked = pickIndicatorSubMeshNames(uniqueSubMeshNames(candidates));
+  if (picked !== undefined && picked.length > 0) {
+    const named = namedSubMeshes(candidates, picked);
+    if (named.length > 0) return named;
+  }
+  const lenses = candidates.filter(isTranslucentMesh);
+  if (lenses.length > 0 && lenses.length < candidates.length) return lenses;
+  return candidates;
+}
+
+/** Dome-centred physical light at the LED: inverse-square falloff with no hard
+ *  cutoff radius, so nearby metal and satin surfaces never show a clipped
+ *  crescent reflection. Intensity scales gently with the dome radius. */
 function addIndicatorLight(
   group: THREE.Group,
   spec: ResolvedIndicatorState,
   meshes: readonly THREE.Mesh[],
 ): void {
   if (spec.level <= 0 || meshes.length === 0) return;
-  const centre = localBoundsOf(group, meshes).getCenter(new THREE.Vector3());
-  const light = new THREE.PointLight(spec.color, 14 * spec.level, 40, 1.2);
+  const bounds = localBoundsOf(group, meshes);
+  if (bounds.isEmpty()) return;
+  const centre = bounds.getCenter(new THREE.Vector3());
+  const radius = Math.max(bounds.getBoundingSphere(new THREE.Sphere()).radius, 0.75);
+  const intensity = Math.min(Math.max(radius * radius * 16.0, 30), 260) * spec.level;
+  const light = new THREE.PointLight(spec.color, intensity, 0, 2);
   light.position.copy(centre);
   light.userData[KCAD_INDICATOR_LIGHT_KEY] = true;
   light.castShadow = false;

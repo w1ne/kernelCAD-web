@@ -207,8 +207,12 @@ function inferSurface(name: string): Pick<PBRMaterial, 'metalness' | 'roughness'
   const n = name.toLowerCase();
   if (/pcb|board|solder.?mask/.test(n)) return { metalness: 0, roughness: 0.38, clearcoat: 0.42 };
   if (/pin|pad|copper|gold|brass|terminal/.test(n)) return { metalness: 0.92, roughness: 0.24 };
-  if (/crystal|shield|usb|can|metal|steel|alum/.test(n)) return { metalness: 0.9, roughness: 0.28 };
-  if (/oled|screen|glass|lens/.test(n)) return { metalness: 0, roughness: 0.12, clearcoat: 0.85 };
+  if (/crystal|shield|usb|can|metal|steel|alum|battery.?holder|clip|standoff|screw|nut|bolt|heatsink/.test(n)) {
+    return { metalness: 0.9, roughness: 0.28 };
+  }
+  if (/oled|screen|glass|lens/.test(n)) return { metalness: 0, roughness: 0.08, clearcoat: 0.35 };
+  if (/epaper|e-?ink|panel/.test(n)) return { metalness: 0, roughness: 0.85 };
+  if (/shroud|housing|ic|mcu|chip|relay|switch/.test(n)) return { metalness: 0, roughness: 0.58 };
   return { metalness: 0, roughness: 0.52 };
 }
 

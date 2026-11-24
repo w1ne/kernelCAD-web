@@ -415,16 +415,18 @@ export function validateIndicatorStates(raw: unknown): IndicatorStatesValidation
   return { ok: true, indicators };
 }
 
-const LED_SUBMESH = /led|lens|dome|emitter|indicator|bulb|lamp/i;
-const PIN_SUBMESH = /pin|lead|leg|pad|solder|metal/i;
+const LED_SUBMESH = /led|lens|dome|emitter|indicator|bulb|lamp|diffuser|optic/i;
+const PIN_SUBMESH = /pin|lead|leg|pad|solder|metal|terminal|contact/i;
 
 /** Sub-meshes that carry the light: an explicit LED/lens/dome name wins; else
- *  strip pins/leads/pads and keep the body; undefined means every mesh. */
+ *  strip pins/leads/pads and keep the body; undefined means every mesh.
+ *  Pin/lead names are dropped BEFORE the LED test, so `led-pins` and
+ *  `led_leads` never read as emitters. */
 export function pickIndicatorSubMeshNames(names: readonly string[]): string[] | undefined {
-  const emitters = names.filter((name) => LED_SUBMESH.test(name));
+  const nonPin = names.filter((name) => !PIN_SUBMESH.test(name));
+  const emitters = nonPin.filter((name) => LED_SUBMESH.test(name));
   if (emitters.length > 0) return emitters;
-  const body = names.filter((name) => !PIN_SUBMESH.test(name));
-  if (body.length > 0 && body.length < names.length) return body;
+  if (nonPin.length > 0 && nonPin.length < names.length) return nonPin;
   return undefined;
 }
 

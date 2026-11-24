@@ -1,0 +1,224 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/kernelCAD-web/foundation-parity-20261111[39m
+
+ [31m×[39m tests/integration/modeling/cylindricalFaceOffset.test.ts[2m > [22moffsetFaces on a full cylindrical face[2m > [22mnarrows a 10 mm through bore to 8 mm and adds the exact ring volume[32m 137[2mms[22m[39m
+[31m   → expected [ { target: 'export-occt', …(6) } ] to deeply equal [][39m
+ [31m×[39m tests/integration/modeling/cylindricalFaceOffset.test.ts[2m > [22moffsetFaces on a full cylindrical face[2m > [22menlarges the same bore to 12 mm when the distance is negative[32m 19[2mms[22m[39m
+[31m   → expected [ { target: 'export-occt', …(6) } ] to deeply equal [][39m
+ [31m×[39m tests/integration/modeling/cylindricalFaceOffset.test.ts[2m > [22moffsetFaces on a full cylindrical face[2m > [22mgrows a boss from 10 mm to 11 mm radius[32m 6[2mms[22m[39m
+[31m   → expected [ { target: 'export-occt', …(6) } ] to deeply equal [][39m
+ [31m×[39m tests/integration/modeling/cylindricalFaceOffset.test.ts[2m > [22moffsetFaces on a full cylindrical face[2m > [22mkeeps a blind bore floor at its original height and only changes the wall[32m 28[2mms[22m[39m
+[31m   → expected [ { target: 'export-occt', …(6) } ] to deeply equal [][39m
+ [31m×[39m tests/integration/modeling/cylindricalFaceOffset.test.ts[2m > [22moffsetFaces on a full cylindrical face[2m > [22mresolves a ParamRef distance at lower time[32m 23[2mms[22m[39m
+[31m   → expected [ { target: 'export-occt', …(6) } ] to deeply equal [][39m
+ [31m×[39m tests/integration/modeling/cylindricalFaceOffset.test.ts[2m > [22moffsetFaces on a full cylindrical face[2m > [22mrefuses a partial cylindrical face because a radial sleeve would reach outside it[32m 27[2mms[22m[39m
+[31m   → expected 'FaceEditError FACE_EDIT_NOT_PLANAR: o…' to match /FACE_EDIT_INCONSISTENT/[39m
+ [31m×[39m tests/integration/modeling/cylindricalFaceOffset.test.ts[2m > [22moffsetFaces on a full cylindrical face[2m > [22mrefuses a distance that would collapse the bore instead of returning a wrong body[32m 18[2mms[22m[39m
+[31m   → expected 'FaceEditError FACE_EDIT_NOT_PLANAR: o…' to match /FACE_EDIT_INCONSISTENT/[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 7 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/modeling/cylindricalFaceOffset.test.ts[2m > [22moffsetFaces on a full cylindrical face[2m > [22mnarrows a 10 mm through bore to 8 mm and adds the exact ring volume
+[31m[1mAssertionError[22m: expected [ { target: 'export-occt', …(6) } ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   {[39m
+[31m+     "code": "feature.face-edit.rejected",[39m
+[31m+     "featureId": "offsetFaces_1",[39m
+[31m+     "hint": "offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.",[39m
+[31m+     "message": "FaceEditError FACE_EDIT_NOT_PLANAR: offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.",[39m
+[31m+     "nextAction": {[39m
+[31m+       "guidance": "offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.",[39m
+[31m+       "kind": "rewrite-feature",[39m
+[31m+     },[39m
+[31m+     "severity": "error",[39m
+[31m+     "target": "export-occt",[39m
+[31m+   },[39m
+[31m+ ][39m
+
+[36m [2m❯[22m tests/integration/modeling/cylindricalFaceOffset.test.ts:[2m50:69[22m[39m
+    [90m 48| [39m  it('narrows a 10 mm through bore to 8 mm and adds the exact ring vol…
+    [90m 49| [39m    const model = await modelOf(`${PLATE_WITH_BORE}  return body.offse…
+    [90m 50| [39m    expect(model.diagnostics.filter((d) => d.severity === 'error')).to…
+    [90m   | [39m                                                                    [31m^[39m
+    [90m 51| [39m    [35mconst[39m shape [33m=[39m model[33m.[39mrootShape [35mas[39m [33mOcctBackend[39m[33m;[39m
+    [90m 52| [39m    [35mtry[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/modeling/cylindricalFaceOffset.test.ts[2m > [22moffsetFaces on a full cylindrical face[2m > [22menlarges the same bore to 12 mm when the distance is negative
+[31m[1mAssertionError[22m: expected [ { target: 'export-occt', …(6) } ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   {[39m
+[31m+     "code": "feature.face-edit.rejected",[39m
+[31m+     "featureId": "offsetFaces_1",[39m
+[31m+     "hint": "offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.",[39m
+[31m+     "message": "FaceEditError FACE_EDIT_NOT_PLANAR: offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.",[39m
+[31m+     "nextAction": {[39m
+[31m+       "guidance": "offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.",[39m
+[31m+       "kind": "rewrite-feature",[39m
+[31m+     },[39m
+[31m+     "severity": "error",[39m
+[31m+     "target": "export-occt",[39m
+[31m+   },[39m
+[31m+ ][39m
+
+[36m [2m❯[22m tests/integration/modeling/cylindricalFaceOffset.test.ts:[2m71:69[22m[39m
+    [90m 69| [39m  it('enlarges the same bore to 12 mm when the distance is negative', …
+    [90m 70| [39m    const model = await modelOf(`${PLATE_WITH_BORE}  return body.offse…
+    [90m 71| [39m    expect(model.diagnostics.filter((d) => d.severity === 'error')).to…
+    [90m   | [39m                                                                    [31m^[39m
+    [90m 72| [39m    [35mconst[39m shape [33m=[39m model[33m.[39mrootShape [35mas[39m [33mOcctBackend[39m[33m;[39m
+    [90m 73| [39m    [35mtry[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/modeling/cylindricalFaceOffset.test.ts[2m > [22moffsetFaces on a full cylindrical face[2m > [22mgrows a boss from 10 mm to 11 mm radius
+[31m[1mAssertionError[22m: expected [ { target: 'export-occt', …(6) } ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   {[39m
+[31m+     "code": "feature.face-edit.rejected",[39m
+[31m+     "featureId": "offsetFaces_1",[39m
+[31m+     "hint": "offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.",[39m
+[31m+     "message": "FaceEditError FACE_EDIT_NOT_PLANAR: offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.",[39m
+[31m+     "nextAction": {[39m
+[31m+       "guidance": "offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.",[39m
+[31m+       "kind": "rewrite-feature",[39m
+[31m+     },[39m
+[31m+     "severity": "error",[39m
+[31m+     "target": "export-occt",[39m
+[31m+   },[39m
+[31m+ ][39m
+
+[36m [2m❯[22m tests/integration/modeling/cylindricalFaceOffset.test.ts:[2m86:69[22m[39m
+    [90m 84| [39m  [34mit[39m([32m'grows a boss from 10 mm to 11 mm radius'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+    [90m 85| [39m    const model = await modelOf(`return cylinder(20, 10).offsetFaces({…
+    [90m 86| [39m    expect(model.diagnostics.filter((d) => d.severity === 'error')).to…
+    [90m   | [39m                                                                    [31m^[39m
+    [90m 87| [39m    [35mconst[39m shape [33m=[39m model[33m.[39mrootShape [35mas[39m [33mOcctBackend[39m[33m;[39m
+    [90m 88| [39m    [35mtry[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/modeling/cylindricalFaceOffset.test.ts[2m > [22moffsetFaces on a full cylindrical face[2m > [22mkeeps a blind bore floor at its original height and only changes the wall
+[31m[1mAssertionError[22m: expected [ { target: 'export-occt', …(6) } ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   {[39m
+[31m+     "code": "feature.face-edit.rejected",[39m
+[31m+     "featureId": "offsetFaces_1",[39m
+[31m+     "hint": "offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.",[39m
+[31m+     "message": "FaceEditError FACE_EDIT_NOT_PLANAR: offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.",[39m
+[31m+     "nextAction": {[39m
+[31m+       "guidance": "offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.",[39m
+[31m+       "kind": "rewrite-feature",[39m
+[31m+     },[39m
+[31m+     "severity": "error",[39m
+[31m+     "target": "export-occt",[39m
+[31m+   },[39m
+[31m+ ][39m
+
+[36m [2m❯[22m tests/integration/modeling/cylindricalFaceOffset.test.ts:[2m111:69[22m[39m
+    [90m109| [39m      return body.offsetFaces({ ofSurfaceType: 'CYLINDER' }, 1);
+    [90m110| [39m    `[39m)[33m;[39m
+    [90m111| [39m    expect(model.diagnostics.filter((d) => d.severity === 'error')).to…
+    [90m   | [39m                                                                    [31m^[39m
+    [90m112| [39m    [35mconst[39m shape [33m=[39m model[33m.[39mrootShape [35mas[39m [33mOcctBackend[39m[33m;[39m
+    [90m113| [39m    [35mtry[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/modeling/cylindricalFaceOffset.test.ts[2m > [22moffsetFaces on a full cylindrical face[2m > [22mresolves a ParamRef distance at lower time
+[31m[1mAssertionError[22m: expected [ { target: 'export-occt', …(6) } ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   {[39m
+[31m+     "code": "feature.face-edit.rejected",[39m
+[31m+     "featureId": "offsetFaces_1",[39m
+[31m+     "hint": "offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.",[39m
+[31m+     "message": "FaceEditError FACE_EDIT_NOT_PLANAR: offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.",[39m
+[31m+     "nextAction": {[39m
+[31m+       "guidance": "offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean.",[39m
+[31m+       "kind": "rewrite-feature",[39m
+[31m+     },[39m
+[31m+     "severity": "error",[39m
+[31m+     "target": "export-occt",[39m
+[31m+   },[39m
+[31m+ ][39m
+
+[36m [2m❯[22m tests/integration/modeling/cylindricalFaceOffset.test.ts:[2m135:69[22m[39m
+    [90m133| [39m      return body.offsetFaces({ ofSurfaceType: 'CYLINDER' }, grow);
+    [90m134| [39m    `[39m)[33m;[39m
+    [90m135| [39m    expect(model.diagnostics.filter((d) => d.severity === 'error')).to…
+    [90m   | [39m                                                                    [31m^[39m
+    [90m136| [39m    [35mconst[39m shape [33m=[39m model[33m.[39mrootShape [35mas[39m [33mOcctBackend[39m[33m;[39m
+    [90m137| [39m    [35mtry[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/modeling/cylindricalFaceOffset.test.ts[2m > [22moffsetFaces on a full cylindrical face[2m > [22mrefuses a partial cylindrical face because a radial sleeve would reach outside it
+[31m[1mAssertionError[22m: expected 'FaceEditError FACE_EDIT_NOT_PLANAR: o…' to match /FACE_EDIT_INCONSISTENT/[39m
+
+[32m- Expected:[39m 
+/FACE_EDIT_INCONSISTENT/
+
+[31m+ Received:[39m 
+"FaceEditError FACE_EDIT_NOT_PLANAR: offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean."
+
+[36m [2m❯[22m tests/integration/modeling/cylindricalFaceOffset.test.ts:[2m154:32[22m[39m
+    [90m152| [39m    [34mexpect[39m(errors)[33m.[39m[34mtoHaveLength[39m([34m1[39m)[33m;[39m
+    [90m153| [39m    [34mexpect[39m(errors[[34m0[39m][33m![39m[33m.[39mcode)[33m.[39m[34mtoBe[39m([32m'feature.face-edit.rejected'[39m)[33m;[39m
+    [90m154| [39m    [34mexpect[39m(errors[[34m0[39m][33m![39m[33m.[39mmessage)[33m.[39m[34mtoMatch[39m([36m/FACE_EDIT_INCONSISTENT/[39m)[33m;[39m
+    [90m   | [39m                               [31m^[39m
+    [90m155| [39m    [34mexpect[39m(errors[[34m0[39m][33m![39m[33m.[39mmessage)[33m.[39m[34mtoMatch[39m([36m/partial cylinder/i[39m)[33m;[39m
+    [90m156| [39m  }[33m,[39m [34m120_000[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/modeling/cylindricalFaceOffset.test.ts[2m > [22moffsetFaces on a full cylindrical face[2m > [22mrefuses a distance that would collapse the bore instead of returning a wrong body
+[31m[1mAssertionError[22m: expected 'FaceEditError FACE_EDIT_NOT_PLANAR: o…' to match /FACE_EDIT_INCONSISTENT/[39m
+
+[32m- Expected:[39m 
+/FACE_EDIT_INCONSISTENT/
+
+[31m+ Received:[39m 
+"FaceEditError FACE_EDIT_NOT_PLANAR: offsetFaces: this face is CYLINDRE. OCCT moves a planar face along its normal (a prism of that face, fused or cut). A cylinder, cone, sphere or free-form face would change radius or be rebuilt differently, so this call stops. Select a planar face, or change the solid with a boolean."
+
+[36m [2m❯[22m tests/integration/modeling/cylindricalFaceOffset.test.ts:[2m163:32[22m[39m
+    [90m161| [39m    [34mexpect[39m(errors)[33m.[39m[34mtoHaveLength[39m([34m1[39m)[33m;[39m
+    [90m162| [39m    [34mexpect[39m(errors[[34m0[39m][33m![39m[33m.[39mcode)[33m.[39m[34mtoBe[39m([32m'feature.face-edit.rejected'[39m)[33m;[39m
+    [90m163| [39m    [34mexpect[39m(errors[[34m0[39m][33m![39m[33m.[39mmessage)[33m.[39m[34mtoMatch[39m([36m/FACE_EDIT_INCONSISTENT/[39m)[33m;[39m
+    [90m   | [39m                               [31m^[39m
+    [90m164| [39m    [34mexpect[39m(errors[[34m0[39m][33m![39m[33m.[39mmessage)[33m.[39m[34mtoMatch[39m([36m/collapse/i[39m)[33m;[39m
+    [90m165| [39m    [90m// The failed edit returns the unchanged body, not a phantom solid.[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m7 failed[39m[22m[90m (7)[39m
+[2m   Start at [22m 22:18:17
+[2m   Duration [22m 4.54s[2m (transform 3.22s, setup 114ms, import 3.77s, tests 503ms, environment 0ms)[22m
+
