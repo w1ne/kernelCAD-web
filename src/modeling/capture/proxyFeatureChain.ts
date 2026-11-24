@@ -349,38 +349,83 @@ export function validateCircularPatternOpts(
   return angleDeg;
 }
 
+/** A validated `shell` request: either open the named faces, or seal the
+ *  body around an internal cavity when `closed: true`. */
+export interface ShellRequest {
+  closed: boolean;
+  faces: (FaceSelector | string)[];
+}
+
 /**
- * Validate `shell(thickness, opts)` options and return the faces to open.
- * Any key other than `face` throws, as does a missing or empty `face`.
+ * Validate `shell(thickness, opts)` options. Any key other than `face` or
+ * `closed` throws. Exactly one mode is required: `face` names at least one
+ * face to open, or `closed: true` keeps every face and leaves a sealed
+ * cavity. Omitting both stays invalid so an empty option object cannot
+ * silently change an open shell into a closed one.
  */
-export function resolveShellFaces(opts: unknown, featureId: FeatureId): (FaceSelector | string)[] {
-  const unknownKey = opts !== null && typeof opts === 'object' && !Array.isArray(opts)
-    ? Object.keys(opts).find((key) => key !== 'face')
-    : undefined;
+export function resolveShellRequest(opts: unknown, featureId: FeatureId): ShellRequest {
+  if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) {
+    invalidArgs({
+      api: 'shell(thickness, opts)',
+      path: 'opts',
+      got: opts,
+      showType: true,
+      requires: "an option object { face } or { closed: true }",
+      example: "box(40, 30, 10).shell(2, { face: 'top' })",
+      featureId,
+    });
+  }
+  const unknownKey = Object.keys(opts).find((key) => key !== 'face' && key !== 'closed');
   if (unknownKey !== undefined) {
     // A dropped `faces: ['bottom']` left the bottom closed, and a dropped
     // `enabled: false` still hollowed the solid.
     invalidArgs({
-      api: 'shell(thickness, { face })',
+      api: 'shell(thickness, { face, closed })',
       path: `opts.${unknownKey}`,
       got: (opts as Record<string, unknown>)[unknownKey],
-      requires: "a known option key; shell accepts only face — pass an array to open several faces: { face: ['top', 'bottom'] }",
+      requires: "a known option key; shell accepts only face and closed — pass an array to open several faces: { face: ['top', 'bottom'] }",
       example: "box(40, 30, 10).shell(2, { face: 'top' })",
       featureId,
     });
   }
-  const face = (opts as { face?: unknown } | undefined | null)?.face;
+  const face = (opts as { face?: unknown }).face;
+  const closed = (opts as { closed?: unknown }).closed;
+  if (closed !== undefined && typeof closed !== 'boolean') {
+    invalidArgs({
+      api: 'shell(thickness, { closed })',
+      path: 'opts.closed',
+      got: closed,
+      showType: true,
+      requires: 'true to seal the body around an internal cavity; omit it and name faces to open',
+      example: 'box(40, 30, 10).shell(2, { closed: true })',
+      featureId,
+    });
+  }
+  if (closed === true) {
+    if (face !== undefined) {
+      invalidArgs({
+        api: 'shell(thickness, { face, closed })',
+        path: 'opts.face',
+        got: face,
+        requires:
+          'no face when closed is true — a closed shell keeps every face; remove the face option or set closed to false',
+        example: 'box(40, 30, 10).shell(2, { closed: true })',
+        featureId,
+      });
+    }
+    return { closed: true, faces: [] };
+  }
   const list = Array.isArray(face) ? [...face] : [face];
   if (list.length === 0 || list.some((f) => f === undefined || f === null || f === '')) {
     invalidArgs({
-      api: 'shell(thickness, { face })',
+      api: 'shell(thickness, { face, closed })',
       path: 'opts.face',
       got: face,
       requires:
-        "the face to open, as a canonical name ('top'), a face label, or a FaceSelector query, or an array of those to open several faces; shell() always needs at least one — it removes those faces and leaves a wall of `thickness` behind",
+        "the face to open, as a canonical name ('top'), a face label, a FaceSelector query, or an array of those to open several faces; to leave every face in place and seal an internal cavity, pass { closed: true } instead",
       example: "box(40, 30, 10).shell(2, { face: 'top' })",
       featureId,
     });
   }
-  return list as (FaceSelector | string)[];
+  return { closed: false, faces: list as (FaceSelector | string)[] };
 }

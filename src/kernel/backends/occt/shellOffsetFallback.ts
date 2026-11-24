@@ -13,6 +13,9 @@
  *             (it shares that face with `inner`, so the fuse is clean)
  *   result  = body − (inner ∪ openings)
  *
+ * With no removed face (`{ closed: true }`), the same inward offset is the
+ * cavity: result = body − inner, leaving a sealed wall.
+ *
  * Both booleans go through the history-aware path (with its fuzzy recovery,
  * which matters here: the opening prism's walls are tangent to the blends),
  * and the face history is composed so body faces keep their lineage: a body
@@ -195,13 +198,18 @@ export function shellByOffsetSubtract(
   thickness: number,
 ): ShellFallbackResult | undefined {
   const oc = getOC() as OC;
-  if (!(thickness > 0) || removedFaces.length === 0) return undefined;
+  if (!(thickness > 0)) return undefined;
   // A wall at least half the thinnest extent leaves no cavity.
   if (thickness * 2 >= minExtent(oc, bodyShape)) return undefined;
   const bodyVolume = volumeOf(oc, bodyShape);
   const offset = offsetInward(oc, bodyShape, thickness, bodyVolume);
   if (!offset) return undefined;
   try {
+    // No removed face: leave the outer skin untouched and cut the inward
+    // offset out of it, producing a solid with a sealed internal cavity.
+    if (removedFaces.length === 0) {
+      return cutClosedCavity(oc, bodyShape, offset.inner, bodyVolume);
+    }
     const prisms: unknown[] = [];
     for (const removed of removedFaces) {
       const innerFaces = innerFacesOf(oc, offset.inner, offset.faceMap.get(hashOf(removed)) ?? []);
@@ -217,6 +225,32 @@ export function shellByOffsetSubtract(
   } catch {
     return undefined;
   }
+}
+
+/** A boolean-history pass-through for a shape that was not fused with
+ *  anything, so closed-shell inner faces still follow the final cut. */
+function identityBoolean(shape: unknown): BooleanHistoryResult {
+  return {
+    shape,
+    faceHistory: new Map(),
+    edgeHistory: new Map(),
+    deletedFaces: new Set(),
+    deletedEdges: new Set(),
+  };
+}
+
+/** Body minus its inward offset: a sealed wall with no opening. The outer
+ *  skin keeps its body-face lineage; the cavity faces are new and unnamed. */
+function cutClosedCavity(
+  oc: OC,
+  bodyShape: unknown,
+  inner: unknown,
+  bodyVolume: number,
+): ShellFallbackResult | undefined {
+  const cut = booleanShapesWithHistory(bodyShape, [inner], 'cut');
+  const volume = volumeOf(oc, cut.shape);
+  if (!(volume > 0) || !(volume < bodyVolume) || !isValidShape(oc, cut.shape)) return undefined;
+  return composeHistory(faceHashesOf(oc, bodyShape), cut, identityBoolean(inner), new Map(), []);
 }
 
 function faceHashesOf(oc: OC, shape: unknown): string[] {

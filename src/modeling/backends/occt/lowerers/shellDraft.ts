@@ -18,7 +18,8 @@ import type { FaceHash } from '../../../../kernel/naming/evolutionRecord';
 import { built, finished, type LowerContext, type LowerOutcome } from './context';
 import { drainResolvedWarnings } from './helpers';
 
-/** `shell` — hollows a solid, opening the selected face. */
+/** `shell` — hollows a solid, opening the selected faces. A record with no
+ *  face input keeps every face and leaves a sealed internal cavity. */
 export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
   let shape: OcctBackend;
   const base = ctx.inputs.byKey.base as OcctBackend | undefined;
@@ -29,7 +30,7 @@ export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
       featureId: r.id,
       severity: 'error',
       ...invalidArgsText({
-        api: 'shell(thickness, { face })',
+        api: 'shell(thickness, { face } | { closed: true })',
         path: 'inputs.base',
         gotText: 'no base shape',
         requires:
@@ -47,11 +48,11 @@ export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
       featureId: r.id,
       severity: 'error',
       ...invalidArgsText({
-        api: 'shell(thickness, { face })',
+        api: 'shell(thickness, { face } | { closed: true })',
         path: 'thickness',
         gotText: 'nothing',
         requires:
-          'a finite number > 0 as the FIRST argument — the wall left behind; .shell(thickness, { face }), never an options object alone',
+          'a finite number > 0 as the FIRST argument — the wall left behind; .shell(thickness, opts), never an options object alone',
         unit: 'mm',
         example: "box(40, 30, 10).shell(2, { face: 'top' })",
       }),
@@ -90,8 +91,8 @@ function shellFaceHashes(ctx: LowerContext, r: FeatureRecord, base: OcctBackend)
   const keys = Object.keys(r.inputs)
     .filter((key) => key === 'face' || /^face_\d+$/.test(key))
     .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-  // No face input at all: let pickFace report it, as the single-face form did.
-  if (keys.length === 0) keys.push('face');
+  // A record with no face input is a closed shell: keep every face.
+  if (keys.length === 0) return [];
   const hashes: { hash: FaceHash }[] = [];
   for (const key of keys) {
     const one: FeatureRecord = key === 'face' ? r : { ...r, inputs: { ...r.inputs, face: r.inputs[key] } };
@@ -126,7 +127,7 @@ function unchangedOpDiagnostic(featureId: string, op: 'shell' | 'draft', value: 
     severity: 'error',
     message: `${noun}: the solid is unchanged, so the operation was dropped.`,
     hint: op === 'shell'
-      ? 'A shell that leaves the volume and the face count alone did not hollow the body. The wall is thicker than the body can take, or the open face was not cut. The unshellled solid is not a successful shell.'
+      ? 'A shell that leaves the volume and the face count alone did not hollow the body. The wall is thicker than the body can take, or the open face was not cut. For a closed shell, leave enough room for an internal cavity. The unshellled solid is not a successful shell.'
       : 'A draft that leaves the volume and the face count alone did not taper the face. Pick a side face and a pull direction that is not parallel to that face.',
   };
 }

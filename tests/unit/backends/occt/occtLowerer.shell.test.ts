@@ -26,7 +26,7 @@ describe('OcctLowerer shell', () => {
     expect(result.shape.volume()).toBeLessThan(2000);
   });
 
-  it('emits feature.face-feature.face-required when face input is missing', async () => {
+  it('lowers a closed shell when face input is missing', async () => {
     const base = OcctBackend.box(20, 20, 20);
     const r: FeatureRecord = {
       id: 'shell_2', kind: 'shell',
@@ -35,9 +35,10 @@ describe('OcctLowerer shell', () => {
       transforms: [], suppressed: false,
     };
     const result = await new OcctLowerer().lower(r, { byKey: { base } });
-    const errs = result.diagnostics.filter(d => d.severity === 'error');
-    expect(errs).toHaveLength(1);
-    expect(errs[0].code).toBe('feature.invalid-args');
+    expect(result.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    // 20³ outer block less the sealed 19³ cavity.
+    expect(result.shape.volume()).toBeCloseTo(8000 - 19 * 19 * 19, 3);
+    expect(result.shape.faceHashes()).toHaveLength(12);
   });
 
   it('opens the top of a lineage-less transformed primitive (box rule)', async () => {

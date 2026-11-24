@@ -31,4 +31,15 @@ describe('Shape.shell capture', () => {
     });
     expect(shell.params.thickness.evaluated).toBe(1);
   });
+
+  it('registers a closed shell with no face input', async () => {
+    const code = `return box(20, 20, 20).shell(1, { closed: true });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    expect(result.records).toHaveLength(2);
+    const shell = result.records[1];
+    expect(shell.kind).toBe('shell');
+    expect(shell.inputs.base).toEqual({ kind: 'feature', id: result.records[0].id });
+    expect(shell.inputs.face).toBeUndefined();
+    expect(shell.params.thickness.evaluated).toBe(1);
+  });
 });

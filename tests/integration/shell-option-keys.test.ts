@@ -49,11 +49,30 @@ describe('Shape.shell option keys', () => {
     expect(session.getRecords().length).toBe(before);
   });
 
-  it.each([undefined, null, 'top'])('still rejects a non-object opts %j on opts.face', (opts) => {
+  it.each([undefined, null, 'top'])('still rejects a non-object opts %j', (opts) => {
     const { shape } = block();
     const err = caught(() => shape.shell(2, opts as never));
     expect(err.code).toBe('feature.invalid-args');
+    expect(err.message).toContain('opts');
+    expect(err.message).toContain('an option object');
+  });
+
+  it('hollows a sealed cavity when closed is true', async () => {
+    const { session, shape } = block();
+    const result = shape.shell(2, { closed: true });
+    const record = session.getRecords().at(-1)!;
+    expect(record.kind).toBe('shell');
+    expect(record.inputs.face).toBeUndefined();
+    // 40 x 30 x 10 block less a fully enclosed 36 x 26 x 6 cavity.
+    expect((await result.lower()).volume()).toBeCloseTo(12000 - 5616, 0);
+  });
+
+  it('rejects face and closed together', () => {
+    const { shape } = block();
+    const err = caught(() => shape.shell(2, { face: 'top', closed: true }));
+    expect(err.code).toBe('feature.invalid-args');
     expect(err.message).toContain('opts.face');
+    expect(err.message).toContain('no face when closed is true');
   });
 
   it('still hollows with one face or a face array', async () => {

@@ -127,7 +127,7 @@ import {
   normalizeFaceSelector,
   assertFeatureNameUniqueOnChain,
   nextOrdinalForKindOnChain,
-  assertScalarEdgeValue, assertFilletEndRadius, resolveShellFaces,
+  assertScalarEdgeValue, assertFilletEndRadius, resolveShellRequest,
 } from './proxyFeatureChain';
 import { validateChamferLegOptions } from './chamferLegOptions';
 import { assertFilletOptions } from './filletOptions';
@@ -982,17 +982,21 @@ export class Shape {
   }
 
   /**
-   * Hollow the solid to a wall of `thickness`, opening `opts.face`. Pass an
-   * array to open several faces at once: `{ face: ['top', 'bottom'] }` leaves
-   * a sleeve open at both ends. Any key other than `face` (`faces`,
-   * `enabled`, `direction`) throws `feature.invalid-args`.
+   * Hollow the solid to a wall of `thickness`. Name `opts.face` to open one
+   * or more faces: `{ face: 'top' }` leaves a tray, and an array such as
+   * `{ face: ['top', 'bottom'] }` leaves a sleeve open at both ends. Pass
+   * `{ closed: true }` to keep every face and leave a sealed internal cavity.
+   * Any key other than `face` or `closed` (`faces`, `enabled`, `direction`)
+   * throws `feature.invalid-args`.
    */
   shell(
     thickness: Editable<number>,
-    opts: { face: FaceSelector | CanonicalFace | string | readonly (FaceSelector | CanonicalFace | string)[] },
+    opts: { face?: FaceSelector | CanonicalFace | string | readonly (FaceSelector | CanonicalFace | string)[]; closed?: boolean },
   ): Shape {
     assertScalarEdgeValue('shell', 'thickness', thickness, this.id);
-    const list = resolveShellFaces(opts, this.id);
+    const request = resolveShellRequest(opts, this.id);
+    if (request.closed) return this.session.edgeFeature('shell', this, 'thickness', thickness);
+    const list = request.faces;
     return this.session.edgeFeature('shell', this, 'thickness', thickness, { face: list[0] },
       list.length > 1 ? { extraFaces: list.slice(1) } : undefined);
   }

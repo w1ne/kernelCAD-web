@@ -57,7 +57,7 @@ export const API_IDIOMS: readonly ApiIdiom[] = [
   {
     id: 'shell',
     aliases: ['shell', 'hollow', 'thicken wall', 'open face'],
-    use: "shell(thickness, { face }) hollows the body inward with a POSITIVE wall thickness and leaves the named face open: box(30, 30, 20).shell(2, { face: 'top' }).",
+    use: "shell(thickness, { face }) hollows the body inward with a POSITIVE wall thickness and leaves the named face open: box(30, 30, 20).shell(2, { face: 'top' }). Use { closed: true } instead of { face } to keep every face and leave a sealed internal cavity.",
     example: "box(30, 30, 20).shell(2, { face: 'top' })",
     entries: ['shell'],
   },

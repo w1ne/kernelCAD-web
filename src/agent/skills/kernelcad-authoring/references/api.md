@@ -560,9 +560,11 @@ shape, not a copy.
 .chamfer(distance, edges, { distance2?: number, angleDeg?: number, face?: FaceSelector }): Shape
 
 // Face features:
-.shell(thickness: number, { face: FaceSelector }): Shape  // face REQUIRED
+.shell(thickness: number, opts: { face?: FaceSelector | FaceSelector[]; closed?: true }): Shape  // name faces to open them
 // Open several faces in one shell: a sleeve open at both ends.
-.shell(thickness: number, { face: FaceSelector[] }): Shape  // e.g. { face: ['top', 'bottom'] }
+.shell(thickness: number, { face: ['top', 'bottom'] }): Shape  // e.g. { face: ['top', 'bottom'] }
+// Sealed hollow body: keep every face and leave an internal cavity.
+.shell(thickness: number, { closed: true }): Shape  // e.g. box(40, 30, 20).shell(2, { closed: true })
 // Direct face edit. Positive distance / an outward vector grows the solid.
 // OCCT only slides a planar face along its normal and rejects anything else
 // by name (`feature.face-edit.rejected`). A FaceQuery is a SET selector:
