@@ -34,12 +34,12 @@ function makeScene(): { scene: THREE.Scene; mesh: THREE.Mesh; environment: THREE
 }
 
 describe('publish / studio stage', () => {
-  it('switches AgX tone mapping and self-shadowing, then restores everything', () => {
+  it('switches AgX tone mapping and self-shadowing on stage=studio, then restores everything', () => {
     const renderer = stubRenderer();
     const { scene, mesh, environment } = makeScene();
-    applyPublishStage({ scene, renderer }, { background: '#e8ecf1', shadow: false });
+    applyPublishStage({ scene, renderer }, { background: '#e8ecf1', shadow: false, stage: 'studio' });
     expect(renderer.toneMapping).toBe(THREE.AgXToneMapping);
-    expect(renderer.toneMappingExposure).toBe(1.06);
+    expect(renderer.toneMappingExposure).toBe(1.08);
     expect(renderer.shadowMap).toMatchObject({ enabled: true, type: THREE.PCFSoftShadowMap });
     expect([mesh.castShadow, mesh.receiveShadow]).toEqual([true, true]);
     expect((scene.background as THREE.Color).getHexString()).toBe('e8ecf1');
@@ -54,22 +54,33 @@ describe('publish / studio stage', () => {
     expect((scene.background as THREE.Color).getHexString()).toBe('909090');
   });
 
-  it('replaces the default room probe; an explicit HDRI stays authoritative', () => {
+  it('replaces the default room probe on stage=studio; an explicit HDRI stays authoritative', () => {
     const renderer = stubRenderer();
     const { scene } = makeScene();
-    applyPublishStage({ scene, renderer }, { background: '#e8ecf1', shadow: false });
+    applyPublishStage({ scene, renderer }, { background: '#e8ecf1', shadow: false, stage: 'studio' });
     expect(scene.environment).toBeNull();
-    expect(scene.environmentIntensity).toBe(0.88);
+    expect(scene.environmentIntensity).toBe(0.55);
     expect(scene.environmentRotation.toArray().slice(0, 3)).toEqual([0, 0, 0]);
     clearPublishStage(scene);
 
     const explicit = new THREE.Texture();
     scene.environment = explicit;
     scene.userData.kCadDefaultEnv = false;
-    applyPublishStage({ scene, renderer }, { background: '#e8ecf1', shadow: false });
+    applyPublishStage({ scene, renderer }, { background: '#e8ecf1', shadow: false, stage: 'studio' });
     expect(scene.environment).toBe(explicit);
     clearPublishStage(scene);
     expect(scene.environment).toBe(explicit);
+  });
+
+  it('keeps legacy publish stage tone mapping and mesh shadow flags untouched', () => {
+    const renderer = stubRenderer();
+    const { scene, mesh, environment } = makeScene();
+    applyPublishStage({ scene, renderer }, { background: '#f4ecd7', shadow: false });
+    expect(renderer.toneMapping).toBe(THREE.NeutralToneMapping);
+    expect(renderer.shadowMap.enabled).toBe(false);
+    expect([mesh.castShadow, mesh.receiveShadow]).toEqual([false, false]);
+    expect(scene.environment).toBe(environment);
+    clearPublishStage(scene);
   });
 
   it('declines without WebGL; the backdrop falls back to a flat colour', () => {

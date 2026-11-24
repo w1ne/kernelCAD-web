@@ -141,7 +141,7 @@ describe('turntable input validation', () => {
     expect(resolveTurntableSettings({ turntable: true, preset: 'studio' })).toEqual({
       width: STUDIO_PRESET.stillWidth, height: STUDIO_PRESET.stillHeight, fps: 30, durationMs: 6000,
       elevationDeg: STUDIO_PRESET.heroElDeg,
-      publish: { background: 'studio', shadow: true },
+      publish: { background: 'studio', shadow: true, stage: 'studio' },
     });
   });
 

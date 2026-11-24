@@ -35,8 +35,15 @@ export interface ContactShadowLayer {
 }
 
 /** Two layers: a wide, faint penumbra from everything near the ground, and
- *  a tight, dark core where parts actually touch it (feet, bases). */
+ *  a tight, dark core where parts actually touch it (feet, bases). Kept exact
+ *  for legacy 'publish' catalog previews; studio uses STUDIO_CONTACT_SHADOW_LAYERS. */
 export const CONTACT_SHADOW_LAYERS: readonly ContactShadowLayer[] = [
+  { textureSize: 512, heightFraction: 0.45, darkness: 2.6, opacity: 0.75, blurPasses: [3, 2, 1] },
+  { textureSize: 1024, heightFraction: 0.04, darkness: 1.2, opacity: 0.5, blurPasses: [1.5, 1] },
+];
+
+/** Tighter two-layer studio contact AO for 'studio' preset renders. */
+export const STUDIO_CONTACT_SHADOW_LAYERS: readonly ContactShadowLayer[] = [
   { textureSize: 512, heightFraction: 0.32, darkness: 2.2, opacity: 0.50, blurPasses: [3, 2, 1] },
   { textureSize: 1024, heightFraction: 0.025, darkness: 2.6, opacity: 0.72, blurPasses: [1.1, 0.7] },
 ];

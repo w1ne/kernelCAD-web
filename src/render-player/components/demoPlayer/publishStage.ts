@@ -21,9 +21,16 @@
 // lit from the same side (a physical turntable under fixed studio lights).
 
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { PublishFrameCapture, PublishFrameRequest, PublishStageSpec } from '../../../shared/render/publishPreset';
 import { poseCameraDir } from '../../../shared/render/publishPreset';
-import { CONTACT_SHADOW_LAYERS, buildContactShadow, type ContactShadow } from './contactShadow';
+import {
+  CONTACT_SHADOW_LAYERS,
+  STUDIO_CONTACT_SHADOW_LAYERS,
+  buildContactShadow,
+  type ContactShadow,
+  type ContactShadowLayer,
+} from './contactShadow';
 import { frameForRequest, type Vec3 } from './publishFraming';
 import { fitCameraToBounds, isInsideFeatureGroup, isVisibleInScene } from './demoPlayerGeometry';
 
@@ -35,13 +42,13 @@ export const STAGE_HELPER_KEY = 'kCadStageHelper';
  *  camera flattens perspective distortion the way a studio lens does. */
 export const PUBLISH_FOV_DEG = 30;
 
-/** Procedural studio softbox IBL strength under the studio rig. Balanced so
- *  metals and glass reflect bright softbox cards while the shadow-casting key
- *  light drives >60% of diffuse lighting for crisp inter-part self-shadowing. */
-const PUBLISH_ENV_INTENSITY = 0.88;
-/** AgX tone mapping: clean highlight roll-off for metals, glass and brass. */
-const PUBLISH_TONE_MAPPING = THREE.AgXToneMapping;
-const PUBLISH_TONE_MAPPING_EXPOSURE = 1.06;
+/** Room IBL strength under the legacy publish rig and procedural softbox IBL
+ *  strength under the studio rig. */
+const PUBLISH_ENV_INTENSITY = 0.55;
+/** AgX tone mapping for the studio stage: clean highlight roll-off for metals,
+ *  glass and brass. */
+const STUDIO_TONE_MAPPING = THREE.AgXToneMapping;
+const STUDIO_TONE_MAPPING_EXPOSURE = 1.08;
 
 interface LightSpec {
   kind: 'directional' | 'hemisphere';
@@ -54,16 +61,24 @@ interface LightSpec {
   castShadow?: boolean;
 }
 
+/** Legacy publish rig — kept exact so committed catalog previews stay pixel-stable. */
+const LEGACY_PUBLISH_LIGHTS: readonly LightSpec[] = [
+  { kind: 'directional', color: 0xfff4e8, intensity: 2.1, azOffsetDeg: -40, elDeg: 48 },
+  { kind: 'directional', color: 0xe6eeff, intensity: 0.75, azOffsetDeg: 65, elDeg: 18 },
+  { kind: 'directional', color: 0xffffff, intensity: 1.6, azOffsetDeg: 165, elDeg: 38 },
+  { kind: 'hemisphere', color: 0xffffff, intensity: 0.45, azOffsetDeg: 0, elDeg: 90 },
+];
+
 /** Crisp 3-point studio rig: dominant warm key upper-front-left (shadow
  *  caster), restrained cool fill front-right, grazing rear rim, and subtle
  *  sky/ground bounce so cast shadows read crisply across parts and PCBs. */
-const PUBLISH_KEY = { color: 0xfff6ec, intensity: 2.2, azOffsetDeg: -38, elDeg: 46 } as const;
+const PUBLISH_KEY = { color: 0xfff5e8, intensity: 3.4, azOffsetDeg: -42, elDeg: 44 } as const;
 
-const PUBLISH_LIGHTS: readonly LightSpec[] = [
+const STUDIO_LIGHTS: readonly LightSpec[] = [
   { kind: 'directional', ...PUBLISH_KEY, castShadow: true },
-  { kind: 'directional', color: 0xdce8ff, intensity: 0.85, azOffsetDeg: 65, elDeg: 20 },
-  { kind: 'directional', color: 0xf5f8ff, intensity: 1.75, azOffsetDeg: 158, elDeg: 36 },
-  { kind: 'hemisphere', color: 0xf8fafc, groundColor: 0xc8cfd9, intensity: 0.55, azOffsetDeg: 0, elDeg: 90 },
+  { kind: 'directional', color: 0xdbe8ff, intensity: 0.45, azOffsetDeg: 68, elDeg: 22 },
+  { kind: 'directional', color: 0xf4f8ff, intensity: 1.35, azOffsetDeg: 155, elDeg: 28 },
+  { kind: 'hemisphere', color: 0xf0f4f8, groundColor: 0x9aa3b0, intensity: 0.22, azOffsetDeg: 0, elDeg: 90 },
 ];
 
 interface MeshShadowState { mesh: THREE.Mesh; castShadow: boolean; receiveShadow: boolean }
@@ -142,7 +157,7 @@ function boundsOf(meshes: readonly THREE.Mesh[]): THREE.Box3 {
 
 function makeLight(spec: LightSpec): THREE.Light {
   if (spec.kind === 'hemisphere') {
-    const hemi = new THREE.HemisphereLight(spec.color, spec.groundColor ?? 0xc8cfd9, spec.intensity);
+    const hemi = new THREE.HemisphereLight(spec.color, spec.groundColor ?? 0xb8b4ac, spec.intensity);
     hemi.position.set(0, 0, 1); // Z-up sky
     return hemi;
   }
@@ -153,19 +168,20 @@ function makeLight(spec: LightSpec): THREE.Light {
   light.position.set(x * 100, y * 100, z * 100);
   if (spec.castShadow) {
     light.castShadow = true;
-    light.shadow.mapSize.set(1024, 1024);
-    light.shadow.radius = 2.5;
-    light.shadow.bias = -0.0004;
+    light.shadow.mapSize.set(2048, 2048);
+    light.shadow.radius = 2.0;
+    light.shadow.bias = -0.0005;
   }
   return light;
 }
 
-function buildRig(): { rig: THREE.Group; keyLight?: THREE.DirectionalLight } {
+function buildRig(studio: boolean): { rig: THREE.Group; keyLight?: THREE.DirectionalLight } {
   const rig = new THREE.Group();
   rig.name = '__publishRig';
   rig.userData[STAGE_HELPER_KEY] = true;
   let keyLight: THREE.DirectionalLight | undefined;
-  for (const spec of PUBLISH_LIGHTS) {
+  const specs = studio ? STUDIO_LIGHTS : LEGACY_PUBLISH_LIGHTS;
+  for (const spec of specs) {
     const light = makeLight(spec);
     rig.add(light);
     if (spec.castShadow && light instanceof THREE.DirectionalLight) {
@@ -338,15 +354,26 @@ function applyStageBackdrop(scene: THREE.Scene, state: StageState, background: s
   scene.background = new THREE.Color(background);
 }
 
+function buildLegacyRoomEnvironment(renderer: THREE.WebGLRenderer): THREE.Texture | undefined {
+  if (typeof (renderer as unknown as { compile?: unknown }).compile !== 'function') return undefined;
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const env = new RoomEnvironment();
+  const rt = pmrem.fromScene(env, 0.04);
+  env.dispose();
+  pmrem.dispose();
+  return rt.texture;
+}
+
 function bakeContactShadows(
   renderer: THREE.WebGLRenderer,
   scene: THREE.Scene,
   casters: readonly THREE.Mesh[],
+  layers: readonly ContactShadowLayer[],
 ): ContactShadow[] {
   const bounds = boundsOf(casters);
   if (bounds.isEmpty()) return [];
   const baked: ContactShadow[] = [];
-  for (const layer of CONTACT_SHADOW_LAYERS) {
+  for (const layer of layers) {
     const shadow = buildContactShadow(renderer, scene, casters, bounds, layer);
     shadow.plane.userData[STAGE_HELPER_KEY] = true;
     baked.push(shadow);
@@ -354,6 +381,31 @@ function bakeContactShadows(
   // Add after every bake so no layer bakes the previous one.
   for (const shadow of baked) scene.add(shadow.plane);
   return baked;
+}
+
+function applyStudioLightingAndEnv(scene: THREE.Scene, renderer: THREE.WebGLRenderer, state: StageState): void {
+  // Explicit script / --environment HDRI stays authoritative; only replace
+  // the unrotated default room probe (or a missing environment).
+  if (scene.environment === null || scene.userData.kCadDefaultEnv === true) {
+    state.ownedEnvironment = buildStudioSoftboxEnvironment(renderer);
+    scene.environment = state.ownedEnvironment ?? null;
+    scene.environmentIntensity = PUBLISH_ENV_INTENSITY;
+    scene.environmentRotation.set(0, 0, 0);
+  }
+  renderer.toneMapping = STUDIO_TONE_MAPPING;
+  renderer.toneMappingExposure = STUDIO_TONE_MAPPING_EXPOSURE;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.autoUpdate = true;
+  renderer.shadowMap.needsUpdate = true;
+}
+
+function applyLegacyPublishEnv(scene: THREE.Scene, renderer: THREE.WebGLRenderer, state: StageState): void {
+  if (scene.environment === null) {
+    state.ownedEnvironment = buildLegacyRoomEnvironment(renderer);
+    scene.environment = state.ownedEnvironment ?? null;
+    scene.environmentIntensity = PUBLISH_ENV_INTENSITY;
+  }
 }
 
 /**
@@ -372,7 +424,8 @@ export function applyPublishStage(
     return;
   }
 
-  const { rig, keyLight } = buildRig();
+  const studio = spec.stage === 'studio';
+  const { rig, keyLight } = buildRig(studio);
   const state: StageState = {
     renderer,
     rig,
@@ -394,28 +447,15 @@ export function applyPublishStage(
   stages.set(scene, state);
   scene.add(state.rig);
 
-  // ENVIRONMENT BUG FIX: a script-declared / --environment HDRI stays
-  // authoritative, but the unrotated default room probe (or no environment at
-  // all) is ALWAYS replaced with the studio softbox.
-  if (scene.environment === null || scene.userData.kCadDefaultEnv === true) {
-    state.ownedEnvironment = buildStudioSoftboxEnvironment(renderer);
-    scene.environment = state.ownedEnvironment ?? null;
-    scene.environmentIntensity = PUBLISH_ENV_INTENSITY;
-    scene.environmentRotation.set(0, 0, 0);
-  }
-
-  renderer.toneMapping = PUBLISH_TONE_MAPPING;
-  renderer.toneMappingExposure = PUBLISH_TONE_MAPPING_EXPOSURE;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.shadowMap.autoUpdate = true;
-  renderer.shadowMap.needsUpdate = true;
+  if (studio) applyStudioLightingAndEnv(scene, renderer, state);
+  else applyLegacyPublishEnv(scene, renderer, state);
 
   applyStageBackdrop(scene, state, spec.background);
 
   const casters = visibleModelMeshes(scene);
-  state.meshShadows = configureMeshShadows(casters);
-  if (spec.shadow) state.shadows = bakeContactShadows(renderer, scene, casters);
+  if (studio) state.meshShadows = configureMeshShadows(casters);
+  const layers = studio ? STUDIO_CONTACT_SHADOW_LAYERS : CONTACT_SHADOW_LAYERS;
+  if (spec.shadow) state.shadows = bakeContactShadows(renderer, scene, casters, layers);
 }
 
 /** Fit the key light and its orthographic shadow camera tightly around the

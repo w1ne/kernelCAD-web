@@ -19,12 +19,17 @@ import type { RenderView } from './views';
 export const RENDER_PRESETS = ['default', 'publish', 'studio'] as const;
 export type RenderPreset = (typeof RENDER_PRESETS)[number];
 
-/** Stage spec the page applies for a publish capture. */
+/** Stage spec the page applies for a publish / studio capture. */
 export interface PublishStageSpec {
-  /** '#rrggbb' opaque backdrop, or 'transparent' for an alpha PNG. */
+  /** '#rrggbb' opaque backdrop, 'studio' for the procedural sweep, or
+   *  'transparent' for an alpha PNG. */
   background: string;
   /** Soft contact shadow under the model. */
   shadow: boolean;
+  /** 'studio' enables AgX tone mapping, procedural Z-up softbox IBL, and
+   *  directional self-shadowing; omitted / 'publish' keeps the legacy
+   *  publish stage pixel-identical for committed catalog previews. */
+  stage?: 'publish' | 'studio';
 }
 
 /** One publish frame request: camera + output size. The page renders at
@@ -164,7 +169,12 @@ export function resolvePublishLook(
   const defaults = preset === 'studio' ? STUDIO_PRESET : PUBLISH_PRESET;
   const background = parsePublishBackground(input.background, defaults.background);
   if (background === undefined) return { ok: false, reason: 'invalid-background' };
-  return { ok: true, preset, publish: { background, shadow: input.shadow ?? defaults.shadow } };
+  const publish: PublishStageSpec = {
+    background,
+    shadow: input.shadow ?? defaults.shadow,
+    ...(preset === 'studio' ? { stage: 'studio' as const } : {}),
+  };
+  return { ok: true, preset, publish };
 }
 
 export const PUBLISH_BACKGROUND_HINT =

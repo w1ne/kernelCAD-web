@@ -60,7 +60,7 @@ describe("render_preview preset: 'publish'", () => {
     if (r.out_dir) tmpDirs.push(r.out_dir);
     expect(r.ok, r.error).toBe(true);
     const opts = calls[0];
-    expect(opts.publish).toEqual({ background: 'studio', shadow: true });
+    expect(opts.publish).toEqual({ background: 'studio', shadow: true, stage: 'studio' });
     expect(opts.poses).toEqual([`${STUDIO_PRESET.heroAzDeg},${STUDIO_PRESET.heroElDeg}`]);
     expect([opts.viewportWidth, opts.viewportHeight]).toEqual([1280, 960]);
     expect(r.images.map((i) => i.name)).toEqual([PUBLISH_HERO_NAME]);

@@ -48,7 +48,7 @@ describe('publish preset — parameters', () => {
     expect(resolvePublishLook({ preset: 'studio' }, 'default')).toEqual({
       ok: true,
       preset: 'studio',
-      publish: { background: 'studio', shadow: true },
+      publish: { background: 'studio', shadow: true, stage: 'studio' },
     });
     expect(resolvePublishLook({ preset: 'publish' }, 'default')).toEqual({
       ok: true,
