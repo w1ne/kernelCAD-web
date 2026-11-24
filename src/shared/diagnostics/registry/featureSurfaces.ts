@@ -279,6 +279,15 @@ export const FEATURE_SURFACES_CODES = {
     group: 'feature',
     description: 'Legacy diagnostic for the former one-piece split path.',
   },
+  // NURBS Slice E (E2b) — standalone surface offset.
+  'feature.surface-offset.failed': {
+    hintTemplate:
+      'OCCT could not build a valid offset surface at this distance. Reduce the absolute distance (especially where the base curvature radius is small), check that the base surface has no self-intersections, or offset a single-face surface rather than a multi-face skinned shell.',
+    nextAction: { kind: 'fix-arg', field: 'distance' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'BRepOffsetAPI_MakeOffsetShape failed, returned no faces, or produced a BRep-invalid offset result.',
+  },
   // NURBS Slice E (2) — sew() surface stitching.
   'feature.surface-sew.open-shell': {
     hintTemplate:

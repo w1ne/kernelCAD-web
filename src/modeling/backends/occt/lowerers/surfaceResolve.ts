@@ -7,10 +7,13 @@ import {
 } from '../../../../kernel/backends/occt/nurbsSurfaceLowerer';
 import { lowerCoonsPatch } from '../coonsPatchLowerer';
 import { lowerSurfaceTrim, NonPlanarTrimError } from '../surfaceTrimLowerer';
+import { offsetBuiltSurface } from '../../../../kernel/backends/occt/surfaceOffsetLowerer';
 import { HINT_TEMPLATES } from '../../../../shared/diagnostics/registry';
+import { invalidArgsText } from '../../../../shared/intent/invalidArgs';
+import { paramValue } from '../../../../shared/runtime/editableHelpers';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import type {
-  SurfaceId, SurfaceRecord, SurfaceTrimData,
+  SurfaceId, SurfaceRecord, SurfaceOffsetData, SurfaceTrimData,
 } from '../../../../shared/intent/surfaceRecord';
 import type { LowerContext } from './context';
 
@@ -85,15 +88,22 @@ export function buildSurfaceById(
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     const isCoons = surfRec.data.kind === 'coonsPatch';
+    const isOffset = surfRec.data.kind === 'surfaceOffset';
     ctx.diagnostics.push({
       target: ctx.target,
-      code: isCoons ? 'feature.surface-from-boundary.degenerate-patch' : 'feature.kernel-failed',
+      code: isCoons
+        ? 'feature.surface-from-boundary.degenerate-patch'
+        : isOffset
+          ? 'feature.surface-offset.failed'
+          : 'feature.kernel-failed',
       featureId: r.id,
       severity: 'error',
       message: `${r.kind}: surface build failed: ${msg}`,
       hint: isCoons
         ? HINT_TEMPLATES['feature.surface-from-boundary.degenerate-patch'].template
-        : 'kernel-failed — fix the control net / degree / sections per the diagnostic message.',
+        : isOffset
+          ? HINT_TEMPLATES['feature.surface-offset.failed'].template
+          : 'kernel-failed — fix the control net / degree / sections per the diagnostic message.',
     });
     return undefined;
   }
@@ -147,6 +157,9 @@ function buildSurfaceFromRecord(
   if (surfRec.data.kind === 'surfaceTrim') {
     return buildTrimmedSurface(ctx, surfRec.data, sid, r);
   }
+  if (surfRec.data.kind === 'surfaceOffset') {
+    return buildOffsetSurface(ctx, surfRec.data, sid, r);
+  }
   ctx.diagnostics.push({
     target: ctx.target,
     code: 'feature.invalid-args',
@@ -191,6 +204,61 @@ function buildSkinnedFromSections(
     origin: [0, 0, i * 10] as [number, number, number],
   }));
   return buildSkinnedSurface(sectionShapes, planes);
+}
+
+/**
+ * NURBS Slice E (E2): offset a surface along its normal. Resolve the base
+ * surface through the same recursion as trim, resolve the signed distance
+ * against the run's param table (so a `param()` edit changes the geometry),
+ * then run OCCT `BRepOffsetAPI_MakeOffsetShape.PerformBySimple`.
+ */
+function buildOffsetSurface(
+  ctx: LowerContext,
+  offsetData: SurfaceOffsetData,
+  sid: SurfaceId,
+  r: FeatureRecord,
+): BuiltSurface | undefined {
+  const baseBuilt = buildSurfaceById(ctx, offsetData.surfaceId, r);
+  if (!baseBuilt) return undefined;
+  const distanceParam = ctx.getSurfaceRecord?.(sid)?.params.distance;
+  if (!distanceParam) {
+    ctx.diagnostics.push({
+      target: ctx.target,
+      code: 'feature.invalid-args',
+      featureId: r.id,
+      severity: 'error',
+      ...invalidArgsText({
+        api: 'Surface.offset(distance)',
+        path: 'distance',
+        got: undefined,
+        requires: 'a non-zero finite signed distance in mm',
+        unit: 'mm',
+        example: 'surface.offset(2.5)',
+      }),
+    });
+    return undefined;
+  }
+  const distance = ctx.inputs.paramTable
+    ? paramValue(distanceParam, ctx.inputs.paramTable)
+    : distanceParam.evaluated;
+  if (!(Number.isFinite(distance) && distance !== 0)) {
+    ctx.diagnostics.push({
+      target: ctx.target,
+      code: 'feature.invalid-args',
+      featureId: r.id,
+      severity: 'error',
+      ...invalidArgsText({
+        api: 'Surface.offset(distance)',
+        path: 'distance',
+        got: distance,
+        requires: 'a non-zero finite signed distance in mm',
+        unit: 'mm',
+        example: 'surface.offset(2.5)',
+      }),
+    });
+    return undefined;
+  }
+  return offsetBuiltSurface(baseBuilt, distance);
 }
 
 /**

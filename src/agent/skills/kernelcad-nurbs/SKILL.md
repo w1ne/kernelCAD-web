@@ -1,6 +1,6 @@
 ---
 name: kernelcad-nurbs
-description: NURBS surfaces (nurbsSurface, surfaceFromCurves, surfaceFromBoundary, .thicken, .toShape) AND NURBS curves (nurbsCurve, spline3d, hermiteG2, curveBridge, Curve3D.bridge) AND surfaceIntersection AND rail loft (Sketch.loft rails) AND multi-section sweeps (variableSweep) AND G1/G2 fillet continuity AND 2D NURBS path segments (path().spline / .nurbsSegment / .hermiteG2). Use for freeform geometry that primitives + sketches cannot express.
+description: NURBS surfaces (nurbsSurface, surfaceFromCurves, surfaceFromBoundary, .offset, .thicken, .toShape) AND NURBS curves (nurbsCurve, spline3d, hermiteG2, curveBridge, Curve3D.bridge) AND surfaceIntersection AND rail loft (Sketch.loft rails) AND multi-section sweeps (variableSweep) AND G1/G2 fillet continuity AND 2D NURBS path segments (path().spline / .nurbsSegment / .hermiteG2). Use for freeform geometry that primitives + sketches cannot express.
 ---
 
 # kernelCAD — NURBS surfaces & curves
@@ -18,6 +18,7 @@ const panel = surfaceFromCurves([s0, s1]).thicken(2);
 
 | Method | Returns | Notes |
 |---|---|---|
+| `.offset(distance)` | `Surface` | Standalone parallel surface along the normal. Positive moves along the face normal, negative against it; `distance` accepts `Editable<number>` and is non-zero. Keeps the base boundary. A single-face result supports `.trimTo()` / `.split()`; every result supports `.thicken()` / `.toShape()`. Emits `feature.surface-offset.failed` when OCCT cannot build a valid offset. |
 | `.thicken(t)` | `Shape` (closed solid) | Offsets both sides by `t` mm. `t` accepts `Editable<number>`. |
 | `.toShape()` | `Shape` (zero-volume shell) | Single-face Shape; use as profile placeholder for future face-aware features. |
 | `.trimTo(by)` | `Surface` | Trim this surface where it meets `by` and keep the larger piece. Use before `sew`. Emits `feature.surface-trim.no-intersection` when the cutter misses. |
@@ -411,12 +412,16 @@ Derive the curves from a reference photo:
 - **Trim and sew freeform NURBS surfaces into a watertight solid** (Slice E/F).
   `.trimTo(cutter)` aligns a patch to a shared boundary by imprinting the
   section curve; clean curved NURBS/Coons patches are supported. `.split(cutter)`
-  returns both halves as `[Surface, Surface]` when you need both sides. Then
+  returns both halves as `[Surface, Surface]` when you need both sides.
+  `.offset(distance)` creates a standalone parallel surface along the patch
+  normal (positive along the normal, negative against it) for mold cores,
+  clearance skins and offsets; chain `.trimTo(...)`, `.thicken(t)` or
+  `.toShape()` on the result. Then
   `sew([...], { requireClosed: true })` fuses coincident-edged patches into a
   closed solid, then optionally `.draft(angle, { face })` tapers a face for mold
   release (analytic faces only; spline faces cannot be drafted, emitting
   `feature.draft.failed`). A single patch can still `.thicken()` to a solid.
-  Face-face blends and standalone surface offset are deferred to a later slice.
+  Face-face blends are deferred to a later slice.
 
 ## Blockout → export → finish in a DCC tool
 

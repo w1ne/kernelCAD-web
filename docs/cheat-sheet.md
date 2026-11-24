@@ -99,6 +99,7 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `Shape.faceSketch(face: FaceSelector \| string, opts?: { curveTolerance? }) => Promise<Sketch>` | AWAIT THIS — returns Promise<Sketch>; chaining a Sketch method (e.g. |
 | `Shape.silhouette(direction?: [number, number, number], opts?: { curveTolerance? }) => Promise<Sketch>` | AWAIT THIS — returns Promise<Sketch>; chaining a Sketch method (e.g. |
 | `Sketch.offset(distance: number, opts?: { corners?: 'round' \| 'sharp' }) => Promise<Sketch>` | Parallel curve of this closed profile, `distance` mm away, as a new Sketch. |
+| `Surface.offset(distance: Editable<number>) => Surface` | Offset this surface by a signed `distance` mm along its normal and return a new Surface. |
 
 ## Add material
 

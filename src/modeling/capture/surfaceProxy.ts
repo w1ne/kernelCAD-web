@@ -19,7 +19,8 @@ function featureIdOfRef(ref: { kind: string; id?: string; featureId?: string; su
   return undefined;
 }
 
-/** Feature ids named by a surface record: loft sections, Coons curves, trim cutters. */
+/** Feature ids named by a surface record: loft sections, Coons curves, trim
+ *  cutters, recursively through offsets and trims. */
 export function namedSurfaceFeatureIds(session: CaptureSession, surfaceId: string, seen = new Set<string>()): string[] {
   if (seen.has(surfaceId)) return [];
   seen.add(surfaceId);
@@ -28,6 +29,7 @@ export function namedSurfaceFeatureIds(session: CaptureSession, surfaceId: strin
   const data = rec.data;
   if (data.kind === 'surfaceFromCurves') return [...data.sectionIds];
   if (data.kind === 'coonsPatch') return [...data.curveIds];
+  if (data.kind === 'surfaceOffset') return namedSurfaceFeatureIds(session, data.surfaceId, seen);
   if (data.kind !== 'surfaceTrim') return [];
   const ids = namedSurfaceFeatureIds(session, data.surfaceId, seen);
   if ('featureRef' in data.byRef) {
@@ -37,6 +39,21 @@ export function namedSurfaceFeatureIds(session: CaptureSession, surfaceId: strin
     ids.push(...namedSurfaceFeatureIds(session, data.byRef.surfaceId, seen));
   }
   return ids;
+}
+
+/** Section sketch ids under a surface, following offset/trim links so an
+ *  offset of a skinned surface still lowers its section sketches. */
+function surfaceSectionIds(session: CaptureSession, surfaceId: string, seen = new Set<string>()): FeatureId[] {
+  if (seen.has(surfaceId)) return [];
+  seen.add(surfaceId);
+  const rec = session.getSurfaceRecord(surfaceId);
+  if (!rec) return [];
+  const data = rec.data;
+  if (data.kind === 'surfaceFromCurves') return [...data.sectionIds];
+  if (data.kind === 'surfaceOffset' || data.kind === 'surfaceTrim') {
+    return surfaceSectionIds(session, data.surfaceId, seen);
+  }
+  return [];
 }
 
 function refOf(by: SurfaceProxy | Shape): SurfaceTrimData['byRef'] {
@@ -111,6 +128,45 @@ export class SurfaceProxy implements SurfaceRecordCarrier {
   }
 
   /**
+   * Offset this surface by `distance` mm along its normal and return the
+   * resulting `Surface`. Positive moves along the base face normal; negative
+   * moves against it. `distance` must be a non-zero finite number or a
+   * ParamRef<number>.
+   *
+   * The result keeps the base surface's boundary and is untrimmed in
+   * parameter space. Chain `.trimTo(...)`, `.split(...)`, `.thicken(t)` or
+   * `.toShape()` exactly like the input surface. A multi-face skinned
+   * surface offsets as a shell; trims then require a single-face surface.
+   *
+   * Lowers through OCCT `BRepOffsetAPI_MakeOffsetShape.PerformBySimple`.
+   * The lowerer refuses a non-finite or zero resolved distance and reports
+   * a self-intersecting / invalid result as `feature.surface-offset.failed`.
+   *
+   * @example
+   *   const core = api.nurbsSurface({...}).offset(2.5).thicken(4);
+   */
+  offset(distance: Editable<number>): SurfaceProxy {
+    if (typeof distance === 'number') {
+      if (!(Number.isFinite(distance) && distance !== 0)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `Surface.offset: distance must be a non-zero finite number; got ${formatScalarForError(distance)}.`,
+          this.id,
+          'invalid-args.surfaceOffset.distance — pass a non-zero finite distance in mm, or ParamRef<number>.',
+        );
+      }
+    } else if (!isParamRef(distance)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Surface.offset: distance must be a number or ParamRef<number>; got ${formatScalarForError(distance)}.`,
+        this.id,
+        'invalid-args.surfaceOffset.distance — pass a non-zero finite distance in mm, or ParamRef<number>.',
+      );
+    }
+    return this.session.addSurfaceOffset(this.id, toParam(distance, 'mm'));
+  }
+
+  /**
    * Wrap this surface as a zero-volume `Shape` (a single-face TopoDS_Shell).
    * The result behaves like any other `Shape` (.boundingBox/.surfaceArea
    * etc.) except that `.volume()` returns ~0. Use as a profile placeholder
@@ -168,7 +224,12 @@ export class SurfaceProxy implements SurfaceRecordCarrier {
       if (seen.has(sid)) return;
       seen.add(sid);
       const rec = this.session.getSurfaceRecord(sid);
-      if (!rec || rec.data.kind !== 'surfaceTrim') return;
+      if (!rec) return;
+      if (rec.data.kind === 'surfaceOffset') {
+        visit(rec.data.surfaceId);
+        return;
+      }
+      if (rec.data.kind !== 'surfaceTrim') return;
       visit(rec.data.surfaceId);
       const byRef = rec.data.byRef;
       if ('featureRef' in byRef) {
@@ -198,11 +259,9 @@ export class SurfaceProxy implements SurfaceRecordCarrier {
     for (const fid of this.__trimDependencyIds()) {
       inputs[fid] = { kind: 'feature', id: fid };
     }
-    const surfRec = this.session.getSurfaceRecord(this.id);
-    if (surfRec && surfRec.data.kind === 'surfaceFromCurves') {
-      for (let i = 0; i < surfRec.data.sectionIds.length; i++) {
-        inputs[`section_${i}`] = { kind: 'feature', id: surfRec.data.sectionIds[i] };
-      }
+    const sectionIds = surfaceSectionIds(this.session, this.id);
+    for (let i = 0; i < sectionIds.length; i++) {
+      inputs[`section_${i}`] = { kind: 'feature', id: sectionIds[i] };
     }
     // Coons curves (and sections nested under a trim) live only on the
     // surface record. Copy them so a param edit of a boundary curve
