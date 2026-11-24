@@ -300,7 +300,6 @@ const LEGACY_CODE_ORDER = [
   'feature.surface-trim.no-intersection',
   'feature.surface-trim.non-planar',
   'feature.surface-trim.split-deferred',
-  'feature.surface-offset.failed',
   'feature.surface-sew.open-shell',
   'feature.fillet.continuity-not-applicable',
   'feature.hermite-g2.degenerate-tangent',

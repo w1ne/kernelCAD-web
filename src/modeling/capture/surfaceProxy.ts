@@ -6,6 +6,7 @@ import type { SurfaceRecordCarrier } from '../../kernel/geometry/curveCarriers';
 import type { CaptureSession } from './captureSession';
 import type { Shape } from './proxy';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
 import { formatScalarForError } from '../../shared/intent/types';
@@ -148,20 +149,27 @@ export class SurfaceProxy implements SurfaceRecordCarrier {
   offset(distance: Editable<number>): SurfaceProxy {
     if (typeof distance === 'number') {
       if (!(Number.isFinite(distance) && distance !== 0)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `Surface.offset: distance must be a non-zero finite number; got ${formatScalarForError(distance)}.`,
-          this.id,
-          'invalid-args.surfaceOffset.distance — pass a non-zero finite distance in mm, or ParamRef<number>.',
-        );
+        invalidArgs({
+          api: 'Surface.offset(distance)',
+          path: 'distance',
+          got: distance,
+          requires: 'a non-zero finite signed distance in mm, or ParamRef<number>',
+          unit: 'mm',
+          example: 'surface.offset(2.5)',
+          featureId: this.id,
+        });
       }
     } else if (!isParamRef(distance)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Surface.offset: distance must be a number or ParamRef<number>; got ${formatScalarForError(distance)}.`,
-        this.id,
-        'invalid-args.surfaceOffset.distance — pass a non-zero finite distance in mm, or ParamRef<number>.',
-      );
+      invalidArgs({
+        api: 'Surface.offset(distance)',
+        path: 'distance',
+        got: distance,
+        showType: true,
+        requires: 'a non-zero finite signed distance in mm, or ParamRef<number>',
+        unit: 'mm',
+        example: 'surface.offset(2.5)',
+        featureId: this.id,
+      });
     }
     return this.session.addSurfaceOffset(this.id, toParam(distance, 'mm'));
   }
