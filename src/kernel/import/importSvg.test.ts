@@ -450,6 +450,59 @@ describe('importSvgText — units', () => {
     expect(r.unitScale).toBeCloseTo(2.54, 12);
   });
 
+  it('letterboxes a mismatched viewport with the default xMidYMid meet', () => {
+    // A 200 x 100 mm viewport holds a square viewBox: the default meet scale
+    // is 1 mm per unit (height-limited), and the square is centred in X.
+    const r = importSvgText(svg('<rect x="0" y="0" width="100" height="100"/>',
+      'width="200mm" height="100mm" viewBox="0 0 100 100"'));
+    expect(r.unitScale).toBeCloseTo(1, 12);
+    expect(r.unitSource).toBe("width='200mm' and height='100mm' over viewBox 100 x 100, xMidYMid meet");
+    const pts = points(r.regions[0].commands);
+    expect(Math.min(...pts.map(p => p[0]))).toBeCloseTo(50, 9);
+    expect(Math.max(...pts.map(p => p[0]))).toBeCloseTo(150, 9);
+    expect(Math.min(...pts.map(p => p[1]))).toBeCloseTo(0, 9);
+    expect(Math.max(...pts.map(p => p[1]))).toBeCloseTo(100, 9);
+    expect(r.regions[0].areaMm2).toBeCloseTo(10_000, 6);
+  });
+
+  it('honours preserveAspectRatio="none" with a non-uniform axis scale', () => {
+    const r = importSvgText(svg('<rect x="0" y="0" width="100" height="100"/>',
+      'width="200mm" height="100mm" viewBox="0 0 100 100" preserveAspectRatio="none"'));
+    expect(r.unitScale).toBeCloseTo(2, 12);
+    expect(r.unitSource).toBe("width='200mm' and height='100mm' over viewBox 100 x 100, preserveAspectRatio='none' (non-uniform)");
+    const pts = points(r.regions[0].commands);
+    expect(Math.min(...pts.map(p => p[0]))).toBeCloseTo(0, 9);
+    expect(Math.max(...pts.map(p => p[0]))).toBeCloseTo(200, 9);
+    expect(Math.min(...pts.map(p => p[1]))).toBeCloseTo(0, 9);
+    expect(Math.max(...pts.map(p => p[1]))).toBeCloseTo(100, 9);
+    expect(r.regions[0].areaMm2).toBeCloseTo(20_000, 6);
+  });
+
+  it('honours an explicit xMaxYMax meet alignment', () => {
+    const r = importSvgText(svg('<rect x="0" y="0" width="100" height="100"/>',
+      'width="200mm" height="100mm" viewBox="0 0 100 100" preserveAspectRatio="xMaxYMax meet"'));
+    const pts = points(r.regions[0].commands);
+    expect(Math.min(...pts.map(p => p[0]))).toBeCloseTo(100, 9);
+    expect(Math.max(...pts.map(p => p[0]))).toBeCloseTo(200, 9);
+    expect(Math.min(...pts.map(p => p[1]))).toBeCloseTo(0, 9);
+    expect(Math.max(...pts.map(p => p[1]))).toBeCloseTo(100, 9);
+  });
+
+  it('scales by the larger axis for slice without clipping the profile', () => {
+    // slice uses max(200/100, 100/100) = 2 mm per unit. The importer keeps
+    // geometry that falls outside the viewport; it does not clip profiles.
+    const r = importSvgText(svg('<rect x="0" y="0" width="100" height="100"/>',
+      'width="200mm" height="100mm" viewBox="0 0 100 100" preserveAspectRatio="xMinYMin slice"'));
+    expect(r.unitScale).toBeCloseTo(2, 12);
+    expect(r.unitSource).toBe("width='200mm' and height='100mm' over viewBox 100 x 100, xMinYMin slice");
+    const pts = points(r.regions[0].commands);
+    expect(Math.min(...pts.map(p => p[0]))).toBeCloseTo(0, 9);
+    expect(Math.max(...pts.map(p => p[0]))).toBeCloseTo(200, 9);
+    expect(Math.min(...pts.map(p => p[1]))).toBeCloseTo(-100, 9);
+    expect(Math.max(...pts.map(p => p[1]))).toBeCloseTo(100, 9);
+    expect(r.regions[0].areaMm2).toBeCloseTo(40_000, 6);
+  });
+
   it('assumes 1 user unit = 1 CSS px when no physical width is given', () => {
     const r = importSvgText(svg('<polygon points="0,0 96,0 96,96 0,96"/>',
       'viewBox="0 0 96 96"'));
@@ -465,6 +518,13 @@ describe('importSvgText — units', () => {
     );
     expect(r.unitSource).toBe('opts.units=mm');
     expect(r.regions[0].areaMm2).toBeCloseTo(100, 9);
+  });
+
+  it('ignores a non-positive height and keeps the width-only scale', () => {
+    const r = importSvgText(svg('<rect x="0" y="0" width="100" height="100"/>',
+      'width="200mm" height="-100mm" viewBox="0 0 100 100"'));
+    expect(r.unitScale).toBeCloseTo(2, 12);
+    expect(r.unitSource).toBe("width='200mm' over viewBox width 100");
   });
 
   it('refuses a percentage width, which has no absolute size', () => {
