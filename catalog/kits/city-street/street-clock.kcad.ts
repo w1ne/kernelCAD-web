@@ -52,7 +52,7 @@ for (const side of [-1, 1]) {
   sc.part(`face-${tag}`, disc(310, 10, y, cz).color(face));
   // Clockwise as seen from outside: mirror the angle on the back face.
   const hand = (len: number, w: number, deg: number) =>
-    box(w, 10, len).translate(-w / 2, -5, -20).rotateY(side * deg).translate(0, side * 120, cz);
+    box(w, 10, len).translate(-w / 2, -5, -20).rotateY(-side * deg).translate(0, side * 120, cz);
   sc.part(`hour-${tag}`, hand(180, 34, (hh % 12) * 30 + mm * 0.5).color(hands));
   sc.part(`minute-${tag}`, hand(270, 22, mm * 6).color(hands));
   for (let q = 0; q < 4; q++) {

@@ -45,10 +45,10 @@ for (let i = 0; i < na; i++) {
   const z = H - 350 - i * 700;
   up.part(`arm-${i + 1}`, box(armL, 100, 110, true).translate(0, -150, z).color(wood));
   for (const side of [-1, 1]) {
-    // Brace from the pole down-and-in to the arm, in the XZ plane at the arm's Y.
-    const len = Math.hypot(620, 560);
-    const a = (Math.atan2(560, 620) * 180) / Math.PI;
-    const brace = box(len, 40, 50, true).rotateY(side * a).translate(side * 330, -150, z - 300);
+    // Diagonal brace runs upward and outward from the pole into the crossarm.
+    const len = Math.hypot(660, 620);
+    const a = (Math.atan2(620, 660) * 180) / Math.PI;
+    const brace = box(len, 40, 50, true).rotateY(-side * a).translate(side * 350, -100, z - 320);
     up.part(`brace-${i + 1}-${side < 0 ? 'l' : 'r'}`, brace.color(wood));
   }
   for (const [k, x] of [-1100, -650, 650, 1100].entries()) {
