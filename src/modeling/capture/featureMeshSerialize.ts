@@ -7,11 +7,23 @@ import type { PBRMaterial } from '../../shared/intent/material';
 import type { ReferenceImageMetadata } from '../../shared/intent/referenceImageRecord';
 import type { RenderEnvironmentMetadata } from '../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata } from '../../shared/intent/cameraTargetRecord';
+import type { RuntimeSubMesh } from '../../kernel/backends/runtimeMesh';
 
 /** JSON carries plain arrays. The Studio's rebuild worker packs them into
  *  typed arrays off the UI thread before handing the payload over. */
 export type SerializedFloats = number[] | Float32Array;
 export type SerializedIndices = number[] | Uint32Array;
+
+/** JSON-safe form of one composite display material group. */
+export interface RuntimeSubMeshSerialized {
+  name?: string;
+  positions: SerializedFloats;
+  normals: SerializedFloats;
+  indices: SerializedIndices;
+  uv?: SerializedFloats;
+  colors?: SerializedFloats;
+  material?: PBRMaterial;
+}
 
 export interface FaceGeometrySerialized {
   vertices: SerializedFloats;
@@ -33,7 +45,12 @@ export interface FeatureMeshSerialized {
   predecessors: string[];
   op?: 'subtract' | 'union' | 'intersect';
   faces: FaceGeometrySerialized[];
-  mesh?: { positions: SerializedFloats; normals: SerializedFloats; indices: SerializedIndices };
+  mesh?: {
+    positions: SerializedFloats;
+    normals: SerializedFloats;
+    indices: SerializedIndices;
+    subMeshes?: RuntimeSubMeshSerialized[];
+  };
   volume?: number;
   /** BREP solids represented by this display feature; used for honest body counts. */
   solidCount?: number;
@@ -106,7 +123,24 @@ function serializeIndexedMesh(
   out: { floats: FloatOut; indices: IndexOut },
 ): Pick<FeatureMeshSerialized, 'mesh'> {
   if (!mesh) return {};
-  return { mesh: { positions: out.floats(mesh.positions), normals: out.floats(mesh.normals), indices: out.indices(mesh.indices) } };
+  return {
+    mesh: {
+      positions: out.floats(mesh.positions),
+      normals: out.floats(mesh.normals),
+      indices: out.indices(mesh.indices),
+      ...(mesh.subMeshes !== undefined ? {
+        subMeshes: mesh.subMeshes.map((sub): RuntimeSubMeshSerialized => ({
+          ...(sub.name !== undefined ? { name: sub.name } : {}),
+          positions: out.floats(sub.positions),
+          normals: out.floats(sub.normals),
+          indices: out.indices(sub.indices),
+          ...(sub.uv !== undefined ? { uv: out.floats(sub.uv) } : {}),
+          ...(sub.colors !== undefined ? { colors: out.floats(sub.colors) } : {}),
+          ...(sub.material !== undefined ? { material: sub.material } : {}),
+        })),
+      } : {}),
+    },
+  };
 }
 
 function serializeFace(
@@ -183,7 +217,24 @@ function asUint32(values: SerializedIndices): Uint32Array {
 
 function rehydrateIndexedMesh(mesh: FeatureMeshSerialized['mesh']): Pick<FeatureMesh, 'mesh'> {
   if (!mesh) return {};
-  return { mesh: { positions: asFloat32(mesh.positions), normals: asFloat32(mesh.normals), indices: asUint32(mesh.indices) } };
+  return {
+    mesh: {
+      positions: asFloat32(mesh.positions),
+      normals: asFloat32(mesh.normals),
+      indices: asUint32(mesh.indices),
+      ...(mesh.subMeshes !== undefined ? {
+        subMeshes: mesh.subMeshes.map((sub): RuntimeSubMesh => ({
+          ...(sub.name !== undefined ? { name: sub.name } : {}),
+          positions: asFloat32(sub.positions),
+          normals: asFloat32(sub.normals),
+          indices: asUint32(sub.indices),
+          ...(sub.uv !== undefined ? { uv: asFloat32(sub.uv) } : {}),
+          ...(sub.colors !== undefined ? { colors: asFloat32(sub.colors) } : {}),
+          ...(sub.material !== undefined ? { material: sub.material } : {}),
+        })),
+      } : {}),
+    },
+  };
 }
 
 function rehydrateFace(face: FaceGeometrySerialized): FeatureMesh['faces'][number] {

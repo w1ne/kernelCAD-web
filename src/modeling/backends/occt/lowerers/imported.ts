@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
-import { MeshBackend } from '../../../../kernel/backends/meshBackend';
+import { isMeshBackend } from '../../../../kernel/backends/meshBackend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { built, noShape, type LowerContext, type LowerOutcome } from './context';
@@ -30,7 +30,7 @@ export function lowerImported(ctx: LowerContext, r: FeatureRecord): LowerOutcome
   // the post-hoc `r.transforms` loop below (or any destructive
   // downstream consumer) would invalidate the map entry and the next
   // lowering pass would throw "This object has been deleted".
-  const shape: ShapeBackend = backend instanceof MeshBackend ? backend : (backend as import('../../../../kernel/backends/occt/occtBackend').OcctBackend).clone();
+  const shape: ShapeBackend = isMeshBackend(backend) ? backend : (backend as import('../../../../kernel/backends/occt/occtBackend').OcctBackend).clone();
   return built(shape);
 }
 

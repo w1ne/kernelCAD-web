@@ -5,6 +5,8 @@ import type { FaceGeometry } from '../../../shared/worker/workerTypes';
 import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
 import type { RenderEnvironmentSpec } from '../../../shared/intent/renderEnvironmentRecord';
 import type { PublishFrameCapture, PublishFrameRequest, PublishStageSpec } from '../../../shared/render/publishPreset';
+import type { PBRMaterial } from '../../../shared/intent/material';
+import type { RuntimeSubMesh } from '../../../kernel/backends/runtimeMesh';
 import { disposeMaterialDeep } from './buildMaterialFromPBR';
 import { fitDistanceForBounds } from './cameraFit';
 import type { RenderView } from '../../../shared/render/views';
@@ -12,25 +14,67 @@ export type { RenderView };
 
 export const KCAD_FEATURE_GROUP_KEY = 'kCadFeatureGroup';
 
-/** Display-only mesh body (lib.meshFromSTL): one indexed BufferGeometry, no
- *  per-face split. Starts transparent so the reveal animation fades it in. */
-export function buildIndexedDisplayMesh(
-  featureId: string,
-  indexed: { positions: ArrayLike<number>; normals: ArrayLike<number>; indices: ArrayLike<number> },
-  material: THREE.Material,
-): THREE.Mesh {
+/** Indexed display buffer for lib.meshFromSTL / lib.meshFromGLB. A GLB may
+ *  carry several material groups; each becomes its own THREE.Mesh under one
+ *  Group so solder mask, copper, gold and component bodies keep their PBR
+ *  response instead of collapsing to one grey body. */
+export interface IndexedDisplayMeshInput {
+  positions: ArrayLike<number>;
+  normals: ArrayLike<number>;
+  indices: ArrayLike<number>;
+  uv?: ArrayLike<number>;
+  colors?: ArrayLike<number>;
+  subMeshes?: RuntimeSubMesh[];
+}
+
+function displayGeometry(input: {
+  positions: ArrayLike<number>;
+  normals: ArrayLike<number>;
+  indices: ArrayLike<number>;
+  uv?: ArrayLike<number>;
+  colors?: ArrayLike<number>;
+}): THREE.BufferGeometry {
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(indexed.positions), 3));
-  geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(indexed.normals), 3));
-  geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indexed.indices), 1));
+  geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(input.positions), 3));
+  geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(input.normals), 3));
+  if (input.uv !== undefined) geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(input.uv), 2));
+  if (input.colors !== undefined) geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(input.colors), 3));
+  geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(input.indices), 1));
   geometry.computeBoundingSphere();
+  return geometry;
+}
+
+function applyDisplayState(material: THREE.Material, vertexColors: boolean): void {
   material.transparent = true;
   material.opacity = 0;
   material.side = THREE.DoubleSide;
+  material.vertexColors = vertexColors;
   (material as THREE.MeshPhysicalMaterial).flatShading = false;
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.name = `${featureId}-indexed-mesh`;
-  return mesh;
+}
+
+export function buildIndexedDisplayMesh(
+  featureId: string,
+  indexed: IndexedDisplayMeshInput,
+  material: THREE.Material,
+  opts?: { materialForSubMesh?: (material: PBRMaterial | undefined) => THREE.Material },
+): THREE.Object3D {
+  const buildMesh = (input: IndexedDisplayMeshInput, meshMaterial: THREE.Material, name: string): THREE.Mesh => {
+    applyDisplayState(meshMaterial, input.colors !== undefined);
+    const mesh = new THREE.Mesh(displayGeometry(input), meshMaterial);
+    mesh.name = name;
+    return mesh;
+  };
+  if (indexed.subMeshes === undefined || indexed.subMeshes.length === 0) {
+    return buildMesh(indexed, material, `${featureId}-indexed-mesh`);
+  }
+  const build = (sub: RuntimeSubMesh): THREE.Material =>
+    opts?.materialForSubMesh?.(sub.material) ?? material;
+  const group = new THREE.Group();
+  group.name = `${featureId}-indexed-mesh`;
+  indexed.subMeshes.forEach((sub, index) => {
+    group.add(buildMesh(sub, build(sub), `${featureId}-indexed-mesh-${index}`));
+  });
+  return group;
 }
 
 export interface DemoPlayerObjectFilter {
