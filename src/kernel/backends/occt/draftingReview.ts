@@ -29,7 +29,7 @@ function validateProfileIdentity(p: DraftingProfile): void {
 function validateProfileSettings(p: ResolvedDraftingProfile): void {
   if (!['a4', 'a3', 'a2', 'a1', 'a0', 'ansi-a', 'ansi-b', 'ansi-c', 'ansi-d', 'ansi-e', 'auto', 'auto-ansi'].includes(p.sheet)) invalidReview('draftingProfile.sheet is invalid', 'draftingProfile.sheet', p.sheet);
   if (!['first', 'third'].includes(p.projection)) invalidReview('draftingProfile.projection must be first | third', 'draftingProfile.projection', p.projection);
-  if (!['baseline', 'chain', 'symmetry'].includes(p.dimensioningStyle)) invalidReview('draftingProfile.dimensioningStyle must be baseline | chain | symmetry', 'draftingProfile.dimensioningStyle', p.dimensioningStyle);
+  if (!['baseline', 'chain', 'symmetry', 'ordinate'].includes(p.dimensioningStyle)) invalidReview('draftingProfile.dimensioningStyle must be baseline | chain | symmetry | ordinate', 'draftingProfile.dimensioningStyle', p.dimensioningStyle);
   if (p.tolerance !== undefined && !['ISO2768-f', 'ISO2768-m', 'ISO2768-c'].includes(p.tolerance)) invalidReview('draftingProfile.tolerance is invalid', 'draftingProfile.tolerance', p.tolerance);
   if (p.notes !== undefined && (!Array.isArray(p.notes) || p.notes.some(n => typeof n !== 'string'))) invalidReview('draftingProfile.notes must be strings', 'draftingProfile.notes', p.notes);
 }

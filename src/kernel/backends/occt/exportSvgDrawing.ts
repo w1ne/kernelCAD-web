@@ -63,6 +63,7 @@ import {
   escAttr,
   type DrawingAnnotation,
 } from './drawingAnnotations';
+import { zoneGridSvg } from './drawingDimensionSets';
 import { renderSections, type DrawingSectionSpec } from './drawingSections';
 import {
   balloonAndTraceSvg,
@@ -207,6 +208,9 @@ export interface SvgDrawingOptions extends DrawingReviewOptions {
   style?: 'mechanical' | 'architectural';
   /** Floor-plan options for `style: 'architectural'`. */
   plan?: ArchitecturalPlanOptions;
+  /** When true, render an ISO 5457 zone reference border frame (A..D × 1..N)
+   *  and margin sheet-size stamp. Default false (omitted). */
+  zoneGrid?: boolean;
 }
 
 export interface SvgDrawingResult {
@@ -673,7 +677,9 @@ interface AuthoredReportContext {
 
 function reviewedAuthoredAnnotation(a: DrawingAnnotation, id: string, options: SvgDrawingOptions): DrawingAnnotation {
   const o = options.annotationOverrides?.[id];
-  if (o?.text !== undefined && (a.kind === 'datum' || a.kind === 'fcf')) invalidReview(`annotation ${id} has no primary label; edit its datum or tolerance declaration`);
+  if (o?.text !== undefined && (a.kind === 'datum' || a.kind === 'fcf' || a.kind === 'baseline' || a.kind === 'ordinate')) {
+    invalidReview(`annotation ${id} has no single primary label; edit its source annotation or declaration`);
+  }
   return { ...a, ...(o?.text !== undefined ? { text: o.text } : {}), ...(o?.view !== undefined ? { view: o.view } : {}),
     ...(o?.offset !== undefined ? { offset: (a.offset ?? 0) + o.offset } : {}) } as DrawingAnnotation;
 }
@@ -974,6 +980,7 @@ function buildSheetSvg(input: {
     ...(hatchDefs === '' ? [] : [hatchDefs]),
     `<rect x="0" y="0" width="${effSheet.w}" height="${effSheet.h}" fill="#fff"/>`,
     frame,
+    ...(options.zoneGrid === true ? [zoneGridSvg(effSheet, sheetSize)] : []),
     ...viewGroups,
     dimensions,
     ...(sectionsSvg === '' ? [] : [sectionsSvg]),

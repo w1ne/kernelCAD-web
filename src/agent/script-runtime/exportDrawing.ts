@@ -160,6 +160,7 @@ function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): 
       partsList: pdf.partsList,
       style: pdf.style,
       plan: pdf.plan,
+      zoneGrid: pdf.zoneGrid,
     }),
     autoAnnotate: pdf.autoAnnotate ?? (authored ? false : { include: ['overall'] }),
   };
