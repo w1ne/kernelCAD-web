@@ -754,9 +754,16 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // section: 'transverse' (spine 'helix' only): the profile is the cross-section
 //   PERPENDICULAR to the axis, sketch origin on the axis — a twisted extrusion that
 //   turns once per pitch (how threadedRod builds a whole rod without a boolean).
-// Any key other than frenet, transitionMode, spine, section and faceLabels throws
-// feature.invalid-args (e.g. transition: 'round' is not transitionMode).
-.sweep(rail: [number, number, number][], opts?: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round'; spine?: 'polyline' | 'smooth' | 'helix'; section?: 'axial' | 'transverse' }): Shape
+// bendRadius (mm; number or ParamRef) replaces every interior polyline corner
+//   with a tangent arc of this centreline radius before the sweep. The exact
+//   line-and-arc spine sews a curved profile into one valid solid and matches the
+//   analytic bent-centreline volume — the supported circular pipe elbow, where
+//   transitionMode 'round' leaves a circular profile unsewn. Requires the default
+//   spine 'polyline' and transitionMode 'right'; a leg too short for its tangent
+//   arcs throws feature.invalid-args naming the leg.
+// Any key other than frenet, transitionMode, spine, section, faceLabels and
+// bendRadius throws feature.invalid-args (e.g. transition: 'round' is not transitionMode).
+.sweep(rail: [number, number, number][], opts?: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round'; spine?: 'polyline' | 'smooth' | 'helix'; section?: 'axial' | 'transverse'; bendRadius?: Editable<number> }): Shape
 
 // Loft through one or more additional sections to produce a 3D solid.
 // Use for nozzles (round-to-square), wings, fairings, transition pieces,

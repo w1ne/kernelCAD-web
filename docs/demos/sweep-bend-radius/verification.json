@@ -1,0 +1,44 @@
+{
+  "recordedDate": "2026-11-25",
+  "kernel": "Local OCCT model geometry",
+  "script": "elbow.kcad.ts",
+  "input": {
+    "profile": "circle r=4 mm",
+    "rail": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        30,
+        0,
+        0
+      ],
+      [
+        30,
+        30,
+        0
+      ]
+    ],
+    "bendRadiusMm": 6,
+    "transitionMode": "right (default)"
+  },
+  "result": {
+    "analyticCutLengthMm": 57.424777960769376,
+    "volumeMm3": 2886.4841692092505,
+    "volumeRelativeError": 1.5754368436776905e-16,
+    "solidComponents": 1,
+    "brepCheckValid": true,
+    "meshOpenEdgeCount": 0,
+    "stepBytes": 20355
+  },
+  "checks": {
+    "volumeWithin0p5Percent": true,
+    "brepCheckValid": true,
+    "oneSolid": true,
+    "watertightMesh": true,
+    "stepExportOk": true
+  },
+  "scope": "Local model validation only; not a deployed-behavior or hardware-acceptance claim."
+}

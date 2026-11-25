@@ -1,0 +1,39 @@
+Local verification record — 2026-11-25
+
+Capability: `Sketch.sweep(rail, { bendRadius })` (#1785).
+A circular-profile polyline sweep with a declared centreline bend radius
+builds one valid solid instead of refusing the unsewn `transitionMode: 'round'`
+body. Omitting the option keeps the existing sharp-corner behaviour.
+
+Feature regression command:
+  npx vitest run tests/integration/modeling/sweepBendRadius1785.test.ts tests/integration/modeling/sweepSolidValidity.test.ts src/modeling/sweepOptions.test.ts tests/unit/capture/sweepTransitionMode.test.ts tests/unit/capture/sweepSpine.test.ts tests/unit/backends/occt/sweepFromSketch.test.ts tests/integration/mcp/listApi.driftSentinel.test.ts tests/unit/skill/skillShapeMethodsDrift.test.ts tests/unit/skill/skillOutOfScopeTruth.test.ts tests/integration/diagnostics/hint-mandatory.test.ts tests/integration/diagnostics/next-action-mandatory.test.ts tests/unit/scripts/qualityRatchet.test.ts tests/unit/scripts/cycleRatchet.test.ts
+Result: 13 test files passed; 91 tests passed.
+
+Proof that the regression fails without the behaviour:
+  Source changes for the option were stashed and the feature test was re-run.
+Result: 9 of the 10 regression tests present at that point failed; the one
+pass was the unchanged sharp-corner baseline. The main elbow test failed with `Sketch.sweep: unknown option
+'bendRadius'`. The stash was then popped.
+
+Typecheck:
+  npx tsc -b --noEmit
+Result: exit 0.
+
+Lint:
+  npm run lint
+Result: exit 0 (0 errors; 44 pre-existing warnings in unrelated files).
+
+Demo geometry:
+  npx tsx docs/demos/sweep-bend-radius/demo.ts
+  Analytic cut length: 57.424777960769376 mm.
+  Measured volume: 2886.4841692092505 mm3 (relative error 1.58e-16).
+  One solid; solid-level BRepCheck valid; mesh open edges 0; STEP 20355 bytes.
+
+Video inspection:
+  H.264, 1280x720, yuv420p, 24 fps, 9 seconds, 93,334 bytes.
+  Extracted frames at 0.9 s and 8.1 s and inspected them: the sharp-mitre
+  baseline, the tangent-arc construction, and the measured solid checks are
+  legible. checkVideoNotBlack: ok (worst frame YAVG=54.64).
+
+Scope: local OCCT model validation only. No deployed behavior or hardware
+acceptance is claimed.
