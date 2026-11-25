@@ -149,28 +149,8 @@ export function lowerSheetMetalBend(ctx: LowerContext, r: FeatureRecord): LowerO
     return noShape();
   }
   const currentStep = steps[steps.length - 1];
-  const beads = beadChainOf(r, records);
-  let beadPadZ = 0;
-  for (const beadRec of beads) {
-    const spec = readBeadSpec(beadRec);
-    const hit = checkBeadVsBendZone(spec, {
-      orient: currentStep.bend.orient,
-      at: currentStep.bend.at,
-      bendAllowance: currentStep.bendAllowance,
-    });
-    if (hit) {
-      ctx.diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.sheetMetal.bead-crosses-bend',
-        featureId: r.id,
-        severity: 'error',
-        message: `.bend(): ${hit}`,
-        hint: 'Move the bead or bend line so the bead footprint clears the bend zone.',
-      });
-      return noShape();
-    }
-    beadPadZ = Math.max(beadPadZ, spec.height + 1);
-  }
+  const beadPadZ = beadClearanceOf(ctx, r, beadChainOf(r, records), currentStep);
+  if (beadPadZ === undefined) return noShape();
   const result = bendSheetMetalBody({
     featureId: r.id,
     base,
@@ -255,6 +235,39 @@ function beadChainOf(r: FeatureRecord, records: readonly FeatureRecord[]): Featu
     cur = prev ? byId.get(prev) : undefined;
   }
   return out.reverse();
+}
+
+/** The beads from the root to `r` (root first), rejecting the fold when any
+ *  bead footprint overlaps this bend's zone. Returns the Z padding the body
+ *  needs for the tallest bead, or `undefined` after pushing the diagnostic. */
+function beadClearanceOf(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  beads: readonly FeatureRecord[],
+  step: FoldStep,
+): number | undefined {
+  let padZ = 0;
+  for (const beadRec of beads) {
+    const spec = readBeadSpec(beadRec);
+    const hit = checkBeadVsBendZone(spec, {
+      orient: step.bend.orient,
+      at: step.bend.at,
+      bendAllowance: step.bendAllowance,
+    });
+    if (hit) {
+      ctx.diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.sheetMetal.bead-crosses-bend',
+        featureId: r.id,
+        severity: 'error',
+        message: `.bend(): ${hit}`,
+        hint: 'Move the bead or bend line so the bead footprint clears the bend zone.',
+      });
+      return undefined;
+    }
+    padZ = Math.max(padZ, spec.height + 1);
+  }
+  return padZ;
 }
 
 /** Flat blank extents: the first bend of the chain sees the flat body; later

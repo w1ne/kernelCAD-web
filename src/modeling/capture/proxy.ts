@@ -1095,14 +1095,9 @@ export class Shape {
   ): Shape {
     const angleParam = toParam(angle, 'deg');
     const radiusParam = toParam(radius, 'mm');
-    // Capture-time validation on the resolved scalar values: a symbolic
-    // param() stores `evaluated: 0` until the dispatcher pre-resolves it, so
-    // read the current value through the session's param table instead.
-    validateBendArgs(
-      paramValue(angleParam, this.session.paramTable),
-      paramValue(radiusParam, this.session.paramTable),
-      this.id,
-    );
+    // Capture-time validation reads the live table; a symbolic param() is still 0 there.
+    const table = this.session.paramTable;
+    validateBendArgs(paramValue(angleParam, table), paramValue(radiusParam, table), this.id);
     // Reuse edgeFeature's selector-handling so .bend(...) accepts the same
     // shape as .fillet(...) / .shell(...). We piggyback on edgeFeature by
     // calling it with kind: 'sheetMetalBend' wedged into the same pipeline
