@@ -29,6 +29,7 @@
 
 import { getOC, type ProjectionCamera } from 'replicad';
 import type { Polyline2 } from './drawingLayout';
+import { OccluderGrid, facesViewer } from './drawingOccluder';
 
 /**
  * A shell whose faces are mostly triangles, with at least this many of
@@ -116,8 +117,26 @@ class Builder {
 type Oc = any;
 
 /**
+ * A B-spline face whose degree in either direction is at least this high
+ * comes from sweeping a profile along a rail: the helix makes the patch
+ * degree climb with the number of swept sections.
+ */
+const SWEPT_SPLINE_DEGREE_MIN = 5;
+
+/**
+ * This many swept spline faces in one shape mean modelled helical threads.
+ * Exact HLR builds a silhouette curve per swept patch, and each one iterates
+ * over every span: a modelled M6 rod (126 faces, up to degree 3x11) ran past
+ * the 300 s job limit, while its triangles project in about a second. Ordinary
+ * spline work stays under the limit: a filleted spline extrusion carries 1-3
+ * swept patches, a loft none above degree 1.
+ */
+const SWEPT_SPLINE_FACE_MIN = 4;
+
+/**
  * True when `shape` should be drawn from triangles: more than `maxFaces`
- * faces, or more than MESH_FACET_MIN triangle faces.
+ * faces, more than MESH_FACET_MIN triangle faces, or SWEPT_SPLINE_FACE_MIN
+ * swept spline faces (modelled helical threads).
  */
 export function wantsMeshProjection(shape: unknown, maxFaces: number): boolean {
   const oc: Oc = getOC();
@@ -126,10 +145,15 @@ export function wantsMeshProjection(shape: unknown, maxFaces: number): boolean {
   try {
     let n = 0;
     let triangles = 0;
+    let swept = 0;
     for (; faces.More(); faces.Next()) {
       if (++n > maxFaces) return true;
       const face = faces.Current();
       if (edgeCount(oc, face, TopAbs_EDGE, TopAbs_SHAPE) === 3 && ++triangles > MESH_FACET_MIN) {
+        face.delete();
+        return true;
+      }
+      if (isSweptSplineFace(oc, face) && ++swept >= SWEPT_SPLINE_FACE_MIN) {
         face.delete();
         return true;
       }
@@ -138,6 +162,25 @@ export function wantsMeshProjection(shape: unknown, maxFaces: number): boolean {
     return false;
   } finally {
     faces.delete();
+  }
+}
+
+/** True for a B-spline face of a swept surface (a thread flank, a spring). */
+function isSweptSplineFace(oc: Oc, face: unknown): boolean {
+  const typed = oc.TopoDS.Face_1(face);
+  const adaptor = new oc.BRepAdaptor_Surface_2(typed, false);
+  try {
+    if (adaptor.GetType() !== oc.GeomAbs_SurfaceType.GeomAbs_BSplineSurface) return false;
+    const handle = adaptor.BSpline();
+    try {
+      const surface = handle.get();
+      return Math.max(surface.UDegree(), surface.VDegree()) >= SWEPT_SPLINE_DEGREE_MIN;
+    } finally {
+      handle.delete();
+    }
+  } finally {
+    adaptor.delete();
+    typed.delete();
   }
 }
 
@@ -619,183 +662,8 @@ function depthNormal(view: Float64Array, a: number, b: number, c: number): numbe
   return ux * vy - uy * vx;
 }
 
-/** Steeper than this (screen area over true area) and a triangle is edge-on. */
-const MIN_PROJECTED_AREA_RATIO = 1e-4;
-
-/** True when the triangle at view offsets a, b, c covers screen area. */
-function facesViewer(view: Float64Array, a: number, b: number, c: number): boolean {
-  const ux = view[b] - view[a];
-  const uy = view[b + 1] - view[a + 1];
-  const uz = view[b + 2] - view[a + 2];
-  const vx = view[c] - view[a];
-  const vy = view[c + 1] - view[a + 1];
-  const vz = view[c + 2] - view[a + 2];
-  const nx = uy * vz - uz * vy;
-  const ny = uz * vx - ux * vz;
-  const nz = ux * vy - uy * vx;
-  const area = Math.hypot(nx, ny, nz);
-  return area > 0 && Math.abs(nz) >= area * MIN_PROJECTED_AREA_RATIO;
-}
-
-/**
- * Triangles binned on a uniform screen-space grid by their 2D bounds. A point
- * is hidden when a triangle that covers it lies more than `eps` in front.
- */
-class OccluderGrid {
-  private readonly cellStart: Int32Array;
-  private readonly cellTris: Int32Array;
-  private readonly x0: number;
-  private readonly y0: number;
-  private readonly nx: number;
-  private readonly ny: number;
-  private readonly cell: number;
-  private readonly view: Float64Array;
-  private readonly triangles: Int32Array;
-  private readonly triangleFace: Int32Array;
-
-  constructor(view: Float64Array, triangles: Int32Array, triangleFace: Int32Array) {
-    this.view = view;
-    this.triangles = triangles;
-    this.triangleFace = triangleFace;
-    const nTri = triangles.length / 3;
-    let lx = Infinity;
-    let ly = Infinity;
-    let hx = -Infinity;
-    let hy = -Infinity;
-    for (let i = 0; i < triangles.length; i += 1) {
-      const p = triangles[i] * 3;
-      lx = Math.min(lx, view[p]);
-      ly = Math.min(ly, view[p + 1]);
-      hx = Math.max(hx, view[p]);
-      hy = Math.max(hy, view[p + 1]);
-    }
-    if (!(hx >= lx)) {
-      lx = ly = 0;
-      hx = hy = 1;
-    }
-    const w = Math.max(hx - lx, 1e-9);
-    const h = Math.max(hy - ly, 1e-9);
-    const cell = Math.max(Math.sqrt((w * h) / Math.max(nTri, 1)), Math.max(w, h) / 4096);
-    this.x0 = lx;
-    this.y0 = ly;
-    this.cell = cell;
-    this.nx = Math.max(1, Math.ceil(w / cell));
-    this.ny = Math.max(1, Math.ceil(h / cell));
-    const counts = new Int32Array(this.nx * this.ny + 1);
-    const span = (t: number, fn: (c: number) => void): void => {
-      const a = triangles[t * 3] * 3;
-      const b = triangles[t * 3 + 1] * 3;
-      const c = triangles[t * 3 + 2] * 3;
-      // Triangles seen (nearly) edge-on cover no area and hide nothing; their
-      // interpolated depth is also ill-conditioned (a top face seen from the
-      // side would "hide" its own front edge).
-      if (!facesViewer(view, a, b, c)) return;
-      const i0 = this.col(Math.min(view[a], view[b], view[c]));
-      const i1 = this.col(Math.max(view[a], view[b], view[c]));
-      const j0 = this.row(Math.min(view[a + 1], view[b + 1], view[c + 1]));
-      const j1 = this.row(Math.max(view[a + 1], view[b + 1], view[c + 1]));
-      for (let j = j0; j <= j1; j += 1) for (let i = i0; i <= i1; i += 1) fn(j * this.nx + i);
-    };
-    for (let t = 0; t < nTri; t += 1) span(t, c => { counts[c + 1] += 1; });
-    for (let c = 1; c < counts.length; c += 1) counts[c] += counts[c - 1];
-    this.cellStart = counts;
-    this.cellTris = new Int32Array(counts[counts.length - 1]);
-    const fill = counts.slice(0, counts.length - 1);
-    for (let t = 0; t < nTri; t += 1) span(t, c => { this.cellTris[fill[c]++] = t; });
-  }
-
-  private col(u: number): number {
-    return Math.min(this.nx - 1, Math.max(0, Math.floor((u - this.x0) / this.cell)));
-  }
-
-  private row(v: number): number {
-    return Math.min(this.ny - 1, Math.max(0, Math.floor((v - this.y0) / this.cell)));
-  }
-
-  /**
-   * True when a triangle covering (u, v) lies more than `eps` in front of
-   * depth w. With `reach` > 0 a triangle within that screen distance also
-   * counts, at the depth of its nearest point: a B-rep edge's curve bulges up
-   * to the meshing tolerance past the chords of the triangulation that hides
-   * it. Faces `own1` and `own2` (the line's own) do not count that way: next
-   * to a tangent edge its own surface is steep enough to "hide" it.
-   */
-  hidden(u: number, v: number, w: number, eps: number, reach: number, own1: number, own2: number): boolean {
-    const i0 = Math.floor((u - reach - this.x0) / this.cell);
-    const i1 = Math.floor((u + reach - this.x0) / this.cell);
-    const j0 = Math.floor((v - reach - this.y0) / this.cell);
-    const j1 = Math.floor((v + reach - this.y0) / this.cell);
-    for (let j = Math.max(0, j0); j <= Math.min(this.ny - 1, j1); j += 1) {
-      for (let i = Math.max(0, i0); i <= Math.min(this.nx - 1, i1); i += 1) {
-        if (this.hiddenIn(j * this.nx + i, u, v, w, eps, reach, own1, own2)) return true;
-      }
-    }
-    return false;
-  }
-
-  private hiddenIn(
-    c: number, u: number, v: number, w: number, eps: number, reach: number, own1: number, own2: number,
-  ): boolean {
-    const view = this.view;
-    const tris = this.triangles;
-    for (let k = this.cellStart[c]; k < this.cellStart[c + 1]; k += 1) {
-      const t = this.cellTris[k];
-      const a = tris[t * 3] * 3;
-      const b = tris[t * 3 + 1] * 3;
-      const p = tris[t * 3 + 2] * 3;
-      const ax = view[a];
-      const ay = view[a + 1];
-      const e1x = view[b] - ax;
-      const e1y = view[b + 1] - ay;
-      const e2x = view[p] - ax;
-      const e2y = view[p + 1] - ay;
-      const det = e1x * e2y - e1y * e2x;
-      let s = ((u - ax) * e2y - (v - ay) * e2x) / det;
-      let r = (e1x * (v - ay) - e1y * (u - ax)) / det;
-      if (s < -1e-9 || r < -1e-9 || s + r > 1 + 1e-9) {
-        if (reach <= 0) continue;
-        const face = this.triangleFace[t];
-        if (face === own1 || face === own2) continue;
-        const near = nearestOnTriangle(u - ax, v - ay, e1x, e1y, e2x, e2y);
-        if (near.distance > reach) continue;
-        s = near.s;
-        r = near.r;
-      }
-      const depth = view[a + 2] + s * (view[b + 2] - view[a + 2]) + r * (view[p + 2] - view[a + 2]);
-      if (depth > w + eps) return true;
-    }
-    return false;
-  }
-}
-
-/** Nearest point to q of the triangle (0, e1, e2), as barycentrics s, r
- *  (point = s e1 + r e2) and its distance. */
-function nearestOnTriangle(
-  qx: number, qy: number, e1x: number, e1y: number, e2x: number, e2y: number,
-): { s: number; r: number; distance: number } {
-  let best = { s: 0, r: 0, distance: Infinity };
-  const consider = (s: number, r: number): void => {
-    const d = Math.hypot(s * e1x + r * e2x - qx, s * e1y + r * e2y - qy);
-    if (d < best.distance) best = { s, r, distance: d };
-  };
-  const clamp = (x: number): number => Math.min(1, Math.max(0, x));
-  // Edge 0 -> e1, edge 0 -> e2, edge e1 -> e2.
-  consider(clamp((qx * e1x + qy * e1y) / (e1x * e1x + e1y * e1y || 1)), 0);
-  consider(0, clamp((qx * e2x + qy * e2y) / (e2x * e2x + e2y * e2y || 1)));
-  const fx = e2x - e1x;
-  const fy = e2y - e1y;
-  const t = clamp(((qx - e1x) * fx + (qy - e1y) * fy) / (fx * fx + fy * fy || 1));
-  consider(1 - t, t);
-  return best;
-}
-
 type LineClass = 'sharp' | 'outline' | 'smooth';
 
-/**
- * Splits lines into visible and hidden runs by testing points every `step`
- * along them, then joins runs that meet end to end (so a facet crease along
- * many triangles comes back as one polyline).
- */
 class LineSink {
   private readonly runs: Record<LineClass, [Polyline2[], Polyline2[]]> = {
     sharp: [[], []],
