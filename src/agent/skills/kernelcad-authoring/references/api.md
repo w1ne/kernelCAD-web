@@ -84,6 +84,45 @@ rib(base: Shape, centerline: [number, number][], opts: {
 const plate = box(40, 30, 10);
 return rib(plate, [[5, 15], [35, 15]], { thickness: 2, height: 20, startZ: 9.9 });
 
+// Structural weldment primitives: standard profiles, auto-trimmed frames with
+// cut lists, and 3D corner gusset plates.
+// Profiles:
+//   { kind: 'square-tube', size, wall }
+//   { kind: 'rect-tube', width, height, wall }
+//   { kind: 'round-tube', outerDiameter, wall }
+//   { kind: 'angle', legA, legB, thickness }
+//   { kind: 'c-channel', width, height, thickness }
+//   { kind: 'flat-bar', width, thickness }
+structuralMember(from: [number, number, number], to: [number, number, number], opts: {
+  profile: StructuralProfile;
+  up?: [number, number, number];
+  startTrimPlane?: { point: [number, number, number]; normal: [number, number, number] };
+  endTrimPlane?: { point: [number, number, number]; normal: [number, number, number] };
+  extendStart?: number;
+  extendEnd?: number;
+}): Shape;
+
+weldmentFrame(members: {
+  from: [number, number, number];
+  to: [number, number, number];
+  profile: StructuralProfile;
+  up?: [number, number, number];
+  trim?: 'miter' | 'butt' | 'none';
+  label?: string;
+}[], opts?: {
+  cornerTrim?: 'miter' | 'butt' | 'none';
+  fuse?: boolean;
+}): { members: Shape[]; cutList: WeldmentCutItem[]; combined: Shape };
+
+gusset(corner: [number, number, number], dirA: [number, number, number], dirB: [number, number, number], opts: {
+  legA: number;
+  legB: number;
+  thickness: number;
+  cornerRelief?: number;
+  tipChamfer?: number;
+  offset?: number;
+}): Shape;
+
 // Path builder — chain moveTo / lineTo / arcs / .close() to get a Sketch. For
 // revolved geometry (washers, donut bodies, mug profiles, etc.) build a profile
 // via path() and call .revolve() on the resulting Sketch.
