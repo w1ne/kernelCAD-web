@@ -165,6 +165,7 @@ Break edges, add draft, hollow out a wall or fill it with a lattice, fold sheet 
 | `Shape.offsetFaces(faces: FaceSelector \| FaceSelector[], distance: Editable<number>) => Shape` | Push or pull planar and full cylindrical faces along their outward normals. |
 | `Shape.moveFaces(faces: FaceSelector \| FaceSelector[], by: [number, number, number]) => Shape` | Move planar faces by `by` (mm). |
 | `Shape.bend(edgeRef: EdgeSelector \| string, angle: Editable<number>, radius: Editable<number>) => Shape` | Add a sheet-metal bend along a linear edge. |
+| `Shape.bead(opts: { from: [Editable<number>, Editable<number>]; to: [Editable<number>, Editable<number>]; width: Editable<number>; height: Editable<number>; profile?: 'round' \| 'u' \| 'v'; side?: 'top' \| 'bottom' }) => Shape` | Form a closed embossed stiffening bead along [from -> to] in flat-blank XY coordinates on a sheetMetal(...) body. |
 | `Shape.flattenPattern() => Region` | Return the unfolded 2D flat-pattern of this bent sheet-metal Shape as a Region (closed outer wire + holes + bend-line metadata + source plane). |
 
 ## Select geometry

@@ -159,7 +159,7 @@ export type FeatureKind =
   // assembly export (v0.6+) — Scene.toCompound() / Scene.toUnion()
   | 'assemblyExport'
   // specialty (v0.13+)
-  | 'sheetMetal' | 'sheetMetalBend' | 'sdf' | 'sdfMaterialize'
+  | 'sheetMetal' | 'sheetMetalBend' | 'sheetMetalBead' | 'sdf' | 'sdfMaterialize'
   // TPMS lattice infill of a body (mesh-solid result).
   | 'lattice'
   // W1.3 NURBS surfaces — escape paths from a `Surface` into the Shape pipeline.

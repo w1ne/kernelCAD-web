@@ -5,6 +5,7 @@ import type { FeatureId, Param } from '../../shared/intent/types';
 import type { Editable } from '../../shared/runtime/paramRef';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import {
+  buildBeadFeatureSpec,
   buildBendFeatureSpec,
   buildDraftFeatureSpec,
   buildFaceEditFeatureSpec,
@@ -20,6 +21,7 @@ import {
   type VariableEdgeGroup,
   type VariableEdgeValueKey,
 } from './shapeOperationFeatureRecords';
+import { validateBeadOptions, type SheetMetalBeadOpts } from '../sheetMetalBead';
 
 export function createScalarEdgeFeatureCaptureSpec(
   records: readonly FeatureRecord[],
@@ -43,6 +45,16 @@ export function createBendFeatureCaptureSpec(
 ): ShapeOperationFeatureSpec {
   requireRecord(records, baseId, `bend: base shape '${baseId}' is not from this CaptureSession`);
   return buildBendFeatureSpec(baseId, angleParam, radiusParam, selector);
+}
+
+export function createBeadFeatureCaptureSpec(
+  records: readonly FeatureRecord[],
+  baseId: FeatureId,
+  opts: SheetMetalBeadOpts,
+): ShapeOperationFeatureSpec {
+  requireRecord(records, baseId, `bead: base shape '${baseId}' is not from this CaptureSession`);
+  const validated = validateBeadOptions(opts, baseId);
+  return buildBeadFeatureSpec(baseId, validated.params, validated.profile, validated.side);
 }
 
 export function createFaceEditCaptureSpec(

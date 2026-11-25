@@ -13,7 +13,7 @@ import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import { flattenPatternWithHoles } from '../../../modeling/sheetMetalFlatPattern';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { Vec3 } from '../../../shared/intent/types';
-import type { Vec2 } from '../../../shared/intent/region';
+import type { FlatPatternBead, Vec2 } from '../../../shared/intent/region';
 import {
   FILE_READ_CODE, FILE_READ_HINT, fileReadErrorMessage,
 } from '../../../shared/diagnostics/fileReadError';
@@ -40,6 +40,7 @@ export interface FlattenPatternOutput {
       radius: number;
       ordinal: number;
     }>;
+    beads?: FlatPatternBead[];
   };
   diagnostics: CompilerDiagnostic[];
 }
@@ -103,6 +104,7 @@ export async function flattenPatternTool(input: FlattenPatternInput): Promise<Fl
         outer: region.outer,
         holes: region.holes,
         bendLines: region.bendLines,
+        ...(region.beads ? { beads: region.beads } : {}),
       },
       diagnostics: r.diagnostics,
     };

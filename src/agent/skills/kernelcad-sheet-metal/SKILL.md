@@ -1,6 +1,6 @@
 ---
 name: kernelcad-sheet-metal
-description: Folded sheet-metal parts — sheetMetal(profile, opts), .bend(edge, angle, radius), .flattenPattern(). Use when building L-brackets, U-channels, service panels, or any part fabricated from a flat blank + folds.
+description: Folded sheet-metal parts — sheetMetal(profile, opts), .bead(opts), .bend(edge, angle, radius), .flattenPattern(). Use when building L-brackets, U-channels, stiffened panels, or any part fabricated from a flat blank + formed beads + folds.
 ---
 
 # kernelCAD — sheet metal
@@ -31,13 +31,22 @@ sheetMetal(profile: Sketch, opts: {
 }): Shape;
 
 // Shape methods — chain on a sheetMetal-rooted Shape.
+shape.bead(opts: {
+  from: [Editable<number>, Editable<number>];  // flat-blank XY start (mm)
+  to: [Editable<number>, Editable<number>];    // flat-blank XY end (mm)
+  width: Editable<number>;                     // mm, > 0
+  height: Editable<number>;                    // mm, > 0
+  profile?: 'round' | 'u' | 'v';               // default 'round'
+  side?: 'top' | 'bottom';                     // default 'top' (+Z); 'bottom' = -Z
+}): Shape;
+
 shape.bend(
   edgeRef: EdgeSelector | string,  // slice-1: { atX: n } | { atY: n } | { face: 'top' }
   angle: Editable<number>,         // degrees, signed (positive = fold +normal)
   radius: Editable<number>,        // mm, inner bend radius
 ): Shape;
 
-shape.flattenPattern(): Region;    // derived view — no FeatureRecord
+shape.flattenPattern(): Region;    // derived view — no FeatureRecord (includes optional .beads[])
 ```
 
 ## Bend-allowance math (K-factor approximation)
@@ -60,9 +69,24 @@ BA = (pi * |angle_deg| / 180) * (kFactor * thickness + radius)
   is exactly the blank (flange lengths + bend allowances).
 - The SHORTER side of the blank across the line folds (a tie folds the +X /
   +Y side). A web with a bend near each end stays on the bench.
-- Holes and cutouts drilled in the flat blank before `.bend()` ride along
-  with their flange: `sheetMetal(...).holes({ byNormal: 'Z' }, ...).bend(...)`.
+- Holes, cutouts, and formed stiffening beads placed on the flat blank before `.bend()` ride along with their flange: `sheetMetal(...).bead({ from: [15, 30], to: [40, 30], width: 8, height: 2 }).bend({ atX: 50 }, 90, 2)`.
 - Parallel bend lines whose zones overlap fail with `feature.invalid-args`.
+
+## Stiffening beads
+
+```typescript
+// Parallel top stiffening beads on a panel before folding a flange.
+const blank = sheetMetal(s, { thickness: 1.5, kFactor: 0.4 });
+const stiffened = blank
+  .bead({ from: [15, 20], to: [45, 20], width: 8, height: 2, profile: 'round', side: 'top' })
+  .bead({ from: [15, 40], to: [45, 40], width: 8, height: 2, profile: 'u', side: 'top' })
+  .bend({ atX: 60 }, 90, 2);
+```
+
+- Raises a pill-ended ridge (`width` x `height`) on `side` (`'top'` = `+Z`, `'bottom'` = `-Z`) with cross-section `'round'` (semi-elliptical), `'u'` (flat-topped), or `'v'` (triangular).
+- When `width > 2 * thickness`, cuts a matching recessed channel on the opposite face (`innerWidth = max(width - 2 * thickness, 0.25 * width)`) so wall thickness stays uniform; narrower beads form a clean solid emboss.
+- Footprint (`[from, to]` expanded by `width / 2`) must stay inside the flat blank (`feature.sheetMetal.bead-out-of-bounds`) and clear every bend zone (`feature.sheetMetal.bead-crosses-bend`).
+- `flattenPattern()` surfaces beads in flat-blank coordinates on optional `region.beads` (`{ start, end, width, height, profile, side }`) without changing `outer`, `bendLines`, or `holes`.
 
 ## Slice-1 limits
 
@@ -84,6 +108,8 @@ BA = (pi * |angle_deg| / 180) * (kFactor * thickness + radius)
 - `feature.bend.edge-not-linear` (error) — resolved bend axis cannot be derived from the selector. Hint: pick a straight perimeter edge; slice-1 supports `{ atX: <n> }`, `{ atY: <n> }`, or `{ face: 'top' }`.
 - `feature.sheetMetal.crossing-bends` (error) — an `atX` and an `atY` bend cross where the blank still has material. Hint: add corner relief to the outline.
 - `feature.sheetMetal.fold-invalid` (error) — the fold produced several solids, an invalid solid, or lost / overlapped material (flanges folding into each other). Hint: reorder or respace the bends.
+- `feature.sheetMetal.bead-out-of-bounds` (error) — a bead footprint (`[from, to]` expanded by `width / 2`) extends outside the flat blank outline. Hint: move `from`/`to` inward or reduce `width`.
+- `feature.sheetMetal.bead-crosses-bend` (error) — a bead footprint overlaps a bend zone (`bend line ± bendAllowance / 2`). Hint: shorten or relocate the bead clear of every bend zone.
 
 ## Verification gates
 

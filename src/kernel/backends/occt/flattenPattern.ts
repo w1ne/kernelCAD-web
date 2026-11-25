@@ -18,7 +18,15 @@
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import { invalidArgs } from '../../../shared/intent/invalidArgs';
 import { KernelError } from '../../../shared/intent/kernelError';
-import { makeRegion, type Region, type BendLineRecord, type Vec2 } from '../../../shared/intent/region';
+import {
+  makeRegion,
+  type BeadProfile,
+  type BeadSide,
+  type BendLineRecord,
+  type FlatPatternBead,
+  type Region,
+  type Vec2,
+} from '../../../shared/intent/region';
 
 /**
  * Flatten the bent sheet-metal Shape identified by `terminalId` to a Region.
@@ -46,6 +54,8 @@ export function flattenPattern(
   // them back (flatBlankInnerLoops on the `flatBlankRecordId` shape).
   const holes: Vec2[][] = (opts.holes ?? []).map((h) => h.slice());
   const bendLines = buildBendLines(bendRecords);
+  // collectBendRecords already reversed `chain` in place to root-first order.
+  const beads = buildFlatPatternBeads(chain);
 
   // The flat blank length is the sketch's original outline plus, for each
   // bend, an `arcLength` strip whose width replaces the projected bent
@@ -58,7 +68,32 @@ export function flattenPattern(
     outer,
     holes,
     bendLines,
+    ...(beads.length > 0 ? { beads } : {}),
   });
+}
+
+/**
+ * Metadata needed to read inner hole loops off the flat blank solid without
+ * mistaking formed bead seams for holes or losing the top face Z when a top
+ * bead raises the bounding box.
+ */
+export function flatBlankMeta(
+  records: readonly FeatureRecord[],
+  terminalId?: string,
+): { blankId: string; thickness?: number; beads: FlatPatternBead[] } {
+  const { recById, terminal } = resolveFlattenTerminal(records, terminalId);
+  const { root, chain } = walkFlattenLineage(recById, terminal);
+  let blank = chain[chain.length - 1];
+  for (let i = chain.length - 1; i >= 0; i--) {
+    if (chain[i].kind === 'sheetMetalBend') break;
+    blank = chain[i];
+  }
+  const rootFirst = [...chain].reverse();
+  return {
+    blankId: blank.id,
+    thickness: evaluatedNumber(root, 'thickness'),
+    beads: buildFlatPatternBeads(rootFirst),
+  };
 }
 
 /**
@@ -135,6 +170,35 @@ function walkFlattenLineage(
     );
   }
   return { root, chain };
+}
+
+/** Collect flat-pattern bead metadata from root-first `sheetMetalBead` records. */
+function buildFlatPatternBeads(rootFirstChain: readonly FeatureRecord[]): FlatPatternBead[] {
+  const out: FlatPatternBead[] = [];
+  for (const rec of rootFirstChain) {
+    if (rec.kind !== 'sheetMetalBead') continue;
+    const fromX = evaluatedNumber(rec, 'fromX');
+    const fromY = evaluatedNumber(rec, 'fromY');
+    const toX = evaluatedNumber(rec, 'toX');
+    const toY = evaluatedNumber(rec, 'toY');
+    const width = evaluatedNumber(rec, 'width');
+    const height = evaluatedNumber(rec, 'height');
+    if (
+      fromX === undefined || fromY === undefined ||
+      toX === undefined || toY === undefined ||
+      width === undefined || height === undefined
+    ) continue;
+    const md = rec.metadata as { profile?: BeadProfile; side?: BeadSide } | undefined;
+    out.push({
+      start: [fromX, fromY],
+      end: [toX, toY],
+      width,
+      height,
+      profile: md?.profile ?? 'round',
+      side: md?.side ?? 'top',
+    });
+  }
+  return out;
 }
 
 /** Reverse to root-first ordering. Any number of bends flattens: every bend

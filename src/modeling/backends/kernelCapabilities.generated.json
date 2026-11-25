@@ -53,6 +53,7 @@
         "sdfMaterialize",
         "shapeThicken",
         "sheetMetal",
+        "sheetMetalBead",
         "sheetMetalBend",
         "shell",
         "sketch",

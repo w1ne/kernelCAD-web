@@ -22,6 +22,7 @@ import { lowerMirror, lowerPattern } from './mirrorPattern';
 import { lowerBox, lowerCylinder, lowerSphere } from './primitives';
 import { lowerRevolve } from './revolve';
 import { lowerSheetMetal, lowerSheetMetalBend } from './sheetMetal';
+import { lowerSheetMetalBead } from '../sheetMetalBeadLowerer';
 import { lowerDraft, lowerShell } from './shellDraft';
 import { lowerMoveFaces, lowerOffsetFaces } from './faceEdit';
 import { lowerExtrude, lowerSketch } from './sketchExtrude';
@@ -80,6 +81,7 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   // sheet metal
   sheetMetal: lowerSheetMetal,
   sheetMetalBend: lowerSheetMetalBend,
+  sheetMetalBead: lowerSheetMetalBead,
   // assemblies
   assemblyPart: lowerAssemblyPart,
   assemblyJoint: lowerAssemblyJoint,

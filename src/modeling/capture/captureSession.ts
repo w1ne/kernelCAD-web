@@ -23,29 +23,18 @@ import { ShapeVersions, appendTransformInPlace, type VersionedOp } from './shape
 export type { VersionedOp } from './shapeVersions';
 import { Sketch } from './sketch';
 import { SurfaceProxy } from './surfaceProxy';
-import type {
-  AssemblyConnectorFrameStored,
-  AssemblyConnectorRef,
-  AssemblyPartOpts,
-  AssemblyPartRef,
-} from './assembly';
+import type { AssemblyConnectorFrameStored, AssemblyConnectorRef, AssemblyPartOpts, AssemblyPartRef } from './assembly';
 import { ParamTable, type SerializedParamTable } from '../../shared/runtime/paramTable';
 import type { SoftWarning } from '../../shared/runtime/softWarning';
 import { collectParamRefs } from '../../shared/runtime/resolveParams';
 import { paramRefsToParams } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
-import {
-  captureCallSite,
-  type ScriptLocationResolver,
-} from '../runtime/scriptLocationCapture';
+import { captureCallSite, type ScriptLocationResolver } from '../runtime/scriptLocationCapture';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import { KernelError } from '../../shared/intent/kernelError';
 import {
-  buildAnimationViewFeatureSpec,
-  buildCameraTargetFeatureSpec,
-  buildReferenceImageFeatureSpec,
-  buildRenderEnvironmentFeatureSpec,
-  type ReferenceImageCaptureArgs,
+  buildAnimationViewFeatureSpec, buildCameraTargetFeatureSpec, buildReferenceImageFeatureSpec,
+  buildRenderEnvironmentFeatureSpec, type ReferenceImageCaptureArgs,
 } from './virtualFeatureRecords';
 import {
   buildCurve3DFeatureSpec,
@@ -80,12 +69,14 @@ import {
   type SolvedAssemblyMateMetadata,
 } from './assemblyFeatureRecords';
 import {
+  createBeadFeatureCaptureSpec,
   createBendFeatureCaptureSpec,
   createDraftFeatureCaptureSpec,
   createFaceEditCaptureSpec,
   createScalarEdgeFeatureCaptureSpec,
   createVariableEdgeFeatureCaptureSpec,
 } from './shapeOperationCaptureValidation';
+import type { SheetMetalBeadOpts } from '../sheetMetalBead';
 import {
   buildFaceInputRef,
   type ShapeOperationEdgeSelector,
@@ -1067,6 +1058,11 @@ export class CaptureSession {
       radiusParam,
       selector as ShapeOperationEdgeSelector,
     ));
+  }
+
+  /** Capture a `kind: 'sheetMetalBead'` FeatureRecord (formed stiffening bead). */
+  beadFeature(base: Shape, opts: SheetMetalBeadOpts): Shape {
+    return this.createShape(createBeadFeatureCaptureSpec(this.records, base.id, opts));
   }
 
   /**

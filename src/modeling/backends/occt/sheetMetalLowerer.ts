@@ -87,6 +87,8 @@ export interface BendInputs {
   thickness: number;
   radius: number;
   kFactor: number;
+  /** Extra Z clearance above/below sheet faces so formed beads ride along with their cell. */
+  beadPadZ?: number;
   /** Bend line + flat blank data recorded for flattenPattern. */
   flat: { axis: BendAxisSpec; bounds: [number, number, number, number]; z0: number };
 }
@@ -206,8 +208,9 @@ function cellTool(oc: Oc, cell: FlatCell, inp: BendInputs, pad: number): unknown
   const [bx0, by0, bx1, by1] = inp.flat.bounds;
   const lo = (v: number, edge: number): number => (Math.abs(v - edge) < 1e-9 ? v - pad : v);
   const hi = (v: number, edge: number): number => (Math.abs(v - edge) < 1e-9 ? v + pad : v);
-  const p0: Vec3 = [lo(cell.min[0], bx0), lo(cell.min[1], by0), inp.flat.z0 - pad];
-  const p1: Vec3 = [hi(cell.max[0], bx1), hi(cell.max[1], by1), inp.flat.z0 + inp.thickness + pad];
+  const padZ = Math.max(pad, inp.beadPadZ ?? 0);
+  const p0: Vec3 = [lo(cell.min[0], bx0), lo(cell.min[1], by0), inp.flat.z0 - padZ];
+  const p1: Vec3 = [hi(cell.max[0], bx1), hi(cell.max[1], by1), inp.flat.z0 + inp.thickness + padZ];
   const a = new oc.gp_Pnt_3(...p0);
   const b = new oc.gp_Pnt_3(...p1);
   const maker = new oc.BRepPrimAPI_MakeBox_4(a, b);
