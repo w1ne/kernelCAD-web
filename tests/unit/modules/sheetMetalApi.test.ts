@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { runScript } from '../../../src/modeling/runtime/runScript';
+import { flattenPattern } from '../../../src/kernel/backends/occt/flattenPattern';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
+import { createModelingApi } from '../../../src/modeling/api';
 
 describe('sheetMetal(profile, opts) — capture-time behavior', () => {
   it('captures a kind:sheetMetal record from a closed sketch + thickness/kFactor', async () => {
@@ -50,5 +53,23 @@ describe('sheetMetal(profile, opts) — capture-time behavior', () => {
     });
     const smr = records.find(r => r.kind === 'sheetMetal');
     expect(smr).toBeDefined();
+  });
+
+  it('resolves param() sheetMetal + bead dimensions via session.resolvedRecords() for flattenPattern', () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session });
+    const t = api.param('Thickness', 1.5);
+    const k = api.param('KFactor', 0.4);
+    const w = api.param('BeadW', 8);
+    const h = api.param('BeadH', 2);
+    const x0 = api.param('BeadX0', 20);
+    const x1 = api.param('BeadX1', 80);
+    const s = api.path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 60).lineTo(0, 60).close();
+    const part = api.sheetMetal(s, { thickness: t, kFactor: k })
+      .bead({ from: [x0, 30], to: [x1, 30], width: w, height: h, profile: 'u', side: 'top' });
+    const region = flattenPattern(session.resolvedRecords(), part.id);
+    expect(region.beads).toEqual([
+      { start: [20, 30], end: [80, 30], width: 8, height: 2, profile: 'u', side: 'top' },
+    ]);
   });
 });

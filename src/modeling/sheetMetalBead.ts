@@ -8,8 +8,9 @@
 import type { FeatureRecord } from '../shared/intent/featureRecord';
 import { invalidArgs } from '../shared/intent/invalidArgs';
 import type { Param } from '../shared/intent/types';
-import { toParam } from '../shared/runtime/editableHelpers';
+import { paramValue, toParam } from '../shared/runtime/editableHelpers';
 import type { Editable } from '../shared/runtime/paramRef';
+import type { ParamTable } from '../shared/runtime/paramTable';
 import type { BeadProfile, BeadSide, Vec2 } from '../shared/intent/region';
 import { findRootSheetMetalRecord } from './sheetMetal';
 
@@ -80,7 +81,17 @@ function requirePlainObject(opts: unknown, featureId?: string): Record<string, u
   return obj;
 }
 
-function parseFiniteParam(value: unknown, path: string, featureId?: string): Param {
+function resolveCaptureScalar(param: Param, paramTable?: ParamTable): number | undefined {
+  if (param.paramRef === undefined) return param.evaluated;
+  return paramTable ? paramValue(param, paramTable) : undefined;
+}
+
+function parseFiniteParam(
+  value: unknown,
+  path: string,
+  featureId?: string,
+  paramTable?: ParamTable,
+): Param {
   let param: Param;
   try {
     param = toParam(value as Editable<number>, 'mm');
@@ -94,11 +105,12 @@ function parseFiniteParam(value: unknown, path: string, featureId?: string): Par
       featureId,
     });
   }
-  if (!Number.isFinite(param.evaluated)) {
+  const scalar = resolveCaptureScalar(param, paramTable);
+  if (scalar !== undefined && !Number.isFinite(scalar)) {
     invalidArgs({
       api: 'shape.bead(opts)',
       path,
-      got: param.evaluated,
+      got: scalar,
       requires: 'a finite number',
       example: BEAD_EXAMPLE,
       featureId,
@@ -107,7 +119,12 @@ function parseFiniteParam(value: unknown, path: string, featureId?: string): Par
   return param;
 }
 
-function parsePoint(raw: unknown, path: 'from' | 'to', featureId?: string): [Param, Param] {
+function parsePoint(
+  raw: unknown,
+  path: 'from' | 'to',
+  featureId?: string,
+  paramTable?: ParamTable,
+): [Param, Param] {
   if (!Array.isArray(raw) || raw.length !== 2) {
     invalidArgs({
       api: 'shape.bead(opts)',
@@ -119,18 +136,24 @@ function parsePoint(raw: unknown, path: 'from' | 'to', featureId?: string): [Par
     });
   }
   return [
-    parseFiniteParam(raw[0], `${path}[0]`, featureId),
-    parseFiniteParam(raw[1], `${path}[1]`, featureId),
+    parseFiniteParam(raw[0], `${path}[0]`, featureId, paramTable),
+    parseFiniteParam(raw[1], `${path}[1]`, featureId, paramTable),
   ];
 }
 
-function parsePositiveParam(raw: unknown, path: 'width' | 'height', featureId?: string): Param {
-  const param = parseFiniteParam(raw, path, featureId);
-  if (param.paramRef === undefined && !(param.evaluated > 0)) {
+function parsePositiveParam(
+  raw: unknown,
+  path: 'width' | 'height',
+  featureId?: string,
+  paramTable?: ParamTable,
+): Param {
+  const param = parseFiniteParam(raw, path, featureId, paramTable);
+  const scalar = resolveCaptureScalar(param, paramTable);
+  if (scalar !== undefined && !(scalar > 0)) {
     invalidArgs({
       api: 'shape.bead(opts)',
       path,
-      got: param.evaluated,
+      got: scalar,
       requires: 'a positive finite number (> 0)',
       example: BEAD_EXAMPLE,
       featureId,
@@ -161,26 +184,33 @@ function parseEnum<T extends string>(
 }
 
 /** Validate `shape.bead(opts)` arguments at capture time. */
-export function validateBeadOptions(opts: unknown, featureId?: string): ValidatedBeadCapture {
+export function validateBeadOptions(
+  opts: unknown,
+  featureId?: string,
+  paramTable?: ParamTable,
+): ValidatedBeadCapture {
   const obj = requirePlainObject(opts, featureId);
-  const [fromX, fromY] = parsePoint(obj.from, 'from', featureId);
-  const [toX, toY] = parsePoint(obj.to, 'to', featureId);
-  const allStaticCoords =
-    fromX.paramRef === undefined && fromY.paramRef === undefined &&
-    toX.paramRef === undefined && toY.paramRef === undefined;
-  const segLen = Math.hypot(toX.evaluated - fromX.evaluated, toY.evaluated - fromY.evaluated);
-  if (allStaticCoords && !(segLen > MIN_SEGMENT_LEN)) {
-    invalidArgs({
-      api: 'shape.bead(opts)',
-      path: 'to',
-      gotText: `zero-length segment from [${fromX.evaluated}, ${fromY.evaluated}] to [${toX.evaluated}, ${toY.evaluated}]`,
-      requires: 'distinct from and to endpoints (segment length > 0)',
-      example: BEAD_EXAMPLE,
-      featureId,
-    });
+  const [fromX, fromY] = parsePoint(obj.from, 'from', featureId, paramTable);
+  const [toX, toY] = parsePoint(obj.to, 'to', featureId, paramTable);
+  const fx = resolveCaptureScalar(fromX, paramTable);
+  const fy = resolveCaptureScalar(fromY, paramTable);
+  const tx = resolveCaptureScalar(toX, paramTable);
+  const ty = resolveCaptureScalar(toY, paramTable);
+  if (fx !== undefined && fy !== undefined && tx !== undefined && ty !== undefined) {
+    const segLen = Math.hypot(tx - fx, ty - fy);
+    if (!(segLen > MIN_SEGMENT_LEN)) {
+      invalidArgs({
+        api: 'shape.bead(opts)',
+        path: 'to',
+        gotText: `zero-length segment from [${fx}, ${fy}] to [${tx}, ${ty}]`,
+        requires: 'distinct from and to endpoints (segment length > 0)',
+        example: BEAD_EXAMPLE,
+        featureId,
+      });
+    }
   }
-  const width = parsePositiveParam(obj.width, 'width', featureId);
-  const height = parsePositiveParam(obj.height, 'height', featureId);
+  const width = parsePositiveParam(obj.width, 'width', featureId, paramTable);
+  const height = parsePositiveParam(obj.height, 'height', featureId, paramTable);
   const profile = parseEnum<BeadProfile>(obj.profile, VALID_PROFILES, 'round', 'profile', featureId);
   const side = parseEnum<BeadSide>(obj.side, VALID_SIDES, 'top', 'side', featureId);
   return {

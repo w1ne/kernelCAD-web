@@ -21,6 +21,29 @@ describe('get_bend_table MCP tool', () => {
     expect(out.bends[0].bendAllowance).toBeCloseTo((Math.PI / 2) * 3.76, 9);
   });
 
+  it('resolves param() thickness, kFactor, angle, radius, and atX', async () => {
+    const code = `
+      const t = param('Thickness', 2, { unit: 'mm' });
+      const k = param('KFactor', 0.38);
+      const bx = param('BendX', 50, { unit: 'mm' });
+      const ang = param('Angle', 90, { unit: 'deg' });
+      const rad = param('Radius', 3, { unit: 'mm' });
+      const s = path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 60).lineTo(0, 60).close();
+      const blank = sheetMetal(s, { thickness: t, kFactor: k });
+      return blank.bend({ atX: bx }, ang, rad);
+    `;
+    const out = await getBendTableTool({ code });
+    expect(out.ok).toBe(true);
+    expect(out.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    expect(out.rootSheetMetal).toEqual({ thickness: 2, kFactor: 0.38 });
+    expect(out.bends).toHaveLength(1);
+    expect(out.bends[0].angle).toBe(90);
+    expect(out.bends[0].radius).toBe(3);
+    expect(out.bends[0].bendAllowance).toBeCloseTo((Math.PI / 2) * 3.76, 9);
+    expect(out.bends[0].axisOrigin[0]).toBeCloseTo(50, 6);
+    expect(out.bends[0].axisDirection).toEqual([0, 1, 0]);
+  });
+
   it('returns invalid-args when neither file nor code is provided', async () => {
     const out = await getBendTableTool({});
     expect(out.ok).toBe(false);

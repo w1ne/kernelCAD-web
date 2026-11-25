@@ -11,6 +11,8 @@ import { runScript } from '../../../composition/runScript';
 import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { computeBendAllowance } from '../../../modeling/sheetMetal';
+import type { FeatureRecord } from '../../../shared/intent/featureRecord';
+import { resolveParams } from '../../../shared/runtime/resolveParams';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { Vec3 } from '../../../shared/intent/types';
 import {
@@ -65,10 +67,11 @@ export async function getBendTableTool(input: GetBendTableInput): Promise<GetBen
       }],
     };
   }
-  const { records } = await runScript({ code, fileName: input.file ?? 'inline.kcad.ts' });
+  const { records, paramTable } = await runScript({ code, fileName: input.file ?? 'inline.kcad.ts' });
   const engine = new RecomputeEngine(new OcctLowerer());
-  const r = await engine.run(records);
-  const root = records.find(rec => rec.kind === 'sheetMetal');
+  const r = await engine.run(records, { paramTable });
+  const resolved = records.map(rec => resolveParams(rec, paramTable) as FeatureRecord);
+  const root = resolved.find(rec => rec.kind === 'sheetMetal');
   if (!root) {
     return {
       ok: false, bends: [],
@@ -84,7 +87,7 @@ export async function getBendTableTool(input: GetBendTableInput): Promise<GetBen
   }
   const kFactor = root.params.kFactor.evaluated;
   const thickness = root.params.thickness.evaluated;
-  const bends = records
+  const bends = resolved
     .filter(rec => rec.kind === 'sheetMetalBend')
     .map((rec, ordinal) => {
       const angle = rec.params.angle.evaluated;

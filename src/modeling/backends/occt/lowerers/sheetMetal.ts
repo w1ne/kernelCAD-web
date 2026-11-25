@@ -149,7 +149,7 @@ export function lowerSheetMetalBend(ctx: LowerContext, r: FeatureRecord): LowerO
     return noShape();
   }
   const currentStep = steps[steps.length - 1];
-  const beadPadZ = beadClearanceOf(ctx, r, beadChainOf(r, records), currentStep);
+  const beadPadZ = beadClearanceOf(ctx, r, beadChainOf(r, records).map(resolveRecord), currentStep);
   if (beadPadZ === undefined) return noShape();
   const result = bendSheetMetalBody({
     featureId: r.id,
