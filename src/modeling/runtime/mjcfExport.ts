@@ -71,7 +71,11 @@ import { verticesToMjcfMesh } from './stlToMjcfMesh';
 import { xmlAttributionComment } from '../../shared/links/attribution';
 import { emitContactBlock, emitMateCouplingBlock } from './mjcfMateConstraints';
 import { authoredRestPoses, mjcfJointRefAttribute, restBodyPlacement, type RestBodyPlacement } from './mjcfRestPose';
+import { buildMateTree, type MateTree } from './mjcfMateTree';
 import { escapeXml, fmtNum, sanitizeJointName } from './mjcfXmlFormat';
+
+export { buildMateTree };
+export type { MateTree };
 
 const MM_TO_M = 1e-3;
 const DEG_TO_RAD = Math.PI / 180;
@@ -134,7 +138,11 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
         throw new Error('assemblyToMjcf: assembly has no parts; nothing to physics-check.');
     }
 
-    const { partByName, childrenByParent, roots } = buildMateTree(parts, mates);
+    const { partByName, childrenByParent, roots, partIsAByMate } = buildMateTree(
+        parts,
+        mates,
+        arm.__virtualJoints(),
+    );
 
     const paramTable = arm.__session().paramTable;
     const atOf = partAtFor(mates, parts, paramTable);
@@ -146,7 +154,7 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
     }
     const { inertials, collisionMeshes, inertiaNotes } = await buildPartAssets(parts, sceneShapes);
 
-    const resolvedMateAxes = await resolveMateFrames(mates, partByName);
+    const resolvedMateAxes = await resolveMateFrames(mates, partByName, partIsAByMate);
 
     const { resolvedTendons, sitesByPart, spatialChildrenByTendon } = await resolveTendonSites(tendons, partByName);
 
@@ -202,57 +210,6 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
     return { mjcf, jointOrder, bodyOrder, inertiaNotes };
 }
 
-interface MateTree {
-    readonly partByName: Map<string, AssemblyPartStored>;
-    readonly childrenByParent: Map<string, { childName: string; mate: MateRecord }[]>;
-    readonly roots: readonly AssemblyPartStored[];
-}
-
-function buildMateTree(parts: readonly AssemblyPartStored[], mates: readonly MateRecord[]): MateTree {
-    // Build the parent/child tree from the mate graph. Match the URDF
-    // serializer's spanning-tree convention: edge `a → b` makes `a` the
-    // parent, `b` the child. Closed loops throw.
-    const partByName = new Map<string, AssemblyPartStored>();
-    for (const p of parts) partByName.set(p.name, p);
-
-    const childrenByParent = new Map<string, { childName: string; mate: MateRecord }[]>();
-    for (const p of parts) childrenByParent.set(p.name, []);
-    const parentByChild = new Map<string, string>();
-    for (const m of mates) {
-        const aName = parseConnectorRef(m.a).partName;
-        const bName = parseConnectorRef(m.b).partName;
-        if (parentByChild.has(bName)) {
-            throw new Error(
-                `assemblyToMjcf: part '${bName}' has multiple parents (mate '${m.name}' would add a second). MuJoCo physics gate only supports tree-shaped mate graphs at v0.7; closed loops require an <equality>/tendon API (issue #361).`,
-            );
-        }
-        parentByChild.set(bName, aName);
-        childrenByParent.get(aName)?.push({ childName: bName, mate: m });
-    }
-
-    // Cycle detection (URDF spanning-tree pattern).
-    const visited = new Set<string>();
-    const onPath = new Set<string>();
-    function detectCycle(node: string): void {
-        if (visited.has(node)) return;
-        if (onPath.has(node)) {
-            throw new Error(
-                `assemblyToMjcf: mate graph has a cycle reaching '${node}'. MuJoCo physics gate at v0.7 only supports tree topology.`,
-            );
-        }
-        onPath.add(node);
-        for (const c of childrenByParent.get(node) ?? []) detectCycle(c.childName);
-        onPath.delete(node);
-        visited.add(node);
-    }
-    for (const p of parts) detectCycle(p.name);
-
-    // Roots = parts with no parent in the mate graph. MJCF needs every
-    // body parented to the worldbody (or another body), so each root
-    // becomes a top-level child of <worldbody>.
-    const roots = parts.filter((p) => !parentByChild.has(p.name));
-    return { partByName, childrenByParent, roots };
-}
 
 // Compute per-part inertia + collision mesh once. The bbox center is
 // used to position the inertial origin when massProperties is
@@ -345,32 +302,35 @@ async function buildPartAssets(parts: readonly AssemblyPartStored[], sceneShapes
     return { inertials, collisionMeshes, inertiaNotes };
 }
 
-// Resolve mate connector frames. `origin` / `axis` come from the mate's
-// `a` side (on the parent, PARENT-local); `childOrigin` is the `b`
-// connector's origin in the CHILD's local frame. At rest the solver puts
-// the two connector origins on top of each other, so the child body sits
-// at origin - childOrigin in its parent and its joint anchor is
-// childOrigin. Topology origins resolve through `resolveConnectorOrigin`.
+// Resolve mate connector frames along the spanning tree's parent → child
+// orientation (`partIsA === true` uses `a` as parent and `b` as child;
+// `partIsA === false` swaps them to match `solveMates`). `origin` / `axis`
+// come from the parent connector (PARENT-local); `childOrigin` is the child
+// connector's origin in the CHILD's local frame. At rest the solver puts the
+// two connector origins on top of each other, so the child body sits at
+// origin - childOrigin in its parent and its joint anchor is childOrigin.
 type ResolvedMateFrame = { origin: Vec3; axis: Vec3; childOrigin: Vec3 };
 async function resolveMateFrames(
     mates: readonly MateRecord[],
     partByName: Map<string, AssemblyPartStored>,
+    partIsAByMate: ReadonlyMap<string, boolean>,
 ): Promise<Map<string, ResolvedMateFrame>> {
     const resolvedMateAxes = new Map<string, ResolvedMateFrame>();
     for (const m of mates) {
-        const aRef = parseConnectorRef(m.a);
-        const part = partByName.get(aRef.partName);
-        if (part === undefined) continue;
-        const connector = part.mateConnectors.find((c) => c.name === aRef.connectorName);
-        if (connector === undefined) continue;
-        const resolved = await resolveConnectorFrame(part.originalShape, connector.origin);
-        const axis = connectorDirection(resolved.axis, connector.axis);
+        const partIsA = partIsAByMate.get(m.name) ?? true;
+        const parentRef = parseConnectorRef(partIsA ? m.a : m.b);
+        const childRef = parseConnectorRef(partIsA ? m.b : m.a);
+        const parentPart = partByName.get(parentRef.partName);
+        if (parentPart === undefined) continue;
+        const parentConnector = parentPart.mateConnectors.find((c) => c.name === parentRef.connectorName);
+        if (parentConnector === undefined) continue;
+        const resolved = await resolveConnectorFrame(parentPart.originalShape, parentConnector.origin);
+        const axis = connectorDirection(resolved.axis, parentConnector.axis);
         let childOrigin: Vec3 = [0, 0, 0];
-        const bRef = parseConnectorRef(m.b);
-        const child = partByName.get(bRef.partName);
-        const childConnector = child?.mateConnectors.find((c) => c.name === bRef.connectorName);
-        if (child !== undefined && childConnector !== undefined) {
-            childOrigin = (await resolveConnectorOrigin(child.originalShape, childConnector.origin)).value;
+        const childPart = partByName.get(childRef.partName);
+        const childConnector = childPart?.mateConnectors.find((c) => c.name === childRef.connectorName);
+        if (childPart !== undefined && childConnector !== undefined) {
+            childOrigin = (await resolveConnectorOrigin(childPart.originalShape, childConnector.origin)).value;
         }
         resolvedMateAxes.set(m.name, { origin: resolved.origin, axis, childOrigin });
     }

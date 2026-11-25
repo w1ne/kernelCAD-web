@@ -116,7 +116,16 @@ function physicsSkipLine(code: string, message: string): string | undefined {
       : 'physics gravity check skipped: over the work budget or mesh work could not be measured';
   }
   if (code === 'mechanism.physics-unsupported') {
-    return 'physics gravity check skipped: closed-loop mate graphs are unsupported';
+    if (/closed[- ]loop/i.test(message)) {
+      return 'physics gravity check skipped: closed-loop mate graphs are unsupported';
+    }
+    const reason = message
+      .trim()
+      .replace(/^physics was not run because\s+/i, '')
+      .replace(/\.+$/, '');
+    return reason.length > 0
+      ? `physics gravity check skipped: ${reason}`
+      : 'physics gravity check skipped: mechanism topology or constraint is unsupported';
   }
   return undefined;
 }

@@ -104,6 +104,48 @@ describe('summarizeMechanism', () => {
     expect(s.failures).toEqual([]);
   });
 
+  it('preserves non-closed-loop physics-unsupported reasons instead of misreporting a closed loop', () => {
+    const couplingUnsupported = {
+      target: 'export-occt',
+      code: 'mechanism.physics-unsupported',
+      severity: 'warn',
+      message: "Physics was not run because the native backend could not map an authored mate coupling. Coupling 'drive' from 'ball-j' cannot be represented.",
+      hint: 'h',
+    } as CompilerDiagnostic;
+    const s = summarizeMechanism({
+      mechanism: 'unverified',
+      failures: [couplingUnsupported],
+      coverage: { ...coverage, sweep: true, physics: false },
+    });
+    expect(s.verdict).toBe('unverified');
+    expect(s.maxLevel).toBe('warning');
+    expect(s.statement).not.toMatch(/closed-loop mate graphs are unsupported/);
+    expect(s.statement).toContain("physics gravity check skipped: the native backend could not map an authored mate coupling. Coupling 'drive' from 'ball-j' cannot be represented");
+    expect(s.skipped).toEqual([
+      "physics gravity check skipped: the native backend could not map an authored mate coupling. Coupling 'drive' from 'ball-j' cannot be represented",
+    ]);
+    expect(s.failures).toEqual([]);
+  });
+
+  it('uses a neutral fallback when physics-unsupported has an empty message', () => {
+    const empty = {
+      target: 'export-occt',
+      code: 'mechanism.physics-unsupported',
+      severity: 'warn',
+      message: '   ',
+      hint: 'h',
+    } as CompilerDiagnostic;
+    const s = summarizeMechanism({
+      mechanism: 'unverified',
+      failures: [empty],
+      coverage: { ...coverage, sweep: true, physics: false },
+    });
+    expect(s.skipped).toEqual([
+      'physics gravity check skipped: mechanism topology or constraint is unsupported',
+    ]);
+    expect(s.statement).not.toMatch(/closed-loop/);
+  });
+
   it('names unavailable rest-pose continuity in an unverified summary', () => {
     const unknown = {
       target: 'export-occt', code: 'mechanism.joint-mesh-unverified', severity: 'warn',

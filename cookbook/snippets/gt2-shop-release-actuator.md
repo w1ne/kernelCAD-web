@@ -201,7 +201,7 @@ const seat = [ax + 11, ay, 9.1] as [number, number, number];
 const spin = [ax, ay, 9.1] as [number, number, number];
 const hubA = [ax, ay, zBelt] as [number, number, number];
 const hubB = [bx, ay, zBelt] as [number, number, number];
-const cord = [ax - beltR, ay, zBelt] as [number, number, number];
+const cord = [bx + beltR, ay, zBelt] as [number, number, number];
 const lid = [cx, cy, topZ + 0.08] as [number, number, number];
 
 h.connector('lid', { type: 'frame', origin: { kind: 'vec3', value: lid } });
@@ -215,14 +215,14 @@ pa.connector('bore', { type: 'frame', origin: { kind: 'vec3', value: hubA }, joi
 h.connector('stud', { type: 'frame', origin: { kind: 'vec3', value: hubB } });
 pb.connector('bore', { type: 'frame', origin: { kind: 'vec3', value: hubB }, jointClearanceRadius: boreR });
 bl.connector('cord', { type: 'frame', origin: { kind: 'vec3', value: cord } });
-pa.connector('belt-near', { type: 'frame', origin: { kind: 'vec3', value: cord }, jointClearanceRadius: cordR + gap + 0.3 });
+pb.connector('belt-near', { type: 'frame', origin: { kind: 'vec3', value: cord }, jointClearanceRadius: cordR + gap + 0.3 });
 
 arm.mate('cover', 'cover.seat', 'housing.lid', 'fastened');
 arm.mate('bearing-seat', 'bearing-608.outer', 'housing.bearing-seat', 'fastened');
-arm.mate('shaft-spin', 'shaft.axis', 'bearing-608.bore', 'cylindrical');
+arm.mate('shaft-spin', 'shaft.axis', 'bearing-608.bore', 'cylindrical', { limitsDeg: [-180, 180] });
 arm.mate('drive-hub', 'pulley-drive.bore', 'shaft.hub', 'fastened');
 arm.mate('idler-stud', 'pulley-idler.bore', 'housing.stud', 'fastened');
-arm.mate('belt-loop', 'gt2-belt.cord', 'pulley-drive.belt-near', 'fastened');
+arm.mate('belt-loop', 'gt2-belt.cord', 'pulley-idler.belt-near', 'fastened');
 
 return arm.solvedModel({});
 ```
