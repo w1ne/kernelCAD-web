@@ -94,6 +94,7 @@ request; the default sheet contains four views.
 - `views: ['front']`: a single centred front elevation with width/height dimensions. Omit `views` for the default four-view sheet. Author front-view annotations explicitly for feature dimensions. A front-only drawing rejects annotations assigned to absent views and isometric-only balloons or exploded overlays.
 - `projection`: `'third'` (default) or `'first'` — see "PDF sheet for the shop".
 - `titleBlock`: `{ title?, partName?, material?, revision? }` — switches to the full title block the PDF sheet uses.
+- `zoneGrid`: `boolean` (default `false`) — when `true`, adds an ISO 5457 zone reference border frame with vertical letters (`A..D`), horizontal numbers (`1..N`), and a margin sheet-size stamp. Works on both `svg-drawing` and `pdf-drawing`.
 - `modelName`: title-block name; defaults to the script's file name.
 - `date`: title-block date string; defaults to a placeholder so output stays byte-deterministic (stamp an ISO date when the drawing is released).
 - `annotations`: authored dimensions and notes — see below.
@@ -159,6 +160,15 @@ Every entry shares four optional fields: `view` (`front` default, or `top` / `le
 | `chamfer` | `edge` (anchor) + required `size`, optional `angleDeg` (default 45) | `<size> × <angle>°` |
 | `datum` | `face` (a FaceQuery) + required `label` | ASME square datum-feature symbol with the letter |
 | `fcf` | one of `edge`/`face` + `type` (`position`\|`flatness`\|`perpendicularity`\|`parallelism`\|`concentricity`\|`cylindricity`) + `value`, optional `datums`/`modifier` | feature control frame: type symbol · value(±modifier) · datum letters |
+| `baseline` | `origin` anchor, non-empty `targets` anchors, `axis` (`'x'`\|`'y'`), optional `side` (`'positive'`\|`'negative'`), `tol`, `prefix` | stacked dimension lines from one shared datum extension line along the view axis (ISO 129-1 / ASME Y14.5) |
+| `ordinate` | `origin` anchor, non-empty `targets` anchors, `axis` (`'x'`\|`'y'`), optional `side`, `originLabel` (default `'0'`), `prefix` | running perpendicular witness lines (no arrowheads, automatic jogs when adjacent labels would collide) labeled with distances from origin |
+
+`baseline` and `ordinate` reject empty `targets`, invalid `axis`/`side`, or unresolvable anchors with an error rather than dropping dimensions. Both render identically in `svg-drawing` and `pdf-drawing`.
+
+```json
+{ "kind": "baseline", "view": "front", "axis": "x", "origin": [0, 0, 0], "targets": [[20, 0, 0], [50, 0, 0], [80, 0, 0]], "tol": 0.1 }
+{ "kind": "ordinate", "view": "top", "axis": "x", "origin": [0, 0, 0], "targets": [[10, 10, 0], [12, 10, 0], [60, 10, 0]], "originLabel": "0" }
+```
 
 `chamfer`'s `size` is author-supplied rather than measured — a bare edge query carries no feature history, so the chamfer leg length isn't recoverable from geometry alone at export time. `hole` requires exactly one of `through`/`depth` — the export fails loudly (naming the annotation) if both or neither are set, same honesty contract as every other annotation kind.
 
@@ -246,7 +256,7 @@ and the export warns `drawing.style.architectural-suggested`. Pass
 
 Both drawing formats accept `draftingProfile: 'general' | 'machining' | 'sheet-metal'`, or a JSON profile with `id`, `name`, and optional `sheet`, `projection`, `dimensioningStyle`, `tolerance`, and `notes`. Omitted custom settings default to A4, third angle, and baseline. Explicit export settings take precedence. Named presets supply drafting preferences, not a certified process or approved engineering tolerance; the existing automatic tolerance defaults still apply unless you set them.
 
-`autoAnnotate.dimensioningStyle` selects `baseline`, `chain`, or `symmetry`. Baseline locations share a datum origin; chain locations measure consecutive positions; symmetry dimensions verified mirrored positions from a center cue and falls back to baseline for asymmetric layouts. Explicit `autoAnnotate.datums: [{ label, face }]` overrides heuristic automatic datum selection. Script declarations such as `shape.datum('A', { atZ: 0 })` and `shape.tolerance({ type: 'flatness', value: 0.1, face: { atZ: 0 } })` capture design intent rather than guessing it from geometry.
+`autoAnnotate.dimensioningStyle` selects `baseline`, `chain`, `symmetry`, or `ordinate`. Baseline locations share a datum origin; chain locations measure consecutive positions; symmetry dimensions verified mirrored positions from a center cue and falls back to baseline for asymmetric layouts; ordinate emits running perpendicular coordinate witness lines from the part datum edge (`0` plus each coordinate, with automatic collision jogs). Explicit `autoAnnotate.datums: [{ label, face }]` overrides heuristic automatic datum selection. Script declarations such as `shape.datum('A', { atZ: 0 })` and `shape.tolerance({ type: 'flatness', value: 0.1, face: { atZ: 0 } })` capture design intent rather than guessing it from geometry.
 
 The export result carries `drawing_report.annotations` with deterministic `id`, `source`, `kind`, `view`, `text`, and overlap status. SVG annotation groups expose `data-kc-annotation-id`. Apply edits with:
 

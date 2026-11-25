@@ -3,6 +3,7 @@
 // src/kernel/backends/occt/drawingAuto/collectPhases.ts
 
 import { DIM_BASE, DIM_STEP, extractTextBoxes, fcfCells } from '../drawingAnnotations';
+import { layoutOrdinateSetSvg, type OrdinateItem } from '../drawingDimensionSets';
 import { optimalBoundsOf } from '../backendBounds';
 import { principalAxis } from '../drawingFeatures';
 import type { HoleComposite, V3 } from '../drawingFeatures';
@@ -90,12 +91,73 @@ export function collectHoleGroups(ctx: RenderCtx): void {
 function collectHolePositionDimensions(ctx: RenderCtx, bb: { min: V3; max: V3 }): LinearItem[] {
   const { opts, include, holeGroups } = ctx;
   const linear: LinearItem[] = [];
-  if (!(opts.enabled && include.has('hole-positions'))) return linear;
+  if (!(opts.enabled && include.has('hole-positions')) || opts.dimensioningStyle === 'ordinate') return linear;
   const byView = groupHolesByDimensionView(holeGroups);
   for (const [view, holes] of byView) {
     linear.push(...holePositionItemsForView(ctx, view, holes, bb));
   }
   return linear;
+}
+
+function placeOrdinateAxis(
+  ctx: RenderCtx,
+  view: DrawingViewName,
+  holes: HoleComposite[],
+  bb: { min: V3; max: V3 },
+  screen: 'x' | 'y',
+  ordinateReserve: Map<string, number>,
+): void {
+  const b = viewBasis(view);
+  const axisIdx = holeAxisIndex(b, screen);
+  const ref = holeReferenceCoord(ctx.datums, bb, axisIdx);
+  const coords = uniqueHoleCoords(holes, axisIdx, ref);
+  if (coords.length === 0) return;
+  const sorted = [...coords].sort((a, q) => Math.abs(a - ref) - Math.abs(q - ref));
+  const sides = dimensionSides(ctx.input.projection)[view];
+  const side = screen === 'x' ? sides.horizontal : sides.vertical;
+  const box = ctx.views[view].placement.box;
+  const labels = ['0', ...sorted.map(c => formatDimValue(Math.abs(c - ref)))];
+  const id = annotationId('hole-position', `${view}:${axisIdx}:ordinate:${sorted.join(',')}`);
+  const review = beginAnnotation(ctx, id, 'hole-position', view, labels.join(', '));
+  if (!review) return;
+  const originModel: V3 = [...holes[0].entry];
+  originModel[axisIdx] = ref;
+  const originSheet = toSheet(ctx, originModel, view);
+  const originAnchor = holeDimensionFromPoint(originSheet, screen, side, box);
+  const idx = screen === 'x' ? 0 : 1;
+  const ordItems: OrdinateItem[] = [
+    { coord: originSheet[idx], anchor: originAnchor, label: '0', isOrigin: true },
+    ...sorted.map(c => {
+      const hole = holes.find(h => Math.abs(h.entry[axisIdx] - c) < 0.01)!;
+      const pt = toSheet(ctx, hole.entry, view);
+      return { coord: pt[idx], anchor: pt, label: formatDimValue(Math.abs(c - ref)), isOrigin: false };
+    }),
+  ];
+  const inputReserve = side === 'bottom'
+    ? ctx.input.bottomReserve[view]
+    : side === 'right' ? ctx.input.rightReserve[view] : 0;
+  const baseDist = (inputReserve > 0 ? inputReserve + DIM_STEP : DIM_BASE) + review.offset;
+  const laid = layoutOrdinateSetSvg({
+    axis: screen, side, box, baseDist, items: ordItems, extraAttrs: ' data-kc-auto="hole-position"',
+  });
+  if (side === 'bottom') ctx.bottomReserve[view] = Math.max(ctx.bottomReserve[view], laid.clearance);
+  const key = `${view}:${side}`;
+  ordinateReserve.set(key, Math.max(ordinateReserve.get(key) ?? 0, laid.clearance));
+  commit(ctx, 'hole-position', view, labels.join(', '), { svg: laid.svg, boxes: laid.boxes, segments: laid.segments }, true, review);
+}
+
+function collectOrdinateHoleDimensions(ctx: RenderCtx, bb: { min: V3; max: V3 }): Map<string, number> {
+  const ordinateReserve = new Map<string, number>();
+  if (!(ctx.opts.enabled && ctx.include.has('hole-positions')) || ctx.opts.dimensioningStyle !== 'ordinate') {
+    return ordinateReserve;
+  }
+  const byView = groupHolesByDimensionView(ctx.holeGroups);
+  for (const [view, holes] of byView) {
+    if (ctx.input.visibleViews && !ctx.input.visibleViews.includes(view)) continue;
+    placeOrdinateAxis(ctx, view, holes, bb, 'x', ordinateReserve);
+    placeOrdinateAxis(ctx, view, holes, bb, 'y', ordinateReserve);
+  }
+  return ordinateReserve;
 }
 
 function groupHolesByDimensionView(holeGroups: HoleGroup[]): Map<DrawingViewName, HoleComposite[]> {
@@ -226,6 +288,7 @@ export function collectLinearDimensions(ctx: RenderCtx): LinearItem[] {
   const { opts, include, views } = ctx;
   const { compound } = ctx.input;
   const bb = optimalBoundsOf(compound.getReplicadShape().wrapped) ?? compound.boundingBox();
+  const ordinateReserve = collectOrdinateHoleDimensions(ctx, bb);
   const linear = collectHolePositionDimensions(ctx, bb);
   if (opts.enabled && include.has('overall')) linear.push(...overallDimensions(ctx, bb));
   const buckets = new Map<string, LinearItem[]>();
@@ -243,9 +306,10 @@ export function collectLinearDimensions(ctx: RenderCtx): LinearItem[] {
     items.sort((p, q) => p.order - q.order);
     items.forEach((item, i) => {
       const box = views[item.view].placement.box;
-      const reserve = item.side === 'bottom'
+      const inputReserve = item.side === 'bottom'
         ? ctx.input.bottomReserve[item.view]
         : item.side === 'right' ? ctx.input.rightReserve[item.view] : 0;
+      const reserve = Math.max(inputReserve, ordinateReserve.get(`${item.view}:${item.side}`) ?? 0);
       const review = reviews.get(item.id)!;
       const dist = (reserve > 0 ? reserve + DIM_STEP : DIM_BASE) + i * DIM_STEP + review.offset;
       const horizontal = item.side === 'top' || item.side === 'bottom';

@@ -61,11 +61,21 @@ import {
   type ViewPlacement,
 } from './drawingLayout';
 
+import {
+  formatTolerance,
+  renderBaselineSetSvg,
+  renderOrdinateSetSvg,
+  type BaselineDimensionAnnotation,
+  type DimensionTolerance,
+  type OrdinateDimensionAnnotation,
+} from './drawingDimensionSets';
+
 // ---------------------------------------------------------------------------
 // Authoring surface
 // ---------------------------------------------------------------------------
 
 export type { DrawingAnchor } from './drawingAnchors';
+export type { BaselineDimensionAnnotation, DimensionTolerance, OrdinateDimensionAnnotation } from './drawingDimensionSets';
 
 /**
  * One authored annotation. Deliberately one flat discriminated union with a
@@ -81,14 +91,6 @@ export type { DrawingAnchor } from './drawingAnchors';
  *   distance for `linear`/`angular`, extra leader-stem length for
  *   `radius`/`diameter`/`note`.
  */
-/**
- * A dimension tolerance, attached to a `linear` annotation via `tol`.
- * - `number` — symmetric bilateral, rendered `± <n>`.
- * - `{ plus, minus }` — asymmetric bilateral, rendered `+<plus>/−<minus>`.
- * - `string` — a fit class (e.g. `'H7'`), rendered verbatim after the value.
- */
-export type DimensionTolerance = number | { plus: number; minus: number } | string;
-
 /** The six GD&T characteristics this slice supports (ASME Y14.5 symbols),
  *  and the diametral / material-condition modifier on a tolerance value.
  *  Single-sourced with the `shape.tolerance` capture record. */
@@ -196,7 +198,9 @@ export type DrawingAnnotation =
       modifier?: GdtModifier;
       view?: DrawingViewName;
       offset?: number;
-    });
+    }
+  | BaselineDimensionAnnotation
+  | OrdinateDimensionAnnotation);
 
 // ---------------------------------------------------------------------------
 // Placement constants (all SHEET millimetres — never multiplied by the scale)
@@ -258,13 +262,6 @@ export function modelToSheet(
 // ---------------------------------------------------------------------------
 // Feature-aware labels
 // ---------------------------------------------------------------------------
-
-/** Render a `tol` field into the suffix appended after a dimension value. */
-function tolText(tol: DimensionTolerance): string {
-  if (typeof tol === 'string') return ` ${tol}`;
-  if (typeof tol === 'number') return ` ± ${formatDimValue(tol)}`;
-  return ` +${formatDimValue(tol.plus)}/−${formatDimValue(tol.minus)}`;
-}
 
 /** `⌀6.5 THRU`, blind `⌀6.5 ▾ 10`, with optional `⌴`/`⌵` counterbore /
  *  countersink suffixes and a leading `<count>× ` pattern prefix. */
@@ -596,7 +593,7 @@ function linearAnnotationSvg(
     rightReserve[view] = Math.max(rightReserve[view], dist);
   }
   if (a.tol !== undefined && (!a.text || ctx.reviewedText)) {
-    dim.label = `${dim.label}${tolText(a.tol)}`;
+    dim.label = `${dim.label}${formatTolerance(a.tol)}`;
   }
   return dimensionToSvg(dim);
 }
@@ -851,6 +848,12 @@ function renderAnnotationSvg(a: DrawingAnnotation, ctx: AnnotationRenderContext)
 
     case 'fcf':
       return fcfAnnotationSvg(a, ctx);
+
+    case 'baseline':
+      return renderBaselineSetSvg(a, ctx);
+
+    case 'ordinate':
+      return renderOrdinateSetSvg(a, ctx);
   }
 }
 

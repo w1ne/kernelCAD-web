@@ -190,6 +190,8 @@ export type ExportOptions =
       /** 'architectural' draws a floor plan instead of the part sheet. */
       style?: DrawingStyle;
       plan?: ArchitecturalPlanOptions;
+      /** When true, draw an ISO 5457 zone reference border frame and margin sheet stamp. */
+      zoneGrid?: boolean;
     })
   | PdfDrawingOptions
   | { format: 'urdf' }
@@ -236,6 +238,9 @@ export interface PdfDrawingOptions extends DrawingReviewOptions {
   /** Landscape sheet size; default `a3`. `'auto'` / `'auto-ansi'` pick the
    *  smallest ISO / ANSI sheet that holds the views at 1:1 or larger. */
   sheet?: DrawingSheetSize | 'auto' | 'auto-ansi';
+  /** When true, draw an ISO 5457 zone reference border frame (A..D × 1..N)
+   *  and margin sheet-size stamp. Default false (omitted). */
+  zoneGrid?: boolean;
   /** Enable a bounded larger-sheet repair after a crowded drawing export. */
   layoutRepair?: boolean;
   /** View arrangement and title-block symbol; default `'third'`. */
