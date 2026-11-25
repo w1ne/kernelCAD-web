@@ -1,0 +1,100 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/kernelCAD-web/foundation-parity-20261111[39m
+
+ [31m❯[39m tests/integration/modeling/draftNeutralPlane.test.ts [2m([22m[2m6 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[33m 616[2mms[22m[39m
+[31m     [31m×[31m drafts the front face about the named top plane and keeps the top edge fixed[39m[32m 132[2mms[22m[39m
+[31m     [31m×[31m honors the named plane through a face label[39m[32m 19[2mms[22m[39m
+     [32m✓[39m keeps the derived parting plane when neutralPlane is omitted[32m 32[2mms[22m[39m
+[31m     [31m×[31m refuses an unknown neutralPlane name instead of silently deriving a plane[39m[32m 26[2mms[22m[39m
+[31m     [31m×[31m refuses a non-planar neutralPlane face[39m[32m 31[2mms[22m[39m
+[31m     [31m×[31m refuses a neutral plane parallel to the drafted face[39m[32m 16[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 5 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/modeling/draftNeutralPlane.test.ts[2m > [22mdraft about a named neutral plane[2m > [22mdrafts the front face about the named top plane and keeps the top edge fixed
+[31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+[36m [2m❯[22m tests/integration/modeling/draftNeutralPlane.test.ts:[2m44:93[22m[39m
+    [90m 42| [39m    const model = await modelOf(`return ${BOX}.draft(10, { face: 'fron…
+    [90m 43| [39m    expect(model.diagnostics.filter((d) => d.severity === 'error')).to…
+    [90m 44| [39m    expect(model.diagnostics.some((d) => d.code === 'feature.draft.neu…
+    [90m   | [39m                                                                                            [31m^[39m
+    [90m 45| [39m    [35mconst[39m shape [33m=[39m model[33m.[39mrootShape [35mas[39m [33mOcctBackend[39m[33m;[39m
+    [90m 46| [39m    [35mtry[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/modeling/draftNeutralPlane.test.ts[2m > [22mdraft about a named neutral plane[2m > [22mhonors the named plane through a face label
+[31m[1mAssertionError[22m: expected 22589.38415433228 to be close to 25410.61584566772, received difference is 2821.231691335437, but expected 0.000049999999999999996[39m
+[36m [2m❯[22m tests/integration/modeling/draftNeutralPlane.test.ts:[2m69:30[22m[39m
+    [90m 67| [39m    [35mconst[39m shape [33m=[39m model[33m.[39mrootShape [35mas[39m [33mOcctBackend[39m[33m;[39m
+    [90m 68| [39m    [35mtry[39m {
+    [90m 69| [39m      expect(shape.volume()).toBeCloseTo(BOX_VOLUME + TOP_PLANE_GAIN, …
+    [90m   | [39m                             [31m^[39m
+    [90m 70| [39m      expect(shape.boundingBox().min[1]).toBeCloseTo(-20 * Math.tan((1…
+    [90m 71| [39m    } [35mfinally[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/modeling/draftNeutralPlane.test.ts[2m > [22mdraft about a named neutral plane[2m > [22mrefuses an unknown neutralPlane name instead of silently deriving a plane
+[31m[1mAssertionError[22m: expected [] to have a length of 1 but got +0[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m tests/integration/modeling/draftNeutralPlane.test.ts:[2m94:20[22m[39m
+    [90m 92| [39m    const model = await modelOf(`return ${BOX}.draft(10, { face: 'fron…
+    [90m 93| [39m    const errors = model.diagnostics.filter((d) => d.severity === 'err…
+    [90m 94| [39m    [34mexpect[39m(errors)[33m.[39m[34mtoHaveLength[39m([34m1[39m)[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m 95| [39m    [34mexpect[39m(errors[[34m0[39m][33m![39m[33m.[39mcode)[33m.[39m[34mtoBe[39m([32m'feature.invalid-args'[39m)[33m;[39m
+    [90m 96| [39m    [34mexpect[39m(errors[[34m0[39m][33m![39m[33m.[39mmessage)[33m.[39m[34mtoMatch[39m([36m/neutralPlane/[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/modeling/draftNeutralPlane.test.ts[2m > [22mdraft about a named neutral plane[2m > [22mrefuses a non-planar neutralPlane face
+[31m[1mAssertionError[22m: expected [] to have a length of 1 but got +0[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m tests/integration/modeling/draftNeutralPlane.test.ts:[2m113:20[22m[39m
+    [90m111| [39m    `[39m)[33m;[39m
+    [90m112| [39m    const errors = model.diagnostics.filter((d) => d.severity === 'err…
+    [90m113| [39m    [34mexpect[39m(errors)[33m.[39m[34mtoHaveLength[39m([34m1[39m)[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m114| [39m    [34mexpect[39m(errors[[34m0[39m][33m![39m[33m.[39mcode)[33m.[39m[34mtoBe[39m([32m'feature.invalid-args'[39m)[33m;[39m
+    [90m115| [39m    [34mexpect[39m(errors[[34m0[39m][33m![39m[33m.[39mmessage)[33m.[39m[34mtoMatch[39m([36m/neutralPlane/[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/modeling/draftNeutralPlane.test.ts[2m > [22mdraft about a named neutral plane[2m > [22mrefuses a neutral plane parallel to the drafted face
+[31m[1mAssertionError[22m: expected 0 to be greater than or equal to 1[39m
+[36m [2m❯[22m tests/integration/modeling/draftNeutralPlane.test.ts:[2m122:27[22m[39m
+    [90m120| [39m    const model = await modelOf(`return ${BOX}.draft(10, { face: 'fron…
+    [90m121| [39m    const errors = model.diagnostics.filter((d) => d.severity === 'err…
+    [90m122| [39m    [34mexpect[39m(errors[33m.[39mlength)[33m.[39m[34mtoBeGreaterThanOrEqual[39m([34m1[39m)[33m;[39m
+    [90m   | [39m                          [31m^[39m
+    [90m123| [39m    expect(errors.some((d) => d.code === 'feature.draft.failed')).toBe…
+    [90m124| [39m    const shape = (model.rootShape ?? [...model.shapes.values()].at(-1…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (6)[39m
+[2m   Start at [22m 02:13:31
+[2m   Duration [22m 5.33s[2m (transform 3.72s, setup 103ms, import 4.49s, tests 616ms, environment 0ms)[22m
+

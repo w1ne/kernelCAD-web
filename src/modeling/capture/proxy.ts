@@ -1010,10 +1010,14 @@ export class Shape {
    *                       (`'front'`, `'top'`, …), a face label, or a
    *                       `FaceSelector` query. Same selector shape as
    *                       `.shell()` and `.hole()`.
-   * @param opts.neutralPlane  The plane where drafted faces meet the
-   *                       un-tapered geometry (the "parting line"). Defaults
-   *                       to `opts.face` when omitted. Task 7 resolves this
-   *                       via `pickFace` and passes it to
+   * @param opts.neutralPlane  The planar face where the drafted face keeps
+   *                       its original position (the "parting line"), named
+   *                       by a canonical face name or a face label. It is
+   *                       resolved on the base solid and used exactly there;
+   *                       an unknown or non-planar name fails with
+   *                       `feature.invalid-args`. Omit it to derive the
+   *                       plane at the body extent opposite the pull
+   *                       direction. The lowerer passes it to
    *                       `BRepOffsetAPI_DraftAngle`.
    * @param opts.pullDir   Pull (demoulding) direction as a unit [x, y, z]
    *                       vector. Defaults to the face normal at lower time
