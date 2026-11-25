@@ -7,7 +7,6 @@
 
 import type { FeatureRecord } from '../shared/intent/featureRecord';
 import { invalidArgs } from '../shared/intent/invalidArgs';
-import { KernelError } from '../shared/intent/kernelError';
 import type { Param } from '../shared/intent/types';
 import { toParam } from '../shared/runtime/editableHelpers';
 import type { Editable } from '../shared/runtime/paramRef';
@@ -198,12 +197,14 @@ export function assertBeadSheetMetalRoot(
 ): FeatureRecord {
   const root = findRootSheetMetalRecord(rec, allRecords);
   if (!root) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `bead: base shape '${rec.id}' does not trace its lineage to a sheetMetal(...) record.`,
-      rec.id,
-      'Build the blank with sheetMetal(profile, { thickness, kFactor }) before calling .bead(...).',
-    );
+    invalidArgs({
+      api: 'shape.bead(opts)',
+      path: 'base',
+      gotText: `shape '${rec.id}' without sheetMetal(...) lineage`,
+      requires: 'a sheet-metal blank created with sheetMetal(profile, { thickness, kFactor })',
+      example: BEAD_EXAMPLE,
+      featureId: rec.id,
+    });
   }
   return root;
 }
