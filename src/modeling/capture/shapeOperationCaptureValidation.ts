@@ -3,6 +3,7 @@
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FeatureId, Param } from '../../shared/intent/types';
 import type { Editable } from '../../shared/runtime/paramRef';
+import type { ParamTable } from '../../shared/runtime/paramTable';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import {
   buildBeadFeatureSpec,
@@ -51,9 +52,10 @@ export function createBeadFeatureCaptureSpec(
   records: readonly FeatureRecord[],
   baseId: FeatureId,
   opts: SheetMetalBeadOpts,
+  paramTable?: ParamTable,
 ): ShapeOperationFeatureSpec {
   requireRecord(records, baseId, `bead: base shape '${baseId}' is not from this CaptureSession`);
-  const validated = validateBeadOptions(opts, baseId);
+  const validated = validateBeadOptions(opts, baseId, paramTable);
   return buildBeadFeatureSpec(baseId, validated.params, validated.profile, validated.side);
 }
 

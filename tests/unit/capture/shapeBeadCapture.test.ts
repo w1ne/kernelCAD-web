@@ -58,6 +58,41 @@ describe('Shape.bead capture & pure-TS validation', () => {
     expect(rec!.metadata).toEqual({ profile: 'u', side: 'bottom', paramRefs: ['beadW', 'beadH'] });
   });
 
+  it('rejects non-positive ParamRef width/height and zero-length ParamRef segment at capture time', async () => {
+    const badWidth = runScript({
+      code: `
+        const w = param('beadW', 0);
+        const s = path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 60).lineTo(0, 60).close();
+        return sheetMetal(s, { thickness: 1.5, kFactor: 0.4 })
+          .bead({ from: [20, 20], to: [80, 20], width: w, height: 2 });
+      `,
+      fileName: 'bead-bad-width-param.kcad.ts',
+    });
+    await expect(badWidth).rejects.toMatchObject({ code: 'feature.invalid-args' });
+
+    const badHeight = runScript({
+      code: `
+        const h = param('beadH', -1);
+        const s = path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 60).lineTo(0, 60).close();
+        return sheetMetal(s, { thickness: 1.5, kFactor: 0.4 })
+          .bead({ from: [20, 20], to: [80, 20], width: 8, height: h });
+      `,
+      fileName: 'bead-bad-height-param.kcad.ts',
+    });
+    await expect(badHeight).rejects.toMatchObject({ code: 'feature.invalid-args' });
+
+    const zeroSeg = runScript({
+      code: `
+        const x = param('beadX', 30);
+        const s = path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 60).lineTo(0, 60).close();
+        return sheetMetal(s, { thickness: 1.5, kFactor: 0.4 })
+          .bead({ from: [x, 20], to: [x, 20], width: 8, height: 2 });
+      `,
+      fileName: 'bead-zero-seg-param.kcad.ts',
+    });
+    await expect(zeroSeg).rejects.toMatchObject({ code: 'feature.invalid-args' });
+  });
+
   it('rejects zero-length segment with typed KernelError', () => {
     expect(() =>
       validateBeadOptions({ from: [30, 30], to: [30, 30], width: 8, height: 2 }),

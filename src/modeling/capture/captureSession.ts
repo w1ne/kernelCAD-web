@@ -26,7 +26,7 @@ import { SurfaceProxy } from './surfaceProxy';
 import type { AssemblyConnectorFrameStored, AssemblyConnectorRef, AssemblyPartOpts, AssemblyPartRef } from './assembly';
 import { ParamTable, type SerializedParamTable } from '../../shared/runtime/paramTable';
 import type { SoftWarning } from '../../shared/runtime/softWarning';
-import { collectParamRefs } from '../../shared/runtime/resolveParams';
+import { collectParamRefs, resolveParams } from '../../shared/runtime/resolveParams';
 import { paramRefsToParams } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import { captureCallSite, type ScriptLocationResolver } from '../runtime/scriptLocationCapture';
@@ -1062,7 +1062,7 @@ export class CaptureSession {
 
   /** Capture a `kind: 'sheetMetalBead'` FeatureRecord (formed stiffening bead). */
   beadFeature(base: Shape, opts: SheetMetalBeadOpts): Shape {
-    return this.createShape(createBeadFeatureCaptureSpec(this.records, base.id, opts));
+    return this.createShape(createBeadFeatureCaptureSpec(this.records, base.id, opts, this.paramTable));
   }
 
   /**
@@ -1131,6 +1131,12 @@ export class CaptureSession {
 
   getRecords(): readonly FeatureRecord[] {
     return this.records;
+  }
+
+  /** Records with every `param(...)` ref resolved against the live param
+   *  table, for capture-time derived views (`flattenPattern`). */
+  resolvedRecords(): FeatureRecord[] {
+    return this.records.map(r => resolveParams(r, this.paramTable) as FeatureRecord);
   }
 
   /** Remove the probe scene record `id` that an in-script query

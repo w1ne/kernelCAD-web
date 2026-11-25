@@ -390,7 +390,10 @@ function resolveUpstreamFoldSteps(
 
 function beadDimensionsInvalid(bead: ResolvedBeadSpec): string | null {
   const segLen = Math.hypot(bead.to[0] - bead.from[0], bead.to[1] - bead.from[1]);
-  const bad = !Number.isFinite(segLen) || segLen <= 1e-6 || !(bead.width > 0) || !(bead.height > 0);
+  const bad =
+    !Number.isFinite(segLen) || segLen <= 1e-6 ||
+    !Number.isFinite(bead.width) || !(bead.width > 0) ||
+    !Number.isFinite(bead.height) || !(bead.height > 0);
   return bad ? `width=${bead.width}, height=${bead.height}, length=${segLen.toFixed(4)}` : null;
 }
 
@@ -453,7 +456,9 @@ export function lowerSheetMetalBead(ctx: LowerContext, r: FeatureRecord): LowerO
   if (!base) {
     return pushBeadInvalidArgs(ctx, r.id, 'inputs.base', 'no base shape', 'a Shape returned by sheetMetal(...) to chain onto');
   }
-  const records = ctx.allRecords ?? [];
+  const rawRecords = ctx.allRecords ?? [];
+  const resolve = ctx.inputs.resolveRecord;
+  const records = resolve ? rawRecords.map((rec) => resolve(rec)) : rawRecords;
   const root = findRootSheetMetalRecord(r, records);
   if (!root) {
     return pushBeadInvalidArgs(

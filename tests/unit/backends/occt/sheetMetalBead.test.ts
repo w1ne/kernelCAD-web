@@ -259,4 +259,68 @@ describe('sheetMetalBead OCCT B-rep lowering', () => {
     `);
     expect(crossPost.diagnostics.some((d) => d.code === 'feature.sheetMetal.bead-crosses-bend')).toBe(true);
   });
+
+  it('lowers parametric .bead() (param() width/height/from/to on parametric sheetMetal + bend)', async () => {
+    const preBendCode = `
+      const t = param('Thick', 1.5);
+      const k = param('KF', 0.4);
+      const bx = param('BendX', 60);
+      const ang = param('Angle', 90);
+      const rad = param('Radius', 2);
+      const x0 = param('BeadX0', 15);
+      const x1 = param('BeadX1', 45);
+      const y = param('BeadY', 30);
+      const w = param('BeadW', 8);
+      const h = param('BeadH', 2);
+      const s = path().moveTo(0, 0).lineTo(120, 0).lineTo(120, 60).lineTo(0, 60).close();
+      return sheetMetal(s, { thickness: t, kFactor: k })
+        .bead({ from: [x0, y], to: [x1, y], width: w, height: h, profile: 'round', side: 'top' })
+        .bend({ atX: bx }, ang, rad);
+    `;
+    const { shape, diagnostics, records, shapes, paramTable } = await lowerScript(preBendCode);
+    expect(diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    expect(shape).toBeDefined();
+    const vol1 = assertSingleValidClosedSolid(shape!);
+
+    const flat = await flattenPatternWithHoles(records, undefined, shapes, paramTable);
+    expect(flat.beads).toEqual([
+      { start: [15, 30], end: [45, 30], width: 8, height: 2, profile: 'round', side: 'top' },
+    ]);
+
+    // Updating bead height + width through paramTable changes lowered geometry and flat pattern.
+    paramTable.set('BeadW', 10);
+    paramTable.set('BeadH', 3);
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const rerun = await engine.run(records, { paramTable });
+    expect(rerun.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const updatedShape = rerun.shapes.get(records[records.length - 1]!.id) as OcctBackend;
+    const vol2 = assertSingleValidClosedSolid(updatedShape);
+    expect(vol2).not.toBeCloseTo(vol1, 1);
+
+    const flat2 = await flattenPatternWithHoles(records, undefined, rerun.shapes, paramTable);
+    expect(flat2.beads).toEqual([
+      { start: [15, 30], end: [45, 30], width: 10, height: 3, profile: 'round', side: 'top' },
+    ]);
+
+    // Post-bend parametric bead on a bent parametric sheet also lowers cleanly.
+    const postBend = await lowerScript(`
+      const t = param('Thick', 1.5);
+      const k = param('KF', 0.4);
+      const bx = param('BendX', 60);
+      const ang = param('Angle', 90);
+      const rad = param('Radius', 2);
+      const x0 = param('BeadX0', 80);
+      const x1 = param('BeadX1', 105);
+      const y = param('BeadY', 30);
+      const w = param('BeadW', 8);
+      const h = param('BeadH', 2);
+      const s = path().moveTo(0, 0).lineTo(120, 0).lineTo(120, 60).lineTo(0, 60).close();
+      return sheetMetal(s, { thickness: t, kFactor: k })
+        .bend({ atX: bx }, ang, rad)
+        .bead({ from: [x0, y], to: [x1, y], width: w, height: h, profile: 'u', side: 'top' });
+    `);
+    expect(postBend.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    expect(postBend.shape).toBeDefined();
+    assertSingleValidClosedSolid(postBend.shape!);
+  });
 });

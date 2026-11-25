@@ -1123,7 +1123,7 @@ export class Shape {
     // imported by captureSession.ts which is imported by everything).
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mod = require('../../kernel/backends/occt/flattenPattern') as typeof import('../../kernel/backends/occt/flattenPattern');
-    return mod.flattenPattern(this.session.getRecords(), this.id);
+    return mod.flattenPattern(this.session.resolvedRecords(), this.id);
   }
 
   /**
