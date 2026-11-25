@@ -1,0 +1,2 @@
+command: npx eslint catalog/kits/postal-logistics/ tests/integration/catalog/barcodeTunnelScannerBeltMaterial.test.ts
+exit=0 (no output)

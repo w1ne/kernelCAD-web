@@ -215158,7 +215158,7 @@
       "id": "barcode-tunnel-scanner",
       "kit": "postal-logistics",
       "title": "Barcode tunnel scanner",
-      "description": "Open-sided parcel scanning tunnel with multiple raised scan heads above a short belt. Scale, painted steel, structural steel, stainless steel, instrument glass, and weathered or highVisibility finish presets are editable.",
+      "description": "Open-sided parcel scanning tunnel at about real size: painted steel arch with a roof, stainless scan heads at the leading and trailing edges, instrument-glass side windows, four structural-steel legs and a dark rubber belt through the opening. Material controls: painted steel, structural steel, stainless steel, instrument glass and belt rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -215179,7 +215179,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/barcode-tunnel-scanner.kcad.ts",
       "preview": "/assets/postal-logistics-barcode-tunnel-scanner.png",
-      "sourceSha256": "7ea82dedc243ee10dda125922d5a702fcf0cef72f764ba94b82e4be65992972d",
+      "sourceSha256": "db1ad94612615da9e27fd5da163c0fa60c0ab251de1da273570b59d73a4f4228",
       "triangleBudget": 1800,
       "params": [
         {
@@ -215214,6 +215214,12 @@
           "type": "color",
           "default": "#57b4c3",
           "label": "Instrument glass"
+        },
+        {
+          "name": "beltRubber",
+          "type": "color",
+          "default": "#2c3134",
+          "label": "Belt rubber"
         }
       ],
       "presets": {
@@ -215221,13 +215227,15 @@
           "paintedSteel": "#68777a",
           "structuralSteel": "#67675f",
           "stainlessSteel": "#9ea7a6",
-          "instrumentGlass": "#548a91"
+          "instrumentGlass": "#548a91",
+          "beltRubber": "#3d4140"
         },
         "highVisibility": {
           "paintedSteel": "#e36d32",
           "structuralSteel": "#454f54",
           "stainlessSteel": "#d9e0de",
-          "instrumentGlass": "#6bd0dc"
+          "instrumentGlass": "#6bd0dc",
+          "beltRubber": "#2c3134"
         }
       },
       "stats": {
@@ -215242,15 +215250,12 @@
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#596e83",
+          "name": "beltRubber",
+          "color": "#2c3134",
           "parts": [
-            "belt",
-            "arch-left",
-            "arch-right",
-            "arch-top"
+            "belt"
           ],
-          "param": "paintedSteel"
+          "param": "beltRubber"
         },
         {
           "name": "structuralSteel",
@@ -215262,6 +215267,16 @@
             "right-leg-back"
           ],
           "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#596e83",
+          "parts": [
+            "arch-left",
+            "arch-right",
+            "arch-top"
+          ],
+          "param": "paintedSteel"
         },
         {
           "name": "stainlessSteel",

@@ -1,0 +1,9 @@
+command: npx vitest run tests/integration/catalog/barcodeTunnelScannerBeltMaterial.test.ts
+exit=0
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+ ✓ tests/integration/catalog/barcodeTunnelScannerBeltMaterial.test.ts (1 test) 661ms
+     ✓ renders the carrying belt in rubber and keeps the arch in painted steel  352ms
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  12:53:23
+   Duration  6.56s (transform 4.66s, setup 91ms, import 5.70s, tests 661ms, environment 0ms)
