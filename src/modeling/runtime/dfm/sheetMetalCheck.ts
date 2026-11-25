@@ -109,7 +109,7 @@ export interface SheetMetalPartReport {
 }
 
 /** Record kinds a sheet-metal chain may hold (see sheetMetalPredecessor). */
-const SHEET_CHAIN_KINDS = new Set(['sheetMetal', 'sheetMetalBend', 'hole', 'holes', 'cutout']);
+const SHEET_CHAIN_KINDS = new Set(['sheetMetal', 'sheetMetalBend', 'sheetMetalBead', 'hole', 'holes', 'cutout']);
 
 /**
  * The sheetMetal root of `terminalId` when every record from it back to the

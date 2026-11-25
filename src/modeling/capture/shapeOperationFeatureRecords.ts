@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureMetadata } from '../../shared/intent/featureRecord';
 import type { FeatureId, FeatureKind, FeatureRef, Param } from '../../shared/intent/types';
+import type { BeadProfile, BeadSide } from '../../shared/intent/region';
 import type { FilletContinuity } from '../../shared/intent/filletContinuityRecord';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { parseTopoRef } from '../../kernel/naming/topoRef';
@@ -348,6 +349,27 @@ export function buildBendFeatureSpec(
     kind: 'sheetMetalBend',
     params: { angle: angleParam, radius: radiusParam },
     inputs: buildOperationInputs(baseId, selector),
+  };
+}
+
+export function buildBeadFeatureSpec(
+  baseId: FeatureId,
+  params: {
+    fromX: Param;
+    fromY: Param;
+    toX: Param;
+    toY: Param;
+    width: Param;
+    height: Param;
+  },
+  profile: BeadProfile,
+  side: BeadSide,
+): ShapeOperationFeatureSpec {
+  return {
+    kind: 'sheetMetalBead',
+    params,
+    inputs: { base: { kind: 'feature', id: baseId } },
+    metadata: { profile, side },
   };
 }
 

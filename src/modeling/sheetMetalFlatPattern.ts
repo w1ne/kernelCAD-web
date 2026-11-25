@@ -14,7 +14,7 @@ import type { ShapeBackend } from '../kernel/backends/backend';
 import type { ParamTable } from '../shared/runtime/paramTable';
 import { resolveParams } from '../shared/runtime/resolveParams';
 import { initOcct, OcctBackend } from '../kernel/backends/occt/occtBackend';
-import { flatBlankRecordId, flattenPattern } from '../kernel/backends/occt/flattenPattern';
+import { flatBlankMeta, flattenPattern } from '../kernel/backends/occt/flattenPattern';
 import { flatBlankInnerLoops } from '../kernel/backends/occt/flatBlankLoops';
 import { RecomputeEngine } from './compute/recomputeEngine';
 import { OcctLowerer } from './backends/occt/occtLowerer';
@@ -31,7 +31,13 @@ export async function flattenPatternWithHoles(
   lowered?: ReadonlyMap<FeatureId, ShapeBackend>,
   paramTable?: ParamTable,
 ): Promise<Region> {
-  const blankId = flatBlankRecordId(records, terminalId);
+  // The lowerers receive parameter-resolved records, but this JS-side outline
+  // reconstruction reads the sketch commands directly. Resolve that same
+  // source record set here so a ParamRef-driven blank agrees with its BREP.
+  const resolvedRecords = paramTable
+    ? records.map(record => resolveParams(record, paramTable) as FeatureRecord)
+    : records;
+  const { blankId, thickness, beads } = flatBlankMeta(resolvedRecords, terminalId);
   let blank = lowered?.get(blankId);
   if (!blank) {
     await initOcct();
@@ -40,12 +46,10 @@ export async function flattenPatternWithHoles(
       .run(records.slice(0, upTo + 1), paramTable ? { paramTable } : undefined);
     blank = run.shapes.get(blankId);
   }
-  const holes = blank instanceof OcctBackend ? flatBlankInnerLoops(blank) : [];
-  // The lowerers receive parameter-resolved records, but this JS-side outline
-  // reconstruction reads the sketch commands directly. Resolve that same
-  // source record set here so a ParamRef-driven blank agrees with its BREP.
-  const resolvedRecords = paramTable
-    ? records.map(record => resolveParams(record, paramTable) as FeatureRecord)
-    : records;
+  const holes = blank instanceof OcctBackend
+    ? flatBlankInnerLoops(blank, {
+      ...(beads.length > 0 && thickness !== undefined ? { zTop: thickness, excludeBeads: beads } : {}),
+    })
+    : [];
   return flattenPattern(resolvedRecords, terminalId, { holes });
 }

@@ -427,6 +427,22 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: 'A .bend() produced several solids, an invalid solid, or lost / overlapped material.',
   },
+  'feature.sheetMetal.bead-out-of-bounds': {
+    hintTemplate:
+      'The stiffening bead footprint (segment expanded by width / 2) extends outside the sheet blank outline. Move from/to inward by at least width / 2 or narrow width.',
+    nextAction: { kind: 'fix-arg', field: 'from' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A .bead() footprint extends beyond the sheet-metal blank outline.',
+  },
+  'feature.sheetMetal.bead-crosses-bend': {
+    hintTemplate:
+      'A stiffening bead overlaps a sheet-metal bend zone (bend line ± bendAllowance / 2). Shorten or shift the bead so its footprint clears every bend zone.',
+    nextAction: { kind: 'fix-arg', field: 'from' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A .bead() footprint collides with or crosses a sheet-metal bend zone.',
+  },
   // Draft (1) — Slice E Task 6/7
   'feature.face-edit.rejected': {
     hintTemplate:

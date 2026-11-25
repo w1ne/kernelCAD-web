@@ -9,7 +9,7 @@
 // back here from the blank's top face.
 
 import { measureArea, type Edge, type Face, type Wire } from 'replicad';
-import type { Vec2 } from '../../../shared/intent/region';
+import type { FlatPatternBead, Vec2 } from '../../../shared/intent/region';
 import type { OcctBackend } from './occtBackend';
 
 /** Polyline points per full turn of a curved edge. */
@@ -84,21 +84,44 @@ function signedArea(poly: readonly Vec2[]): number {
   return a / 2;
 }
 
+/** Distance from point `p` to line segment `[a, b]` in 2D. */
+function pointToSegmentDist(p: Vec2, a: Vec2, b: Vec2): number {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq <= 1e-12) return Math.hypot(p[0] - a[0], p[1] - a[1]);
+  const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / lenSq));
+  return Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy));
+}
+
+function isBeadFootprintLoop(poly: readonly Vec2[], beads: readonly FlatPatternBead[]): boolean {
+  const tol = 0.05;
+  return beads.some((b) => {
+    const r = b.width / 2 + tol;
+    return poly.every((p) => pointToSegmentDist(p, b.start, b.end) <= r);
+  });
+}
+
 /**
  * The inner loops of a flat blank's top face (the largest +Z planar face at
  * the blank's top), each a CW polyline in XY. Empty when the blank has no
  * holes or no such face.
  */
-export function flatBlankInnerLoops(blank: OcctBackend): Vec2[][] {
+export function flatBlankInnerLoops(
+  blank: OcctBackend,
+  opts?: { zTop?: number; excludeBeads?: readonly FlatPatternBead[] },
+): Vec2[][] {
   const shape = blank.getReplicadShape();
-  const zTop = blank.boundingBox().max[2];
+  const zTop = opts?.zTop ?? blank.boundingBox().max[2];
   const tops = shape.faces.filter((f) => isTopFace(f, zTop));
   if (tops.length === 0) return [];
   const top = tops.reduce((a, b) => (measureArea(b) > measureArea(a) ? b : a));
+  const excludeBeads = opts?.excludeBeads ?? [];
   const loops: Vec2[][] = [];
   for (const wire of top.innerWires()) {
     const poly = wireToPolyline(wire);
     if (poly.length < 3) continue;
+    if (excludeBeads.length > 0 && isBeadFootprintLoop(poly, excludeBeads)) continue;
     loops.push(signedArea(poly) > 0 ? poly.reverse() : poly);
   }
   return loops;

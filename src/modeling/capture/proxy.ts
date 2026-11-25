@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { DrawingReviewPlan } from '../../shared/intent/drawingReview';
+import type { SheetMetalBeadOpts } from '../sheetMetalBead';
 import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3, Vec3 } from '../../shared/intent/types';
 import { isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
@@ -1103,6 +1104,12 @@ export class Shape {
     // include 'sheetMetalBend', so we replicate its body here).
     return this.session.bendFeature(this, angleParam, radiusParam, edgeRef as EdgeSelector | { face: FaceSelector | CanonicalFace | string });
   }
+
+  /**
+   * Form an embossed stiffening bead along `[from -> to]` in flat-blank XY
+   * coordinates. Must trace its lineage to `sheetMetal(...)`.
+   */
+  bead(opts: SheetMetalBeadOpts): Shape { return this.session.beadFeature(this, opts); }
 
   /**
    * W2.2: Return the unfolded 2D flat-pattern of this bent sheet-metal Shape

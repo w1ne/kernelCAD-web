@@ -25,6 +25,22 @@ export interface BendLineRecord {
   ordinal: number;
 }
 
+/** Cross-section profile of a formed sheet-metal stiffening bead. */
+export type BeadProfile = 'round' | 'u' | 'v';
+
+/** Sheet face on which a stiffening bead is raised (+Z = 'top', -Z = 'bottom'). */
+export type BeadSide = 'top' | 'bottom';
+
+/** A formed stiffening bead projected into flat-blank 2D coordinates. */
+export interface FlatPatternBead {
+  start: Vec2;
+  end: Vec2;
+  width: number;
+  height: number;
+  profile: BeadProfile;
+  side: BeadSide;
+}
+
 /** Plane in 3D — origin point + normal direction. Region 2D coords are in
  *  this plane's local frame (origin at `origin`, X/Y derived deterministically
  *  from `normal` via the standard up-from-normal construction). */
@@ -45,6 +61,8 @@ export interface Region {
   holes: Vec2[][];
   /** Empty unless this Region was produced by `Shape.flattenPattern()`. */
   bendLines: BendLineRecord[];
+  /** Optional formed stiffening beads in flat-blank coordinates. */
+  beads?: FlatPatternBead[];
 }
 
 export function makeRegion(spec: Region): Region {
@@ -61,12 +79,23 @@ export function makeRegion(spec: Region): Region {
     }
   }
   // Freeze to keep the type honest in the test suite.
-  return Object.freeze({
+  const base: Region = {
     plane: spec.plane,
     outer: spec.outer.slice(),
     holes: (spec.holes ?? []).map(h => h.slice()),
     bendLines: (spec.bendLines ?? []).slice(),
-  });
+  };
+  if (spec.beads && spec.beads.length > 0) {
+    base.beads = spec.beads.map(b => Object.freeze({
+      start: [b.start[0], b.start[1]] as Vec2,
+      end: [b.end[0], b.end[1]] as Vec2,
+      width: b.width,
+      height: b.height,
+      profile: b.profile,
+      side: b.side,
+    }));
+  }
+  return Object.freeze(base);
 }
 
 export function isValidRegion(v: unknown): v is Region {

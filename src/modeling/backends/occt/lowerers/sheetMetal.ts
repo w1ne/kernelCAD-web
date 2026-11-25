@@ -6,6 +6,7 @@ import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../../shared/diagnostics/diagnostic';
 import { findRootSheetMetalRecord, sheetMetalPredecessor } from '../../../sheetMetal';
+import { checkBeadVsBendZone, readBeadSpec } from '../../../sheetMetalBead';
 import { planFold, type FlatBend, type FlatBlank, type FoldStep } from '../../../sheetMetalFold';
 import {
   lowerSheetMetalBend as bendSheetMetalBody,
@@ -119,13 +120,37 @@ export function lowerSheetMetalBend(ctx: LowerContext, r: FeatureRecord): LowerO
     ctx.diagnostics.push(foldPlanDiagnostic(r, e));
     return noShape();
   }
+  const currentStep = steps[steps.length - 1];
+  const beads = beadChainOf(r, records);
+  let beadPadZ = 0;
+  for (const beadRec of beads) {
+    const spec = readBeadSpec(beadRec);
+    const hit = checkBeadVsBendZone(spec, {
+      orient: currentStep.bend.orient,
+      at: currentStep.bend.at,
+      bendAllowance: currentStep.bendAllowance,
+    });
+    if (hit) {
+      ctx.diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.sheetMetal.bead-crosses-bend',
+        featureId: r.id,
+        severity: 'error',
+        message: `.bend(): ${hit}`,
+        hint: 'Move the bead or bend line so the bead footprint clears the bend zone.',
+      });
+      return noShape();
+    }
+    beadPadZ = Math.max(beadPadZ, spec.height + 1);
+  }
   const result = bendSheetMetalBody({
     featureId: r.id,
     base,
-    step: steps[steps.length - 1],
+    step: currentStep,
     thickness,
     radius: r.params.radius.evaluated,
     kFactor,
+    ...(beadPadZ > 0 ? { beadPadZ } : {}),
     flat: {
       axis: axis!,
       bounds: [flatBox.min[0], flatBox.min[1], flatBox.max[0], flatBox.max[1]],
@@ -191,6 +216,19 @@ function bendChainOf(r: FeatureRecord, records: readonly FeatureRecord[]): Featu
   return out.reverse();
 }
 
+/** The sheetMetalBead records from the root to `r`, root first. */
+function beadChainOf(r: FeatureRecord, records: readonly FeatureRecord[]): FeatureRecord[] {
+  const byId = new Map(records.map(x => [x.id, x]));
+  const out: FeatureRecord[] = [];
+  let cur: FeatureRecord | undefined = r;
+  while (cur && cur.kind !== 'sheetMetal') {
+    if (cur.kind === 'sheetMetalBead') out.push(cur);
+    const prev = sheetMetalPredecessor(cur);
+    cur = prev ? byId.get(prev) : undefined;
+  }
+  return out.reverse();
+}
+
 /** Flat blank extents: the first bend of the chain sees the flat body; later
  *  bends reuse the extents the first one recorded. */
 function flatBlankBox(
@@ -199,7 +237,15 @@ function flatBlankBox(
   root: FeatureRecord,
   records: readonly FeatureRecord[],
 ): BendBox {
-  if (chain.length <= 1) return base.boundingBox();
+  if (chain.length <= 1) {
+    const bb = base.boundingBox();
+    const sk = sketchBox(root, records);
+    const t = root.params.thickness.evaluated;
+    // Clamp Z to the flat sheet [0, thickness] when formed beads protrude in +Z/-Z.
+    return sk
+      ? { min: [bb.min[0], bb.min[1], sk.min[2]], max: [bb.max[0], bb.max[1], sk.max[2]] }
+      : { min: [bb.min[0], bb.min[1], 0], max: [bb.max[0], bb.max[1], t] };
+  }
   const md = (chain[0].metadata as { bendRecord?: Partial<BendRecord> } | undefined)?.bendRecord;
   if (md?.flatBounds && typeof md.flatZ0 === 'number') {
     const [x0, y0, x1, y1] = md.flatBounds;
