@@ -95,10 +95,11 @@ describe('draftWithHistory (direct OCCT)', () => {
     expect(Math.abs(result.shape.volume() - beforeVol)).toBeGreaterThan(1e-2);
   });
 
-  it('warns feature.draft.neutral-plane-derived when a named neutralPlane differs from the drafted face', async () => {
-    // draft(angle, { face: 'front', neutralPlane: 'bottom' }) — a genuine override
-    // to a DIFFERENT parting plane. Full named-neutral-plane support is deferred,
-    // so the lowerer derives the plane from face geometry and must SIGNAL that.
+  it('honors a named neutralPlane distinct from the drafted face', async () => {
+    // draft(angle, { face: 'front', neutralPlane: 'top' }) — a genuine override
+    // to a DIFFERENT parting plane. The top edge stays fixed and the bottom
+    // edge swings outward, so the solid GROWS; the derived bottom plane would
+    // shrink it instead.
     const base = OcctBackend.box(10, 10, 10);
     const r: FeatureRecord = {
       id: 'draft_3', kind: 'draft',
@@ -108,13 +109,29 @@ describe('draftWithHistory (direct OCCT)', () => {
       },
       params: { angle: deg(8) },
       transforms: [], suppressed: false,
-      metadata: { neutralPlane: 'bottom' }, // override: parting plane ≠ drafted face
+      metadata: { neutralPlane: 'top' }, // override: parting plane ≠ drafted face
     };
     const result = await new OcctLowerer().lower(r, { byKey: { base } });
     expect(result.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
-    expect(result.diagnostics.some(d => d.code === 'feature.draft.neutral-plane-derived')).toBe(true);
-    // Geometry still changes — the derived plane is used, the override is only signalled.
-    expect(Math.abs(result.shape.volume() - base.volume())).toBeGreaterThan(1e-2);
+    expect(result.diagnostics.some(d => d.code === 'feature.draft.neutral-plane-derived')).toBe(false);
+    expect(result.shape.volume()).toBeGreaterThan(base.volume() + 1e-2);
+  });
+
+  it('refuses an unknown named neutralPlane instead of deriving a plane', async () => {
+    const base = OcctBackend.box(10, 10, 10);
+    const r: FeatureRecord = {
+      id: 'draft_5', kind: 'draft',
+      inputs: {
+        base: { kind: 'feature', id: 'box_1' },
+        face: { kind: 'face', featureId: 'box_1', ref: { kind: 'canonical', face: 'front' } },
+      },
+      params: { angle: deg(8) },
+      transforms: [], suppressed: false,
+      metadata: { neutralPlane: 'parting-line' },
+    };
+    const result = await new OcctLowerer().lower(r, { byKey: { base } });
+    expect(result.diagnostics.some(d => d.code === 'feature.invalid-args')).toBe(true);
+    expect(result.shape.volume()).toBeCloseTo(base.volume(), 6);
   });
 
   it('does NOT warn neutral-plane-derived for the default case (neutralPlane == drafted face)', async () => {

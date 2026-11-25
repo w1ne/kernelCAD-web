@@ -1,0 +1,11 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/kernelCAD-web/foundation-parity-20261111[39m
+
+ [32m✓[39m tests/unit/backends/occt/draft.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 441[2mms[22m[39m
+ [32m✓[39m tests/integration/modeling/draftNeutralPlane.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 413[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m12 passed[39m[22m[90m (12)[39m
+[2m   Start at [22m 02:13:49
+[2m   Duration [22m 5.32s[2m (transform 5.96s, setup 251ms, import 7.18s, tests 854ms, environment 0ms)[22m
+

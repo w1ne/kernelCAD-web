@@ -589,7 +589,13 @@ shape, not a copy.
 //   bore.offsetFaces({ ofSurfaceType: 'CYLINDER' }, 1)              // Ø10 bore -> Ø8
 //   box(40, 30, 10).moveFaces(kc.q.face(kc.q.createdBy(plateId)), [0, 0, -1])
 // Draft — taper faces for mold release (Slice E). angleDeg: 0–90.
-// neutralPlane defaults to the selected face; pullDir defaults to face normal.
+// neutralPlane names the PLANAR face where the drafted face keeps its original
+// position: a canonical face name or a face label. It is honored exactly there
+// (box(40, 30, 20).draft(10, { face: 'front', neutralPlane: 'top' }) keeps the
+// top edge fixed); omit it to derive the plane at the body extent opposite the
+// pull direction. An unknown or non-planar neutralPlane fails with
+// feature.invalid-args; a plane parallel to the drafted face fails with
+// feature.draft.failed. pullDir defaults to the face-derived demoulding axis.
 // Any key other than face, neutralPlane and pullDir throws feature.invalid-args
 // (e.g. pullDirection is not pullDir).
 .draft(angleDeg: Editable<number>, opts: { face: FaceSelector | string; neutralPlane?: string; pullDir?: [number, number, number] }): Shape

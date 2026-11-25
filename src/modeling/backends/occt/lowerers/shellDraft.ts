@@ -6,14 +6,14 @@ import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { draftWithHistory } from '../../../../kernel/backends/occt/draftWithHistory';
 import { countFaces, localOpUnchanged } from '../../../../kernel/backends/occt/edgeFeatureValidity';
-import { pickFace } from '../../../../kernel/backends/occt/edgeSelection';
+import { pickFace, pickFaceFromInput } from '../../../../kernel/backends/occt/edgeSelection';
 import {
   mergeEdgeFeatureHistory,
   shellWithHistory,
 } from '../../../../kernel/backends/occt/historyAwareEdgeFeatures';
 import type { CompilerDiagnostic } from '../../../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
-import type { FaceRef } from '../../../../shared/intent/types';
+import type { CanonicalFace, FaceRef } from '../../../../shared/intent/types';
 import type { FaceHash } from '../../../../kernel/naming/evolutionRecord';
 import { built, finished, type LowerContext, type LowerOutcome } from './context';
 import { drainResolvedWarnings } from './helpers';
@@ -224,39 +224,104 @@ export function lowerDraft(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
     return finished(base);
   }
   drainResolvedWarnings(r, ctx.diagnostics);
-  warnOnOverriddenNeutralPlane(ctx, r);
-  const shape = applyDraft(ctx, r, base, faceResult, angleDeg);
+  const namedPlane = resolveNamedNeutralPlane(ctx, r, base);
+  if (namedPlane === null) return finished(base);
+  const shape = applyDraft(ctx, r, base, faceResult, angleDeg, namedPlane);
   if (shape === undefined) return finished(base);
   return built(shape);
 }
 
-/**
- * Honesty signal: the capture layer DEFAULTS metadata.neutralPlane to
- * the drafted face's own selector string (canonical/label name), and
- * sets '' when the face is a non-named selector (FaceQuery etc.). The
- * neutral plane is ALWAYS derived from the target face geometry here, so
- * a genuine override — a named neutralPlane pointing at a DIFFERENT face
- * than the drafted one — is silently dropped. Surface a warning in that
- * case rather than pretending the named plane was honored. Full
- * named-neutral-plane resolution is deferred to a later slice.
- */
-function warnOnOverriddenNeutralPlane(ctx: LowerContext, r: FeatureRecord): void {
-  const neutralPlane = (r.metadata as { neutralPlane?: string } | undefined)?.neutralPlane ?? '';
+/** A parting plane the caller named by a canonical face name or a face label. */
+interface NamedNeutralPlane {
+  readonly point: [number, number, number];
+  readonly normal: [number, number, number];
+}
+
+const CANONICAL_FACE_NAMES = new Set<CanonicalFace>(['top', 'bottom', 'left', 'right', 'front', 'back']);
+
+/** Capture DEFAULTS metadata.neutralPlane to the drafted face's own selector
+ *  string, and stores '' when the face is a query. Both mean "derive the
+ *  parting plane", not "use this face as the plane". */
+function draftedFaceSelector(r: FeatureRecord): string {
   const faceRef = (r.inputs.face as { ref?: FaceRef } | undefined)?.ref;
-  const targetFaceSelector =
-    faceRef?.kind === 'canonical' ? faceRef.face
+  return faceRef?.kind === 'canonical' ? faceRef.face
     : faceRef?.kind === 'label' ? faceRef.name
-    : ''; // FaceQuery / tracked / created etc. → capture default was ''
-  if (neutralPlane !== '' && neutralPlane !== targetFaceSelector) {
+    : '';
+}
+
+/**
+ * Resolve a DISTINCT named neutralPlane to a planar face on the base solid.
+ *
+ * Returns undefined when capture kept the default (no override), null after
+ * pushing an error, and the plane otherwise. A named plane that cannot be
+ * resolved, or is not planar, fails instead of silently falling back to the
+ * derived plane: the parting line decides which edge of the drafted face
+ * stays fixed, so a guessed plane ships geometry the caller did not ask for.
+ */
+function resolveNamedNeutralPlane(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  base: OcctBackend,
+): NamedNeutralPlane | undefined | null {
+  const name = (r.metadata as { neutralPlane?: string } | undefined)?.neutralPlane ?? '';
+  if (name === '' || name === draftedFaceSelector(r)) return undefined;
+
+  const baseRef = r.inputs.base;
+  const featureId = baseRef?.kind === 'feature' ? baseRef.id : r.id;
+  const ref: FaceRef = CANONICAL_FACE_NAMES.has(name as CanonicalFace)
+    ? { kind: 'canonical', face: name as CanonicalFace }
+    : { kind: 'label', name };
+  const probe = {
+    ...r,
+    inputs: {
+      ...r.inputs,
+      neutralPlaneFace: { kind: 'face', featureId, ref },
+    },
+  } as unknown as FeatureRecord;
+  const face = pickFaceFromInput(probe, 'neutralPlaneFace', base, ctx.allRecords);
+  const badPlane = (requires: string, hint: string): null => {
     ctx.diagnostics.push({
       target: 'export-occt',
-      code: 'feature.draft.neutral-plane-derived',
+      code: 'feature.invalid-args',
       featureId: r.id,
-      severity: 'warn',
-      message: `Named neutralPlane '${neutralPlane}' differs from the drafted face '${targetFaceSelector || '(query)'}'; the parting plane was derived from the face geometry instead.`,
-      hint: 'A named neutralPlane different from the drafted face is not yet honored; the parting plane was derived from the face geometry. Full named-neutral-plane support lands in a later slice.',
+      severity: 'error',
+      ...invalidArgsText({
+        api: 'draft(angleDeg, { face, neutralPlane })',
+        path: 'opts.neutralPlane',
+        got: name,
+        requires,
+        example: "box(40, 30, 20).draft(10, { face: 'front', neutralPlane: 'top' })",
+        hint,
+      }),
     });
+    return null;
+  };
+  if ('error' in face) {
+    return badPlane(
+      'the name of a face on this solid — a canonical name (top, bottom, left, right, front, back) or a face label',
+      `${face.error.message} The parting plane is where the drafted face keeps its original position; a guessed plane would move a different edge.`,
+    );
   }
+  const geomType = (face as unknown as { geomType?: string }).geomType;
+  if (geomType !== 'PLANE') {
+    return badPlane(
+      `a planar face; '${name}' is ${geomType ?? 'not a plane'}`,
+      'A curved parting face has no single plane where the drafted face keeps its position. Pick a planar face, or omit neutralPlane to derive the plane from the body extent.',
+    );
+  }
+  const center = (face as unknown as { center: { x: number; y: number; z: number } }).center;
+  const raw = (face as unknown as { normalAt: () => { x: number; y: number; z: number } }).normalAt();
+  const length = Math.hypot(raw.x, raw.y, raw.z);
+  if (!(length > 0)) {
+    return badPlane(
+      'a planar face with a usable normal',
+      `The named neutralPlane '${name}' has a zero-length normal, so its plane is undefined.`,
+    );
+  }
+  return {
+    point: [center.x, center.y, center.z],
+    normal: [raw.x / length, raw.y / length, raw.z / length],
+  };
 }
 
 /**
@@ -287,6 +352,49 @@ function resolvePullDir(
   return best;
 }
 
+/**
+ * The parting plane handed to BRepOffsetAPI_DraftAngle.
+ *
+ * A named plane is used exactly where the call put it, with its normal
+ * oriented along the pull direction so the taper keeps the derived-plane sign
+ * convention. Without one, the plane is derived: a face tapered about its own
+ * plane would be a no-op, so it is anchored at the body extent OPPOSITE the
+ * pull direction (the parting line at the base, away from the pull) and the
+ * in-plane components are taken from the face centroid so it passes through
+ * the body.
+ */
+function draftPlaneFor(
+  namedPlane: NamedNeutralPlane | undefined,
+  pullDir: [number, number, number],
+  center: { x: number; y: number; z: number },
+  bb: { min: readonly number[]; max: readonly number[] },
+): { point: [number, number, number]; normal: [number, number, number] } {
+  const pLen = Math.hypot(pullDir[0], pullDir[1], pullDir[2]) || 1;
+  const pUnit: [number, number, number] = [pullDir[0] / pLen, pullDir[1] / pLen, pullDir[2] / pLen];
+  if (namedPlane !== undefined) {
+    const along = namedPlane.normal[0] * pUnit[0] + namedPlane.normal[1] * pUnit[1] + namedPlane.normal[2] * pUnit[2];
+    return {
+      point: [...namedPlane.point],
+      normal: along < 0
+        ? [-namedPlane.normal[0], -namedPlane.normal[1], -namedPlane.normal[2]]
+        : [...namedPlane.normal],
+    };
+  }
+  const anchor: [number, number, number] = [
+    pUnit[0] >= 0 ? bb.min[0]! : bb.max[0]!,
+    pUnit[1] >= 0 ? bb.min[1]! : bb.max[1]!,
+    pUnit[2] >= 0 ? bb.min[2]! : bb.max[2]!,
+  ];
+  return {
+    point: [
+      Math.abs(pUnit[0]) > 0.5 ? anchor[0] : center.x,
+      Math.abs(pUnit[1]) > 0.5 ? anchor[1] : center.y,
+      Math.abs(pUnit[2]) > 0.5 ? anchor[2] : center.z,
+    ],
+    normal: pUnit,
+  };
+}
+
 /** Returns undefined once the kernel failure diagnostic has been pushed. */
 function applyDraft(
   ctx: LowerContext,
@@ -294,6 +402,7 @@ function applyDraft(
   base: OcctBackend,
   faceResult: unknown,
   angleDeg: number,
+  namedPlane?: NamedNeutralPlane,
 ): ShapeBackend | undefined {
   try {
     // The resolved replicad Face gives us both the target face hash and the
@@ -312,32 +421,7 @@ function applyDraft(
     const faceNormal: [number, number, number] = [nRaw.x / nLen, nRaw.y / nLen, nRaw.z / nLen];
 
     const pullDir = resolvePullDir(r, faceNormal);
-
-    // Neutral plane: derived from the target face geometry. A face tapered
-    // about its own plane would be a no-op, so we anchor the parting plane
-    // at the base of the shape along the pull axis and orient it by the pull
-    // direction. This is the robust default that also satisfies the
-    // neutralPlane === '' contract (no resolvable neutral-plane face).
-    const bb = base.boundingBox();
-    const pLen = Math.hypot(pullDir[0], pullDir[1], pullDir[2]) || 1;
-    const pUnit: [number, number, number] = [pullDir[0] / pLen, pullDir[1] / pLen, pullDir[2] / pLen];
-    // Anchor at the face centroid projected onto the parting level: place the
-    // plane at the shape extent OPPOSITE the pull direction so the whole face
-    // tapers (the parting line sits at the base, away from the pull).
-    const lows = [bb.min[0], bb.min[1], bb.min[2]];
-    const highs = [bb.max[0], bb.max[1], bb.max[2]];
-    const anchor: [number, number, number] = [
-      pUnit[0] >= 0 ? lows[0] : highs[0],
-      pUnit[1] >= 0 ? lows[1] : highs[1],
-      pUnit[2] >= 0 ? lows[2] : highs[2],
-    ];
-    // Keep the in-pull-axis component at the parting level but the in-plane
-    // components at the face centroid so the plane passes through the body.
-    const planePoint: [number, number, number] = [
-      Math.abs(pUnit[0]) > 0.5 ? anchor[0] : center.x,
-      Math.abs(pUnit[1]) > 0.5 ? anchor[1] : center.y,
-      Math.abs(pUnit[2]) > 0.5 ? anchor[2] : center.z,
-    ];
+    const plane = draftPlaneFor(namedPlane, pullDir, center, base.boundingBox());
 
     const angleRad = (angleDeg * Math.PI) / 180;
     const res = draftWithHistory(
@@ -345,7 +429,7 @@ function applyDraft(
       [{ hash: faceHash }],
       angleRad,
       pullDir,
-      { point: planePoint, normal: pUnit },
+      plane,
     );
     const newMap = mergeEdgeFeatureHistory(base.historyMap, res);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

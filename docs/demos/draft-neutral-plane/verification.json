@@ -1,0 +1,55 @@
+{
+  "recordedDate": "2026-11-25",
+  "kernel": "Local OCCT model geometry",
+  "fixture": "draft-neutral-plane.kcad.ts",
+  "input": {
+    "boxMm": [
+      40,
+      30,
+      20
+    ],
+    "draftedFace": "front",
+    "neutralPlane": "top",
+    "angleDeg": 10
+  },
+  "before": {
+    "volumeMm3": 24000,
+    "bboxYMm": [
+      0,
+      30
+    ]
+  },
+  "afterNamedTop": {
+    "volumeMm3": 25410.6158,
+    "bboxYMm": [
+      -3.5265,
+      30
+    ],
+    "solidComponents": 1,
+    "valid": true
+  },
+  "afterDerivedPlane": {
+    "volumeMm3": 22589.3842,
+    "bboxYMm": [
+      0,
+      30
+    ],
+    "solidComponents": 1,
+    "valid": true
+  },
+  "checks": {
+    "beforeVolumeMm3": 24000,
+    "namedTopVolumeMm3": 25410.6158,
+    "namedTopDeltaMm3": 1410.6158,
+    "exactWedgeMm3": 1410.6158,
+    "namedTopDeltaMatchesWedge": true,
+    "derivedVolumeMm3": 22589.3842,
+    "derivedDeltaMm3": -1410.6158,
+    "derivedDeltaIsOpposite": true,
+    "topEdgeStaysFixed": true,
+    "derivedEdgeMovesInside": true,
+    "namedTopSolidValid": true,
+    "derivedSolidValid": true
+  },
+  "scope": "Local model validation only; not a deployed-behavior or hardware-acceptance claim."
+}
