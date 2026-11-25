@@ -3,7 +3,9 @@
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { HelicalSweepArgsError, helixAxisBasis } from '../../../../kernel/backends/occt/helicalSweep';
+import { isValidShape } from '../../../../kernel/backends/occt/booleanRecovery';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
+import { getOC } from 'replicad';
 import { helix, helixOptionsFromSpec, type HelixRailSpec } from '../../../helix';
 import { emptyResultDiagnostic } from '../additiveNoOp';
 import { built, noShape, type LowerContext, type LowerOutcome } from './context';
@@ -37,7 +39,46 @@ export function lowerSweep(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
     });
     if (e) ctx.diagnostics.push(e);
   }
+  if (!roundCornerIsClosed(ctx, r, shape as OcctBackend)) return noShape();
   return built(shape);
+}
+
+/**
+ * Reject a `transitionMode: 'round'` result whose shell the kernel did not
+ * close.
+ *
+ * For a curved profile (a pipe elbow is a circular sketch) OCCT inserts the
+ * tangent-arc faces of a round corner but does not sew them to the straight
+ * runs. The body still integrates a plausible volume and every face passes
+ * BRepCheck on its own, but the SOLID does not, so `evaluate` reported a
+ * phantom solid and the failure only surfaced at STEP export as
+ * `export.brep.invalid` / `export.mesh.not-watertight`. Refuse it here, at the
+ * feature that produced it, with the cause and a working alternative.
+ *
+ * The check is scoped to `round`: `right` and `transformed` corners, and a
+ * `smooth`/`helix` spine, keep their existing behavior. A polygonal profile on
+ * the same round corner does sew correctly, so this is a validity gate, not a
+ * ban on the option.
+ */
+function roundCornerIsClosed(ctx: LowerContext, r: FeatureRecord, shape: OcctBackend): boolean {
+  const transitionMode = (r.metadata as { transitionMode?: unknown } | undefined)?.transitionMode;
+  if (transitionMode !== 'round') return true;
+  const raw = (shape.getReplicadShape() as unknown as { wrapped: unknown }).wrapped;
+  if (isValidShape(getOC(), raw)) return true;
+
+  ctx.diagnostics.push({
+    target: ctx.target,
+    code: 'feature.sweep.invalid-result',
+    featureId: r.id,
+    severity: 'error',
+    message:
+      'sweep: transitionMode "round" produced a body whose shell is not closed — ' +
+      'the tangent-arc corner faces are unsewn, so the body fails solid-level BRepCheck and cannot be exported.',
+    hint:
+      "Author the bend into the rail: replace each sharp corner with a tangent arc (or use spine: 'smooth' on a sampled rail) and sweep with transitionMode 'right'. A round corner on a sharp polyline sews only for some profiles — a polygonal profile builds, a circular one does not.",
+    details: { transitionMode: 'round' },
+  });
+  return false;
 }
 
 /** Returns undefined once the failing step has pushed its diagnostic. */

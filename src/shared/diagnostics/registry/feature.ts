@@ -194,6 +194,14 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: 'A solid primitive or sweep-family create lowered to an empty or zero-volume shape; the result has no material.',
   },
+  'feature.sweep.invalid-result': {
+    hintTemplate:
+      "A transitionMode: 'round' sweep returned a body whose shell is not closed, so no solid can be measured or exported. Author the bend into the rail: replace each sharp corner with a tangent arc (or use spine: 'smooth' on a sampled rail) and sweep with transitionMode 'right'. The round corner sews only for some profiles — a polygonal profile builds, a circular one does not.",
+    nextAction: { kind: 'rewrite-feature', guidance: 'put the bend radius into the rail (tangent arcs) and use transitionMode right, instead of a round corner on a sharp polyline' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A round-corner sweep returned a body that fails solid-level BRepCheck (unsewn tangent-arc corner faces); the invalid body is refused instead of measured or exported.',
+  },
   'feature.result.absurd-geometry': {
     hintTemplate:
       'The kernel returned a result with a non-finite or runaway bounding box, a non-positive volume, or a shell larger than the solid it hollowed. Treat the feature as failed: change the operation (e.g. hollow with a boolean subtract of an inner body instead of shell()), simplify the input faces, or reduce the thickness/offset, then re-run.',
