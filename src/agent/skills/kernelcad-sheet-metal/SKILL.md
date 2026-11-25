@@ -88,12 +88,28 @@ const stiffened = blank
 - Footprint (`[from, to]` expanded by `width / 2`) must stay inside the flat blank (`feature.sheetMetal.bead-out-of-bounds`) and clear every bend zone (`feature.sheetMetal.bead-crosses-bend`).
 - `flattenPattern()` surfaces beads in flat-blank coordinates on optional `region.beads` (`{ start, end, width, height, profile, side }`) without changing `outer`, `bendLines`, or `holes`.
 
+## Rounded blank corners
+
+Arc segments in the blank profile fold and unfold like lines. `flattenPattern()`
+samples them into the polyline `Region` wire with a 0.005 mm chord sagitta:
+
+```typescript
+// 100 x 60 x 2 mm blank with R10 corners, one 90 degree fold.
+const blank = path()
+  .moveTo(10, 0).lineTo(90, 0)
+  .tangentArc(100, 10).lineTo(100, 50)
+  .tangentArc(90, 60).lineTo(10, 60)
+  .tangentArc(0, 50).lineTo(0, 10)
+  .tangentArc(10, 0).close();
+return sheetMetal(blank, { thickness: 2, kFactor: 0.38 }).bend({ atX: 50 }, 90, 3);
+```
+
 ## Slice-1 limits
 
 - Bend axis derived from `{ atX }` / `{ atY }` EdgeQuery or `{ face: 'top' }`. Other selectors emit `feature.bend.edge-not-linear`.
 - `radius >= 0.5 * thickness` recommended; tighter bends emit `feature.kernel-failed`.
 - `flattenPattern()` flattens any number of bends (a C-channel with lips is 4). A fold that collides with another flange or loses material fails with `feature.sheetMetal.fold-invalid` instead of producing a broken solid.
-- Sketch profiles must be polylines (`path().moveTo / lineTo / close`). Arcs in the profile are not supported by `flattenPattern()` in slice 1.
+- The blank outline may use lines and the arc family (`radiusArc`, `sagittaArc`, `bulgeArc`, `tangentArc`, `threePointsArc`). Because a `Region` wire is a polyline, arcs are sampled with a chord sagitta of at most 0.005 mm; a laser-cut blank with R10 corners therefore loses under 0.25 mm² of area. Ellipse, NURBS and spline segments are refused by name (`feature.invalid-args`) instead of being straightened.
 - A hole that crosses the bend zone loses the part of it inside the zone (the arc is the sheet section at the zone start, revolved). Keep holes `>= BA/2 + radius` from the line.
 - Bend lines span the whole blank, so an `atX` and an `atY` bend always cross. That folds only when the blank outline has corner relief there — notch the corner at least one bend allowance past each line (e.g. `path().moveTo(0,0).lineTo(82,0).lineTo(82,18).lineTo(100,18)...` for bends at x = 85 and y = 15). Without relief: `feature.sheetMetal.crossing-bends`.
 
@@ -122,9 +138,9 @@ After authoring a sheet-metal part, run before reporting done:
 | G-radius-vs-thickness | Inner bend radius `>= 0.5 * thickness`; tighter bends fail and emit `feature.kernel-failed` |
 | G-bend-edge-linear | Every `.bend(...)` selector resolves to a straight edge (slice 1: `{ atX }`, `{ atY }`, or `{ face: 'top' }`) |
 | G-bend-table-exists | `inspect({ of: 'bend-table' })` returns one entry per `.bend(...)` call with non-negative bend allowance and a finite axis line |
-| G-flatten-roundtrip | `shape.flattenPattern()` produces a `Region` whose `outer` polyline area equals the source profile area within `1e-6` |
+| G-flatten-roundtrip | `shape.flattenPattern()` produces a `Region` whose `outer` polyline matches the authored profile: exact for line-only loops, and within 0.005 mm per point plus 0.5 mm² of area for arc corners |
 | G-fold-valid | No `feature.sheetMetal.fold-invalid` / `feature.sheetMetal.crossing-bends`: every fold is one closed solid with conserved volume |
-| G-profile-polyline | Sketch profile uses only `moveTo` / `lineTo` / `close` — no arcs (slice 1) |
+| G-profile-segments | Sketch profile uses only lines and `radiusArc` / `sagittaArc` / `bulgeArc` / `tangentArc` / `threePointsArc`; ellipse / NURBS / spline segments are refused |
 
 ## Mounting sheet on a frame
 
