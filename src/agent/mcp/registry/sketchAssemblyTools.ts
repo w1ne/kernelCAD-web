@@ -177,7 +177,31 @@ export const sketchAssemblyToolEntries: ToolRegistryEntry[] = [
           a: { type: 'string', description: "relation:'mate' — connector ref \"<partName>.<connectorName>\"." },
           b: { type: 'string', description: "relation:'mate' — connector ref \"<partName>.<connectorName>\"." },
           type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'], description: "relation:'mate' — mate type." },
-          pose: { type: 'object', description: "relation:'mate' — optional mate pose." },
+          pose: {
+            description:
+              "relation:'mate' — optional mate pose. Pass a finite number, a declared param name/binding " +
+              "(e.g. 'Stroke' for `const stroke = param('Stroke', 25, { min: -40, max: 40 })`), or a 3-element " +
+              "Euler [x, y, z] triple for a ball mate. A { param: '<Name>' } object is accepted for compatibility " +
+              'and emitted as the declared param binding; it is never written into source as an object.',
+            oneOf: [
+              { type: 'number', description: 'Numeric pose (deg for revolute/cylindrical/pin_slot, mm for prismatic).' },
+              { type: 'string', description: "Param name declared with param('<Name>', ...), or its binding identifier." },
+              {
+                type: 'array',
+                minItems: 3,
+                maxItems: 3,
+                description: 'ball mate Euler XYZ degrees; each entry a number or a declared param name.',
+                items: { oneOf: [{ type: 'number' }, { type: 'string' }] },
+              },
+              {
+                type: 'object',
+                description: "Legacy shape { param: '<Name>' }; resolved to the declared param binding on emission.",
+                properties: { param: { type: 'string' } },
+                required: ['param'],
+                additionalProperties: false,
+              },
+            ],
+          },
           adhesive: {
             type: 'object',
             description: "Optional planar adhesive interface for a fastened mate. Select one canonical face on each part.",

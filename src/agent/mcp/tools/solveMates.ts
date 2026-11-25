@@ -9,7 +9,7 @@
 
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { isKernelError } from '../../../shared/intent/kernelError';
-import { solveMates, type SolveResult, type SolveStatus } from '../../../modeling/mates/solver';
+import { mateLimitViolation, solveMates, type SolveResult, type SolveStatus } from '../../../modeling/mates/solver';
 import { getActiveMcpSession } from '../activeSession';
 
 export interface SolveMatesInput {
@@ -100,6 +100,8 @@ export async function solveMatesTool(input: SolveMatesInput): Promise<SolveMates
     };
   }
   try {
+    const limitFailure = rejectOutOfLimitOverrides(arm, input.poses);
+    if (limitFailure !== undefined) return limitFailure;
     const r = await solveMates(arm, input.poses);
     const serialized = serializePoses(r.poses);
     const loop = serializeLoop(r);
@@ -124,6 +126,37 @@ export async function solveMatesTool(input: SolveMatesInput): Promise<SolveMates
       errorHint: isKernelError(e) ? e.hint : undefined,
     };
   }
+}
+
+/** A `poses` override is the caller's own argument, so a value outside the
+ *  mate's declared `limitsDeg` / `limitsMm` is rejected instead of solved:
+ *  returning ok:true with an impossible coordinate (issue #1765) hides that
+ *  the model declares the travel as impossible. */
+function rejectOutOfLimitOverrides(
+  arm: Assembly,
+  poses: SolveMatesInput['poses'],
+): Extract<SolveMatesOutput, { ok: false }> | undefined {
+  if (poses === undefined) return undefined;
+  const byName = new Map(arm.__mates().map((mate) => [mate.name, mate]));
+  for (const [name, value] of Object.entries(poses)) {
+    const mate = byName.get(name);
+    if (mate === undefined || typeof value !== 'number') continue;
+    const violation = mateLimitViolation(mate, value);
+    if (violation === undefined) continue;
+    const [min, max] = violation.limits;
+    const unit = violation.field === 'limitsDeg' ? '°' : ' mm';
+    return {
+      ok: false,
+      error:
+        `solve_mates: poses.${name} — got ${value}${unit}; requires a value inside the mate's ` +
+        `declared ${violation.field} [${min}, ${max}].`,
+      errorCode: 'kinematic.pose.out-of-limits',
+      errorHint:
+        `invalid-args.kinematic.pose-out-of-limits — clamp poses.${name} into [${min}, ${max}], ` +
+        `or widen ${violation.field} on mate '${name}' if the mechanism is intended to travel that far.`,
+    };
+  }
+  return undefined;
 }
 
 /** Attach the loop report; a loop finding (lockup, over-driven, flip)
