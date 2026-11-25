@@ -133,16 +133,16 @@ describe('flat-pattern outline — arc segments', () => {
 
   it('rejects ellipse and spline segments by name instead of straightening them', async () => {
     await expect(flatOutline('.ellipse(50, 30, 20, 10)')).rejects.toThrow(
-      /unsupported sketch segment "nurbsSegment"/,
+      /a "nurbsSegment" segment/,
     );
     await expect(
       flatOutline('.moveTo(0, 0).lineTo(20, 0).smoothSpline(20, 20).lineTo(0, 20).close()'),
-    ).rejects.toThrow(/unsupported sketch segment "smoothSpline"/);
+    ).rejects.toThrow(/a "smoothSpline" segment/);
   });
 
   it('rejects a radiusArc whose radius cannot span its chord', async () => {
     await expect(flatOutline('.moveTo(0, 0).radiusArc(10, 0, 2).close()')).rejects.toThrow(
-      /radiusArc cannot be recovered/,
+      /radiusArc.*cannot be reconstructed/,
     );
   });
 });

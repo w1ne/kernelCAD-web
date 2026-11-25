@@ -15,7 +15,7 @@
 // manufacturing tolerance.
 
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
-import { KernelError } from '../../../shared/intent/kernelError';
+import { argChecker, type InvalidArgsSpec } from '../../../shared/intent/invalidArgs';
 import type { Vec2 } from '../../../shared/intent/region';
 
 /** Maximum distance (mm) between a sampled chord and its true arc. */
@@ -161,13 +161,20 @@ function arcEndTangent(arc: ArcSpec): Pt {
   return { x: -Math.sin(angle) * sign, y: Math.cos(angle) * sign };
 }
 
-function arcFailure(featureId: string, kind: string, detail: string): never {
-  throw new KernelError(
-    'feature.invalid-args',
-    `flattenPattern: ${kind} ${detail}.`,
-    featureId,
-    'invalid-args.flattenPattern.curved-sketch — give the arc a finite radius and two distinct endpoints (radiusArc needs |radius| >= chord/2).',
-  );
+type Bad = (spec: Omit<InvalidArgsSpec, 'api' | 'featureId' | 'code'>) => never;
+
+const ARC_EXAMPLE =
+  'sheetMetal(path().moveTo(10, 0).lineTo(90, 0).tangentArc(100, 10).lineTo(100, 50).close(), { thickness: 2, kFactor: 0.38 })';
+
+function arcFailure(bad: Bad, kind: string, from: Pt, to: Pt): never {
+  bad({
+    path: `profile.${kind}`,
+    gotText: `an arc from (${from.x}, ${from.y}) to (${to.x}, ${to.y}) that cannot be reconstructed`,
+    requires:
+      'two distinct endpoints and a geometrically valid arc; radiusArc needs a finite |radius| >= half the chord, and tangentArc needs a previous straight or arc tangent',
+    example: ARC_EXAMPLE,
+    hint: 'invalid-args.flattenPattern.curved-sketch — give the arc a finite radius and two distinct endpoints, or replace it with lineTo segments.',
+  });
 }
 
 interface WalkState {
@@ -176,9 +183,17 @@ interface WalkState {
   tangent?: Pt;
 }
 
-function applyArc(state: WalkState, cmd: ArcCommand, featureId: string): void {
+function applyArc(state: WalkState, cmd: ArcCommand, bad: Bad): void {
   const start = state.pen;
-  if (start === undefined) arcFailure(featureId, cmd.kind, 'has no start point (a path must begin with moveTo)');
+  if (start === undefined) {
+    bad({
+      path: `profile.${cmd.kind}`,
+      gotText: 'an arc before any point',
+      requires: 'a path that begins with moveTo before the first arc',
+      example: ARC_EXAMPLE,
+      hint: 'invalid-args.flattenPattern.curved-sketch — start the blank outline with path().moveTo(x, y).',
+    });
+  }
   const end: Pt = { x: cmd.x.evaluated, y: cmd.y.evaluated };
   if (Math.hypot(end.x - start.x, end.y - start.y) < GEOM_EPS) {
     // A zero-length segment contributes no point; the lowerer accepts it too.
@@ -195,7 +210,7 @@ function applyArc(state: WalkState, cmd: ArcCommand, featureId: string): void {
   }
   const arc = arcForCommand(cmd, start, end, state.tangent);
   if (arc === undefined || !Number.isFinite(arc.radius) || !Number.isFinite(arc.sweep)) {
-    arcFailure(featureId, cmd.kind, `cannot be recovered between (${start.x}, ${start.y}) and (${end.x}, ${end.y})`);
+    arcFailure(bad, cmd.kind, start, end);
   }
   appendArc(state.out, arc, end);
   state.pen = end;
@@ -224,6 +239,7 @@ export function outlineFromSketchCommands(
   commands: readonly SketchCommand[],
   featureId: string,
 ): Vec2[] {
+  const bad = argChecker('flattenPattern(shape)', featureId);
   const state: WalkState = { out: [] };
   for (const cmd of commands) {
     if (cmd.kind === 'close') break;
@@ -236,23 +252,26 @@ export function outlineFromSketchCommands(
       continue;
     }
     if (ARC_KINDS.has(cmd.kind)) {
-      applyArc(state, cmd as ArcCommand, featureId);
+      applyArc(state, cmd as ArcCommand, bad);
       continue;
     }
-    throw new KernelError(
-      'feature.invalid-args',
-      `flattenPattern: unsupported sketch segment "${cmd.kind}" in the blank profile; only lines and arcs (radiusArc, sagittaArc, bulgeArc, tangentArc, threePointsArc) can be recovered exactly.`,
-      featureId,
-      'invalid-args.flattenPattern.curved-sketch — rebuild the blank outline from lineTo and the arc family, or replace ellipse / spline segments with arcs.',
-    );
+    bad({
+      path: 'profile',
+      gotText: `a "${cmd.kind}" segment`,
+      requires:
+        'lines and the arc family (radiusArc, sagittaArc, bulgeArc, tangentArc, threePointsArc); a Region outer wire is a polyline, so an exact ellipse / NURBS / spline segment has no sampled form',
+      example: ARC_EXAMPLE,
+      hint: 'invalid-args.flattenPattern.curved-sketch — rebuild the blank outline from lineTo and the arc family, or replace ellipse / spline segments with arcs.',
+    });
   }
   if (state.out.length < 3) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `flattenPattern: sketch must have at least 3 vertices; got ${state.out.length}.`,
-      featureId,
-      'invalid-args.flattenPattern.degenerate — provide a closed sketch with 3+ vertices.',
-    );
+    bad({
+      path: 'profile',
+      gotText: `${state.out.length} outline points`,
+      requires: 'a closed outline with at least 3 vertices',
+      example: 'sheetMetal(path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 60).lineTo(0, 60).close(), { thickness: 2, kFactor: 0.38 })',
+      hint: 'invalid-args.flattenPattern.degenerate — provide a closed sketch with 3+ vertices.',
+    });
   }
   return state.out;
 }
