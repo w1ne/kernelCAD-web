@@ -25,6 +25,14 @@ when_to_use: >-
 // flattenPattern() needs a lowered Shape — call it after evaluate via MCP
 // flatten_pattern / inspect({ of: 'bend-table' }), not inline in the script body.
 const s = path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 60).lineTo(0, 60).close();
-const blank = sheetMetal(s, { thickness: 2, kFactor: 0.38 });
+let blank = sheetMetal(s, { thickness: 2, kFactor: 0.38 });
+// Cut holes before .bend() so they unfold exactly onto the flange they land on.
+blank = blank.holes({ byNormal: 'Z' }, { positions: [{ u: -25, v: 0 }], diameter: 5, depth: 'through' });
 return blank.bend({ atX: 50 }, 90, 3);
 ```
+
+A cut made after `.bend()` reaches the flat pattern only when it opens the
+still-flat base; the folded solid's flat top face supplies its outline. A cut
+on a folded flange has no XY projection, so `flatten_pattern` and DXF export
+refuse with `feature.flattenPattern.post-bend-geometry` instead of writing a
+blank sheet without it.

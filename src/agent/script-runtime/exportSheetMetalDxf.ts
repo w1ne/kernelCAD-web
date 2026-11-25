@@ -68,6 +68,21 @@ function sheetMetalDxfFailure(
   const errCode = (error as { code?: string }).code;
   const message = error instanceof Error ? error.message : String(error);
   const hint = (error as { hint?: string }).hint;
+  if (errCode === 'feature.flattenPattern.post-bend-geometry') {
+    return {
+      bytes: new Uint8Array(),
+      featureCount,
+      diagnostics: [...diagnostics, {
+        target: 'export-occt',
+        code: 'feature.flattenPattern.post-bend-geometry',
+        featureId: targetId,
+        severity: 'error',
+        message,
+        hint: hint ?? 'Cut the flat blank before bending, or flatten an upstream blank Shape.',
+        nextAction: NEXT_ACTIONS['feature.flattenPattern.post-bend-geometry'],
+      }],
+    };
+  }
   if (errCode === 'feature.flattenPattern.multi-bend-unsupported') {
     return {
       bytes: new Uint8Array(),
