@@ -8,7 +8,7 @@
 // blank before it was bent only exists in the lowered solid, so it is read
 // back here from the blank's top face.
 
-import { measureArea, type Edge, type Face, type Wire } from 'replicad';
+import type { Edge, Face, Wire } from 'replicad';
 import type { FlatPatternBead, Vec2 } from '../../../shared/intent/region';
 import type { OcctBackend } from './occtBackend';
 
@@ -16,17 +16,6 @@ import type { OcctBackend } from './occtBackend';
 const SAMPLES_PER_TURN = 48;
 /** Endpoint-matching tolerance (mm) when chaining a wire's edges. */
 const JOIN_TOL = 1e-4;
-
-function isTopFace(face: Face, zTop: number): boolean {
-  if (face.geomType !== 'PLANE') return false;
-  if (Math.abs(face.center.z - zTop) > 1e-3) return false;
-  try {
-    const n = face.normalAt();
-    return n.z > 0.999;
-  } catch {
-    return false;
-  }
-}
 
 /** Sample one edge start → end (in its own parameter direction). */
 function sampleEdge(edge: Edge): Vec2[] {
@@ -102,27 +91,107 @@ function isBeadFootprintLoop(poly: readonly Vec2[], beads: readonly FlatPatternB
   });
 }
 
+/** A face with an internal opening that is not the sheet's flat top plane. */
+export interface OffPlaneInnerLoopFace {
+  center: [number, number, number];
+  /** Null when the face is not planar. */
+  normal: [number, number, number] | null;
+  planar: boolean;
+}
+
+export interface FlatPlaneInnerLoopScan {
+  /** Closed inner loops on the flat top plane, each a CW polyline in XY. */
+  loops: Vec2[][];
+  /** Faces whose openings cannot be projected into the flat plane by XY. */
+  offPlaneFaces: OffPlaneInnerLoopFace[];
+}
+
 /**
- * The inner loops of a flat blank's top face (the largest +Z planar face at
- * the blank's top), each a CW polyline in XY. Empty when the blank has no
- * holes or no such face.
+ * Inner loops that lie on the sheet's flat top plane, plus every face that
+ * carries an opening outside that plane. A folded flange's holes, and any cut
+ * that crosses a bend, land in `offPlaneFaces`: their XY projection is not the
+ * flat pattern, so callers must not silently drop them.
+ *
+ * A face is on the flat plane when it is planar, its normal is parallel to Z,
+ * its centre lies within the sheet thickness slab, and it faces +Z (the top
+ * surface). Bottom (−Z) openings mirror the top ones and are skipped.
  */
-export function flatBlankInnerLoops(
-  blank: OcctBackend,
-  opts?: { zTop?: number; excludeBeads?: readonly FlatPatternBead[] },
-): Vec2[][] {
-  const shape = blank.getReplicadShape();
-  const zTop = opts?.zTop ?? blank.boundingBox().max[2];
-  const tops = shape.faces.filter((f) => isTopFace(f, zTop));
-  if (tops.length === 0) return [];
-  const top = tops.reduce((a, b) => (measureArea(b) > measureArea(a) ? b : a));
-  const excludeBeads = opts?.excludeBeads ?? [];
+export function scanFlatPlaneInnerLoops(
+  shape: OcctBackend,
+  zTop: number,
+  zBottom: number,
+  opts?: { excludeBeads?: readonly FlatPatternBead[] },
+): FlatPlaneInnerLoopScan {
   const loops: Vec2[][] = [];
-  for (const wire of top.innerWires()) {
+  const offPlaneFaces: OffPlaneInnerLoopFace[] = [];
+  const excludeBeads = opts?.excludeBeads ?? [];
+  for (const face of shape.getReplicadShape().faces) {
+    const info = readFacePlane(face);
+    // innerWires() deletes the Face wrapper, so every property above is read
+    // first.
+    const inner = face.innerWires();
+    if (inner.length === 0) continue;
+    const kind = classifyFlatFace(info, zTop, zBottom);
+    if (kind === 'off') {
+      offPlaneFaces.push(info);
+      continue;
+    }
+    if (kind === 'bottom') continue;
+    loops.push(...innerLoopsOf(inner, excludeBeads));
+  }
+  return { loops, offPlaneFaces };
+}
+
+function readFacePlane(face: Face): OffPlaneInnerLoopFace {
+  const center = face.center;
+  const info: OffPlaneInnerLoopFace = {
+    center: [center.x, center.y, center.z],
+    normal: null,
+    planar: face.geomType === 'PLANE',
+  };
+  if (!info.planar) return info;
+  try {
+    const n = face.normalAt();
+    info.normal = [n.x, n.y, n.z];
+  } catch {
+    info.planar = false;
+  }
+  return info;
+}
+
+/** 'top' / 'bottom': parallel to the sheet and inside its thickness slab. */
+function classifyFlatFace(
+  info: OffPlaneInnerLoopFace,
+  zTop: number,
+  zBottom: number,
+): 'top' | 'bottom' | 'off' {
+  if (!info.planar || info.normal === null || Math.abs(info.normal[2]) <= 0.999) return 'off';
+  const z = info.center[2];
+  if (z < zBottom - JOIN_TOL || z > zTop + JOIN_TOL) return 'off';
+  return info.normal[2] > 0 ? 'top' : 'bottom';
+}
+
+function innerLoopsOf(wires: readonly Wire[], excludeBeads: readonly FlatPatternBead[]): Vec2[][] {
+  const loops: Vec2[][] = [];
+  for (const wire of wires) {
     const poly = wireToPolyline(wire);
     if (poly.length < 3) continue;
     if (excludeBeads.length > 0 && isBeadFootprintLoop(poly, excludeBeads)) continue;
     loops.push(signedArea(poly) > 0 ? poly.reverse() : poly);
   }
   return loops;
+}
+
+/**
+ * The inner loops on a flat blank's +Z top plane, each a CW polyline in XY.
+ * Empty when the blank has no holes or no such face.
+ */
+export function flatBlankInnerLoops(
+  blank: OcctBackend,
+  opts?: { zTop?: number; excludeBeads?: readonly FlatPatternBead[] },
+): Vec2[][] {
+  const bb = blank.boundingBox();
+  return scanFlatPlaneInnerLoops(blank, opts?.zTop ?? bb.max[2], bb.min[2], {
+    excludeBeads: opts?.excludeBeads,
+  }).loops;
 }

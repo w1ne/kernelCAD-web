@@ -411,6 +411,17 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: '.flattenPattern() was called on a Shape with more than 2 bends, exceeding the slice-1 limit.',
   },
+  'feature.flattenPattern.post-bend-geometry': {
+    hintTemplate:
+      'A cut or feature made after .bend() is not on the flat base plane, so its XY projection is not the flat pattern. Cut the flat blank before bending, keep post-bend cuts on the unbent base, or flatten an upstream blank Shape.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'move the post-bend cut onto the flat blank before .bend(), or cut only the unbent base',
+    },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A post-bend feature cannot be unfolded into the flat pattern and would otherwise be dropped silently.',
+  },
   'feature.sheetMetal.crossing-bends': {
     hintTemplate:
       'An { atX } and an { atY } bend line cross (bend lines span the whole blank). Notch the blank outline at the corner (corner relief, at least one bend allowance past each line) so each flange folds on its own, or fold the flanges as separate parts.',

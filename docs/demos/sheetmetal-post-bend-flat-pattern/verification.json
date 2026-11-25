@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-11-25",
+  "source": "examples/sheet-metal-post-bend-flat-pattern.kcad.ts",
+  "kernel": "occt",
+  "localBuild": "passed",
+  "diagnostics": [],
+  "topologicallyValid": true,
+  "volumeMm3": 13184.417700438198,
+  "blankMinusHolesMm3": 13139.178766226501,
+  "bendVolumeDeltaMm3": 45.23893421169669,
+  "flatPattern": {
+    "outerSpanMm": [
+      110,
+      60
+    ],
+    "holes": [
+      {
+        "centre": [
+          19.999999999999996,
+          15.000000000000005
+        ],
+        "span": [
+          4.399999999999999,
+          4.399999999999999
+        ]
+      },
+      {
+        "centre": [
+          19.999999999999996,
+          44.99999999999998
+        ],
+        "span": [
+          4.399999999999999,
+          4.400000000000006
+        ]
+      }
+    ],
+    "bendLines": 1
+  },
+  "renderer": "sharp SVG rasterizer fed with the real flattenPatternWithHoles Region.",
+  "videoProvenance": "Local script replay and OCCT geometry validation. This is not a simulation, deployment check, or hardware acceptance test."
+}
