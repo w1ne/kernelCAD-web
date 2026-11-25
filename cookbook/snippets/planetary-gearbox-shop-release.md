@@ -85,8 +85,12 @@ housing = housing.holes({ byNormal: '-Z', atX: 0, atY: 0, atZ: -12 }, {
 });
 housing = housing
   .datum('A', { atZ: -12 })
-  .datum('B', { atX: -flangeR })
-  .datum('C', { atY: 0 })
+  // B is the cup's outer cylindrical wall; a point on that wall picks it out
+  // from the concentric bore and seat cylinders, whose centroids sit on the
+  // same axis.
+  .datum('B', { ofSurfaceType: 'CYLINDER', containsPoint: [wallR, 0, 0] })
+  // C clocks the bolt pattern on the ⌀3.1 hole wall that sits on the -Y axis.
+  .datum('C', { ofSurfaceType: 'CYLINDER', atX: 0, atY: -boltR, atZ: -10 })
   .tolerance({
     type: 'position', value: 0.2, modifier: '⌀', datums: ['A', 'B', 'C'],
     edge: { ofCurveType: 'CIRCLE', near: [boltR * Math.cos(Math.PI / 6), boltR * Math.sin(Math.PI / 6), -12] },

@@ -37,15 +37,13 @@ function resolveAcrossParts<Q, R>(
   query: Q,
   resolve: (shape: OcctBackend, q: Q) => R[],
 ): R[] {
+  // No catch here on purpose: resolveFaceQuery / resolveEdgeQuery signal a
+  // non-match with an empty array, so any thrown error is either an invalid
+  // query or a dead OCCT handle ("This object has been deleted"). Swallowing
+  // it turned a lifetime bug into a misleading "no face matched".
   const out: R[] = [];
   for (const p of parts) {
-    try {
-      out.push(...resolve(p.shape as OcctBackend, query));
-    } catch {
-      // A query key that a particular part's topology cannot answer (e.g. a
-      // face type that body has none of) is not an error for the sheet — the
-      // caller's "zero total matches" check is the real gate.
-    }
+    out.push(...resolve(p.shape as OcctBackend, query));
   }
   return out;
 }
