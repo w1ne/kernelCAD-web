@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ConnectorOrigin, ConnectorType } from '../../../modeling/mates/connector';
-import { ADHESIVE_FACES, type AdhesiveMateMetadata, type MateLimitRange, type MatePose } from '../../../modeling/mates/mate';
+import { ADHESIVE_FACES, type AdhesiveMateMetadata, type MateLimitRange } from '../../../modeling/mates/mate';
 import type { MateType } from '../../../modeling/mates/mateTypes';
 import type { TransmissionKind } from '../../../modeling/capture/assembly';
 import type { Vec3 } from '../../../shared/intent/types';
+import { formatMatePose, type MatePoseSource } from './matePoseSource';
 import {
   bindingExists,
   formatJsValue,
@@ -44,7 +45,11 @@ export interface AddMateSourceInput {
   b: string;
   type: MateType;
   adhesive?: { face_a: AdhesiveMateMetadata['faceA']; face_b: AdhesiveMateMetadata['faceB'] };
-  pose?: MatePose;
+  /** Mate pose: a finite number, a declared param name/binding, the legacy
+   *  `{ param: '<Name>' }` shape (resolved to the declared binding), or an
+   *  XYZ Euler triple for ball mates. Never emitted as a `{ param }` object —
+   *  that is not valid `.kcad.ts` (`Editable<number>`) source. */
+  pose?: MatePoseSource;
   limitsDeg?: MateLimitRange;
   limitsMm?: MateLimitRange;
   stiffnessNmmPerDeg?: number;
@@ -149,19 +154,36 @@ function validAdhesiveInput(type: MateType, adhesive: NonNullable<AddMateSourceI
     ADHESIVE_FACES.includes(adhesive.face_a) && ADHESIVE_FACES.includes(adhesive.face_b);
 }
 
-function mateSourceOptions(input: AddMateSourceInput, adhesive: AddMateSourceInput['adhesive']) {
-  return {
-    ...(adhesive ? { adhesive: { faceA: adhesive.face_a, faceB: adhesive.face_b } } : {}),
-    ...(input.pose !== undefined ? { pose: input.pose } : {}),
-    ...(input.limitsDeg !== undefined ? { limitsDeg: input.limitsDeg } : {}),
-    ...(input.limitsMm !== undefined ? { limitsMm: input.limitsMm } : {}),
-    ...(input.stiffnessNmmPerDeg !== undefined ? { stiffnessNmmPerDeg: input.stiffnessNmmPerDeg } : {}),
-    ...(input.springRefDeg !== undefined ? { springRefDeg: input.springRefDeg } : {}),
-    ...(input.dampingNmmsPerDeg !== undefined ? { dampingNmmsPerDeg: input.dampingNmmsPerDeg } : {}),
-    ...(input.stiffnessNPerMm !== undefined ? { stiffnessNPerMm: input.stiffnessNPerMm } : {}),
-    ...(input.springRefMm !== undefined ? { springRefMm: input.springRefMm } : {}),
-    ...(input.dampingNsPerMm !== undefined ? { dampingNsPerMm: input.dampingNsPerMm } : {}),
-  };
+/** Numeric mate options copied verbatim (already snake_case in the MCP
+ *  surface, camelCase in the script options object). */
+const NUMERIC_MATE_OPTION_KEYS = [
+  'limitsDeg',
+  'limitsMm',
+  'stiffnessNmmPerDeg',
+  'springRefDeg',
+  'dampingNmmsPerDeg',
+  'stiffnessNPerMm',
+  'springRefMm',
+  'dampingNsPerMm',
+] as const satisfies readonly (keyof AddMateSourceInput)[];
+
+/** Rendered `key: value` entries for the `<assembly>.mate(...)` options
+ *  object. `pose` carries an already-rendered expression (a numeric literal
+ *  or the declared ParamRef binding), never a raw `{ param }` object. */
+function mateSourceOptions(
+  input: AddMateSourceInput,
+  adhesive: AddMateSourceInput['adhesive'],
+  poseExpression: string | undefined,
+): string[] {
+  const entries: string[] = [];
+  const add = (key: string, value: string) => entries.push(`${key}: ${value}`);
+  if (adhesive) add('adhesive', formatJsValue({ faceA: adhesive.face_a, faceB: adhesive.face_b }));
+  if (poseExpression !== undefined) add('pose', poseExpression);
+  for (const key of NUMERIC_MATE_OPTION_KEYS) {
+    const value = input[key];
+    if (value !== undefined) add(key, formatJsValue(value));
+  }
+  return entries;
 }
 
 export function addMateSource(input: AddMateSourceInput): SourceEditResult {
@@ -175,14 +197,16 @@ export function addMateSource(input: AddMateSourceInput): SourceEditResult {
   if (adhesive !== undefined && !validAdhesiveInput(input.type, adhesive)) {
     return { ok: false, error: 'add_mate: adhesive requires a fastened mate and two canonical planar face names.' };
   }
-  const opts = mateSourceOptions(input, adhesive);
-  const hasOpts = Object.keys(opts).length > 0;
+  const pose = input.pose === undefined ? undefined : formatMatePose(input.code, input.pose);
+  if (pose !== undefined && !pose.ok) return { ok: false, error: `add_mate: ${pose.error}` };
+  const optionEntries = mateSourceOptions(input, adhesive, pose?.ok === true ? pose.expression : undefined);
+  const hasOpts = optionEntries.length > 0;
   const args = [
     quoteString(input.name),
     quoteString(input.a),
     quoteString(input.b),
     quoteString(input.type),
-    ...(hasOpts ? [formatJsValue(opts)] : []),
+    ...(hasOpts ? [`{ ${optionEntries.join(', ')} }`] : []),
   ];
   return insertStatementBeforeLastTopLevelReturn(input.code, `${input.assembly_binding}.mate(${args.join(', ')});`);
 }

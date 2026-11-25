@@ -56,6 +56,15 @@ import {
   type MateWalkRecord,
 } from './loopAdapter';
 import type { LoopBranchState, LoopPin, LoopSolveResult } from '../../shared/kinematics/loopClosure';
+import {
+  assertFinitePlacements,
+  mateLimitViolation,
+  requireFinitePose,
+  withLimitDiagnostics,
+  type SolveLimitDiagnostic,
+} from './poseGuards';
+
+export { mateLimitViolation, type SolveLimitDiagnostic } from './poseGuards';
 
 export type SolveStatus =
   | 'solved'
@@ -87,6 +96,11 @@ export interface SolveResult {
    *  solved mate coordinate and the branch state to seed the next pose of a
    *  sweep with. */
   loop?: LoopSolveResult;
+  /** Diagnostics about the CALLER's explicit `poses` overrides — currently
+   *  one `kinematic.pose.out-of-limits` warning per override outside the
+   *  mate's declared `limitsDeg` / `limitsMm`. Absent when every override is
+   *  inside its declared range. */
+  diagnostics?: readonly SolveLimitDiagnostic[];
 }
 
 /** Adjacency edge: which mate connects this node to a neighbor, and from
@@ -140,17 +154,17 @@ function resolveMatePose(
   if (override !== undefined) {
     const table = arm.__session().paramTable;
     const resolved = Array.isArray(override)
-      ? (override.map((v) => currentValue(v as Editable<number>, table)) as [
-          number,
-          number,
-          number,
-        ])
-      : currentValue(override as Editable<number>, table);
+      ? ([
+          requireFinitePose(mate, currentValue(override[0] as Editable<number>, table), 'x'),
+          requireFinitePose(mate, currentValue(override[1] as Editable<number>, table), 'y'),
+          requireFinitePose(mate, currentValue(override[2] as Editable<number>, table), 'z'),
+        ] as [number, number, number])
+      : requireFinitePose(mate, currentValue(override as Editable<number>, table), undefined);
     return validateNumericPoseShape(mate, resolved, 'solveMates');
   }
   // 2. Capture-time mate.pose (may be ParamRef — resolve via ParamTable).
   if (mate.pose !== undefined) {
-    return resolvePoseFromEditable(mate.pose, mate.type, arm);
+    return resolvePoseFromEditable(mate, arm);
   }
   // 3. Default — zero pose.
   return mate.type === 'ball' ? [0, 0, 0] : 0;
@@ -158,10 +172,11 @@ function resolveMatePose(
 
 /** Walk an `Editable`-bearing pose triple/scalar and resolve via ParamTable. */
 function resolvePoseFromEditable(
-  pose: MatePose,
-  type: MateType,
+  mate: MateRecord,
   arm: Assembly,
 ): number | [number, number, number] {
+  const pose = mate.pose as MatePose;
+  const type: MateType = mate.type;
   const table = arm.__session().paramTable;
   if (Array.isArray(pose)) {
     if (type !== 'ball') {
@@ -173,9 +188,9 @@ function resolvePoseFromEditable(
       );
     }
     return [
-      currentValue(pose[0] as Editable<number>, table),
-      currentValue(pose[1] as Editable<number>, table),
-      currentValue(pose[2] as Editable<number>, table),
+      requireFinitePose(mate, currentValue(pose[0] as Editable<number>, table), 'x'),
+      requireFinitePose(mate, currentValue(pose[1] as Editable<number>, table), 'y'),
+      requireFinitePose(mate, currentValue(pose[2] as Editable<number>, table), 'z'),
     ];
   }
   if (type === 'ball') {
@@ -186,7 +201,7 @@ function resolvePoseFromEditable(
       `invalid-args.assembly.mate-pose-shape — ball mates take an XYZ Euler triple of Editable<number>.`,
     );
   }
-  return currentValue(pose as Editable<number>, table);
+  return requireFinitePose(mate, currentValue(pose as Editable<number>, table), undefined);
 }
 
 export interface SolveMatesOptions {
@@ -216,13 +231,13 @@ export async function solveMates(
 ): Promise<SolveResult> {
   const parts = arm.__parts();
   const mates = arm.__mates();
-  const callerPoses = resolveCallerPoses(arm, mates, poses);
+  const { poses: callerPoses, diagnostics } = resolveCallerPoses(arm, mates, poses);
   const expandedPoses = expandCoupledPoses(mates, arm.__mateCouplings(), callerPoses ?? {}, {
     resolveSourcePose: (mate, currentPoses) => resolveMatePose(mate, arm, currentPoses),
   });
 
   if (parts.length === 0) {
-    return { status: 'solved', poses: new Map() };
+    return withLimitDiagnostics({ status: 'solved', poses: new Map() }, diagnostics);
   }
 
   // 1. Adjacency: part-name -> array of mate edges.
@@ -249,7 +264,7 @@ export async function solveMates(
   );
 
   if (loopMates.length === 0) {
-    return inheritConnectedPartPlacements(arm, { status: 'solved', poses: worldT });
+    return finishSolve(inheritConnectedPartPlacements(arm, { status: 'solved', poses: worldT }), diagnostics);
   }
 
   // 3. Closed loops present. A loop through an articulated mate is solved
@@ -260,7 +275,14 @@ export async function solveMates(
   const result = hasArticulatedLoop(walk, connector)
     ? await solveArticulatedLoops(arm, walk, connector, worldT, callerPoses, expandedPoses, opts)
     : await loopSolve(partByName, loopMates, worldT);
-  return inheritConnectedPartPlacements(arm, result);
+  return finishSolve(inheritConnectedPartPlacements(arm, result), diagnostics);
+}
+
+/** Last gate before a solve result leaves the solver: no placement may carry
+ *  NaN / Infinity, and caller-override limit warnings ride along. */
+function finishSolve(result: SolveResult, diagnostics: readonly SolveLimitDiagnostic[]): SolveResult {
+  assertFinitePlacements(result.poses);
+  return withLimitDiagnostics(result, diagnostics);
 }
 
 /** Give connect-placed descendants the same scene motion as a moved parent.
@@ -310,15 +332,17 @@ export function withUnmatedPartPlacements(
 /** Resolve explicit pose overrides before the pure loop solver sees them.
  *  `Assembly.solvedModel` accepts ParamRefs so the stored record can remain
  *  reactive; the capture-time solve still needs concrete coordinates for the
- *  driven targets. */
+ *  driven targets. Overrides outside a mate's declared limits are returned as
+ *  warnings (the solver still applies them). */
 function resolveCallerPoses(
   arm: Assembly,
   mates: readonly MateRecord[],
   poses: NumericPoses | undefined,
-): NumericPoses | undefined {
-  if (poses === undefined) return undefined;
+): { poses: NumericPoses | undefined; diagnostics: SolveLimitDiagnostic[] } {
+  if (poses === undefined) return { poses: undefined, diagnostics: [] };
   const mateByName = new Map(mates.map((mate) => [mate.name, mate]));
   const resolved: NumericPoses = {};
+  const diagnostics: SolveLimitDiagnostic[] = [];
   for (const [name, value] of Object.entries(poses)) {
     const mate = mateByName.get(name);
     if (mate === undefined) {
@@ -347,8 +371,12 @@ function resolveCallerPoses(
       });
     }
     resolved[name] = pose as NumericPoses[string];
+    if (typeof pose === 'number') {
+      const violation = mateLimitViolation(mate, pose);
+      if (violation !== undefined) diagnostics.push(violation);
+    }
   }
-  return resolved;
+  return { poses: resolved, diagnostics };
 }
 
 /** Resolve every mate connector once (topology origins lower the part). */
