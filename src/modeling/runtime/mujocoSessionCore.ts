@@ -13,6 +13,7 @@
 //   - Session.step(seconds, dt?) → { qpos, xpos, bodyPoses }
 //   - Session.xposNow() → ReadonlyMap<bodyName, Vec3>
 //   - Session.bodyPosesNow() → ReadonlyMap<bodyName, placement in mm>
+//   - Session.bodyVelocitiesNow() → world-axis velocity at the body origin, SI
 //   - Session.forward() — kinematics and contacts, no integration
 //   - Session.setJointEfforts / scalarJointStatesNow / sensorReadingsNow
 //   - Session.stepFixed(stepCount, dt) — exact simulated-clock frontier
@@ -52,6 +53,12 @@ export interface MujocoBodyPose {
     readonly matrix: MujocoBodyMatrix;
 }
 
+/** World-axis velocity at the regular body-frame origin, not its centre of mass. */
+export interface MujocoBodyVelocity {
+    readonly velocityMps: readonly [number, number, number];
+    readonly angularVelocityRadS: readonly [number, number, number];
+}
+
 /** Per-integration-step position snapshot, used for physics invariants. */
 export type MujocoStepObserver = (qpos: readonly number[], step: number) => void;
 
@@ -59,6 +66,7 @@ const METRES_TO_MM = 1000;
 
 /** mjtObj values from the MuJoCo WASM bindings. */
 const OBJ_BODY = 1;
+const OBJ_XBODY = 2;
 const OBJ_JOINT = 3;
 const OBJ_GEOM = 5;
 const OBJ_MESH = 10;
@@ -385,6 +393,34 @@ export class MujocoSession {
         const out = new Map<string, MujocoBodyPose>();
         for (let i = 0; i < this.bodyOrder.length; i++) {
             out.set(this.bodyOrder[i], bodyPoseAt(xpos, xmat, i + 1));
+        }
+        return out;
+    }
+
+    /**
+     * Copy velocities at the same last forward/stepFixed frontier as bodyPosesNow.
+     * XBODY selects the regular body origin; BODY would select its inertial COM.
+     * flg_local=0 requests world axes. MuJoCo returns angular then linear values.
+     * This observation neither integrates nor runs another forward pass.
+     */
+    bodyVelocitiesNow(): Map<string, MujocoBodyVelocity> {
+        this.assertAlive();
+        const out = new Map<string, MujocoBodyVelocity>();
+        const buffer = new this.mujoco.DoubleBuffer(6);
+        try {
+            for (let i = 0; i < this.bodyOrder.length; i++) {
+                this.mujoco.mj_objectVelocity(this.model, this.data, OBJ_XBODY, i + 1, buffer, 0);
+                const values = Array.from(buffer.GetView() as ArrayLike<number>);
+                if (values.length !== 6 || !values.every(Number.isFinite)) {
+                    throw new Error(`Non-finite body velocity for "${this.bodyOrder[i]}".`);
+                }
+                out.set(this.bodyOrder[i], {
+                    velocityMps: [values[3], values[4], values[5]],
+                    angularVelocityRadS: [values[0], values[1], values[2]],
+                });
+            }
+        } finally {
+            buffer.delete();
         }
         return out;
     }

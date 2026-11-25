@@ -58,6 +58,45 @@ describe('MuJoCo external mechanical ports (real WASM)', () => {
         }
     });
 
+    it('observes world velocity at an offset, rotated body origin rather than at its COM', async () => {
+        const xml = `<mujoco><option gravity="0 0 0"/><worldbody>
+          <body name="offset_rotor" pos="0.3 -0.2 1" quat="0.7071067811865476 0.7071067811865476 0 0">
+            <joint name="spin" type="hinge" pos="-0.1 0 0" axis="0 0 1"/>
+            <inertial pos="0.03 0.02 0.01" mass="1" diaginertia="0.02 0.03 0.04"/>
+            <geom type="sphere" size="0.02" contype="0" conaffinity="0"/>
+          </body>
+          <body name="static_marker" pos="0 0 2"><geom type="sphere" size="0.01"/></body>
+        </worldbody></mujoco>`;
+        const session = await loadMujocoSession(xml, ['offset_rotor', 'static_marker'], []);
+        try {
+            session.setJointEfforts({ spin: 1 });
+            session.stepFixed(40, 0.001);
+            const time = session.timeSeconds, pose = session.bodyPosesNow().get('offset_rotor')!;
+            const joint = session.scalarJointStatesNow()[0];
+            const snapshots = session.bodyVelocitiesNow();
+            const moving = snapshots.get('offset_rotor')!;
+            // Hinge is at world [0.2,-0.2,1], with world axis -Y. The body origin
+            // circles at radius 0.1 m. Its COM is a different point, 30/20/10 mm away.
+            expect(joint.velocity).toBeGreaterThan(0);
+            expect(pose.matrix[12] / 1000).toBeCloseTo(0.2 + 0.1 * Math.cos(joint.position), 12);
+            expect(pose.matrix[14] / 1000).toBeCloseTo(1 + 0.1 * Math.sin(joint.position), 12);
+            expect(moving.velocityMps[0]).toBeCloseTo(-0.1 * Math.sin(joint.position) * joint.velocity, 12);
+            expect(moving.velocityMps[1]).toBeCloseTo(0, 12);
+            expect(moving.velocityMps[2]).toBeCloseTo(0.1 * Math.cos(joint.position) * joint.velocity, 12);
+            expect(moving.angularVelocityRadS[0]).toBeCloseTo(0, 12);
+            expect(moving.angularVelocityRadS[1]).toBeCloseTo(-joint.velocity, 12);
+            expect(moving.angularVelocityRadS[2]).toBeCloseTo(0, 12);
+            expect(snapshots.get('static_marker')).toEqual({ velocityMps: [0, 0, 0], angularVelocityRadS: [0, 0, 0] });
+            (moving.velocityMps as number[])[0] = 999;
+            expect(session.bodyVelocitiesNow().get('offset_rotor')!.velocityMps[0]).not.toBe(999);
+            expect(session.timeSeconds).toBe(time);
+            expect(session.bodyPosesNow().get('offset_rotor')).toEqual(pose);
+        } finally {
+            session.dispose();
+        }
+        expect(() => session.bodyVelocitiesNow()).toThrow('after dispose');
+    });
+
     it('rejects a whole invalid effort frame and clears omitted efforts without changing state', async () => {
         const session = await loadMujocoSession(CART_XML, CART_BODIES, []);
         try {

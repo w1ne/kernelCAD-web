@@ -18,6 +18,7 @@ try {
     const joints = session.scalarJointStatesNow();
     const sensors = session.sensorReadingsNow();
     const poses = session.bodyPosesNow();
+    const bodyVelocities = session.bodyVelocitiesNow();
     const simulatedTime = session.timeSeconds;
 } finally {
     session.dispose();
@@ -45,8 +46,11 @@ The external electrical model must use the solver's shaft position and velocity 
 | `scalarJointStatesNow()` | Named hinge/slide position, velocity, applied effort, and independent `qposAdr` / `dofAdr`. |
 | `sensorReadingsNow()` | Copied named sensor arrays and compiled MuJoCo sensor type. |
 | `bodyPosesNow()` | World-from-body column-major transforms; translation is mm. |
+| `bodyVelocitiesNow()` | Copied world-axis linear velocity (m/s) at each regular body origin and angular velocity (rad/s), at the same completed frontier. |
 | `xposNow()` | World body positions in m. |
 | `timeSeconds` | Elapsed simulation time in s. |
+
+Body velocities use the same regular body origin as `bodyPosesNow`, not the inertial centre of mass. A rotated body with an offset COM can have a different linear velocity at those two points. The accessor does not advance time or refresh dynamics. Call `forward()` once before the initial observation and use `stepFixed` to refresh every later frontier.
 
 Hinge position/velocity units are rad and rad/s. Slide units are m and m/s. Free and ball joints are omitted from the scalar port. Their position and velocity addresses do not have the same layout.
 
@@ -81,3 +85,5 @@ npx vitest run src/modeling/runtime/mujocoMechanicalPorts.test.ts \
 ```
 
 [Measured trace and local demo](../demos/mechanical-session-ports-20261125/README.md).
+
+[Body-origin velocity observation demo and independent frame test](../demos/mechanical-body-velocity-20261125/README.md).

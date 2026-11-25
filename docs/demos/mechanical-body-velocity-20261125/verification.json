@@ -1,0 +1,26 @@
+{
+  "capturedAt": "2026-11-25T20:26:07.364Z",
+  "engineVersion": "3.9.0",
+  "timestepS": 0.001,
+  "fixtureSha256": "ae5c40767cb5b7ac5376d1d9f6e057a76233eed2245f4e97d8b265942d7e57ab",
+  "sessionSourceSha256": "e0dd0e56b575864ec699c7ed057eec8654144358590d63c820cb8cdb00551761",
+  "engineWasmSha256": "9eb895c79cb4d4a6d88bf2d9a449081a5a5c132e6a705ed90252a14b7f21ade8",
+  "scope": "Actual mechanical torque/contact probe, assumed dynamics; no firmware, stability or hardware claim.",
+  "units": {
+    "linearVelocity": "m/s",
+    "angularVelocity": "rad/s",
+    "poseTranslation": "mm",
+    "time": "s"
+  },
+  "observationFrame": "World axes at the regular body origin (mjOBJ_XBODY), not COM. Observation does not advance time.",
+  "fps": 20,
+  "frames": 102,
+  "durationS": 5.1,
+  "width": 1280,
+  "height": 720,
+  "videoSha256": "1ab00336dbcf8d19a085c3bb19cf9507902b7d52890fbc3f2b60429c0cce4303",
+  "invocation": "npx tsx docs/demos/mechanical-body-velocity-20261125/capture-demo.ts",
+  "decode": "ffmpeg -v error -i demo.mp4 -f null - passed",
+  "visualInspection": "Decoded final MP4 frame inspected at 1280x720. Three body velocity rows, explicit units/scope and schematic projection are readable without overlap. Initial overdraw was corrected by reducing schematic scale; final capture retained.",
+  "focusedTests": "18 passed: mechanical ports, session core, session smoke. CLI typecheck and scoped ESLint passed."
+}
