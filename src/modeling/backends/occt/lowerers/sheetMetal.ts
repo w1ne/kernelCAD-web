@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { invalidArgsText } from '../../../../shared/intent/invalidArgs';
+import { kernelErrorToDiagnostic } from '../../../../shared/diagnostics/kernelErrorToDiagnostic';
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../../shared/diagnostics/diagnostic';
-import { findRootSheetMetalRecord, sheetMetalPredecessor } from '../../../sheetMetal';
+import { findRootSheetMetalRecord, sheetMetalPredecessor, validateBendArgs, validateKFactor, validateThickness } from '../../../sheetMetal';
 import { checkBeadVsBendZone, readBeadSpec } from '../../../sheetMetalBead';
 import { planFold, type FlatBend, type FlatBlank, type FoldStep } from '../../../sheetMetalFold';
 import {
@@ -17,6 +18,21 @@ import {
 } from '../sheetMetalLowerer';
 import { built, noShape, type LowerContext, type LowerOutcome } from './context';
 
+/** Push the diagnostic a sheet-metal argument validator raises, so a param
+ *  updated past its capture-time value (e.g. thickness 0 from a slider) fails
+ *  this feature by name instead of reaching OCCT with an impossible number.
+ *  Lowering sees records pre-resolved against the live param table, so
+ *  `evaluated` is the value the geometry below will consume. */
+function paramRejected(ctx: LowerContext, validate: () => void): boolean {
+  try {
+    validate();
+    return false;
+  } catch (e) {
+    ctx.diagnostics.push(kernelErrorToDiagnostic(e));
+    return true;
+  }
+}
+
 /** `sheetMetal` — reuses the sketch to extrude pipeline; the record kind
  *  carries the k-factor / sketch plane for `.bend()` and `flattenPattern()`. */
 export function lowerSheetMetal(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
@@ -27,6 +43,10 @@ export function lowerSheetMetal(ctx: LowerContext, r: FeatureRecord): LowerOutco
   //   (b) thickness = depth;
   //   (c) kFactor + sketchPlane carried on metadata for .bend() and
   //       flattenPattern().
+  if (paramRejected(ctx, () => {
+    validateThickness(r.params.thickness.evaluated, r.id);
+    validateKFactor(r.params.kFactor.evaluated, r.id);
+  })) return noShape();
   const depth = r.params.thickness.evaluated;
   const sketchInput = ctx.inputs.byKey.sketch as OcctBackend | undefined;
   if (!sketchInput) {
@@ -86,15 +106,23 @@ export function lowerSheetMetalBend(ctx: LowerContext, r: FeatureRecord): LowerO
     return noShape();
   }
   const records = ctx.allRecords ?? [];
+  if (paramRejected(ctx, () => validateBendArgs(r.params.angle.evaluated, r.params.radius.evaluated, r.id))) {
+    return noShape();
+  }
   const rootRec = findRootSheetMetalRecord(r, records);
   if (!rootRec) {
     ctx.diagnostics.push(notSheetMetalDiagnostic(r));
     return noShape();
   }
-  const kFactor = rootRec.params.kFactor.evaluated;
-  const thickness = rootRec.params.thickness.evaluated;
-  const chain = bendChainOf(r, records);
-  const flatBox = flatBlankBox(chain, base, rootRec, records);
+  // `ctx.allRecords` holds the captured (unresolved) records: a param-driven
+  // thickness / kFactor still reads the capture placeholder 0 there. Resolve
+  // the lineage through the live table, exactly like `byKey` shapes were.
+  const resolveRecord = ctx.inputs.resolveRecord ?? ((rec: FeatureRecord) => rec);
+  const root = resolveRecord(rootRec);
+  const kFactor = root.params.kFactor.evaluated;
+  const thickness = root.params.thickness.evaluated;
+  const chain = bendChainOf(r, records).map(resolveRecord);
+  const flatBox = flatBlankBox(chain, base, root, records, resolveRecord);
   const flatBends: FlatBend[] = [];
   let axis: BendAxisSpec | undefined;
   for (const rec of chain) {
@@ -121,28 +149,8 @@ export function lowerSheetMetalBend(ctx: LowerContext, r: FeatureRecord): LowerO
     return noShape();
   }
   const currentStep = steps[steps.length - 1];
-  const beads = beadChainOf(r, records);
-  let beadPadZ = 0;
-  for (const beadRec of beads) {
-    const spec = readBeadSpec(beadRec);
-    const hit = checkBeadVsBendZone(spec, {
-      orient: currentStep.bend.orient,
-      at: currentStep.bend.at,
-      bendAllowance: currentStep.bendAllowance,
-    });
-    if (hit) {
-      ctx.diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.sheetMetal.bead-crosses-bend',
-        featureId: r.id,
-        severity: 'error',
-        message: `.bend(): ${hit}`,
-        hint: 'Move the bead or bend line so the bead footprint clears the bend zone.',
-      });
-      return noShape();
-    }
-    beadPadZ = Math.max(beadPadZ, spec.height + 1);
-  }
+  const beadPadZ = beadClearanceOf(ctx, r, beadChainOf(r, records), currentStep);
+  if (beadPadZ === undefined) return noShape();
   const result = bendSheetMetalBody({
     featureId: r.id,
     base,
@@ -229,6 +237,39 @@ function beadChainOf(r: FeatureRecord, records: readonly FeatureRecord[]): Featu
   return out.reverse();
 }
 
+/** The beads from the root to `r` (root first), rejecting the fold when any
+ *  bead footprint overlaps this bend's zone. Returns the Z padding the body
+ *  needs for the tallest bead, or `undefined` after pushing the diagnostic. */
+function beadClearanceOf(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  beads: readonly FeatureRecord[],
+  step: FoldStep,
+): number | undefined {
+  let padZ = 0;
+  for (const beadRec of beads) {
+    const spec = readBeadSpec(beadRec);
+    const hit = checkBeadVsBendZone(spec, {
+      orient: step.bend.orient,
+      at: step.bend.at,
+      bendAllowance: step.bendAllowance,
+    });
+    if (hit) {
+      ctx.diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.sheetMetal.bead-crosses-bend',
+        featureId: r.id,
+        severity: 'error',
+        message: `.bend(): ${hit}`,
+        hint: 'Move the bead or bend line so the bead footprint clears the bend zone.',
+      });
+      return undefined;
+    }
+    padZ = Math.max(padZ, spec.height + 1);
+  }
+  return padZ;
+}
+
 /** Flat blank extents: the first bend of the chain sees the flat body; later
  *  bends reuse the extents the first one recorded. */
 function flatBlankBox(
@@ -236,10 +277,11 @@ function flatBlankBox(
   base: OcctBackend,
   root: FeatureRecord,
   records: readonly FeatureRecord[],
+  resolveRecord: (rec: FeatureRecord) => FeatureRecord,
 ): BendBox {
   if (chain.length <= 1) {
     const bb = base.boundingBox();
-    const sk = sketchBox(root, records);
+    const sk = sketchBox(root, records, resolveRecord);
     const t = root.params.thickness.evaluated;
     // Clamp Z to the flat sheet [0, thickness] when formed beads protrude in +Z/-Z.
     return sk
@@ -251,14 +293,19 @@ function flatBlankBox(
     const [x0, y0, x1, y1] = md.flatBounds;
     return { min: [x0, y0, md.flatZ0], max: [x1, y1, md.flatZ0 + root.params.thickness.evaluated] };
   }
-  return sketchBox(root, records) ?? base.boundingBox();
+  return sketchBox(root, records, resolveRecord) ?? base.boundingBox();
 }
 
 /** Fallback: the root sketch's command points (polyline blanks are exact). */
-function sketchBox(root: FeatureRecord, records: readonly FeatureRecord[]): BendBox | undefined {
+function sketchBox(
+  root: FeatureRecord,
+  records: readonly FeatureRecord[],
+  resolveRecord: (rec: FeatureRecord) => FeatureRecord,
+): BendBox | undefined {
   const ref = root.inputs.sketch;
   if (!ref || ref.kind !== 'feature') return undefined;
-  const sketch = records.find(x => x.id === ref.id);
+  const found = records.find(x => x.id === ref.id);
+  const sketch = found ? resolveRecord(found) : undefined;
   const cmds = (sketch?.metadata as { commands?: { x?: { evaluated: number }; y?: { evaluated: number } }[] } | undefined)?.commands;
   if (!Array.isArray(cmds)) return undefined;
   const xs = cmds.map(c => c.x?.evaluated).filter((v): v is number => typeof v === 'number');

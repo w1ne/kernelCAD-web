@@ -458,18 +458,18 @@ function resolveEdgeQueryBendAxis(
   if (edgesRef && typeof edgesRef === 'object') {
     const ref = (edgesRef as { ref?: unknown }).ref ?? edgesRef;
     if (typeof ref === 'object' && ref !== null) {
-      const r = ref as { kind?: string; query?: { atX?: number; atY?: number } };
+      const r = ref as { kind?: string; query?: { atX?: unknown; atY?: unknown } };
       if (r.kind === 'query' && r.query) {
-        if (typeof r.query.atX === 'number' && Number.isFinite(r.query.atX)) {
-          const x = r.query.atX;
+        const x = queryCoordinate(r.query.atX);
+        if (x !== undefined) {
           return {
             origin: [x, bb.min[1], zMid],
             direction: [0, 1, 0],
             edgeLength: bb.max[1] - bb.min[1],
           };
         }
-        if (typeof r.query.atY === 'number' && Number.isFinite(r.query.atY)) {
-          const y = r.query.atY;
+        const y = queryCoordinate(r.query.atY);
+        if (y !== undefined) {
           return {
             origin: [bb.min[0], y, zMid],
             direction: [1, 0, 0],
@@ -478,6 +478,18 @@ function resolveEdgeQueryBendAxis(
         }
       }
     }
+  }
+  return undefined;
+}
+
+/** A bend-line coordinate is a bare number, or a Param captured from
+ *  `{ atX: param(...) }`. Lowering pre-resolves it, so `evaluated` is the
+ *  current table value. */
+function queryCoordinate(value: unknown): number | undefined {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
+  if (typeof value === 'object' && value !== null) {
+    const evaluated = (value as { evaluated?: unknown }).evaluated;
+    if (typeof evaluated === 'number' && Number.isFinite(evaluated)) return evaluated;
   }
   return undefined;
 }

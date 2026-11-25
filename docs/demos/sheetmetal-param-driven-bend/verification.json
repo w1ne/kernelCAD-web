@@ -1,0 +1,60 @@
+{
+  "checkedAt": "2026-11-25",
+  "source": "examples/sheet-metal-param-driven-bend.kcad.ts",
+  "issue": 1763,
+  "kernel": "occt",
+  "localBuild": "passed",
+  "stages": [
+    {
+      "thickness": 2,
+      "kFactor": 0.38,
+      "bendLineMm": 55,
+      "radiusMm": 3,
+      "angleDeg": 90,
+      "volumeMm3": 13245.238934211699,
+      "faceCount": 10,
+      "topologicallyValid": true,
+      "bboxMm": {
+        "span": [
+          57.04690290562559,
+          60,
+          57.04690290562559
+        ]
+      },
+      "flatPattern": {
+        "outerSpanMm": [
+          110,
+          60
+        ],
+        "bendLines": 1
+      }
+    },
+    {
+      "thickness": 3,
+      "kFactor": 0.38,
+      "bendLineMm": 20,
+      "radiusMm": 3,
+      "angleDeg": 90,
+      "volumeMm3": 19901.787601976306,
+      "faceCount": 10,
+      "topologicallyValid": true,
+      "bboxMm": {
+        "span": [
+          92.74845160353456,
+          60,
+          22.748451603534566
+        ]
+      },
+      "flatPattern": {
+        "outerSpanMm": [
+          110,
+          60
+        ],
+        "bendLines": 1
+      }
+    }
+  ],
+  "literalBaselineMm3": 13245.238934211699,
+  "renderer": "sharp SVG rasterizer fed with the real flattenPatternWithHoles Region.",
+  "videoProvenance": "Local script replay and OCCT geometry validation. This is not a simulation, deployment check, or hardware acceptance test."
+}
