@@ -8,6 +8,7 @@ import { sphere as sdfSphere, box as sdfBox, cylinder as sdfCylinder, torus as s
 import { smoothBlend as sdfSmoothBlend } from './sdf/smoothBlend';
 import { materialize as sdfMaterialize } from './sdf/materialize';
 import { mm, ul } from './apiSupport';
+import { paramValue } from '../shared/runtime/editableHelpers';
 import type { KernelCadApi } from './api';
 import type { TubeSpecMetadata } from '../shared/intent/tubeRecord';
 import { Shape } from './capture/proxy';
@@ -29,12 +30,14 @@ type CaptureRecordMethods = Pick<
 function makeCaptureShapeMethods(session: CaptureSession): CaptureShapeMethods {
   return {
     sheetMetal(profile, opts) {
-      // Capture-time validation. Evaluate Editable inputs once.
+      // Capture-time validation. A symbolic param() stores `evaluated: 0`
+      // until the dispatcher pre-resolves it, so validation reads the value
+      // through the session's param table (see paramValue).
       validateSheetMetalOptionKeys(opts);
       const thicknessParam = mm(opts.thickness);
       const kFactorParam = ul(opts.kFactor);
-      const tNum = thicknessParam.evaluated;
-      const kNum = kFactorParam.evaluated;
+      const tNum = paramValue(thicknessParam, session.paramTable);
+      const kNum = paramValue(kFactorParam, session.paramTable);
       // Throws feature.invalid-args / feature.sheetMetal.kfactor-invalid.
       validateThickness(tNum);
       validateKFactor(kNum);

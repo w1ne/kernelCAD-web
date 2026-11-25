@@ -31,7 +31,7 @@ import {
 } from '../validation/cutoutValidation';
 import { captureLattice, type LatticeOptions } from '../lattice/latticeCapture';
 import { isParamRef, isTypedParamRef, type Editable, type TypedParamRef } from '../../shared/runtime/paramRef';
-import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
+import { currentValue, paramValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
 import type { FinishToken } from '../../shared/render/finishes';
@@ -1095,8 +1095,14 @@ export class Shape {
   ): Shape {
     const angleParam = toParam(angle, 'deg');
     const radiusParam = toParam(radius, 'mm');
-    // Capture-time validation on the resolved scalar values.
-    validateBendArgs(angleParam.evaluated, radiusParam.evaluated, this.id);
+    // Capture-time validation on the resolved scalar values: a symbolic
+    // param() stores `evaluated: 0` until the dispatcher pre-resolves it, so
+    // read the current value through the session's param table instead.
+    validateBendArgs(
+      paramValue(angleParam, this.session.paramTable),
+      paramValue(radiusParam, this.session.paramTable),
+      this.id,
+    );
     // Reuse edgeFeature's selector-handling so .bend(...) accepts the same
     // shape as .fillet(...) / .shell(...). We piggyback on edgeFeature by
     // calling it with kind: 'sheetMetalBend' wedged into the same pipeline
