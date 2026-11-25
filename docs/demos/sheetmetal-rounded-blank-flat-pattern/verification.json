@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-11-25",
+  "source": "examples/sheet-metal-rounded-blank.kcad.ts",
+  "kernel": "occt",
+  "localBuild": "passed",
+  "diagnostics": [],
+  "topologicallyValid": true,
+  "volumeMm3": 11873.557464929652,
+  "expectedVolumeMm3": 11873.557464929652,
+  "flatPattern": {
+    "outerPoints": 105,
+    "outerSpanMm": [
+      100,
+      60
+    ],
+    "cornerRadiusMm": 10,
+    "maxChordSagittaMm": 0.0049343963426924375,
+    "chordToleranceMm": 0.005,
+    "bendLines": 1,
+    "holes": 0
+  },
+  "renderer": "sharp SVG rasterizer fed with the real flattenPatternWithHoles Region.",
+  "videoProvenance": "Local script replay and OCCT geometry validation. This is not a simulation, deployment check, or hardware acceptance test."
+}

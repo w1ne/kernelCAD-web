@@ -16,8 +16,10 @@ when_to_use: >-
   Prompt asks for a folded sheet-metal L-bracket, U-channel, flange, or service
   panel from a flat blank. Use `sheetMetal(profile, { thickness, kFactor })` then
   `.bend(...)` — not a solid union of two plates — when fabrication intent is
-  sheet + folds. After evaluate/lower, recover the blank with `flattenPattern()`
-  (MCP `flatten_pattern` / inspect bend-table) for laser/CNC.
+  sheet + folds. Blank corners may be arcs (`radiusArc`, `tangentArc`, ...): the
+  flat pattern samples them within 0.005 mm. After evaluate/lower, recover the
+  blank with `flattenPattern()` (MCP `flatten_pattern` / inspect bend-table) for
+  laser/CNC.
 ---
 
 ```typescript
@@ -30,6 +32,16 @@ let blank = sheetMetal(s, { thickness: 2, kFactor: 0.38 });
 blank = blank.holes({ byNormal: 'Z' }, { positions: [{ u: -25, v: 0 }], diameter: 5, depth: 'through' });
 return blank.bend({ atX: 50 }, 90, 3);
 ```
+
+A laser blank usually has rounded corners. Arc segments fold like lines and the
+flat pattern keeps them: the profile may call `radiusArc`, `sagittaArc`,
+`bulgeArc`, `tangentArc` or `threePointsArc` between its `lineTo` runs, and
+`flattenPattern()` samples those arcs into the `Region` polyline at a 0.005 mm
+chord sagitta (an R10 corner loses under 0.25 mm² of area). For example, four
+`R10` corners on the 100 x 60 blank use `.moveTo(10, 0).lineTo(90, 0)` then
+`.tangentArc(100, 10).lineTo(100, 50)` and the matching three corners before
+`.close()`. Ellipse and spline segments are refused by name rather than
+straightened.
 
 A cut made after `.bend()` reaches the flat pattern only when it opens the
 still-flat base; the folded solid's flat top face supplies its outline. A cut

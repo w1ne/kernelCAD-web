@@ -16,8 +16,10 @@
 // is needed.
 
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
+import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { invalidArgs } from '../../../shared/intent/invalidArgs';
 import { KernelError } from '../../../shared/intent/kernelError';
+import { outlineFromSketchCommands } from './flatBlankOutline';
 import {
   makeRegion,
   type BeadProfile,
@@ -234,7 +236,7 @@ function resolveSketchOutline(
       'invalid-args.flattenPattern.no-sketch — re-run sheetMetal(profile, opts) with a closed path() sketch.',
     );
   }
-  return extractPolylineFromSketch(sketchRec);
+  return extractOutlineFromSketch(sketchRec);
 }
 
 /** A non-positive developed length is not the blank the bend consumed. */
@@ -340,48 +342,19 @@ function buildBendLines(bendRecords: FeatureRecord[]): BendLineRecord[] {
   return bendLines;
 }
 
-interface SketchCommandLike {
-  kind: string;
-  x?: { evaluated: number };
-  y?: { evaluated: number };
-}
-
-/** Recover the polyline outline from a sketch FeatureRecord. Slice-1 sketches
- *  are polylines: moveTo + lineTo + close. Arcs are rejected for slice 1. */
-function extractPolylineFromSketch(rec: FeatureRecord): Vec2[] {
-  const md = rec.metadata as { commands?: SketchCommandLike[] } | undefined;
+/** Recover the outer outline from a sketch FeatureRecord. Lines and every arc
+ *  family PathBuilder emits are sampled into the Region's polyline wire;
+ *  ellipse / spline segments are refused rather than straightened. */
+function extractOutlineFromSketch(rec: FeatureRecord): Vec2[] {
+  const md = rec.metadata as { commands?: readonly SketchCommand[] } | undefined;
   const cmds = md?.commands;
   if (!Array.isArray(cmds)) {
     throw new KernelError(
       'feature.invalid-args',
-      'flattenPattern: cannot extract polyline from sketch (no commands metadata).',
+      'flattenPattern: cannot extract the outline from the sketch (no commands metadata).',
       rec.id,
-      'invalid-args.flattenPattern.no-commands — slice-1 requires a polyline sketch built via path()...close().',
+      'invalid-args.flattenPattern.no-commands — build the blank with a captured path()...close() sketch.',
     );
   }
-  const out: Vec2[] = [];
-  for (const c of cmds) {
-    if (c.kind === 'moveTo' || c.kind === 'lineTo') {
-      const x = c.x?.evaluated;
-      const y = c.y?.evaluated;
-      if (typeof x !== 'number' || typeof y !== 'number') continue;
-      out.push([x, y]);
-    } else if (c.kind !== 'close') {
-      throw new KernelError(
-        'feature.invalid-args',
-        `flattenPattern: slice-1 requires polyline sketches; saw command "${c.kind}".`,
-        rec.id,
-        'invalid-args.flattenPattern.curved-sketch — slice-1 requires polyline sketches (moveTo + lineTo + close).',
-      );
-    }
-  }
-  if (out.length < 3) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `flattenPattern: sketch must have at least 3 vertices; got ${out.length}.`,
-      rec.id,
-      'invalid-args.flattenPattern.degenerate — provide a closed sketch with 3+ vertices.',
-    );
-  }
-  return out;
+  return outlineFromSketchCommands(cmds, rec.id);
 }
