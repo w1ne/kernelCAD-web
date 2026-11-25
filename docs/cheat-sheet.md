@@ -72,6 +72,9 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `prismPlan(points: [number, number][], z0: number, z1: number) => Shape` | Plan-view mask prism: points are (X, Y), extruded along Z from z0 to z1. |
 | `sheetMetal(profile: Sketch, { thickness, kFactor, faceLabels? }) => Shape` | Build a sheet-metal body from a closed planar Sketch. |
 | `sdf : { sphere(r), box(size), cylinder(r, h), torus(R, r), smoothBlend(a, b, k), materialize(field, opts?), bind(name, field) }` | SDF authoring namespace (W2.3 slice-1). |
+| `structuralMember(from: Vec3, to: Vec3, opts: { profile: StructuralProfile, up?: Vec3, startTrimPlane?: { point: Vec3, normal: Vec3 }, endTrimPlane?: { point: Vec3, normal: Vec3 }, extendStart?: number, extendEnd?: number }) => Shape` | Extrude a standard structural profile between 3D points `from` and `to`. |
+| `weldmentFrame(members: WeldmentMemberSpec[], opts?: { cornerTrim?: "miter" \| "butt" \| "none", fuse?: boolean }) => { members: Shape[], cutList: WeldmentCutItem[], combined: Shape }` | Build a structural weldment frame from an array of `{ from, to, profile, up?, trim?, label? |
+| `gusset(corner: Vec3, dirA: Vec3, dirB: Vec3, opts: { legA: number, legB: number, thickness: number, cornerRelief?: number, tipChamfer?: number, offset?: number }) => Shape` | Build a triangular structural corner gusset plate anchored at 3D `corner`, spanning `legA` along `dirA` and `legB` along `dirB`, extruded by `thickness` centered on the `(dirA, dirB)` plane (shifted by optional `offset` along `normalize(dirA × dirB)`). |
 | `path() => PathBuilder` | Start a 2D path: chain moveTo / lineTo / arcs / .close() to get a Sketch. |
 | `PathBuilder.moveTo(x: Editable<number>, y: Editable<number>) => PathBuilder` | Start the path at (x, y). |
 | `PathBuilder.lineTo(x: Editable<number>, y: Editable<number>) => PathBuilder` | Add a straight line segment to (x, y). |

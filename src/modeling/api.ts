@@ -76,6 +76,14 @@ import { makeThreadMethods } from './apiThreadMethods';
 import type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
 import { makePipeMethod, type PipeOptions } from './apiPipeMethods';
 import { makeRibMethod, type RibOptions, type RibPoint } from './apiRibMethod';
+import {
+  makeWeldmentMethods,
+  type GussetOptions,
+  type StructuralMemberOptions,
+  type WeldmentFrameOptions,
+  type WeldmentFrameResult,
+  type WeldmentMemberSpec,
+} from './apiWeldmentMethods';
 import { makeSpurGearPairMethod } from './apiSpurGearPair';
 import type { SpurGearPair, SpurGearPairOptions } from './spurGearPair';
 
@@ -847,6 +855,30 @@ export interface KernelCadApi {
   tubeSpec(spec: TubeSpec): { id: FeatureId; metadata: TubeSpecMetadata };
 
   /**
+   * Extrude a standard structural profile (square/rect/round tube, angle,
+   * C-channel, flat bar) along a 3D centerline `from -> to` with optional up
+   * orientation, extensions, and half-space end trim planes.
+   */
+  structuralMember(from: Vec3, to: Vec3, opts: StructuralMemberOptions): Shape;
+
+  /**
+   * Build a structural weldment frame from member centerlines, automatically
+   * detecting shared corners and T-junctions for miter or butt trimming and
+   * returning individual members, a cut list, and a combined Shape.
+   */
+  weldmentFrame(
+    members: readonly WeldmentMemberSpec[],
+    opts?: WeldmentFrameOptions,
+  ): WeldmentFrameResult;
+
+  /**
+   * Triangular structural corner gusset plate anchored at `corner`, spanning
+   * `legA` along `dirA` and `legB` along `dirB`, with optional inner-corner
+   * weld relief and tip chamfer.
+   */
+  gusset(corner: Vec3, dirA: Vec3, dirB: Vec3, opts: GussetOptions): Shape;
+
+  /**
    * Mechanism-delivery joint helpers.
    *
    * `joint.clevis({ parentBody, childBody, axis, pivotParent, ... })` builds
@@ -975,6 +1007,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
     ...makeCaptureMethods(session),
     ...makeRequirementMethods(session),
     ...makeRibMethod(() => api),
+    ...makeWeldmentMethods(session, () => api),
 
     // joint.* is bound below after the api object is fully constructed, so
     // the namespace closes over the FINAL `api` (including box/cylinder/etc.).
@@ -999,6 +1032,23 @@ export type {
 } from './capture/curveProxy';
 export type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
 export type { RibOptions, RibPoint } from './apiRibMethod';
+export type {
+  AngleProfile,
+  CChannelProfile,
+  FlatBarProfile,
+  GussetOptions,
+  RectTubeProfile,
+  RoundTubeProfile,
+  SquareTubeProfile,
+  StructuralMemberOptions,
+  StructuralProfile,
+  TrimPlaneSpec,
+  WeldmentCutItem,
+  WeldmentFrameOptions,
+  WeldmentFrameResult,
+  WeldmentMemberSpec,
+  WeldmentTrimMode,
+} from './apiWeldmentMethods';
 export type {
   SpurGearPair,
   SpurGearPairOptions,
