@@ -16,14 +16,14 @@ function resolvePooled<Q, R>(
   query: Q,
   resolve: (shape: OcctBackend, q: Q) => R[],
 ): R[] {
+  // No catch here on purpose: resolveFaceQuery / resolveEdgeQuery signal a
+  // non-match with an empty array, so any thrown error is either an invalid
+  // query or a dead OCCT handle ("This object has been deleted"). Swallowing
+  // it made an assembly datum report "no face matched" long after the real
+  // cause, so let it propagate.
   const out: R[] = [];
   for (const p of parts) {
-    try {
-      out.push(...resolve(p.shape as OcctBackend, query));
-    } catch {
-      // A key one part's topology cannot answer is not a sheet-level error;
-      // the zero-match check below is the gate.
-    }
+    out.push(...resolve(p.shape as OcctBackend, query));
   }
   return out;
 }

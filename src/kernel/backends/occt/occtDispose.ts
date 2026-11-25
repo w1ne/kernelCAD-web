@@ -11,6 +11,16 @@ import { forgetAnalysis } from './analysisMemo';
 
 type ReplicadHandle = { delete?: () => void; isDeleted?: () => boolean };
 
+/** Safely release a replicad Shape wrapper without throwing if already freed. */
+export function deleteReplicadShape(shape: ReplicadHandle): void {
+  try {
+    if (typeof shape.isDeleted === 'function' && shape.isDeleted()) return;
+    shape.delete?.();
+  } catch {
+    // A second dispose, or a lower that already freed the handle.
+  }
+}
+
 /** Drop the analysis memo, the fastener envelope, and the display solid. */
 export function disposeOcctHandles(backend: OcctBackend, shape: ReplicadHandle): void {
   forgetAnalysis(backend as ShapeBackend);
@@ -19,10 +29,5 @@ export function disposeOcctHandles(backend: OcctBackend, shape: ReplicadHandle):
   if (envelope && envelope !== backend) {
     try { envelope.dispose(); } catch { /* envelope may already be freed */ }
   }
-  try {
-    if (typeof shape.isDeleted === 'function' && shape.isDeleted()) return;
-    shape.delete?.();
-  } catch {
-    // A second dispose, or a lower that already freed the handle.
-  }
+  deleteReplicadShape(shape);
 }

@@ -463,84 +463,99 @@ export function renderSvgDrawing(
   if (parts.length === 0) {
     throw new Error('svg-drawing export requires at least one part.');
   }
-  const { explodedParts, assembledCentroids, explodedCentroids, shape, explodedShape } =
+  const { explodedParts, assembledCentroids, explodedCentroids, shape, explodedShape, dispose } =
     resolveDrawingBodies(parts, options);
+  try {
+    const bounds = optimalBoundsOf(shape.wrapped)
+      ?? new OcctBackend(shape as import('replicad').Shape3D).boundingBox();
+    const dims = {
+      w: bounds.max[0] - bounds.min[0],
+      d: bounds.max[1] - bounds.min[1],
+      h: bounds.max[2] - bounds.min[2],
+    };
 
-  const bounds = optimalBoundsOf(shape.wrapped)
-    ?? new OcctBackend(shape as import('replicad').Shape3D).boundingBox();
-  const dims = {
-    w: bounds.max[0] - bounds.min[0],
-    d: bounds.max[1] - bounds.min[1],
-    h: bounds.max[2] - bounds.min[2],
-  };
+    const styled = projectSheetViews(shape, explodedShape, options.hiddenLines !== false, singleView ? [singleView] : VIEW_NAMES);
+    const viewBoxes = {
+      front: styled.front.box,
+      top: styled.top.box,
+      left: styled.left.box,
+      iso: styled.iso.box,
+    };
+    const projection = options.projection ?? 'third';
+    const selection = selectDrawingPage({
+      parts, options, dims, sectionSpecs: options.sections ?? [], shape, styled, viewBoxes,
+      projection, singleView, explodedShape, assembledCentroids, explodedCentroids, explodedParts,
+    });
+    const { pass, page, sheetSize, s, repairEnabled, initialSize, attempts } = selection;
+    const resultScore = selection.score;
+    diagnosticsOut.push(...pass.diagnostics);
+    const { layout } = pass;
+    const effSheet: SheetSpec = page;
+    const sectionsSvg = pass.sectionStage.svg;
+    const usesHatchPattern = pass.sectionStage.usesHatchPattern;
+    const dimBodies = pass.autoStage.dimBodies;
+    const bottomReserve = pass.autoStage.bottomReserve;
+    const generalTolerance = pass.autoStage.generalTolerance;
+    const visibleViews = singleView ? [singleView] : VIEW_NAMES;
+    const sheetPlacement = reviewSheetViewPlacement(layout, effSheet, visibleViews, generalTolerance !== undefined);
+    warnAboutSheetPlacement(sheetPlacement, diagnosticsOut);
+    const report = pass.autoStage.report ?? { placed: 0, overlapped: 0, byKind: {}, datums: [], annotations: [] };
+    report.sheetPlacement = sheetPlacement;
+    if (repairEnabled) report.sheetRepair = { applied: initialSize !== sheetSize, attempts,
+      status: resultScore.total === 0 ? 'clear' : 'issues' };
+    finalizeDrawingReview(report, options, diagnosticsOut);
 
-  const styled = projectSheetViews(shape, explodedShape, options.hiddenLines !== false, singleView ? [singleView] : VIEW_NAMES);
-  const viewBoxes = {
-    front: styled.front.box,
-    top: styled.top.box,
-    left: styled.left.box,
-    iso: styled.iso.box,
-  };
-  const projection = options.projection ?? 'third';
-  const selection = selectDrawingPage({
-    parts, options, dims, sectionSpecs: options.sections ?? [], shape, styled, viewBoxes,
-    projection, singleView, explodedShape, assembledCentroids, explodedCentroids, explodedParts,
-  });
-  const { pass, page, sheetSize, s, repairEnabled, initialSize, attempts } = selection;
-  const resultScore = selection.score;
-  diagnosticsOut.push(...pass.diagnostics);
-  const { layout } = pass;
-  const effSheet: SheetSpec = page;
-  const sectionsSvg = pass.sectionStage.svg;
-  const usesHatchPattern = pass.sectionStage.usesHatchPattern;
-  const dimBodies = pass.autoStage.dimBodies;
-  const bottomReserve = pass.autoStage.bottomReserve;
-  const generalTolerance = pass.autoStage.generalTolerance;
-  const visibleViews = singleView ? [singleView] : VIEW_NAMES;
-  const sheetPlacement = reviewSheetViewPlacement(layout, effSheet, visibleViews, generalTolerance !== undefined);
-  warnAboutSheetPlacement(sheetPlacement, diagnosticsOut);
-  const report = pass.autoStage.report ?? { placed: 0, overlapped: 0, byKind: {}, datums: [], annotations: [] };
-  report.sheetPlacement = sheetPlacement;
-  if (repairEnabled) report.sheetRepair = { applied: initialSize !== sheetSize, attempts,
-    status: resultScore.total === 0 ? 'clear' : 'issues' };
-  finalizeDrawingReview(report, options, diagnosticsOut);
+    const viewGroups = renderViewGroups(styled, layout, bottomReserve, s, explodedShape !== undefined, visibleViews);
 
-  const viewGroups = renderViewGroups(styled, layout, bottomReserve, s, explodedShape !== undefined, visibleViews);
+    const explodeSvg = renderExplodeOverlays({
+      options,
+      assembledCentroids,
+      explodedCentroids,
+      explodedParts,
+      layout,
+      s,
+      effSheet,
+      diagnosticsOut,
+    });
 
-  const explodeSvg = renderExplodeOverlays({
-    options,
-    assembledCentroids,
-    explodedCentroids,
-    explodedParts,
-    layout,
-    s,
-    effSheet,
-    diagnosticsOut,
-  });
+    const rendered = buildSheetSvg({
+      effSheet,
+      usesHatchPattern,
+      viewGroups,
+      dimBodies,
+      sectionsSvg,
+      explodeSvg,
+      generalTolerance,
+      layout,
+      options,
+      explodedShape,
+      diagnosticsOut,
+      report,
+      sheetSize,
+      projection,
+    });
+    report.renderedText = reviewSerializedSheet(rendered.bytes, effSheet, generalTolerance, diagnosticsOut);
+    return rendered;
+  } finally {
+    dispose();
+  }
+}
 
-  const rendered = buildSheetSvg({
-    effSheet,
-    usesHatchPattern,
-    viewGroups,
-    dimBodies,
-    sectionsSvg,
-    explodeSvg,
-    generalTolerance,
-    layout,
-    options,
-    explodedShape,
-    diagnosticsOut,
-    report,
-    sheetSize,
-    projection,
-  });
-  // Inspect the actual serialized SVG sheet using the same XML/Helvetica
-  // text geometry as the SVG-to-vector-PDF path, not an unrendered model.
-  const renderedText = reviewDrawingTextSvg(new TextDecoder().decode(rendered.bytes), {
+/**
+ * Inspect the actual serialized SVG sheet using the same XML/Helvetica text
+ * geometry as the SVG-to-vector-PDF path, not an unrendered model, and record
+ * any placement issues as a warning diagnostic.
+ */
+function reviewSerializedSheet(
+  bytes: Uint8Array,
+  effSheet: SheetSpec,
+  generalTolerance: unknown,
+  diagnosticsOut: CompilerDiagnostic[],
+): ReturnType<typeof reviewDrawingTextSvg> {
+  const renderedText = reviewDrawingTextSvg(new TextDecoder().decode(bytes), {
     w: effSheet.w, h: effSheet.h, margin: effSheet.margin,
     titleBlock: effSheet.titleBlock, generalTolerance: generalTolerance !== undefined,
   });
-  report.renderedText = renderedText;
   if (renderedText.issues.length) {
     const kinds = [...new Set(renderedText.issues.map(i => i.kind))].join(', ');
     diagnosticsOut.push({
@@ -551,7 +566,7 @@ export function renderSvgDrawing(
       details: { issueCount: renderedText.issues.length, checkedText: renderedText.checkedText },
     });
   }
-  return rendered;
+  return renderedText;
 }
 
 /**
