@@ -14,6 +14,8 @@
 //   - Session.xposNow() → ReadonlyMap<bodyName, Vec3>
 //   - Session.bodyPosesNow() → ReadonlyMap<bodyName, placement in mm>
 //   - Session.forward() — kinematics and contacts, no integration
+//   - Session.setJointEfforts / scalarJointStatesNow / sensorReadingsNow
+//   - Session.stepFixed(stepCount, dt) — exact simulated-clock frontier
 //   - Session.compiledGeoms / compiledContacts / compiledBodies /
 //     compiledJointStates / excludedBodyPairs — compiled model metadata
 //     (not XML text)
@@ -60,6 +62,11 @@ const OBJ_BODY = 1;
 const OBJ_JOINT = 3;
 const OBJ_GEOM = 5;
 const OBJ_MESH = 10;
+const OBJ_SENSOR = 20;
+const OBJ_ACTUATOR = 19;
+const TRN_JOINT = 0;
+const TRN_JOINT_IN_PARENT = 1;
+const WARNING_NAMES = ['INERTIA', 'CONTACTFULL', 'CNSTRFULL', 'BADQPOS', 'BADQVEL', 'BADQACC', 'BADCTRL'] as const;
 /** mjtJoint.mjJNT_SLIDE and mjJNT_HINGE. Free and ball are not scalar qpos. */
 const JNT_SLIDE = 2;
 const JNT_HINGE = 3;
@@ -88,6 +95,26 @@ export interface CompiledJointState {
     readonly qpos: number;
     readonly limited: boolean;
     readonly range: readonly [number, number];
+}
+
+
+/** A scalar coordinate; hinge units are rad, rad/s and N·m, slide units are m, m/s and N. */
+export interface MujocoScalarJointState {
+    readonly name: string;
+    readonly kind: 'hinge' | 'slide';
+    readonly qposAdr: number;
+    readonly dofAdr: number;
+    readonly position: number;
+    readonly velocity: number;
+    readonly appliedEffort: number;
+}
+
+/** Named compiled sensor output. Units and local frame follow its MJCF declaration. */
+export interface MujocoSensorReading {
+    readonly name: string;
+    /** MuJoCo mjtSensor enum: accelerometer = 1 (m/s²), gyro = 3 (rad/s). */
+    readonly type: number;
+    readonly values: readonly number[];
 }
 
 export interface CompiledContact {
@@ -196,6 +223,7 @@ export class MujocoSession {
     private readonly bodyOrder: readonly string[];
     private readonly jointOrder: readonly { mjcfName: string; mateName: string }[];
     private disposed = false;
+    private stepFailure: string | undefined;
 
     constructor(
         mujoco: MujocoModule,
@@ -367,6 +395,155 @@ export class MujocoSession {
         this.mujoco.mj_forward(this.model, this.data);
     }
 
+
+    /** Elapsed simulated time in seconds, independent of wall-clock playback. */
+    get timeSeconds(): number {
+        this.assertAlive();
+        return Number(this.data.time);
+    }
+
+    /**
+     * Snapshot named hinge/slide coordinates and velocities. qpos and qvel
+     * addresses differ after a free or ball joint; do not index qvel by qposAdr.
+     * Unnamed, free and ball joints are not scalar effort ports.
+     */
+    scalarJointStatesNow(): MujocoScalarJointState[] {
+        this.assertAlive();
+        const out: MujocoScalarJointState[] = [];
+        for (let id = 0; id < modelCount(this.model, 'njnt'); id++) {
+            const type = modelAt(this.model.jnt_type, id);
+            if (type !== JNT_SLIDE && type !== JNT_HINGE) continue;
+            const name = this.objectName(OBJ_JOINT, id);
+            if (name.length === 0) continue;
+            const qposAdr = modelAt(this.model.jnt_qposadr, id);
+            const dofAdr = modelAt(this.model.jnt_dofadr, id);
+            out.push({
+                name,
+                kind: type === JNT_HINGE ? 'hinge' : 'slide',
+                qposAdr,
+                dofAdr,
+                position: Number(this.data.qpos[qposAdr]),
+                velocity: Number(this.data.qvel[dofAdr]),
+                appliedEffort: Number(this.data.qfrc_applied[dofAdr]),
+            });
+        }
+        return out;
+    }
+
+    /**
+     * Replace this session's complete externally applied generalized effort.
+     * Keys are compiled MJCF hinge/slide joint names, not mate aliases.
+     * Validate the whole frame before writing. Omitted joints receive zero;
+     * an empty object clears all applied effort, including root coordinates.
+     * This port owns qfrc_applied. MJCF actuator forces remain independent.
+     */
+    setJointEfforts(efforts: Readonly<Record<string, number>>): void {
+        this.assertAlive();
+        const joints = new Map(this.scalarJointStatesNow().map((joint) => [joint.name, joint]));
+        const writes = Object.entries(efforts).map(([name, effort]) => {
+            const joint = joints.get(name);
+            if (joint === undefined) {
+                throw new Error(`MujocoSession.setJointEfforts: unknown named scalar joint "${name}".`);
+            }
+            if (!Number.isFinite(effort)) {
+                throw new Error(`MujocoSession.setJointEfforts: non-finite effort for "${name}".`);
+            }
+            return { dofAdr: joint.dofAdr, effort };
+        });
+        const applied = this.data.qfrc_applied;
+        for (let i = 0; i < this.nv; i++) applied[i] = 0;
+        for (const { dofAdr, effort } of writes) applied[dofAdr] = effort;
+    }
+
+
+    /**
+     * Validate a native-owned joint set before enabling external shaft coupling.
+     * Direct MJCF actuators on those coordinates would introduce a second driver.
+     * Indirect actuator transmissions cannot prove disjoint ownership here and
+     * are rejected. This check does not claim calibrated inertias or motor units.
+     */
+    assertExternalJointOwnership(jointNames: readonly string[]): void {
+        this.assertAlive();
+        const known = new Set(this.scalarJointStatesNow().map((joint) => joint.name));
+        const owned = new Set(jointNames);
+        if (owned.size !== jointNames.length) throw new Error('External joint ownership contains duplicate names.');
+        for (const name of owned) {
+            if (!known.has(name)) throw new Error(`Unknown external scalar joint "${name}".`);
+        }
+        for (let id = 0; id < modelCount(this.model, 'nu'); id++) {
+            const transmission = modelAt(this.model.actuator_trntype, id);
+            if (transmission !== TRN_JOINT && transmission !== TRN_JOINT_IN_PARENT) {
+                throw new Error('External joint ownership cannot be established with indirect MJCF actuators.');
+            }
+            const joint = this.objectName(OBJ_JOINT, modelAt(this.model.actuator_trnid, id * 2));
+            if (owned.has(joint)) {
+                const actuator = this.objectName(OBJ_ACTUATOR, id);
+                throw new Error(`External joint "${joint}" is also driven by MJCF actuator "${actuator}".`);
+            }
+        }
+    }
+
+    /**
+     * Copy named sensor outputs at the last forward/stepFixed frontier.
+     * Accelerometer values are site-local specific force in m/s²; gyro values
+     * are site-local angular velocity in rad/s. No device channels are imposed.
+     * Unnamed sensors are omitted. Other sensor units follow the MJCF reference.
+     */
+    sensorReadingsNow(): MujocoSensorReading[] {
+        this.assertAlive();
+        const out: MujocoSensorReading[] = [];
+        for (let id = 0; id < modelCount(this.model, 'nsensor'); id++) {
+            const name = this.objectName(OBJ_SENSOR, id);
+            if (name.length === 0) continue;
+            const adr = modelAt(this.model.sensor_adr, id);
+            const dim = modelAt(this.model.sensor_dim, id);
+            out.push({
+                name,
+                type: modelAt(this.model.sensor_type, id),
+                values: Array.from({ length: dim }, (_, i) => Number(this.data.sensordata[adr + i])),
+            });
+        }
+        return out;
+    }
+
+    /**
+     * Advance exactly stepCount integration steps. This co-simulation entry
+     * point does not round a duration or advance on a wall-clock timer.
+     * Refresh derived poses, contacts and sensors at the completed frontier;
+     * mj_step alone can leave those derived arrays at its pre-integration state.
+     * Callers must bound batch size and timestep for their stability/work budget.
+     * Any engine warning, invalid state or unexpected clock reset faults the
+     * session; dispose and recreate it before publishing another frame.
+     */
+    stepFixed(stepCount: number, dt: number): void {
+        this.assertAlive();
+        if (!Number.isSafeInteger(stepCount) || stepCount < 1) {
+            throw new Error('MujocoSession.stepFixed: stepCount must be a positive safe integer.');
+        }
+        if (!Number.isFinite(dt) || dt <= 0) {
+            throw new Error('MujocoSession.stepFixed: dt must be positive and finite.');
+        }
+        this.model.opt.timestep = dt;
+        let expectedTime = Number(this.data.time);
+        try {
+            this.assertStepState(expectedTime);
+            for (let i = 0; i < stepCount; i++) {
+                const nextTime = expectedTime + dt;
+                if (!Number.isFinite(nextTime) || nextTime <= expectedTime) {
+                    throw new Error('Integration timestep cannot advance the simulated clock.');
+                }
+                this.mujoco.mj_step(this.model, this.data);
+                expectedTime = nextTime;
+                this.assertStepState(expectedTime);
+            }
+            this.mujoco.mj_forward(this.model, this.data);
+            this.assertStepState(expectedTime);
+        } catch (error) {
+            this.stepFailure = error instanceof Error ? error.message : String(error);
+            throw new Error(`MujocoSession.stepFixed failed: ${this.stepFailure} Dispose and recreate the session.`);
+        }
+    }
+
     /**
      * Geoms as the compiler stored them: type, group, collision bits,
      * and mesh name. Names come from `mj_id2name`, not from the XML.
@@ -528,6 +705,35 @@ export class MujocoSession {
         return out;
     }
 
+
+    /** Reject divergence, automatic reset and stale frontiers instead of publishing them. */
+    private assertStepState(expectedTime: number): void {
+        const time = Number(this.data.time);
+        const tolerance = 1e-10 * Math.max(1, Math.abs(expectedTime));
+        if (!Number.isFinite(time) || Math.abs(time - expectedTime) > tolerance) {
+            throw new Error(`Invalid simulation frontier: expected ${expectedTime}s, received ${time}s.`);
+        }
+        // These bindings are borrowed references into MjData, not owned handles.
+        // Deleting an individual warning (or this vector) corrupts MjData.
+        const warnings = this.data.warning;
+        for (let id = 0; id < WARNING_NAMES.length; id++) {
+            const warning = warnings.get(id);
+            if (warning === undefined) throw new Error('Missing MuJoCo warning diagnostics.');
+            if (Number(warning.number) > 0) {
+                throw new Error(`MuJoCo ${WARNING_NAMES[id]} warning (index ${warning.lastinfo}).`);
+            }
+        }
+        for (const field of ['qpos', 'qvel', 'qacc', 'sensordata'] as const) {
+            const values = this.data[field] as ArrayLike<number>;
+            for (let i = 0; i < values.length; i++) {
+                const value = Number(values[i]);
+                if (!Number.isFinite(value) || this.mujoco.mju_isBad(value)) {
+                    throw new Error(`Invalid ${field}[${i}]=${value} at ${time}s.`);
+                }
+            }
+        }
+    }
+
     private objectName(objType: number, id: number): string {
         if (id < 0) return '';
         const named = this.mujoco.mj_id2name(this.model, objType, id);
@@ -552,6 +758,9 @@ export class MujocoSession {
     private assertAlive(): void {
         if (this.disposed) {
             throw new Error('MujocoSession used after dispose().');
+        }
+        if (this.stepFailure !== undefined) {
+            throw new Error(`MujocoSession has a failed step: ${this.stepFailure} Dispose and recreate the session.`);
         }
     }
 }

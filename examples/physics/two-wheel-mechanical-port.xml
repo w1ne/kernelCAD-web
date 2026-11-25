@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!-- Local generic mechanical-port probe. These masses, inertias, friction and
+     proxy geometry are declared test assumptions, not calibrated robot hardware.
+     Chassis and wheels are dynamically free; no joint target or IMU trajectory.
+     World/body axes: +X forward, +Y axle, +Z up. Lengths m, angles rad. -->
+<mujoco model="assumed-two-wheel-mechanical-port">
+  <compiler angle="radian" inertiafromgeom="false"/>
+  <option gravity="0 0 -9.81" timestep="0.001" integrator="implicitfast"/>
+  <default>
+    <geom friction="0.8 0.005 0.0001" condim="3"/>
+    <joint damping="0" armature="0" frictionloss="0"/>
+  </default>
+  <worldbody>
+    <geom name="ground" type="plane" size="2 2 0.1"/>
+    <body name="chassis" pos="0 0 0.035">
+      <freejoint name="root"/>
+      <!-- Uniform 90 x 100 x 80 mm proxy, 0.400 kg, COM 55 mm above axle. -->
+      <inertial pos="0 0 0.055" mass="0.4"
+                diaginertia="0.0005466666666667 0.0004833333333333 0.0006033333333333"/>
+      <geom name="chassis_proxy" type="box" pos="0 0 0.055" size="0.045 0.05 0.04"/>
+      <!-- Declared mount: local x=body Y, y=-body X, z=body Z.
+           This is a mounting assumption, not a STEP chip-axis measurement. Site position uses the saved board
+           envelope center as an assumed sensing-die location. -->
+      <site name="imu" pos="0 0.025 0.0195" quat="0.7071067811865476 0 0 0.7071067811865476"/>
+      <!-- Shaft origin at y=+-56.3 mm; wheel center is 10.7 mm farther outward. -->
+      <body name="wheel_left" pos="0 -0.0563 0">
+        <joint name="left_wheel" type="hinge" axis="0 1 0"/>
+        <!-- Uniform 65 mm diameter x 24 mm wheel, 0.035 kg. -->
+        <inertial pos="0 -0.0107 0" mass="0.035"
+                  diaginertia="0.0000109221875 0.000018484375 0.0000109221875"/>
+        <geom name="left_tire" pos="0 -0.0107 0" type="cylinder" size="0.0325 0.012"
+              quat="0.7071067811865476 0.7071067811865476 0 0"/>
+      </body>
+      <body name="wheel_right" pos="0 0.0563 0">
+        <joint name="right_wheel" type="hinge" axis="0 1 0"/>
+        <inertial pos="0 0.0107 0" mass="0.035"
+                  diaginertia="0.0000109221875 0.000018484375 0.0000109221875"/>
+        <geom name="right_tire" pos="0 0.0107 0" type="cylinder" size="0.0325 0.012"
+              quat="0.7071067811865476 0.7071067811865476 0 0"/>
+      </body>
+    </body>
+  </worldbody>
+  <sensor>
+    <accelerometer name="imu_accel" site="imu"/>
+    <gyro name="imu_gyro" site="imu"/>
+  </sensor>
+</mujoco>

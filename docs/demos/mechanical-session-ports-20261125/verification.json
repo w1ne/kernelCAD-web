@@ -1,0 +1,34 @@
+{
+  "fixtureSha256": "ae5c40767cb5b7ac5376d1d9f6e057a76233eed2245f4e97d8b265942d7e57ab",
+  "engineWasmSha256": "9eb895c79cb4d4a6d88bf2d9a449081a5a5c132e6a705ed90252a14b7f21ade8",
+  "sessionSourceSha256": "b7b9970f40af6313ee5ce8feb395c1a07d2437f7eaa944dc6575be6e723d8c9f",
+  "fps": 20,
+  "width": 1280,
+  "height": 720,
+  "frames": 162,
+  "durationS": 8.1,
+  "videoSha256": "eedc3ccd600853e2a8da406d30710c7f4286c449d8c7e965643fc938d54abee9",
+  "invocation": "npx tsx docs/demos/mechanical-session-ports-20261125/capture-demo.ts",
+  "evidence": "All displayed poses and sensor values are sampled from actual solver states.",
+  "visualInspection": {
+    "status": "reviewed",
+    "reviewedAt": "2026-11-25T19:55:52.696408+00:00",
+    "frames": [
+      "poster at t=0.150 s",
+      "decoded MP4 final frame at playback7.5s, simulation0.300s"
+    ],
+    "result": "Captions, units and values are readable; side projections and gyro traces stay inside panels. No overlaps or clipping observed."
+  },
+  "fullVideoDecode": "ffmpeg -v error -i demo.mp4 -f null - completed without errors",
+  "validation": {
+    "testsPassed": 21,
+    "testsSkipped": 1,
+    "filesPassed": 4,
+    "filesSkipped": 1,
+    "skipped": "Existing BREP contact integration is gated behind KCAD_SLOW. New actual-WASM contact/IMU/ownership/fault tests all pass.",
+    "typecheck": "tsc --noEmit -p tsconfig.cli.json passed",
+    "lint": "Scoped ESLint on core, tests and capture source passed",
+    "changedSourceQualityRatchetFindings": [],
+    "gitDiffCheck": "passed"
+  }
+}
