@@ -1,0 +1,47 @@
+diff --git a/catalog/kits/postal-logistics/barcode-tunnel-scanner.kcad.ts b/catalog/kits/postal-logistics/barcode-tunnel-scanner.kcad.ts
+index e7f189049..8538d8644 100644
+--- a/catalog/kits/postal-logistics/barcode-tunnel-scanner.kcad.ts
++++ b/catalog/kits/postal-logistics/barcode-tunnel-scanner.kcad.ts
+@@ -1,11 +1,17 @@
+ // SPDX-License-Identifier: CC0-1.0
+-// Barcode tunnel scanner: Open-sided parcel scanning tunnel with multiple raised scan heads above a short belt. Low-poly visualization geometry in millimetres, Z up.
++// Barcode tunnel scanner: the open portal that every parcel on the sortation
++// belt passes through on its way to the chutes. What makes it a tunnel scanner
++// rather than a camera on a post: a rectangular arch with painted side walls
++// and roof, two stainless scan heads looking down from the roof at the leading
++// and trailing edges of the parcel, instrument-glass side windows, and the
++// rubber belt that carries the parcel through the opening. Low-poly
++// visualization geometry in millimetres, Z up.
+ 
+ meta({
+   name: "barcode-tunnel-scanner",
+   license: 'CC0-1.0',
+   title: "Barcode tunnel scanner",
+-  description: "Open-sided parcel scanning tunnel with multiple raised scan heads above a short belt. Scale, painted steel, structural steel, stainless steel, instrument glass, and weathered or highVisibility finish presets are editable.",
++  description: "Open-sided parcel scanning tunnel at about real size: painted steel arch with a roof, stainless scan heads at the leading and trailing edges, instrument-glass side windows, four structural-steel legs and a dark rubber belt through the opening. Material controls: painted steel, structural steel, stainless steel, instrument glass and belt rubber; weathered and highVisibility presets.",
+   tags: ['postal logistics', 'mail', 'parcel', 'package processing', 'low poly', 'scene prop'],
+   kit: 'postal-logistics',
+   category: 'prop',
+@@ -19,9 +25,11 @@ const paintedSteel = param('paintedSteel', '#596e83', { label: 'Painted steel' }
+ const structuralSteel = param('structuralSteel', '#58656c', { label: 'Structural steel' });
+ const stainlessSteel = param('stainlessSteel', '#bbc4c4', { label: 'Stainless steel' });
+ const instrumentGlass = param('instrumentGlass', '#57b4c3', { label: 'Instrument glass' });
++// The carrying belt is a dark PVC/rubber carcass, not a painted steel sheet.
++const beltRubber = param('beltRubber', '#2c3134', { label: 'Belt rubber' });
+ presets({
+-  weathered: { paintedSteel: '#68777a', structuralSteel: '#67675f', stainlessSteel: '#9ea7a6', instrumentGlass: '#548a91' },
+-  highVisibility: { paintedSteel: '#e36d32', structuralSteel: '#454f54', stainlessSteel: '#d9e0de', instrumentGlass: '#6bd0dc' },
++  weathered: { paintedSteel: '#68777a', structuralSteel: '#67675f', stainlessSteel: '#9ea7a6', instrumentGlass: '#548a91', beltRubber: '#3d4140' },
++  highVisibility: { paintedSteel: '#e36d32', structuralSteel: '#454f54', stainlessSteel: '#d9e0de', instrumentGlass: '#6bd0dc', beltRubber: '#2c3134' },
+ });
+ const octRect = (w:number,d:number,cut:number) => path()
+   .moveTo(-w/2+cut,-d/2).lineTo(w/2-cut,-d/2).lineTo(w/2,-d/2+cut)
+@@ -44,7 +52,7 @@ const bevelled = (w:number,d:number,h:number) => {
+ const b = (x:number,y:number,z:number,w:number,d:number,h:number) => bevelled(w,d,h).translate(x,y,z).scale(scale);
+ 
+ const p = assembly("barcode-tunnel-scanner");
+-p.part("belt", b(0,0,570,720,850,65).color(paintedSteel));
++p.part("belt", b(0,0,570,720,850,65).color(beltRubber));
+ p.part("left-leg-front", b(-330,-300,0,50,50,570).color(structuralSteel));
+ p.part("right-leg-front", b(330,-300,0,50,50,570).color(structuralSteel));
+ p.part("left-leg-back", b(-330,300,0,50,50,570).color(structuralSteel));

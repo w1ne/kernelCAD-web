@@ -1,0 +1,24 @@
+command: npx vitest run tests/integration/catalog/
+date: 2026-11-25
+result: 375/376 tests passed; 223/224 files passed.
+
+The single failure was hoseBarbFidelity.test.ts preview rendering hitting the
+60 s per-test timeout while the full suite ran in parallel (start 18:13:59).
+It is unrelated to this change. Re-run alone:
+
+  npx vitest run tests/integration/catalog/hoseBarbFidelity.test.ts
+  -> 5/5 passed in 11.1 s (exited 0).
+
+The catalog freshness test (catalogIndex.test.ts) passed: every source builds,
+exports within budget and the committed index matches the source hashes.
+
+Tail of the full run:
+
+  ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 882782ms
+     ✓ every catalog source builds, exports inside its triangle budget on one
+       material, and the committed index is fresh  881329ms
+  ❯ tests/integration/catalog/hoseBarbFidelity.test.ts > committed source-backed
+    4:3 preview matches the native CAD publishing preset
+    Error: Test timed out in 60000ms.
+  Test Files  1 failed | 223 passed (224)
+       Tests  1 failed | 375 passed (376)

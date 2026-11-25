@@ -1,0 +1,31 @@
+command: npx vitest run tests/integration/catalog/barcodeTunnelScannerBeltMaterial.test.ts
+source: pre-fix version from origin/develop (belt coloured paintedSteel, no beltRubber control)
+exit=1 (expected: the regression test fails before the fix)
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+ ❯ tests/integration/catalog/barcodeTunnelScannerBeltMaterial.test.ts (1 test | 1 failed) 631ms
+     × renders the carrying belt in rubber and keeps the arch in painted steel 352ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  tests/integration/catalog/barcodeTunnelScannerBeltMaterial.test.ts > postal-logistics/barcode-tunnel-scanner belt material > renders the carrying belt in rubber and keeps the arch in painted steel
+AssertionError: expected [ 'paintedSteel', …(3) ] to deeply equal [ 'paintedSteel', …(4) ]
+- Expected
++ Received
+  [
+    "paintedSteel",
+    "structuralSteel",
+    "stainlessSteel",
+    "instrumentGlass",
+-   "beltRubber",
+  ]
+ ❯ tests/integration/catalog/barcodeTunnelScannerBeltMaterial.test.ts:26:95
+     24| 
+     25|     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+     26|     expect(asset.params.filter((param) => param.type === 'color').map(…
+       |                                                                                               ^
+     27|       'paintedSteel', 'structuralSteel', 'stainlessSteel', 'instrument…
+     28|     ]);
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  12:53:08
+   Duration  5.74s (transform 3.96s, setup 90ms, import 4.92s, tests 631ms, environment 0ms)
