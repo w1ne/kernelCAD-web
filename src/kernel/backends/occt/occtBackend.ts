@@ -12,6 +12,7 @@ import { isSameEdge } from './edgeQueries';
 import { buildNurbsProfileOnPlane, buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { resolveTangency } from './tangencySolver';
 import { sweepProfileAlongHelix, type HelicalSweepSpec } from './helicalSweep';
+import { buildSweepBendSpine } from './sweepBendSpine';
 import { drawingFromCommands } from './sketchToDrawing';
 import { encodeBinaryStlBytes } from './exportStlBinary';
 import { verifyWatertight, type WatertightReport } from './meshHeal';
@@ -518,6 +519,10 @@ export class OcctBackend implements ShapeBackend {
       frenet?: boolean;
       transitionMode?: 'right' | 'transformed' | 'round';
       spine?: 'polyline' | 'smooth';
+      /** Replace every interior corner with a tangent arc of this centreline
+       *  radius. The spine becomes exact lines and arcs, so a curved profile
+       *  sews into one valid solid (the pipe-elbow construction). */
+      bendRadius?: number;
     } = {},
   ): OcctBackend {
     // The kind/_drawing check is now inside liftSketchToFace; keep the
@@ -527,7 +532,9 @@ export class OcctBackend implements ShapeBackend {
     }
     const smoothSpine = (opts.spine ?? 'polyline') === 'smooth';
     let spineWire: replicad.Wire;
-    if (smoothSpine) {
+    // A bendRadius spine is G1 line/arc geometry (sewn where a 'round' corner was not).
+    if (opts.bendRadius !== undefined) spineWire = buildSweepBendSpine(rail, opts.bendRadius);
+    else if (smoothSpine) {
       // Single C2 B-spline edge approximated through the rail points.
       // Parameter choices:
       // - tolerance 1e-3 mm: the rail points lie exactly on the source curve
@@ -590,7 +597,10 @@ export class OcctBackend implements ShapeBackend {
     const swept = replicad.genericSweep(profileWire, spineWire, {
       frenet: opts.frenet ?? false,
       forceProfileSpineOthogonality: true,
-      transitionMode: opts.transitionMode ?? 'right',
+      // A bendRadius spine is already tangent-continuous, so every join is
+      // 'right' by construction; a round transition there would add a second
+      // corner treatment and reintroduce the unsewn tangent-arc faces.
+      transitionMode: opts.bendRadius === undefined ? (opts.transitionMode ?? 'right') : 'right',
     });
     return new OcctBackend(swept);
   }

@@ -24,6 +24,7 @@ import { circleCommands } from './pathCircle';
 import { slotCommands, type SlotOptions } from './pathSlot';
 import { ellipseCommands, ellipseArcCommands, type EllipseOptions, type EllipseArcOptions } from './pathEllipse';
 import { checkSweepSection } from './sweepSection';
+import { bendRadiusParams, sweepBendRadiusParam } from './sweepBendRadius';
 import { symmetricParam } from './symmetricOption';
 import { toNearSpec, validateTangentEntity } from './sketchTangency';
 import {
@@ -252,7 +253,18 @@ export class Sketch {
    *   slight kinks where `'right'` would visibly truncate the profile.
    * - `'round'`: inserts a tangent arc at the corner. Needed when the
    *   profile diameter exceeds the corner clearance — without this, OCCT
-   *   rejects the sweep entirely. Costlier than the other modes.
+   *   rejects the sweep entirely. Costlier than the other modes. A round
+   *   corner on a curved (circular) profile can leave the tangent-arc faces
+   *   unsewn; lowering refuses that body with
+   *   `feature.sweep.invalid-result`. Use `bendRadius` for that case.
+   *
+   * Pick `opts.bendRadius` to replace every interior corner of a
+   * `'polyline'` rail with a tangent arc of this centreline radius before the
+   * sweep. The exact line-and-arc spine sews a closed profile into one valid
+   * solid and matches the analytic swept volume; it is the supported way to
+   * build a pipe elbow with a declared bend radius. Requires `spine:
+   * 'polyline'` (default) and leaves `transitionMode` at its `'right'`
+   * default; the corners are already rounded.
    *
    * Pick `opts.spine`:
    * - `'polyline'` (default): the rail points become consecutive straight
@@ -299,6 +311,7 @@ export class Sketch {
       spine?: 'polyline' | 'smooth' | 'helix';
       section?: 'axial' | 'transverse';
       faceLabels?: FaceLabelsMap;
+      bendRadius?: Editable<number>;
     } = {},
   ): Shape {
     if (opts === null || typeof opts !== 'object' || Array.isArray(opts)) {
@@ -307,7 +320,7 @@ export class Sketch {
         path: 'opts',
         got: opts,
         showType: true,
-        requires: 'an options object { spine?, transitionMode?, frenet?, section?, faceLabels? }',
+        requires: 'an options object { spine?, transitionMode?, frenet?, section?, faceLabels?, bendRadius? }',
         example: "sketch.sweep(rail, { spine: 'smooth' })",
         featureId: this.id,
       });
@@ -332,6 +345,7 @@ export class Sketch {
         "Pass helix({ radius, pitch, turns }) straight to sweep(rail, { spine: 'helix' }). For an arbitrary curved rail use spine: 'smooth'.",
       );
     }
+    const bendRadius = sweepBendRadiusParam(this.session, this.id, opts.bendRadius, rail, spine, transitionMode);
     return this.session.createShape({
       kind: 'sweep',
       inputs: {
@@ -340,6 +354,7 @@ export class Sketch {
       params: {
         profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
         frenet: { expression: String(opts.frenet ?? false), unit: 'unitless', evaluated: opts.frenet ? 1 : 0 },
+        ...bendRadiusParams(bendRadius),
       },
       metadata: {
         rail,

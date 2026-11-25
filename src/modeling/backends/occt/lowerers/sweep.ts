@@ -7,6 +7,8 @@ import { isValidShape } from '../../../../kernel/backends/occt/booleanRecovery';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { getOC } from 'replicad';
 import { helix, helixOptionsFromSpec, type HelixRailSpec } from '../../../helix';
+import { buildTubePath, isTubePathError } from '../../../../shared/tube/tubePath';
+import { invalidArgsText } from '../../../../shared/intent/invalidArgs';
 import { emptyResultDiagnostic } from '../additiveNoOp';
 import { built, noShape, type LowerContext, type LowerOutcome } from './context';
 
@@ -75,7 +77,7 @@ function roundCornerIsClosed(ctx: LowerContext, r: FeatureRecord, shape: OcctBac
       'sweep: transitionMode "round" produced a body whose shell is not closed — ' +
       'the tangent-arc corner faces are unsewn, so the body fails solid-level BRepCheck and cannot be exported.',
     hint:
-      "Author the bend into the rail: replace each sharp corner with a tangent arc (or use spine: 'smooth' on a sampled rail) and sweep with transitionMode 'right'. A round corner on a sharp polyline sews only for some profiles — a polygonal profile builds, a circular one does not.",
+      "For a circular (or any closed) profile, pass bendRadius on the polyline sweep: it replaces each sharp corner with an exact tangent arc and builds one valid solid. Otherwise author the bend into the rail (or use spine: 'smooth' on a sampled rail) and sweep with transitionMode 'right'. A round corner on a sharp polyline sews only for some profiles — a polygonal profile builds, a circular one does not.",
     details: { transitionMode: 'round' },
   });
   return false;
@@ -103,7 +105,10 @@ function sweepSketchProfile(ctx: LowerContext, r: FeatureRecord): ShapeBackend |
   if (rail === undefined) return undefined;
   const opts = resolveSweepOptions(ctx, r, helixSpec);
   if (opts === undefined) return undefined;
-  const { frenet, transitionMode, spine } = opts;
+  const { frenet, transitionMode, spine, bendRadius } = opts;
+  if (bendRadius !== undefined && !validateSweepBendRadius(ctx, r, rail, spine, transitionMode, bendRadius)) {
+    return undefined;
+  }
   try {
     if (spine === 'helix') {
       const o = helixOptionsFromSpec(helixSpec!);
@@ -120,7 +125,7 @@ function sweepSketchProfile(ctx: LowerContext, r: FeatureRecord): ShapeBackend |
     return OcctBackend.sweepFromSketch(
       sketchInput,
       rail as [number, number, number][],
-      { frenet, transitionMode, spine },
+      { frenet, transitionMode, spine, ...(bendRadius === undefined ? {} : { bendRadius }) },
     );
   } catch (e) {
     if (e instanceof HelicalSweepArgsError) {
@@ -211,8 +216,9 @@ function resolveSweepOptions(
   ctx: LowerContext,
   r: FeatureRecord,
   helixSpec: HelixRailSpec | undefined,
-): { frenet: boolean; transitionMode: 'right' | 'transformed' | 'round'; spine: 'polyline' | 'smooth' | 'helix' } | undefined {
+): { frenet: boolean; transitionMode: 'right' | 'transformed' | 'round'; spine: 'polyline' | 'smooth' | 'helix'; bendRadius?: number } | undefined {
   const frenet = (r.params.frenet?.evaluated ?? 0) > 0.5;
+  const bendRadius = r.params.bendRadius?.evaluated;
   const rawTransition = (r.metadata as { transitionMode?: unknown } | undefined)?.transitionMode;
   const ALLOWED_MODES = ['right', 'transformed', 'round'] as const;
   if (rawTransition !== undefined && !ALLOWED_MODES.includes(rawTransition as typeof ALLOWED_MODES[number])) {
@@ -252,5 +258,99 @@ function resolveSweepOptions(
     });
     return undefined;
   }
-  return { frenet, transitionMode, spine };
+  return { frenet, transitionMode, spine, ...(bendRadius === undefined ? {} : { bendRadius }) };
+}
+
+/**
+ * Validate the resolved `bendRadius` before the kernel builds the tangent-arc
+ * spine. Capture already checks the literal values; a ParamRef can change
+ * after capture, so the resolved values are checked again at lower time. The
+ * requested corner geometry must fit on every leg, or the tangent points
+ * overlap and the rail folds into itself.
+ */
+function validateSweepBendRadius(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  rail: readonly unknown[],
+  spine: 'polyline' | 'smooth' | 'helix',
+  transitionMode: 'right' | 'transformed' | 'round',
+  bendRadius: number,
+): boolean {
+  const api = 'Sketch.sweep(rail, { bendRadius })';
+  const example = "path().circle(0, 0, 4).sweep([[0, 0, 0], [30, 0, 0], [30, 30, 0]], { bendRadius: 6 })";
+  const fail = (spec: Parameters<typeof invalidArgsText>[0]): false => {
+    ctx.diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      featureId: r.id,
+      severity: 'error',
+      ...invalidArgsText(spec),
+    });
+    return false;
+  };
+  if (spine !== 'polyline') {
+    return fail({
+      api,
+      path: 'opts.spine',
+      gotText: `'${spine}' with bendRadius`,
+      requires: "spine: 'polyline' (the default); a smooth or helix spine has no polyline corner to replace",
+      example,
+    });
+  }
+  if (transitionMode !== 'right') {
+    return fail({
+      api,
+      path: 'opts.transitionMode',
+      gotText: `'${transitionMode}' with bendRadius`,
+      requires: "the default transitionMode 'right'; bendRadius already makes every corner a tangent arc",
+      example,
+    });
+  }
+  if (!Number.isFinite(bendRadius) || bendRadius <= 0) {
+    return fail({
+      api,
+      path: 'opts.bendRadius',
+      got: bendRadius,
+      requires: 'a positive finite centreline radius in mm',
+      unit: 'mm',
+      example,
+    });
+  }
+  if (!rail.every((p) => Array.isArray(p) && p.length === 3 && p.every((c) => typeof c === 'number' && Number.isFinite(c)))) {
+    return fail({
+      api,
+      path: 'rail',
+      gotText: 'a non-numeric or non-[x, y, z] rail point',
+      requires: 'every rail point to be a finite [x, y, z] tuple',
+      example,
+    });
+  }
+  const path = buildTubePath(rail as [number, number, number][], bendRadius);
+  if (!isTubePathError(path)) return true;
+  if (path.kind === 'unreachable') {
+    return fail({
+      api,
+      path: `rail leg ${path.leg}`,
+      gotText: `a leg ${path.missingMm.toFixed(2)} mm too short for the bends at its ends`,
+      requires: `the leg at least ${path.missingMm.toFixed(2)} mm longer, or a smaller bendRadius`,
+      unit: 'mm',
+      example,
+    });
+  }
+  if (path.kind === 'reversal') {
+    return fail({
+      api,
+      path: `rail corner ${path.corner}`,
+      gotText: 'a rail that folds straight back on itself',
+      requires: 'the next corner offset sideways',
+      example,
+    });
+  }
+  return fail({
+    api,
+    path: 'rail',
+    gotText: 'fewer than two distinct rail points',
+    requires: 'at least two distinct [x, y, z] points',
+    example,
+  });
 }

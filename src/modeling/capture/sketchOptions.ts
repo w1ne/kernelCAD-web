@@ -81,6 +81,6 @@ export const ALLOWED_LOFT_PLANE_KEYS = new Set(['plane', 'origin', 'rotationDeg'
 export const ALLOWED_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle', 'taperDeg', 'symmetric']);
 
 /** Option keys `Sketch.sweep` accepts. Unknown keys often hide a typo. */
-export const ALLOWED_SWEEP_KEYS = new Set(['frenet', 'transitionMode', 'spine', 'section', 'faceLabels']);
+export const ALLOWED_SWEEP_KEYS = new Set(['frenet', 'transitionMode', 'spine', 'section', 'faceLabels', 'bendRadius']);
 /** Option keys `Sketch.revolve` accepts. */
 export const ALLOWED_REVOLVE_KEYS = new Set(['angleDeg', 'faceLabels', 'symmetric']);

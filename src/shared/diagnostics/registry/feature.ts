@@ -196,8 +196,8 @@ export const FEATURE_CODES = {
   },
   'feature.sweep.invalid-result': {
     hintTemplate:
-      "A transitionMode: 'round' sweep returned a body whose shell is not closed, so no solid can be measured or exported. Author the bend into the rail: replace each sharp corner with a tangent arc (or use spine: 'smooth' on a sampled rail) and sweep with transitionMode 'right'. The round corner sews only for some profiles — a polygonal profile builds, a circular one does not.",
-    nextAction: { kind: 'rewrite-feature', guidance: 'put the bend radius into the rail (tangent arcs) and use transitionMode right, instead of a round corner on a sharp polyline' },
+      "A transitionMode: 'round' sweep returned a body whose shell is not closed, so no solid can be measured or exported. For a circular (or any closed) profile, pass bendRadius on the polyline sweep: it replaces each sharp corner with an exact tangent arc and builds one valid solid. Otherwise author the arc into the rail itself (or use spine: 'smooth' on a sampled rail) and sweep with transitionMode 'right'. The round corner sews only for some profiles — a polygonal profile builds, a circular one does not.",
+    nextAction: { kind: 'rewrite-feature', guidance: 'pass bendRadius to the polyline sweep (exact tangent-arc corners, one valid solid), or put the bend radius into the rail, instead of a round corner on a sharp polyline' },
     defaultSeverity: 'error',
     group: 'feature',
     description: 'A round-corner sweep returned a body that fails solid-level BRepCheck (unsewn tangent-arc corner faces); the invalid body is refused instead of measured or exported.',
