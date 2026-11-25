@@ -31,7 +31,7 @@ export interface DraftingSettings {
 export const DraftingProfileSchema = z.object({
   id: z.string().min(1), name: z.string().min(1),
   sheet: z.enum(['a4', 'a3', 'a2', 'a1', 'a0', 'ansi-a', 'ansi-b', 'ansi-c', 'ansi-d', 'ansi-e', 'auto', 'auto-ansi']).optional(),
-  projection: z.enum(['first', 'third']).optional(), dimensioningStyle: z.enum(['baseline', 'chain', 'symmetry']).optional(),
+  projection: z.enum(['first', 'third']).optional(), dimensioningStyle: z.enum(['baseline', 'chain', 'symmetry', 'ordinate']).optional(),
   tolerance: z.enum(['ISO2768-f', 'ISO2768-m', 'ISO2768-c']).optional(), notes: z.array(z.string()).optional(),
 });
 export const DrawingDecisionResolutionsSchema = z.record(z.string().refine((key) => {
@@ -48,7 +48,7 @@ export const DraftingSettingsSchema = z.object({
   decisionResolutions: DrawingDecisionResolutionsSchema.optional(),
   decisionCriteriaFingerprint: z.string().min(1).optional(),
   draftingProfile: z.union([z.enum(['general', 'machining', 'sheet-metal']), DraftingProfileSchema]),
-  dimensioningStyle: z.enum(['baseline', 'chain', 'symmetry']),
+  dimensioningStyle: z.enum(['baseline', 'chain', 'symmetry', 'ordinate']),
   annotationOverrides: z.record(z.string(), z.object({ suppress: z.boolean().optional(), text: z.string().optional(),
     view: z.enum(['front', 'top', 'left', 'iso']).optional(), offset: z.number().finite().nonnegative().optional() })),
   placedDimensions: z.array(z.object({

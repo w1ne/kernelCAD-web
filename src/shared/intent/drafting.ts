@@ -3,7 +3,7 @@
 
 /** JSON-serializable drafting preferences; no kernel or browser dependency. */
 export type DraftingProfileId = 'general' | 'machining' | 'sheet-metal';
-export type DimensioningStyle = 'baseline' | 'chain' | 'symmetry';
+export type DimensioningStyle = 'baseline' | 'chain' | 'symmetry' | 'ordinate';
 export type DraftingView = 'front' | 'top' | 'left' | 'iso';
 export type DraftingSheet = 'a4' | 'a3' | 'a2' | 'a1' | 'a0' | 'ansi-a' | 'ansi-b' | 'ansi-c' | 'ansi-d' | 'ansi-e' | 'auto' | 'auto-ansi';
 

@@ -142,7 +142,7 @@ export function normaliseAutoAnnotate(raw: boolean | AutoAnnotateOptions | undef
   const include = normaliseInclude(raw);
   const datums = normaliseDatums(raw);
   const dimensioningStyle = raw.dimensioningStyle ?? 'baseline';
-  if (!['baseline', 'chain', 'symmetry'].includes(dimensioningStyle)) invalid('.dimensioningStyle', 'must be baseline | chain | symmetry');
+  if (!['baseline', 'chain', 'symmetry', 'ordinate'].includes(dimensioningStyle)) invalid('.dimensioningStyle', 'must be baseline | chain | symmetry | ordinate');
   return { enabled: true, tolerance, include, datums, dimensioningStyle };
 }
 

@@ -28,7 +28,7 @@ export interface AutoAnnotateOptions {
   datums?: 'auto' | readonly DrawingDatumDecl[];
   /** Which annotation families to emit; default all. */
   include?: readonly AutoAnnotateKind[];
-  /** Baseline (default), successive chain, or verified center symmetry. */
+  /** Baseline (default), successive chain, verified center symmetry, or running ordinate. */
   dimensioningStyle?: DimensioningStyle;
 }
 export interface NormalisedOptions {
