@@ -16,9 +16,11 @@ import { createModelingApi } from '../api';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import {
     assemblyToMjcf,
-    regularizeInertia6,
+    buildMateTree,
     isInertia6PositiveDefinite,
+    regularizeInertia6,
 } from './mjcfExport';
+import { solveMates } from '../mates/solver';
 
 const require_ = createRequire(import.meta.url);
 
@@ -95,6 +97,105 @@ describe('regularizeInertia6 / isInertia6PositiveDefinite', () => {
         const reg = regularizeInertia6([0, 0, 0, 0, 0, 0]);
         expect(reg.every((n) => Number.isFinite(n))).toBe(true);
         expect(isInertia6PositiveDefinite(reg)).toBe(true);
+    });
+});
+
+describe('buildMateTree (undirected spanning tree, #1772)', () => {
+    function buildStarAssembly() {
+        const session = new CaptureSession();
+        const kcad = createModelingApi({ session });
+        const arm = kcad.assembly('star');
+        arm.part('base', kcad.box(40, 40, 10, true))
+            .connector('a', { type: 'frame', origin: { kind: 'vec3', value: [-10, 0, 5] } })
+            .connector('b', { type: 'frame', origin: { kind: 'vec3', value: [10, 0, 5] } })
+            .connector('c', { type: 'axis', origin: { kind: 'vec3', value: [0, 10, 5] }, axis: [0, 0, 1] });
+        arm.part('childA', kcad.box(10, 10, 10, true))
+            .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -5] } })
+            .connector('top', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 5] } });
+        arm.part('childB', kcad.box(10, 10, 10, true))
+            .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -5] } });
+        arm.part('childC', kcad.box(10, 10, 10, true))
+            .connector('pivot', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, -5] }, axis: [0, 0, 1] });
+        arm.part('grandchild', kcad.box(6, 6, 6, true))
+            .connector('bottom', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -3] } });
+        // Author every mate child -> parent (the exact pattern that previously
+        // triggered "part 'base' has multiple parents").
+        arm.mate('mA', 'childA.mount', 'base.a', 'fastened');
+        arm.mate('mB', 'childB.mount', 'base.b', 'fastened');
+        arm.mate('mC', 'childC.pivot', 'base.c', 'revolute', { limitsDeg: [-90, 90] });
+        arm.mate('mG', 'grandchild.bottom', 'childA.top', 'fastened');
+        return arm;
+    }
+
+    it('accepts star/tree assemblies authored child -> base and marks flipped edges', () => {
+        const arm = buildStarAssembly();
+        const tree = buildMateTree(arm.__parts(), arm.__mates(), arm.__virtualJoints());
+        expect(tree.roots.map((r) => r.name)).toEqual(['base']);
+        expect(tree.childrenByParent.get('base')?.map((c) => c.childName)).toEqual(['childA', 'childB', 'childC']);
+        expect(tree.childrenByParent.get('childA')?.map((c) => c.childName)).toEqual(['grandchild']);
+        expect(tree.partIsAByMate.get('mA')).toBe(false);
+        expect(tree.partIsAByMate.get('mB')).toBe(false);
+        expect(tree.partIsAByMate.get('mC')).toBe(false);
+        expect(tree.partIsAByMate.get('mG')).toBe(false);
+    });
+
+    it('seeds spanning tree from an explicit world-fixed virtual joint when present', () => {
+        const arm = buildStarAssembly();
+        const tree = buildMateTree(arm.__parts(), arm.__mates(), [
+            { name: 'ground-b', parentFrame: 'world', childLink: 'childB', type: 'fixed' },
+        ]);
+        expect(tree.roots.map((r) => r.name)).toEqual(['childB']);
+        expect(tree.childrenByParent.get('childB')?.map((c) => c.childName)).toEqual(['base']);
+        expect(tree.partIsAByMate.get('mB')).toBe(true);
+        expect(tree.partIsAByMate.get('mA')).toBe(false);
+        expect(tree.partIsAByMate.get('mC')).toBe(false);
+    });
+
+    it('rejects genuine undirected cycles (triangle, parallel mates, self-loop, linked world roots)', () => {
+        const mkTri = () => {
+            const session = new CaptureSession();
+            const kcad = createModelingApi({ session });
+            const arm = kcad.assembly('tri');
+            for (const n of ['a', 'b', 'c']) {
+                arm.part(n, kcad.box(10, 10, 10, true))
+                    .connector('c1', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+                    .connector('c2', { type: 'frame', origin: { kind: 'vec3', value: [5, 0, 0] } });
+            }
+            arm.mate('ab', 'a.c1', 'b.c1', 'fastened');
+            arm.mate('bc', 'b.c2', 'c.c1', 'fastened');
+            arm.mate('ca', 'c.c2', 'a.c2', 'fastened');
+            return arm;
+        };
+        const tri = mkTri();
+        expect(() => buildMateTree(tri.__parts(), tri.__mates(), tri.__virtualJoints())).toThrow(/cycle|loop/i);
+
+        // Parallel mates between the same two parts (even in opposite directions).
+        const s2 = new CaptureSession();
+        const k2 = createModelingApi({ session: s2 });
+        const par = k2.assembly('parallel');
+        par.part('a', k2.box(10, 10, 10, true))
+            .connector('c1', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+            .connector('c2', { type: 'frame', origin: { kind: 'vec3', value: [5, 0, 0] } });
+        par.part('b', k2.box(10, 10, 10, true))
+            .connector('c1', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+            .connector('c2', { type: 'frame', origin: { kind: 'vec3', value: [5, 0, 0] } });
+        par.mate('m1', 'a.c1', 'b.c1', 'fastened');
+        par.mate('m2', 'b.c2', 'a.c2', 'fastened');
+        expect(() => buildMateTree(par.__parts(), par.__mates(), par.__virtualJoints())).toThrow(/cycle|loop/i);
+
+        // Two world-fixed roots connected by a mate form a closed loop through world.
+        const s3 = new CaptureSession();
+        const k3 = createModelingApi({ session: s3 });
+        const twoRoots = k3.assembly('two-roots');
+        twoRoots.part('a', k3.box(10, 10, 10, true))
+            .connector('c', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        twoRoots.part('b', k3.box(10, 10, 10, true))
+            .connector('c', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        twoRoots.mate('ab', 'a.c', 'b.c', 'fastened');
+        expect(() => buildMateTree(twoRoots.__parts(), twoRoots.__mates(), [
+            { name: 'g1', parentFrame: 'world', childLink: 'a', type: 'fixed' },
+            { name: 'g2', parentFrame: 'world', childLink: 'b', type: 'fixed' },
+        ])).toThrow(/cycle|loop/i);
     });
 });
 
@@ -514,5 +615,61 @@ describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
         const { mjcf } = await assemblyToMjcf(arm);
         expect(mjcf).not.toMatch(/<tendon>/);
         expect(mjcf).not.toMatch(/<site /);
+    }, 60000);
+
+    it('exports a star assembly with reversed child -> base mates and matches solveMates at rest and swept angles (#1772)', async () => {
+        await initOcct();
+        const session = new CaptureSession();
+        const kcad = createModelingApi({ session });
+        const arm = kcad.assembly('reversed-star');
+
+        arm.part('base', kcad.box(40, 40, 10, true))
+            .connector('cap-seat', { type: 'frame', origin: { kind: 'vec3', value: [-12, 0, 5] } })
+            .connector('pivot', { type: 'axis', origin: { kind: 'vec3', value: [15, 4, 5] }, axis: [0, 0, 1] })
+            .connector('rail', { type: 'axis', origin: { kind: 'vec3', value: [0, -14, 5] }, axis: [1, 0, 0] });
+        arm.part('cap', kcad.box(10, 10, 8, true))
+            .connector('bottom', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -4] } });
+        arm.part('lever', kcad.box(30, 6, 6, true))
+            .connector('hub', { type: 'axis', origin: { kind: 'vec3', value: [-12, 0, -3] }, axis: [0, 0, 1] });
+        arm.part('slider', kcad.box(8, 8, 8, true))
+            .connector('shoe', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, -4] }, axis: [1, 0, 0] });
+
+        // Every mate written child -> base.
+        arm.mate('cap-fasten', 'cap.bottom', 'base.cap-seat', 'fastened');
+        arm.mate('lever-hinge', 'lever.hub', 'base.pivot', 'revolute', { limitsDeg: [-90, 90] });
+        arm.mate('slider-track', 'slider.shoe', 'base.rail', 'prismatic', { limitsMm: [-10, 10] });
+
+        const { mjcf, bodyOrder, jointOrder } = await assemblyToMjcf(arm);
+        expect(bodyOrder[0]).toBe('base');
+        expect(bodyOrder).toEqual(['base', 'cap', 'lever', 'slider']);
+        expect(jointOrder.map((j) => j.mateName)).toEqual(['lever-hinge', 'slider-track']);
+
+        // Compile in MuJoCo and verify rest pose AND articulated pose match solveMates.
+        const mujoco = (await loadMujocoInNode()) as {
+            MjModel: { from_xml_string: (s: string) => { nbody: number; delete: () => void } };
+            MjData: new (m: unknown) => { qpos: Float64Array; xpos: Float64Array; delete: () => void };
+            mj_forward: (m: unknown, d: unknown) => void;
+        };
+        const model = mujoco.MjModel.from_xml_string(mjcf);
+        const data = new mujoco.MjData(model);
+        try {
+            // Articulated check: lever-hinge = +45 deg, slider-track = +6 mm.
+            data.qpos[0] = (45 * Math.PI) / 180;
+            data.qpos[1] = 0.006; // 6 mm in metres
+            mujoco.mj_forward(model, data);
+
+            const solved = await solveMates(arm, { 'lever-hinge': 45, 'slider-track': 6 });
+            expect(solved.status).toBe('solved');
+            // Body indices: 0 = world, 1 = base, 2 = cap, 3 = lever, 4 = slider.
+            for (const [idx, name] of [[1, 'base'], [2, 'cap'], [3, 'lever'], [4, 'slider']] as const) {
+                const expected = solved.poses.get(name)!.point([0, 0, 0]);
+                expect(data.xpos[idx * 3] * 1000).toBeCloseTo(expected[0], 3);
+                expect(data.xpos[idx * 3 + 1] * 1000).toBeCloseTo(expected[1], 3);
+                expect(data.xpos[idx * 3 + 2] * 1000).toBeCloseTo(expected[2], 3);
+            }
+        } finally {
+            data.delete();
+            model.delete();
+        }
     }, 60000);
 });
