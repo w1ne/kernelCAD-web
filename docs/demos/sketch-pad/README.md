@@ -17,7 +17,8 @@ plate.pad(profile, { face: 'top', upToFace: { atZ: 20, parallelTo: 'XY' } });
 ```
 
 The profile starts on the selected planar face, grows outward along that
-face's normal, and fuses into the body. Profile coordinates use the same face
+face's normal, and fuses into the body. A curved entry face is refused: a
+profile needs one tangent plane. Profile coordinates use the same face
 frame as `cutout()` and `hole()`: millimetres from the centre of the face's
 outer boundary. `depth` is a positive height; `upToFace` ends the pad exactly
 on the plane of a planar body face ahead of the entry face.
@@ -54,9 +55,9 @@ npx tsx docs/demos/sketch-pad/demo.ts
 npx vitest run tests/integration/modeling/pad.test.ts --reporter=dot
 ```
 
-[`tests.log`](tests.log) is the passing 12-test run. [`behavior-removed-test.log`](behavior-removed-test.log)
-is the same suite with `pad` removed from the OCCT lowerer table: 8 tests fail,
-including every geometry case and the up-to-face refusals.
+[`tests.log`](tests.log) is the passing 13-test run. [`behavior-removed-test.log`](behavior-removed-test.log)
+is the same suite with `pad` removed from the OCCT lowerer table: 9 tests fail,
+including every geometry case, the planar-entry refusal and the up-to-face refusals.
 
 ## Video
 

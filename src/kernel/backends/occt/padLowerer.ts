@@ -21,6 +21,7 @@ import * as replicad from 'replicad';
 import { OcctBackend } from './occtBackend';
 import { fuseWithHistory, mergeBooleanHistory } from './historyAwareBooleans';
 import { countSolids, isTopologicallyValid } from './edgeFeatureValidity';
+import { surfaceTypeOf } from './createdRefs';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { Vec3 } from '../../../shared/intent/types';
@@ -240,6 +241,18 @@ export function lowerPad(
   const entryRes = resolveEntry(feature, target, records);
   if ('error' in entryRes) {
     diagnostics.push(entryRes.error);
+    return { backend: target, diagnostics };
+  }
+  const entrySurface = surfaceTypeOf(entryRes.face);
+  if (entrySurface !== 'PLANE') {
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      featureId: feature.id,
+      severity: 'error',
+      message: `pad: the entry face must be planar; got a ${entrySurface} face.`,
+      hint: 'Select a planar face for the profile, or build the profile in XY, extrude it and union it. A curved entry face has no single tangent plane to grow the pad from.',
+    });
     return { backend: target, diagnostics };
   }
   const commandsRes = resolvePadCommands(feature, records, resolveRecord);

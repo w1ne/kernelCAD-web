@@ -3,26 +3,28 @@
 
  × tests/integration/modeling/pad.test.ts > Shape.pad > fuses a 10 x 10 x 5 pad to the top face as one valid solid 67ms
    → [{"target":"export-occt","code":"feature.invalid-args","featureId":"pad_1","severity":"error","message":"Feature kind 'pad' is not supported.","hint":"Use a documented feature kind."}]: expected [ { target: 'export-occt', …(5) } ] to deeply equal []
- × tests/integration/modeling/pad.test.ts > Shape.pad > keeps a circular profile exact 12ms
+ × tests/integration/modeling/pad.test.ts > Shape.pad > keeps a circular profile exact 19ms
    → [{"target":"export-occt","code":"feature.invalid-args","featureId":"pad_1","severity":"error","message":"Feature kind 'pad' is not supported.","hint":"Use a documented feature kind."}]: expected [ { target: 'export-occt', …(5) } ] to deeply equal []
  × tests/integration/modeling/pad.test.ts > Shape.pad > grows outward from a vertical side face 10ms
    → [{"target":"export-occt","code":"feature.invalid-args","featureId":"pad_1","severity":"error","message":"Feature kind 'pad' is not supported.","hint":"Use a documented feature kind."}]: expected [ { target: 'export-occt', …(5) } ] to deeply equal []
- × tests/integration/modeling/pad.test.ts > Shape.pad > ends exactly on the plane of an upToFace target 72ms
+ × tests/integration/modeling/pad.test.ts > Shape.pad > ends exactly on the plane of an upToFace target 71ms
    → [{"target":"export-occt","code":"feature.invalid-args","featureId":"pad_1","severity":"error","message":"Feature kind 'pad' is not supported.","hint":"Use a documented feature kind."}]: expected [ { target: 'export-occt', …(5) } ] to deeply equal []
  × tests/integration/modeling/pad.test.ts > Shape.pad > resolves a ParamRef depth from the live parameter table 9ms
    → [{"target":"export-occt","code":"feature.invalid-args","featureId":"pad_1","severity":"error","message":"Feature kind 'pad' is not supported.","hint":"Use a documented feature kind."}]: expected [ { target: 'export-occt', …(5) } ] to deeply equal []
  ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects a zero depth 2ms
  ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects a negative depth 1ms
  ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects depth and upToFace together, and unknown option keys 3ms
- × tests/integration/modeling/pad.test.ts > Shape.pad > rejects a target face behind the entry face 9ms
+ × tests/integration/modeling/pad.test.ts > Shape.pad > rejects a target face behind the entry face 8ms
    → expected 'Feature kind \'pad\' is not supported.' to contain 'strictly ahead of the entry face'
  × tests/integration/modeling/pad.test.ts > Shape.pad > rejects a non-planar upToFace target 38ms
    → expected 'Feature kind \'pad\' is not supported.' to contain 'planar target face'
- × tests/integration/modeling/pad.test.ts > Shape.pad > rejects a pad whose profile misses the body instead of returning two solids 8ms
+ × tests/integration/modeling/pad.test.ts > Shape.pad > rejects a non-planar entry face 5ms
+   → expected 'Feature kind \'pad\' is not supported.' to contain 'entry face must be planar'
+ × tests/integration/modeling/pad.test.ts > Shape.pad > rejects a pad whose profile misses the body instead of returning two solids 9ms
    → expected 'feature.invalid-args' to be 'feature.kernel-failed' // Object.is equality
- ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects a self-intersecting profile with an actionable message 1ms
+ ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects a self-intersecting profile with an actionable message 2ms
 
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
 
  FAIL  tests/integration/modeling/pad.test.ts > Shape.pad > fuses a 10 x 10 x 5 pad to the top face as one valid solid
 AssertionError: [{"target":"export-occt","code":"feature.invalid-args","featureId":"pad_1","severity":"error","message":"Feature kind 'pad' is not supported.","hint":"Use a documented feature kind."}]: expected [ { target: 'export-occt', …(5) } ] to deeply equal []
@@ -50,7 +52,7 @@ AssertionError: [{"target":"export-occt","code":"feature.invalid-args","featureI
      44|     const shape = model.tailShape!;
      45|     expect(countSolids(wrappedOf(shape))).toBe(1);
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
 
  FAIL  tests/integration/modeling/pad.test.ts > Shape.pad > keeps a circular profile exact
 AssertionError: [{"target":"export-occt","code":"feature.invalid-args","featureId":"pad_1","severity":"error","message":"Feature kind 'pad' is not supported.","hint":"Use a documented feature kind."}]: expected [ { target: 'export-occt', …(5) } ] to deeply equal []
@@ -78,7 +80,7 @@ AssertionError: [{"target":"export-occt","code":"feature.invalid-args","featureI
      59|     const shape = model.tailShape!;
      60|     expect(isTopologicallyValid(wrappedOf(shape))).toBe(true);
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
 
  FAIL  tests/integration/modeling/pad.test.ts > Shape.pad > grows outward from a vertical side face
 AssertionError: [{"target":"export-occt","code":"feature.invalid-args","featureId":"pad_1","severity":"error","message":"Feature kind 'pad' is not supported.","hint":"Use a documented feature kind."}]: expected [ { target: 'export-occt', …(5) } ] to deeply equal []
@@ -106,7 +108,7 @@ AssertionError: [{"target":"export-occt","code":"feature.invalid-args","featureI
      69|     const shape = model.tailShape!;
      70|     expect(isTopologicallyValid(wrappedOf(shape))).toBe(true);
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
 
  FAIL  tests/integration/modeling/pad.test.ts > Shape.pad > ends exactly on the plane of an upToFace target
 AssertionError: [{"target":"export-occt","code":"feature.invalid-args","featureId":"pad_1","severity":"error","message":"Feature kind 'pad' is not supported.","hint":"Use a documented feature kind."}]: expected [ { target: 'export-occt', …(5) } ] to deeply equal []
@@ -134,7 +136,7 @@ AssertionError: [{"target":"export-occt","code":"feature.invalid-args","featureI
      86|     const shape = model.tailShape!;
      87|     expect(countSolids(wrappedOf(shape))).toBe(1);
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
 
  FAIL  tests/integration/modeling/pad.test.ts > Shape.pad > resolves a ParamRef depth from the live parameter table
 AssertionError: [{"target":"export-occt","code":"feature.invalid-args","featureId":"pad_1","severity":"error","message":"Feature kind 'pad' is not supported.","hint":"Use a documented feature kind."}]: expected [ { target: 'export-occt', …(5) } ] to deeply equal []
@@ -162,7 +164,7 @@ AssertionError: [{"target":"export-occt","code":"feature.invalid-args","featureI
      98|     expect(model.tailShape!.volume()).toBeCloseTo(12_400, 3);
      99|     expect(model.tailShape!.boundingBox().max[2]).toBeCloseTo(14, 6);
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
 
  FAIL  tests/integration/modeling/pad.test.ts > Shape.pad > rejects a target face behind the entry face
 AssertionError: expected 'Feature kind \'pad\' is not supported.' to contain 'strictly ahead of the entry face'
@@ -178,7 +180,7 @@ Received: "Feature kind 'pad' is not supported."
     125|   }, 120_000);
     126| 
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
 
  FAIL  tests/integration/modeling/pad.test.ts > Shape.pad > rejects a non-planar upToFace target
 AssertionError: expected 'Feature kind \'pad\' is not supported.' to contain 'planar target face'
@@ -194,7 +196,23 @@ Received: "Feature kind 'pad' is not supported."
     136|   }, 120_000);
     137| 
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  tests/integration/modeling/pad.test.ts > Shape.pad > rejects a non-planar entry face
+AssertionError: expected 'Feature kind \'pad\' is not supported.' to contain 'entry face must be planar'
+
+Expected: "entry face must be planar"
+Received: "Feature kind 'pad' is not supported."
+
+ ❯ tests/integration/modeling/pad.test.ts:145:23
+    143|     const e = await errorOf(code);
+    144|     expect(e.code).toBe('feature.invalid-args');
+    145|     expect(e.message).toContain('entry face must be planar');
+       |                       ^
+    146|   }, 120_000);
+    147| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
 
  FAIL  tests/integration/modeling/pad.test.ts > Shape.pad > rejects a pad whose profile misses the body instead of returning two solids
 AssertionError: expected 'feature.invalid-args' to be 'feature.kernel-failed' // Object.is equality
@@ -202,19 +220,19 @@ AssertionError: expected 'feature.invalid-args' to be 'feature.kernel-failed' //
 Expected: "feature.kernel-failed"
 Received: "feature.invalid-args"
 
- ❯ tests/integration/modeling/pad.test.ts:141:20
-    139|     const code = `${PLATE}\nreturn base.pad(path().moveTo(-50, -5).lin…
-    140|     const e = await errorOf(code);
-    141|     expect(e.code).toBe('feature.kernel-failed');
+ ❯ tests/integration/modeling/pad.test.ts:151:20
+    149|     const code = `${PLATE}\nreturn base.pad(path().moveTo(-50, -5).lin…
+    150|     const e = await errorOf(code);
+    151|     expect(e.code).toBe('feature.kernel-failed');
        |                    ^
-    142|     expect(e.message).toContain('not one connected body');
-    143|   }, 120_000);
+    152|     expect(e.message).toContain('not one connected body');
+    153|   }, 120_000);
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
 
 
  Test Files  1 failed (1)
-      Tests  8 failed | 4 passed (12)
-   Start at  08:43:47
-   Duration  4.59s (transform 3.31s, setup 88ms, import 3.90s, tests 494ms, environment 0ms)
+      Tests  9 failed | 4 passed (13)
+   Start at  08:46:13
+   Duration  4.54s (transform 3.24s, setup 119ms, import 3.76s, tests 555ms, environment 0ms)
 

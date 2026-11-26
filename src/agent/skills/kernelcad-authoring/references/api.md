@@ -602,8 +602,8 @@ shape, not a copy.
 .chamfer(distance, edges, { distance2?: number, angleDeg?: number, face?: FaceSelector }): Shape
 
 // Additive sketch-driven extrude — the counterpart of .cutout(). The closed
-// profile starts on `face` and grows OUTWARD along its normal, then fuses into
-// the body. End with a positive `depth` in mm or `upToFace` (a planar body face
+// profile starts on a PLANAR `face` and grows OUTWARD along its normal, then
+// fuses into the body. A curved entry face is refused. End with a positive `depth` in mm or `upToFace` (a planar body face
 // ahead of the entry face). Profile coordinates use the same face frame as
 // cutout/hole (mm from the face centre). One valid solid with more volume than
 // the base is required; a detached or unchanged result fails.

@@ -135,6 +135,16 @@ return base.pad(sq, { face: { byNormal: 'Z', atZ: 10 }, upToFace: { ofSurfaceTyp
     expect(e.message).toContain('planar target face');
   }, 120_000);
 
+  it('rejects a non-planar entry face', async () => {
+    const code = `
+const shaft = cylinder(20, 5);
+return shaft.pad(path().circle(0, 0, 2), { face: { ofSurfaceType: 'CYLINDER', near: [0, 0, 10] }, depth: 3 });
+`;
+    const e = await errorOf(code);
+    expect(e.code).toBe('feature.invalid-args');
+    expect(e.message).toContain('entry face must be planar');
+  }, 120_000);
+
   it('rejects a pad whose profile misses the body instead of returning two solids', async () => {
     const code = `${PLATE}\nreturn base.pad(path().moveTo(-50, -5).lineTo(-40, -5).lineTo(-40, 5).lineTo(-50, 5).close(), { face: 'top', depth: 5 });`;
     const e = await errorOf(code);
