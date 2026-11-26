@@ -206,4 +206,11 @@ describe('addFeature primitive', () => {
       `return plate;`,
     ].join('\n'));
   });
+
+  it('preserves CRLF line endings when rewriting the return', () => {
+    const code = `const plate = box(60, 40, 6);\r\nreturn plate;\r\n`;
+    const r = addFeature(code, `plate.fillet(1.5)`);
+    expect(r.ok).toBe(true);
+    expect(r.new_code).toBe(`const plate = box(60, 40, 6);\r\nreturn plate.fillet(1.5);\r\n`);
+  });
 });

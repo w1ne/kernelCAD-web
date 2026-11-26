@@ -36,6 +36,7 @@ export function addFeature(code: string, feature_code: string): AddFeatureResult
   const indent = indentMatch ? indentMatch[1] : '';
 
   const effect = classifyFeatureCode(code, feature_code, returnIndex);
+  const carriageReturn = returnLine.endsWith('\r') ? '\r' : '';
   if (effect.kind === 'reject') {
     return { ok: false, error: effect.error, errorCode: 'feature.add.expression-unused' };
   }
@@ -44,11 +45,11 @@ export function addFeature(code: string, feature_code: string): AddFeatureResult
     if (!effect.insertFeatureCode) {
       // The snippet was a bare expression over the returned binding. Rewriting
       // the return is enough; inserting the expression would be dead code.
-      lines[returnIndex] = effect.returnLine;
+      lines[returnIndex] = `${effect.returnLine}${carriageReturn}`;
       return { ok: true, new_code: lines.join('\n') };
     }
     lines.splice(returnIndex, 0, `${indent}${feature_code}`);
-    lines[returnIndex + 1] = effect.returnLine;
+    lines[returnIndex + 1] = `${effect.returnLine}${carriageReturn}`;
     return { ok: true, new_code: lines.join('\n') };
   }
 
