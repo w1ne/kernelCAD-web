@@ -135,7 +135,25 @@ describe('shape.feaStudy capture', () => {
 
 describe('FEA material table', () => {
   it('serves every documented grade', () => {
-    expect(FEA_MATERIAL_NAMES).toEqual(['mild-steel', 'aluminum-6061', 'pla', 'petg', 'abs', 'asa', 'nylon']);
+    expect(FEA_MATERIAL_NAMES).toEqual([
+      'mild-steel',
+      'aluminum-6061',
+      'stainless-304',
+      'stainless-316',
+      'copper',
+      'brass',
+      'fr4',
+      'tpu-95a',
+      'silicone',
+      'polycarbonate',
+      'delrin',
+      'acrylic',
+      'pla',
+      'petg',
+      'abs',
+      'asa',
+      'nylon',
+    ]);
   });
 
   it('reads E and yield LIVE from the bulk catalog rather than copying them', () => {
@@ -146,10 +164,14 @@ describe('FEA material table', () => {
     expect(table['petg'].yield).toBe(MATERIAL_CATALOG.pet.yieldStressPa / 1e6);
   });
 
-  it('declares its own numbers only for the grade with no catalog row', () => {
+  it('declares its own numbers for grades with no catalog row', () => {
     const table = feaMaterialTable();
     expect(table.nylon).toEqual({ E: 1700, nu: 0.39, yield: 45 });
     expect(table.asa).toEqual({ E: 2120, nu: 0.35, yield: 37 });
+    // Issue #1794 hardware/electronics grades read their datasheet rows.
+    expect(table['stainless-304']).toEqual({ E: 193000, nu: 0.29, yield: 215 });
+    expect(table.fr4).toEqual({ E: 20000, nu: 0.15, yield: 250 });
+    expect(table['tpu-95a']).toEqual({ E: 26, nu: 0.48, yield: 30 });
   });
 
   it('gives every grade a physically valid Poisson ratio in solver units', () => {

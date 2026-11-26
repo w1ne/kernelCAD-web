@@ -36,10 +36,22 @@ describe('inferredProcess', () => {
     expect(inferredProcess(records, 'box_1', 'steel')).toBe('cnc');
   });
 
+  it("maps real hardware metals to 'cnc' (issue #1794)", () => {
+    const records = [record('box_1', 'box')];
+    for (const material of ['stainless-304', 'stainless-316', 'copper', 'brass', 'stainless']) {
+      expect(inferredProcess(records, 'box_1', material)).toBe('cnc');
+    }
+  });
+
   it("keeps polymer grades and an undeclared material on '3d-print'", () => {
     const records = [record('box_1', 'box')];
     expect(inferredProcess(records, 'box_1', 'petg')).toBe('3d-print');
     expect(inferredProcess(records, 'box_1', 'pla')).toBe('3d-print');
+    // Issue #1794 electronics/elastomer/engineering polymer grades resolve
+    // instead of rejecting; they stay on the non-metallic default.
+    for (const material of ['fr4', 'tpu-95a', 'silicone', 'polycarbonate', 'delrin', 'acrylic']) {
+      expect(inferredProcess(records, 'box_1', material)).toBe('3d-print');
+    }
     expect(inferredProcess(records, 'box_1')).toBe('3d-print');
     expect(inferredProcess(records, 'box_1', null)).toBe('3d-print');
   });

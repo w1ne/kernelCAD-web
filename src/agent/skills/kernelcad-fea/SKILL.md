@@ -125,6 +125,16 @@ Honesty limits:
 | --- | --- | --- | --- |
 | `mild-steel` | 200000 | 0.29 | 250 |
 | `aluminum-6061` | 70000 | 0.33 | 270 |
+| `stainless-304` | 193000 | 0.29 | 215 |
+| `stainless-316` | 193000 | 0.29 | 205 |
+| `copper` | 117000 | 0.34 | 70 |
+| `brass` | 110000 | 0.34 | 100 |
+| `fr4` | 20000 | 0.15 | 250 |
+| `tpu-95a` | 26 | 0.48 | 30 |
+| `silicone` | 2 | 0.49 | 5 |
+| `polycarbonate` | 2300 | 0.37 | 62 |
+| `delrin` | 3100 | 0.35 | 68 |
+| `acrylic` | 3200 | 0.35 | 70 |
 | `pla` | 3500 | 0.36 | 50 |
 | `petg` | 2700 | 0.40 | 55 |
 | `abs` | 2300 | 0.35 | 40 |
@@ -133,10 +143,10 @@ Honesty limits:
 
 `fea_summary({})` returns this table live. These are the same grade names
 `arm.part({ material })` and `inspect({ of: 'mass', material })` take (one
-material registry), and the bulk aliases `steel`, `aluminum` / `aluminium`
-and `pet` resolve to `mild-steel`, `aluminum-6061` and `petg`. An unknown
-grade is refused with the valid list — it is never guessed. For a measured
-lot, pass `{ E, nu, yield }` directly.
+material registry), and the aliases `steel`, `aluminum` / `aluminium`, `pet`,
+`stainless`, `fr-4`, `tpu`, `pc`, `pom` and `pmma` resolve to their grades.
+An unknown grade is refused with the valid list — it is never guessed. For a
+measured lot, pass `{ E, nu, yield }` directly.
 
 ## Reading the result
 

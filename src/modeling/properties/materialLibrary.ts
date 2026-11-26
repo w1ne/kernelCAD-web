@@ -14,13 +14,16 @@
 // BOM under one name.
 //
 // Canonical names are the engineering grades (`mild-steel`, `aluminum-6061`,
-// `pla`, `petg`, `abs`, `asa`, `nylon`); the bulk spellings `steel`, `aluminum`,
-// `aluminium`, `pet` are explicit aliases. Coverage gaps stay honest:
+// `stainless-304`, `copper`, `brass`, `fr4`, `tpu-95a`, `silicone`,
+// `polycarbonate`, `delrin`, `acrylic`, `pla`, `petg`, `abs`, `asa`, `nylon`);
+// the bulk/abbreviation spellings `steel`, `aluminum`, `aluminium`, `pet`,
+// `stainless`, `fr-4`, `tpu`, `pc`, `pom`, `pmma` are explicit aliases.
+// Coverage gaps stay honest:
 //   * `petg` has a density but no natural finish token → `finish` is
 //     undefined; assigning it seeds density only.
-//   * finish tokens like `brass` / `copper` / `glass` have NO engineering
-//     density, so they are NOT assignable materials — `resolveMaterial('brass')`
-//     throws and the diagnostic points the author at `.finish('brass')`.
+//   * finish tokens with NO engineering density (e.g. `glass`, `pcb-green`)
+//     are NOT assignable materials — `resolveMaterial('glass')` throws and
+//     the diagnostic points the author at `.finish('glass')`.
 //
 // A material name that is neither a grade nor an alias throws, naming every
 // accepted spelling. There is NO silent fallback to water density or a default

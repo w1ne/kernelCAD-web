@@ -75,9 +75,65 @@ describe('materialLibrary — name → { density, finish }', () => {
 
   it('classifies every grade as metal or polymer for process policy', () => {
     const metals = ENGINEERING_MATERIAL_NAMES.filter((grade) => materialFamily(grade) === 'metal');
-    expect(metals).toEqual(['mild-steel', 'aluminum-6061']);
+    expect(metals).toEqual([
+      'mild-steel',
+      'aluminum-6061',
+      'stainless-304',
+      'stainless-316',
+      'copper',
+      'brass',
+    ]);
     for (const grade of ENGINEERING_MATERIAL_NAMES) {
       expect(['metal', 'polymer']).toContain(materialFamily(grade));
+    }
+  });
+
+  it('resolves hardware and electronics grades with real densities (issue #1794)', () => {
+    const expected: Array<[string, number, string]> = [
+      ['fr4', 1850, 'fr4'],
+      ['tpu-95a', 1210, 'rubber'],
+      ['silicone', 1150, 'rubber'],
+      ['stainless-304', 8000, 'stainless'],
+      ['stainless-316', 8000, 'stainless'],
+      ['copper', 8940, 'copper'],
+      ['brass', 8530, 'brass'],
+      ['polycarbonate', 1200, 'polycarbonate'],
+      ['delrin', 1410, 'delrin'],
+      ['acrylic', 1180, 'acrylic'],
+    ];
+    for (const [name, density, finish] of expected) {
+      const m = resolveMaterial(name);
+      expect(m.name).toBe(name);
+      expect(m.density).toBe(density);
+      expect(m.finish).toBe(finish);
+    }
+  });
+
+  it('resolves the hardware/electronics abbreviations to the same grade', () => {
+    const cases: Array<[string, string, number]> = [
+      ['stainless', 'stainless-304', 8000],
+      ['fr-4', 'fr4', 1850],
+      ['tpu', 'tpu-95a', 1210],
+      ['pc', 'polycarbonate', 1200],
+      ['pom', 'delrin', 1410],
+      ['pmma', 'acrylic', 1180],
+    ];
+    for (const [alias, grade, density] of cases) {
+      const a = resolveMaterial(alias);
+      const g = resolveMaterial(grade);
+      expect(a.name).toBe(grade);
+      expect(a.density).toBe(density);
+      expect(a.density).toBe(g.density);
+      expect(a.finish).toBe(g.finish);
+      expect(a.requested).toBe(alias);
+    }
+  });
+
+  it('keeps a real multi-process LabWired/KernelCAD enclosure BOM authorable', () => {
+    // The concrete #1794 failure: assigning fr4 / tpu-95a / stainless-304 to
+    // assembly parts used to throw "not a known material".
+    for (const material of ['fr4', 'tpu-95a', 'stainless-304', 'aluminum-6061', 'petg']) {
+      expect(() => resolveMaterial(material)).not.toThrow();
     }
   });
 
@@ -101,14 +157,26 @@ describe('materialLibrary — name → { density, finish }', () => {
     expect(m.finish).toBeUndefined();
   });
 
-  it('refuses a finish-without-density token as a material (brass)', () => {
-    expect(isFinishToken('brass')).toBe(true);
-    const r = tryResolveMaterial('brass');
+  it('refuses a finish-without-density token as a material (glass)', () => {
+    expect(isFinishToken('glass')).toBe(true);
+    const r = tryResolveMaterial('glass');
     expect(r.ok).toBe(false);
     if (!r.ok) {
-      expect(r.message).toContain("'brass' is not a known material");
-      expect(r.hint).toContain(".finish('brass')");
+      expect(r.message).toContain("'glass' is not a known material");
+      expect(r.hint).toContain(".finish('glass')");
       expect(r.hint).toContain('no catalog density');
+    }
+  });
+
+  it('accepts brass and copper as grades as well as finishes (issue #1794)', () => {
+    // Hardware stock declares the grade; the appearance still uses the same
+    // named finish.
+    for (const name of ['brass', 'copper']) {
+      expect(isFinishToken(name)).toBe(true);
+      const m = resolveMaterial(name);
+      expect(m.name).toBe(name);
+      expect(m.finish).toBe(name);
+      expect(m.density).toBeGreaterThan(0);
     }
   });
 

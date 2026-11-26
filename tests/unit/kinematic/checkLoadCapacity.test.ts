@@ -185,7 +185,11 @@ describe('checkLoadCapacity — T6 closed-form Euler-Bernoulli', () => {
     expect(k8?.severity).toBe('error');
     expect(k8?.element).toBe(partName);
     expect(k8?.message).toContain('aluminum-7075');
-    expect(k8?.message).toContain('mild-steel|aluminum-6061|pla|petg|abs|asa|nylon|steel|aluminum|aluminium|pet');
+    expect(k8?.message).toContain(
+      'mild-steel|aluminum-6061|stainless-304|stainless-316|copper|brass|fr4|tpu-95a|silicone|' +
+        'polycarbonate|delrin|acrylic|pla|petg|abs|asa|nylon|steel|aluminum|aluminium|pet|' +
+        'stainless|fr-4|tpu|pc|pom|pmma',
+    );
   });
 
   it('part anchored by a single revolute joint (no mate) → computed SF (issue #540 part B)', async () => {

@@ -13,10 +13,14 @@
 // declared `aluminum-6061` weighs, renders and solves as the same material.
 // This module only converts units (Pa -> MPa) for the solver.
 //
-// Accepted names are the grades (`mild-steel`, `aluminum-6061`, `pla`, `petg`,
-// `abs`, `asa`, `nylon`) and the registry's bulk aliases (`steel` -> mild-steel,
-// `aluminum`/`aluminium` -> aluminum-6061, `pet` -> petg). The resolved
-// `name` is always the canonical grade.
+// Accepted names are every registry grade (`mild-steel`, `aluminum-6061`,
+// `stainless-304`, `stainless-316`, `copper`, `brass`, `fr4`, `tpu-95a`,
+// `silicone`, `polycarbonate`, `delrin`, `acrylic`, `pla`, `petg`, `abs`,
+// `asa`, `nylon`) and the registry's aliases (`steel` -> mild-steel,
+// `aluminum`/`aluminium` -> aluminum-6061, `pet` -> petg, `stainless` ->
+// stainless-304, `fr-4` -> fr4, `tpu` -> tpu-95a, `pc` -> polycarbonate,
+// `pom` -> delrin, `pmma` -> acrylic). The resolved `name` is always the
+// canonical grade.
 //
 // A name outside the registry is NOT guessed: `resolveFeaMaterial` returns a
 // structured failure naming the valid grades, and the caller turns that into
