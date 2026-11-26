@@ -22,6 +22,12 @@ export interface AddFeatureOptions {
    * contract: they compose a declaration and adjust the return themselves.
    */
   guardReturnEffect?: boolean;
+  /**
+   * Stricter opt-in for typed immutable-Shape editors whose emitted statement
+   * must replace the top-level return value. Implies `guardReturnEffect: true`
+   * and fails closed when a declaration cannot retarget the top-level return.
+   */
+  requireReturnRewrite?: boolean;
 }
 
 /**
@@ -52,8 +58,11 @@ export function addFeature(
   const indentMatch = returnLine.match(/^(\s*)/);
   const indent = indentMatch ? indentMatch[1] : '';
 
-  const effect = options.guardReturnEffect === true
-    ? classifyFeatureCode(code, feature_code, returnIndex)
+  const shouldGuard = options.guardReturnEffect === true || options.requireReturnRewrite === true;
+  const effect = shouldGuard
+    ? classifyFeatureCode(code, feature_code, returnIndex, {
+        requireReturnRewrite: options.requireReturnRewrite === true,
+      })
     : { kind: 'insert' as const };
   const carriageReturn = returnLine.endsWith('\r') ? '\r' : '';
   if (effect.kind === 'reject') {
@@ -67,7 +76,7 @@ export function addFeature(
       lines[returnIndex] = `${effect.returnLine}${carriageReturn}`;
       return { ok: true, new_code: lines.join('\n') };
     }
-    lines.splice(returnIndex, 0, `${indent}${feature_code}`);
+    lines.splice(returnIndex, 0, `${indent}${feature_code}${carriageReturn}`);
     lines[returnIndex + 1] = `${effect.returnLine}${carriageReturn}`;
     return { ok: true, new_code: lines.join('\n') };
   }

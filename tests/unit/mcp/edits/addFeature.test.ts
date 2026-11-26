@@ -232,4 +232,28 @@ describe('addFeature primitive', () => {
     expect(r.ok).toBe(true);
     expect(r.new_code).toBe(`const plate = box(60, 40, 6);\r\nreturn plate.fillet(1.5);\r\n`);
   });
+
+  it('requireReturnRewrite fails closed for a declaration that does not derive from the returned binding', () => {
+    const code = [
+      `const plate = box(60, 40, 6);`,
+      `const other = box(10, 10, 10);`,
+      `return other;`,
+    ].join('\n');
+    const r = addFeature(code, `const drafted = plate.draft(5, { face: "top" });`, { requireReturnRewrite: true });
+    expect(r.ok).toBe(false);
+    expect(r.errorCode).toBe('feature.add.expression-unused');
+    expect(r.new_code).toBeUndefined();
+  });
+
+  it('requireReturnRewrite fails closed when the script returns an assembly expression', () => {
+    const code = [
+      `const plate = box(60, 40, 6);`,
+      `const lid = box(60, 40, 2);`,
+      `return assembly([plate, lid]);`,
+    ].join('\n');
+    const r = addFeature(code, `const embossed = plate.embossText({ textContent: "QA", size: 8, depth: 1, face: 'top' });`, { requireReturnRewrite: true });
+    expect(r.ok).toBe(false);
+    expect(r.errorCode).toBe('feature.add.expression-unused');
+    expect(r.new_code).toBeUndefined();
+  });
 });

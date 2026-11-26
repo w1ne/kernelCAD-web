@@ -90,7 +90,7 @@ describe('add_pattern_feature MCP tool', () => {
     expect(out.new_code).toContain('count: 2');
   });
 
-  it('honors assign_to with a const binding', async () => {
+  it('honors assign_to with a const binding and rewrites return', async () => {
     const out = await addPatternFeatureTool({
       code: baseCode, target: 'plate', kind: 'linear',
       linear: { count: 4, direction: [1, 0, 0], spacing: 20 },
@@ -98,6 +98,23 @@ describe('add_pattern_feature MCP tool', () => {
     });
     expect(out.ok).toBe(true);
     expect(out.new_code).toContain('const arrayedPlate = plate.patternLinear');
+    expect(out.new_code).toMatch(/return arrayedPlate;\s*$/);
+  });
+
+  it('fails closed with assign_to when the pattern target is not the returned binding', async () => {
+    const out = await addPatternFeatureTool({
+      code: [
+        'const plate = box(100, 60, 6);',
+        'const other = box(10, 10, 10);',
+        'return other;',
+      ].join('\n'),
+      target: 'plate', kind: 'linear',
+      linear: { count: 4, direction: [1, 0, 0], spacing: 20 },
+      assign_to: 'arrayedPlate',
+    });
+    expect(out.ok).toBe(false);
+    expect(out.errorCode).toBe('feature.add.expression-unused');
+    expect(out.new_code).toBeUndefined();
   });
 
   it('rejects kind=linear without linear field', async () => {

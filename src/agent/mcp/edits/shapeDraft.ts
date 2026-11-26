@@ -55,7 +55,7 @@ export function shapeDraftEdit(input: ShapeDraftInput): AddFeatureResult {
   if (input.pull_dir !== undefined) optsParts.push(`pullDir: ${JSON.stringify(input.pull_dir)}`);
 
   const feature_code = `const ${binding} = ${input.shape_binding}.draft(${JSON.stringify(input.angle_deg)}, { ${optsParts.join(', ')} });`;
-  return addFeature(input.code, feature_code);
+  return addFeature(input.code, feature_code, { requireReturnRewrite: true });
 }
 
 function bindingError(input: ShapeDraftInput): string | undefined {

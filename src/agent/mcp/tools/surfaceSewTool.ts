@@ -31,7 +31,7 @@ export async function surfaceSewTool(input: SurfaceSewInput): Promise<SurfaceSew
   }
   const evalResult = await evaluateScriptTool({ code: edit.new_code });
   return {
-    ok: true,
+    ok: evalResult.ok,
     new_code: edit.new_code,
     step: evalResult.step,
     sceneSummary: evalResult.sceneSummary,

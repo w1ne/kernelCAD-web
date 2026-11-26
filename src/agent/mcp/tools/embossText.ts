@@ -20,12 +20,17 @@ export interface EmbossTextOutput {
   diagnostics?: CompilerDiagnostic[];
   sceneSummary?: SceneSummary;
   error?: string;
+  errorCode?: string;
 }
 
 export async function embossTextTool(input: EmbossTextInput): Promise<EmbossTextOutput> {
   const edit = addEmbossText(input);
   if (!edit.ok || !edit.new_code) {
-    return { ok: false, error: edit.error };
+    return {
+      ok: false,
+      error: edit.error,
+      ...(edit.errorCode ? { errorCode: edit.errorCode } : {}),
+    };
   }
   const evalResult = await evaluateScriptTool({ code: edit.new_code });
   return {

@@ -76,19 +76,19 @@ describe('shapeDraftEdit validation', () => {
 });
 
 describe('shapeDraftEdit emission', () => {
-  it('derives the next _drafted_N binding and inserts the statement before the return', () => {
+  it('derives the next _drafted_N binding and rewrites the top-level return', () => {
     const r = shapeDraftEdit({ code: 'const a = box(1, 1, 1);\nreturn a;', shape_binding: 'a', angle_deg: 5, face: 'top' });
     expect(r).toEqual({
       ok: true,
       new_code: [
         'const a = box(1, 1, 1);',
         'const _drafted_1 = a.draft(5, { face: "top" });',
-        'return a;',
+        'return _drafted_1;',
       ].join('\n'),
     });
   });
 
-  it('keeps existing options in face, neutral_plane, pull_dir order', () => {
+  it('keeps existing options in face, neutral_plane, pull_dir order and rewrites chained return', () => {
     const r = shapeDraftEdit(base({
       angle_deg: 0,
       face: 'FaceQuery.descriptor',
@@ -102,8 +102,32 @@ describe('shapeDraftEdit emission', () => {
         "const body = box(10, 10, 10);",
         'const _drafted_2 = body.draft(1, { face: "top" });',
         'const draftedBody = _drafted_2.draft(0, { face: "FaceQuery.descriptor", neutralPlane: "bottom", pullDir: [0,0,-1] });',
-        'return _drafted_2;',
+        'return draftedBody;',
       ].join('\n'),
     });
+  });
+
+  it('fails closed when shape_binding is not the top-level returned binding', () => {
+    const r = shapeDraftEdit({
+      code: 'const a = box(10, 10, 10);\nconst b = box(5, 5, 5);\nreturn b;',
+      shape_binding: 'a',
+      angle_deg: 5,
+      face: 'top',
+    });
+    expect(r.ok).toBe(false);
+    expect(r.errorCode).toBe('feature.add.expression-unused');
+    expect(r.new_code).toBeUndefined();
+  });
+
+  it('fails closed when the script returns a non-identifier expression such as an assembly', () => {
+    const r = shapeDraftEdit({
+      code: 'const a = box(10, 10, 10);\nconst b = box(5, 5, 5);\nreturn assembly([a, b]);',
+      shape_binding: 'a',
+      angle_deg: 5,
+      face: 'top',
+    });
+    expect(r.ok).toBe(false);
+    expect(r.errorCode).toBe('feature.add.expression-unused');
+    expect(r.new_code).toBeUndefined();
   });
 });
