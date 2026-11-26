@@ -47,6 +47,8 @@ import {
 import { fixtureSolid } from '../src/modeling/parts/fixtureSolids';
 import { standardPartVerificationAttributes } from '../src/modeling/parts/standardPartRanges';
 import { fastenerCallout, kindFromFamily } from '../src/modeling/parts/fastenerDesignation';
+import { elementSolid, listElementCatalogSeedEntries, resolveElement } from '../src/modeling/parts/elements/registry';
+import { elementRecord, type ElementRequest } from '../src/modeling/parts/elements/types';
 
 // -----------------------------------------------------------------------------
 // Types
@@ -305,6 +307,35 @@ function fixtureSeedFamily(family: string): SeedFamily {
       };
     },
   };
+}
+
+function elementSeedFamilies(): SeedFamily[] {
+  const entries = listElementCatalogSeedEntries();
+  const familyNames = [...new Set(entries.map((entry) => entry.family))];
+  return familyNames.map((family) => ({
+    id: family,
+    category: 'mechanical',
+    variants: entries.filter((entry) => entry.family === family).map((entry) => ({
+      size: entry.size ?? '',
+      ...(entry.lengthMm === undefined ? {} : { lengthMm: entry.lengthMm }),
+      ...(entry.beltWidthMm === undefined ? {} : { beltWidthMm: entry.beltWidthMm }),
+    })),
+    async generate(variant) {
+      const request: ElementRequest = {
+        family,
+        size: String(variant.size ?? ''),
+        ...(typeof variant.lengthMm === 'number' ? { lengthMm: variant.lengthMm } : {}),
+        ...(typeof variant.beltWidthMm === 'number' ? { beltWidthMm: variant.beltWidthMm } : {}),
+      };
+      const element = resolveElement(request);
+      const stepBytes = await elementSolid(element).exportSTEPAsync();
+      const source = elementRecord(element);
+      const { id, name, category, standard, tags, attributes, license, connectors, connectorManifest } = source;
+      return { stepBytes, record: { id, name, category, family,
+        ...(standard === undefined ? {} : { standard }), tags, attributes, license, connectors,
+        ...(connectorManifest === undefined ? {} : { connectorManifest }) }, connectors: element.connectors };
+    },
+  }));
 }
 
 /** Stocked threads of one table, with '_' decimal keys turned back into '.'. */
@@ -1109,6 +1140,7 @@ export const SEED_FAMILIES: SeedFamily[] = [
   ...sg90Families(),
   ...servoFamilies(),
   ...FIXTURE_FAMILY_NAMES.map(fixtureSeedFamily),
+  ...elementSeedFamilies(),
 ];
 
 export async function generateSeedCatalog(

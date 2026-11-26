@@ -2,17 +2,17 @@ import { describe, it, expect } from 'vitest';
 import { listPartFamiliesTool } from '../../../src/agent/mcp/tools/listPartFamilies';
 
 describe('list_part_families — end-to-end', () => {
-  it('returns all 27 bundled families with no filter', async () => {
+  it('returns all 39 bundled families with no filter', async () => {
     const r = await listPartFamiliesTool({});
     expect(r.ok).toBe(true);
-    // ISO 4014 is its own family (`hex-head-bolt-partial`), so the generated
-    // catalog is the previous 24 families plus that one, plus the datasheet-modelled
-    // `standard-servo` and `mini-servo` (MG995/MG996R, MG90S). Names are the
-    // generateSeedCatalog family ids; a renamed or extra family fails here.
+    // Names are the generateSeedCatalog family ids; a renamed or extra family fails here.
     expect(r.families.map((f) => f.name).sort()).toEqual([
+      'aluminum-extrusion',
       'button-head-cap-screw',
       'clamping-stud',
       'deep-groove-ball-bearing',
+      'extrusion-bracket',
+      'extrusion-t-nut',
       'flange-nut',
       'flat-head-countersunk',
       'flat-washer',
@@ -21,6 +21,11 @@ describe('list_part_families — end-to-end', () => {
       'hex-head-bolt-partial',
       'hex-nut',
       'jst-xh',
+      'leadscrew',
+      'leadscrew-nut',
+      'linear-bearing',
+      'linear-carriage',
+      'linear-rail',
       'linear-shaft',
       'lock-nut',
       'lock-washer',
@@ -29,6 +34,9 @@ describe('list_part_families — end-to-end', () => {
       'pin-header',
       'servo-horn',
       'set-screw',
+      'shaft-collar',
+      'shaft-coupler',
+      'shaft-support',
       'socket-head-cap-screw',
       'spur-gear',
       'standard-servo',
@@ -37,6 +45,7 @@ describe('list_part_families — end-to-end', () => {
       'strap-clamp',
       't-slot-nut',
       'threaded-rod',
+      'timing-pulley',
     ]);
   });
 

@@ -7,6 +7,8 @@
 
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ConnectorEntry } from '../../shared/parts/connectorManifestSchema';
+import { isElementFamily, resolveElement } from './elements/registry';
+import type { ResolvedElement } from './elements/types';
 import { coarsePitchOf, iso4014ReferenceThreadMm, screwIso, type FastenerIsoDims } from './fastenerIsoDims';
 import {
   canonicalFastenerFamily,
@@ -88,7 +90,9 @@ export function resolveDetail(detail: unknown, api: string): FastenerDetail {
 export interface PartRequest {
   family: string;
   thread?: string;
+  size?: string;
   lengthMm?: number;
+  beltWidthMm?: number;
   /** Geometric detail; default `'full'`. */
   detail?: FastenerDetail;
   /** Ordering property class. ISO 10642 steel classes gain a leading zero (8.8 → 08.8). */
@@ -688,6 +692,17 @@ export function resolvePart(request: PartRequest): ResolvedPart {
     return nutPart(resolved, spec, requireRow(spec.threads, thread, resolved.family), thread, nominalMm);
   }
   return washerPart(resolved, spec, requireRow(spec.threads, thread, resolved.family), thread, nominalMm);
+}
+
+/** Resolve either a fastener/fixture row or a reusable mechanical element. */
+export function resolvePartRequest(request: PartRequest): ResolvedPart | ResolvedElement {
+  if (isElementFamily(request.family)) {
+    return resolveElement({ family: request.family,
+      ...(request.size === undefined ? {} : { size: request.size }),
+      ...(request.lengthMm === undefined ? {} : { lengthMm: request.lengthMm }),
+      ...(request.beltWidthMm === undefined ? {} : { beltWidthMm: request.beltWidthMm }) });
+  }
+  return resolvePart(request);
 }
 
 /** A stocked fastener family id, after DIN/ISO aliases. Undefined for fixtures and unknown names. */

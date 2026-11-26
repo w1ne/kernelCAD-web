@@ -1,0 +1,121 @@
+{
+  "checkedAt": "2026-11-26T23:10:40.653Z",
+  "source": "examples/parts/standard-elements-wave1.kcad.ts",
+  "sourceSha256": "415b11864e23cf0bf12d7df473ab3ed899949a1efc395db6c54f6e09356b60c3",
+  "evaluation": {
+    "ok": true,
+    "parts": {
+      "count": 5,
+      "names": [
+        "frame",
+        "rail",
+        "carriage",
+        "t-nut",
+        "pulley"
+      ]
+    },
+    "diagnostics": [],
+    "mechanism": "real",
+    "mechanismSummary": {
+      "verdict": "real",
+      "maxLevel": "ok",
+      "statement": "Motion checked: 3 poses across 1 joint (each joint at its limits), all mates satisfied, no collisions, fastened parts stay rigid. Gravity not checked.",
+      "checked": [
+        "3 poses across 1 joint (each joint at its limits)",
+        "all mates satisfied",
+        "no collisions",
+        "fastened parts stay rigid"
+      ],
+      "skipped": [],
+      "failures": []
+    }
+  },
+  "review": {
+    "ok": true,
+    "diagnostics": [
+      {
+        "id": "d1",
+        "code": "assembly.mounting-hole.unverified",
+        "severity": "info",
+        "mateName": "rail-seat",
+        "partA": "frame",
+        "message": "Mate 'rail-seat' (fastened) side 'frame.slot-neg-x': the connector origin is a vec3 point, so the hole-record gate cannot tell which face it binds (not a mismatch; the geometric hole-alignment check still covers this mate).",
+        "hint": "mounting-hole.unverified — side 'frame.slot-neg-x' uses a vec3 connector origin, so hole diameters are not compared by feature record. This is informational. To have hole() / holes() diameters compared too, bind the connector to the drilled face: origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } }."
+      },
+      {
+        "id": "d2",
+        "code": "assembly.mounting-hole.unverified",
+        "severity": "info",
+        "mateName": "rail-seat",
+        "partB": "rail",
+        "message": "Mate 'rail-seat' (fastened) side 'rail.base-mount': the connector origin is a vec3 point, so the hole-record gate cannot tell which face it binds (not a mismatch; the geometric hole-alignment check still covers this mate).",
+        "hint": "mounting-hole.unverified — side 'rail.base-mount' uses a vec3 connector origin, so hole diameters are not compared by feature record. This is informational. To have hole() / holes() diameters compared too, bind the connector to the drilled face: origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } }."
+      },
+      {
+        "id": "d3",
+        "code": "assembly.mounting-hole.unverified",
+        "severity": "info",
+        "mateName": "t-nut-seat",
+        "partA": "frame",
+        "message": "Mate 't-nut-seat' (fastened) side 'frame.slot-pos-y': the connector origin is a vec3 point, so the hole-record gate cannot tell which face it binds (not a mismatch; the geometric hole-alignment check still covers this mate).",
+        "hint": "mounting-hole.unverified — side 'frame.slot-pos-y' uses a vec3 connector origin, so hole diameters are not compared by feature record. This is informational. To have hole() / holes() diameters compared too, bind the connector to the drilled face: origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } }."
+      },
+      {
+        "id": "d4",
+        "code": "assembly.mounting-hole.unverified",
+        "severity": "info",
+        "mateName": "t-nut-seat",
+        "partB": "t-nut",
+        "message": "Mate 't-nut-seat' (fastened) side 't-nut.slot-seat': the connector origin is a vec3 point, so the hole-record gate cannot tell which face it binds (not a mismatch; the geometric hole-alignment check still covers this mate).",
+        "hint": "mounting-hole.unverified — side 't-nut.slot-seat' uses a vec3 connector origin, so hole diameters are not compared by feature record. This is informational. To have hole() / holes() diameters compared too, bind the connector to the drilled face: origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } }."
+      },
+      {
+        "id": "d5",
+        "code": "assembly.mounting-hole.unverified",
+        "severity": "info",
+        "mateName": "pulley-seat",
+        "partA": "frame",
+        "message": "Mate 'pulley-seat' (fastened) side 'frame.end-b': the connector origin is a vec3 point, so the hole-record gate cannot tell which face it binds (not a mismatch; the geometric hole-alignment check still covers this mate).",
+        "hint": "mounting-hole.unverified — side 'frame.end-b' uses a vec3 connector origin, so hole diameters are not compared by feature record. This is informational. To have hole() / holes() diameters compared too, bind the connector to the drilled face: origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } }."
+      },
+      {
+        "id": "d6",
+        "code": "assembly.mounting-hole.unverified",
+        "severity": "info",
+        "mateName": "pulley-seat",
+        "partB": "pulley",
+        "message": "Mate 'pulley-seat' (fastened) side 'pulley.hub-face': the connector origin is a vec3 point, so the hole-record gate cannot tell which face it binds (not a mismatch; the geometric hole-alignment check still covers this mate).",
+        "hint": "mounting-hole.unverified — side 'pulley.hub-face' uses a vec3 connector origin, so hole diameters are not compared by feature record. This is informational. To have hole() / holes() diameters compared too, bind the connector to the drilled face: origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } }."
+      }
+    ],
+    "diagnosticCounts": {
+      "errors": 0,
+      "info": 6
+    },
+    "mechanismSummary": {
+      "verdict": "real",
+      "maxLevel": "ok",
+      "statement": "Motion checked: 3 poses across 1 joint (each joint at its limits), all mates satisfied, no collisions, fastened parts stay rigid, holds under gravity.",
+      "checked": [
+        "3 poses across 1 joint (each joint at its limits)",
+        "all mates satisfied",
+        "no collisions",
+        "fastened parts stay rigid",
+        "holds under gravity"
+      ],
+      "skipped": [],
+      "failures": []
+    },
+    "poseEnvelope": {
+      "diagnostics": [],
+      "interferencePairs": [],
+      "samples": [
+        "current",
+        "slide:min",
+        "slide:max"
+      ],
+      "carriageTravelMm": 80
+    }
+  },
+  "scope": "Local KernelCAD evaluation and review of the committed example. This is not a deployed-platform capture, hardware test, or manufacturing acceptance."
+}

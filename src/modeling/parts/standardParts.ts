@@ -34,6 +34,12 @@ function threadSlug(t: string): string {
   return t.toLowerCase().replace('.', '-');
 }
 
+export interface StandardElementArgs {
+  size: string;
+  lengthMm?: number;
+  beltWidthMm?: 6 | 9 | 10;
+}
+
 export interface StandardParts {
   boltSHCS(args: { thread: MetricThread; lengthMm: number; detail?: FastenerDetail }): Promise<Shape>;
   boltBHCS(args: { thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10'; lengthMm: number; detail?: FastenerDetail }): Promise<Shape>;
@@ -96,6 +102,24 @@ export interface StandardParts {
   }): Promise<Shape>;
   pinHeader127(args: { pins: number }): Promise<Shape>;
   jstXH(args: { pins: 2 | 3 | 4 | 5 | 6 }): Promise<Shape>;
+  linearRail(args: StandardElementArgs): Promise<Shape>;
+  linearCarriage(args: StandardElementArgs): Promise<Shape>;
+  aluminumExtrusion(args: StandardElementArgs): Promise<Shape>;
+  extrusionBracket(args: StandardElementArgs): Promise<Shape>;
+  extrusionTNut(args: StandardElementArgs): Promise<Shape>;
+  linearBearing(args: StandardElementArgs): Promise<Shape>;
+  shaftSupport(args: StandardElementArgs): Promise<Shape>;
+  leadscrew(args: StandardElementArgs): Promise<Shape>;
+  leadscrewNut(args: StandardElementArgs): Promise<Shape>;
+  shaftCollar(args: StandardElementArgs): Promise<Shape>;
+  shaftCoupler(args: StandardElementArgs): Promise<Shape>;
+  timingPulley(args: StandardElementArgs): Promise<Shape>;
+}
+
+function elementPart(ctx: FetchPartCtx, family: string, args: StandardElementArgs): Promise<Shape> {
+  return placePart(ctx, { family, size: args.size,
+    ...(args.lengthMm === undefined ? {} : { lengthMm: args.lengthMm }),
+    ...(args.beltWidthMm === undefined ? {} : { beltWidthMm: args.beltWidthMm }) });
 }
 
 export function createStandardParts(ctx: FetchPartCtx): StandardParts {
@@ -142,5 +166,17 @@ export function createStandardParts(ctx: FetchPartCtx): StandardParts {
       fetch(`pin-header-254-${pins}p${angle === 'right' ? '-ra' : ''}`),
     pinHeader127: ({ pins }) => fetch(`pin-header-127-${pins}p`),
     jstXH: ({ pins }) => fetch(`jst-xh-${pins}p`),
+    linearRail: (args) => elementPart(ctx, 'linear-rail', args),
+    linearCarriage: (args) => elementPart(ctx, 'linear-carriage', args),
+    aluminumExtrusion: (args) => elementPart(ctx, 'aluminum-extrusion', args),
+    extrusionBracket: (args) => elementPart(ctx, 'extrusion-bracket', args),
+    extrusionTNut: (args) => elementPart(ctx, 'extrusion-t-nut', args),
+    linearBearing: (args) => elementPart(ctx, 'linear-bearing', args),
+    shaftSupport: (args) => elementPart(ctx, 'shaft-support', args),
+    leadscrew: (args) => elementPart(ctx, 'leadscrew', args),
+    leadscrewNut: (args) => elementPart(ctx, 'leadscrew-nut', args),
+    shaftCollar: (args) => elementPart(ctx, 'shaft-collar', args),
+    shaftCoupler: (args) => elementPart(ctx, 'shaft-coupler', args),
+    timingPulley: (args) => elementPart(ctx, 'timing-pulley', args),
   };
 }
