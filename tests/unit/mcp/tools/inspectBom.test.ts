@@ -192,6 +192,29 @@ describe("inspect({ of: 'bom' })", () => {
     expect(r.rows).toHaveLength(2);
   }, 60000);
 
+  it('infers cnc for metallic parts and 3d-print for polymers, unless process is declared', async () => {
+    const script = `
+      const arm = assembly('materials');
+      arm.part('alu_plate', box(20, 20, 5), { material: 'aluminum-6061' });
+      arm.part('steel_block', box(12, 12, 12), { material: 'mild-steel' });
+      arm.part('petg_cover', box(30, 10, 3), { material: 'petg' });
+      arm.part('bare_block', box(5, 5, 5));
+      arm.part('printed_alu', box(8, 8, 8), { material: 'aluminum-6061', process: '3d-print' });
+      return arm.model();
+    `;
+    const r = await inspectBomTool({ code: script });
+    expect(r.ok).toBe(true);
+    if (!r.ok) throw new Error('expected ok');
+
+    const byName = new Map(r.rows.map((row) => [row.name, row]));
+    expect(byName.get('alu_plate')).toMatchObject({ process: 'cnc', processSource: 'inferred' });
+    expect(byName.get('steel_block')).toMatchObject({ process: 'cnc', processSource: 'inferred' });
+    expect(byName.get('petg_cover')).toMatchObject({ process: '3d-print', processSource: 'inferred' });
+    expect(byName.get('bare_block')).toMatchObject({ process: '3d-print', processSource: 'inferred' });
+    // An explicit process still outranks the material heuristic.
+    expect(byName.get('printed_alu')).toMatchObject({ process: '3d-print', processSource: 'declared' });
+  }, 60000);
+
   it('keeps a group declared when every instance declares', async () => {
     const script = `
       const arm = assembly('demo');

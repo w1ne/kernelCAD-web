@@ -110,7 +110,7 @@ async function collectAssemblyParts(model: BuiltModel, assemblies: readonly Asse
         ...measured,
         declaredMaterial: part.material,
         declaredDensityKgPerM3: part.density,
-        modelProcess: part.process ?? inferredProcess(model.records, part.originalShape.id),
+        modelProcess: part.process ?? inferredProcess(model.records, part.originalShape.id, part.material),
         processSource: part.process !== undefined ? 'declared' : 'inferred',
         ...(part.stock !== undefined ? { stock: part.stock } : {}),
       });

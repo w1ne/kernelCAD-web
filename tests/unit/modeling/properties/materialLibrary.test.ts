@@ -28,6 +28,7 @@ import {
   ENGINEERING_MATERIAL_NAMES,
   catalogRowOf,
   engineeringMaterialProps,
+  materialFamily,
 } from '../../../../src/shared/materials/engineeringMaterials';
 import { MATERIAL_CATALOG } from '../../../../src/kinematic/beamMaterials';
 import { FEA_MATERIAL_NAMES, resolveFeaMaterial } from '../../../../src/kernel/fea/feaMaterials';
@@ -69,6 +70,14 @@ describe('materialLibrary — name → { density, finish }', () => {
       expect(a.finish).toBe(g.finish);
       // `requested` preserves the caller's spelling for provenance.
       expect(a.requested).toBe(alias);
+    }
+  });
+
+  it('classifies every grade as metal or polymer for process policy', () => {
+    const metals = ENGINEERING_MATERIAL_NAMES.filter((grade) => materialFamily(grade) === 'metal');
+    expect(metals).toEqual(['mild-steel', 'aluminum-6061']);
+    for (const grade of ENGINEERING_MATERIAL_NAMES) {
+      expect(['metal', 'polymer']).toContain(materialFamily(grade));
     }
   });
 

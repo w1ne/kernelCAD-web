@@ -36,6 +36,7 @@ import type { FabProcess } from '../../shared/fab';
 import { formatStockSpec, type StockSpec } from '../../shared/stock';
 import { fastenerCallout, kindFromFamily } from '../../modeling/parts/fastenerDesignation';
 import { tryResolveMaterial } from '../../modeling/properties/materialLibrary';
+import { canonicalMaterialName, materialFamily } from '../../shared/materials/engineeringMaterials';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 
 export type BomKind = 'fabricated' | 'purchased';
@@ -197,15 +198,28 @@ function declarationKey(part: AssemblyPartStored, proc: { process: FabProcess; d
 }
 
 /** Best-effort fabrication-process inference from a shape's capture-graph
- *  chain. A heuristic, not a CAM decision: never blocks the row. Shared
- *  with the fab-pack single-shape BOM fallback so both surfaces agree. */
-export function inferredProcess(records: readonly FeatureRecord[], shapeId: string): FabProcess {
+ *  chain and declared material. A heuristic, not a CAM decision: never blocks
+ *  the row. Shared with the fab-pack single-shape BOM fallback and cost
+ *  estimate so those surfaces agree.
+ *
+ *  A metal stock cannot be assumed printable: `mild-steel` and `aluminum-6061`
+ *  infer `cnc` because the process vocabulary has no separate metal-forming
+ *  path and a raw solid is subtractive stock. Polymer grades and an
+ *  undeclared material keep the plain-solid `3d-print` default; sheet metal
+ *  and imported solids keep their existing mappings. */
+export function inferredProcess(
+  records: readonly FeatureRecord[],
+  shapeId: string,
+  material?: string | null,
+): FabProcess {
   if (sheetMetalRoot(records, shapeId) !== undefined) return 'sheet-cut';
   const record = records.find((r) => r.id === shapeId);
   const kind = record?.kind;
   if (kind === 'importedStep' || kind === 'importedBrep' || kind === 'importedStl' || kind === 'importedMesh') {
     return 'cnc';
   }
+  const grade = canonicalMaterialName(material);
+  if (grade !== undefined && materialFamily(grade) === 'metal') return 'cnc';
   return '3d-print';
 }
 
@@ -216,7 +230,7 @@ function effectiveProcess(
   part: AssemblyPartStored,
 ): { process: FabProcess; declared: boolean } {
   if (part.process !== undefined) return { process: part.process, declared: true };
-  return { process: inferredProcess(records, part.originalShape.id), declared: false };
+  return { process: inferredProcess(records, part.originalShape.id, part.material), declared: false };
 }
 
 interface PartMeasurement {
