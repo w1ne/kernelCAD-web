@@ -1,0 +1,29 @@
+{
+  "generatedAt": "2026-11-26T21:33:15.335Z",
+  "sourceSha256": "dc8ec149d6c342132a78e674ee3c0cb12296a49b0ec55c1edc01c55af2719257",
+  "mjcfSha256": "b1db8e960cc51266f4a60af2f52dc1558ea7510724b2a2bd0a98a2a8eb776951",
+  "videoSha256": "2817ac7464d621a71900e33afc9999cf10d895f7a533029b79880f4adf0c2192",
+  "fps": 20,
+  "width": 1280,
+  "height": 720,
+  "frames": 241,
+  "durationSeconds": 12.05,
+  "invocation": "npx tsx docs/demos/contact-dynamics-20261126/run-studies.ts && npx tsx docs/demos/contact-dynamics-20261126/capture-demo.ts",
+  "evidence": "Every displayed pose and load is read from recorded native solver states. Collision geometry is projected from the exact MJCF convex pieces.",
+  "fullVideoDecode": "passed",
+  "visualInspection": {
+    "status": "reviewed",
+    "reviewedAt": "2026-11-26T21:35:19.296605+00:00",
+    "decodedFrames": [
+      "decoded-first.jpg",
+      "decoded-final.jpg"
+    ],
+    "result": "Gold 15-tooth wheel, blue anchor and red pallets are recognizable. The 4.3x entry inset shows the tooth at its loaded pallet boundary. Small wheel motion and a sustained entry load are visible. Units, acceptance failure and 0.000426 mm penetration are readable; no clipped labels. Convex-decomposition seams remain visible in the technical collision view."
+  },
+  "validation": {
+    "sourceEvaluation": "exit 0; 998 features; no diagnostics",
+    "timestepRuns": "4000 x 0.5 ms and 8000 x 0.25 ms; both fail the repeated-contact requirement",
+    "scopedLint": "run-studies.ts and capture-demo.ts passed",
+    "gitDiffCheck": "passed"
+  }
+}

@@ -14,6 +14,9 @@ import {
   type MechanismCoverage,
 } from '../../../modeling/runtime/mechanismTruth';
 import { loadMujocoSession } from '../../../modeling/runtime/mujocoSession';
+import { checkContactDynamics, type CheckContactDynamicsOutput } from './checkContactDynamics';
+import type { ContactDynamicsStudyInput } from '../../../modeling/runtime/contactDynamics';
+import { parseContactDynamicsToolInput } from './contactDynamicsInput';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export interface CheckPhysicsInput extends EvaluateInput {
@@ -21,9 +24,12 @@ export interface CheckPhysicsInput extends EvaluateInput {
   assembly?: string;
   /** Set false to run only the kinematic criteria (no physics engine). Default true. */
   physics?: boolean;
+  /** Optional explicit forward-dynamics contact acceptance run. */
+  dynamics?: unknown;
 }
 
 export type CheckPhysicsOutput =
+  | CheckContactDynamicsOutput
   | {
       ok: boolean;
       source: 'local';
@@ -32,6 +38,12 @@ export type CheckPhysicsOutput =
       coverage?: MechanismCoverage;
     }
   | { ok: false; source: 'local'; error: string; errorCode?: string };
+
+function contactStudyInput(input: CheckPhysicsInput): ContactDynamicsStudyInput | undefined {
+  if (input.dynamics === undefined) return undefined;
+  if (input.physics === false) throw new Error('Dynamics requires physics enabled.');
+  return parseContactDynamicsToolInput(input.dynamics);
+}
 
 /**
  * `verify({ check: 'physics' })` — full mechanism truth with physics.
@@ -42,6 +54,12 @@ export type CheckPhysicsOutput =
  * an agent can retry with simpler geometry or a narrower pose scope.
  */
 export async function checkPhysicsTool(input: CheckPhysicsInput): Promise<CheckPhysicsOutput> {
+  let dynamics: ContactDynamicsStudyInput | undefined;
+  try {
+    dynamics = contactStudyInput(input);
+  } catch (error) {
+    return { ok: false, source: 'local', mode: 'contact-dynamics', error: error instanceof Error ? error.message : String(error) };
+  }
   const { evaluation, model } = await evaluateAndBuildScript(input);
   if (!model || model.session.assemblies.size === 0) {
     return {
@@ -63,6 +81,7 @@ export async function checkPhysicsTool(input: CheckPhysicsInput): Promise<CheckP
       errorCode: 'feature.invalid-args',
     };
   }
+  if (dynamics !== undefined) return checkContactDynamics(arm, dynamics);
   const verdict = input.physics === false
     ? await checkMechanismTruth(arm)
     : await checkMechanismTruth(arm, { physicsCheck: true, physicsSessionFactory: loadMujocoSession });

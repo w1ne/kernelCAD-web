@@ -1,0 +1,67 @@
+{
+  "exitCode": 0,
+  "featureCount": 998,
+  "diagnostics": [],
+  "featureHealth": [],
+  "selections": [
+    {
+      "consumerFeatureId": "hole_1",
+      "selectorText": "top",
+      "syntax": "lineage",
+      "fingerprints": [
+        {
+          "entityKind": "face",
+          "geomType": "PLANE",
+          "producer": "cylinder_3",
+          "role": "top",
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "size": 167.8744591964895,
+          "centroid": [
+            3.552713678800501e-15,
+            5.798133721323502e-16,
+            1.972
+          ]
+        }
+      ],
+      "partDiagonal": 21.04860920045788
+    },
+    {
+      "consumerFeatureId": "hole_2",
+      "selectorText": "top",
+      "syntax": "lineage",
+      "fingerprints": [
+        {
+          "entityKind": "face",
+          "geomType": "PLANE",
+          "producer": "cylinder_5",
+          "role": "top",
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "size": 117.66646788461357,
+          "centroid": [
+            3.552713678800501e-15,
+            4.333897645394983e-16,
+            2.108
+          ]
+        }
+      ],
+      "partDiagonal": 17.816000322137405
+    }
+  ],
+  "requirements": {
+    "ok": true,
+    "entries": [],
+    "summary": {
+      "pass": 0,
+      "fail": 0,
+      "notEvaluated": 0
+    }
+  }
+}
