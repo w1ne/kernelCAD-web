@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import { verifyTool } from './verify';
+import { parseContactDynamicsToolInput } from './contactDynamicsInput';
 import type { CheckContactDynamicsOutput } from './checkContactDynamics';
 
 const code = `
@@ -33,6 +34,31 @@ describe('CAD contact dynamics MCP path', () => {
             dynamics: { ...dynamics, dt_seconds: 0 } }) as CheckContactDynamicsOutput;
         expect(result.ok).toBe(false);
         expect(result).toMatchObject({ mode: 'contact-dynamics', error: expect.stringContaining('timestep') });
+    });
+
+    it.each([
+        { field: 'contactModel', input: { ...dynamics, contact_model: undefined, contactModel: dynamics.contact_model } },
+        { field: 'maxNormalForceN', input: { ...dynamics, pairs: [{ ...dynamics.pairs[0], maxNormalForceN: 0 }] } },
+        { field: 'solreff', input: { ...dynamics, contact_model: { ...dynamics.contact_model, solreff: [0.002, 1] } } },
+        { field: 'minCycles', input: { ...dynamics,
+            pairs: [...dynamics.pairs, { ...dynamics.pairs[0], bodies: ['driver', 'other'] }],
+            sequence: { order: [0, 1], min_cycles: 1, minCycles: 2 },
+        } },
+    ])('rejects unknown $field before evaluating CAD', async ({ field, input }) => {
+        const result = await verifyTool({ check: 'physics', code: 'throw new Error("must not evaluate")',
+            dynamics: input }) as CheckContactDynamicsOutput;
+        expect(result).toMatchObject({ ok: false, mode: 'contact-dynamics',
+            error: expect.stringContaining(`"${field}"`) });
+    });
+
+    it('preserves arbitrary effort names and recognized optional load limits', () => {
+        const efforts = { 'wheel / drive': 0.01, 'follower.rod': 0 };
+        const parsed = parseContactDynamicsToolInput({ ...dynamics, efforts,
+            pairs: [{ ...dynamics.pairs[0], max_normal_force_n: 0, min_normal_force_n: 0 }],
+        });
+        expect(parsed.efforts).toEqual(efforts);
+        expect(parsed.pairs[0]).toMatchObject({ maxNormalForceN: 0, minNormalForceN: 0 });
+        expect(parsed.contactModel).toEqual(dynamics.contact_model);
     });
 
     it('lowers captured BRep geometry into native contacts and measures passive displacement', async () => {

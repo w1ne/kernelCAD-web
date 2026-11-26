@@ -5,6 +5,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { evaluateAndBuildScript } from '../../../src/composition/scriptEvaluation';
+import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
 import { assemblyToMjcf } from '../../../src/modeling/runtime/mjcfExport';
 import { loadMujocoSession } from '../../../src/modeling/runtime/mujocoSession';
 import { runContactDynamics } from '../../../src/modeling/runtime/contactDynamics';
@@ -14,6 +15,10 @@ import type { MujocoSession } from '../../../src/modeling/runtime/mujocoSessionC
 const folder = dirname(fileURLToPath(import.meta.url));
 const source = await readFile(join(folder, 'escapement.kcad.ts'), 'utf8');
 const sha256 = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
+// Composition success alone does not check physical seating or mechanism geometry.
+const mcpEvaluation = await evaluateScriptTool({ code: source });
+await writeFile(join(folder, 'mcp-evaluation.json'), JSON.stringify(mcpEvaluation, null, 2) + '\n');
+if (!mcpEvaluation.ok || mcpEvaluation.mechanism !== 'real') throw new Error('Full MCP geometry validation failed; inspect mcp-evaluation.json.');
 const { evaluation, model } = await evaluateAndBuildScript({ code: source });
 await writeFile(join(folder, 'evaluation.json'), JSON.stringify(evaluation, null, 2) + '\n');
 if (!model || model.session.assemblies.size !== 1) throw new Error(JSON.stringify(evaluation));
@@ -77,3 +82,6 @@ const proof = {
   settings, runs,
 };
 await writeFile(join(folder, 'results.json'), JSON.stringify(proof, null, 2) + '\n');
+
+// The MCP evaluator owns a loopback viewer in this standalone process.
+process.exit(0);

@@ -28,6 +28,19 @@ positions from a phase formula. Neither source supplies a pendulum, balance spri
 calibrated mass/inertia, drive torque, or measured friction. Their hashes and reference
 URLs are in [provenance.json](provenance.json). Neither original was modified.
 
+## Physical seating gate
+
+The full local MCP evaluator reports `ok: true`, `mechanism: real`, 998 features,
+and no diagnostics. This is the geometry and kinematic gate, not the independent
+contact-dynamics verdict below. The study runner requires this gate before running
+MuJoCo. A successful composition build alone is insufficient.
+
+The anchor bore is cut after all unions at the explicit arbor axis. The clamp jaws
+form open seats at the unchanged pallet back faces, rather than occupying ruby
+volume. Matching fixed connectors lie on those shared faces. No overlap ignore list
+or disabled-validation option is used. These corrections change support geometry
+and inertia; the tooth and pallet contact profiles remain unchanged.
+
 ## Measured results on 2026-11-26
 
 | Metric | 0.50 ms timestep | 0.25 ms timestep |
@@ -36,7 +49,7 @@ URLs are in [provenance.json](provenance.json). Neither original was modified.
 | Entry contact episodes | 3 | 2 |
 | Exit contact episodes | 0 | 0 |
 | Completed entry-to-exit sequences | 0 | 0 |
-| Peak entry normal force | 53.8942 mN | 45.5350 mN |
+| Peak entry normal force | 53.8915 mN | 45.5345 mN |
 | Maximum entry penetration | 0.7710 micrometers | 0.4258 micrometers |
 | Wheel advance | 0.11116 degrees | 0.11116 degrees |
 | Acceptance result | FAIL | FAIL |
@@ -80,7 +93,9 @@ npx tsx docs/demos/contact-dynamics-20261126/capture-demo.ts
 - [escapement.kcad.ts](escapement.kcad.ts): native source and explicit assumptions.
 - [run-studies.ts](run-studies.ts): CAD compilation and the two independent solver runs.
 - [settings.json](settings.json): declared controls and acceptance requirements.
-- [evaluation.json](evaluation.json): source evaluation; exit code 0 and no diagnostics.
+- [evaluation.json](evaluation.json): composition evaluation; exit code 0 and no diagnostics.
+- [mcp-evaluation.json](mcp-evaluation.json): full MCP geometry and mechanism checks; green with no diagnostics.
+- [evaluate-mcp.ts](evaluate-mcp.ts): standalone full MCP gate for this fixture.
 - [model.xml](model.xml): compiled collision geometry, joints, inertia and exclusions.
 - [results.json](results.json): complete acceptance results and sampled native poses/loads.
 - [capture-demo.ts](capture-demo.ts): deterministic replay renderer, never a motion driver.

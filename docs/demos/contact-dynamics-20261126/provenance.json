@@ -5,5 +5,6 @@
   "sourceCadSha256": "7156795a0043a8ccc2972706742f87f871fa307376c3847c88f760b459cd383e",
   "adaptation": "Unbevelled eight-point tooth outlines,24-sample conjugate pallet impulse profiles and18-segment locking arcs ported from renderer equations. Native CAD derivative adds five bodies, two free hinges and two fixed pallet attachments. Scale/densities/drive/loss/contact parameters are declared assumptions.",
   "sourceDiscrepancy": "Saved CAD uses rectangular pallet stones and different phase/center-distance formulas; no joints or dynamics; validation disabled. Rendered source uses conjugate profiles but prescribes both wheel and anchor positions. Neither contains an oscillator or calibrated physical properties.",
-  "originalModified": false
+  "originalModified": false,
+  "supportCorrections": "Arbor bore cut after anchor unions at explicit axis; open pallet seats terminate at the unchanged 59-degree ruby back faces; fixed connectors lie on those shared faces. No tooth or pallet contact profile changes."
 }

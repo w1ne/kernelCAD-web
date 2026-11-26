@@ -37,7 +37,9 @@ Declare explicit convex collision pieces on each observed part with `part.collis
 
 Use measured part mass or density and joint damping where available. Results list parts whose density was assumed. Missing collision pieces, corrected substitute inertia, unsupported mates, hidden actuators and invalid numerical inputs return an error. The displayed solid alone does not establish contact-model fidelity.
 
-The optional contact model sets sliding/torsional/rolling friction, contact time constant and damping ratio, and impedance bounds/transition width. Defaults are simulation assumptions. The positive time constant must be at least twice the selected timestep. Compare the same duration at a smaller timestep before accepting a force estimate.
+The optional contact model records a sliding/torsional/rolling friction tuple, contact time constant and damping ratio, and impedance bounds/transition width. The current native export uses `condim=3`: normal contact and sliding friction in the tangent plane. Torsional and rolling coefficients remain in the configuration but are inactive. Active friction has a MuJoCo engine minimum of `1e-5`; a zero sliding coefficient therefore does not create an exactly frictionless contact.
+
+Defaults are simulation assumptions. The first two impedance values must be ordered within the inclusive range `[0.0001, 0.9999]`, with a positive transition width, so accepted values are not silently clamped by the engine. The positive contact time constant must be at least twice the selected timestep. Compare the same duration at a smaller timestep before accepting a force estimate.
 
 ## Read the report
 
@@ -57,3 +59,5 @@ The [mechanical session guide](https://github.com/w1ne/kernelCAD-web/blob/develo
 
 - [MuJoCo contact modeling](https://mujoco.readthedocs.io/en/stable/modeling.html)
 - [MuJoCo contact-force API](https://mujoco.readthedocs.io/en/stable/APIreference/APIfunctions.html#mj-contactforce)
+- [MuJoCo contact dimensions](https://mujoco.readthedocs.io/en/stable/XMLreference.html#body-geom-condim)
+- [MuJoCo engine constants](https://mujoco.readthedocs.io/en/stable/APIreference/APIglobals.html#engine-constants)
