@@ -46,6 +46,33 @@ describe("inspect({ of: 'bom' })", () => {
     expect(bracketRow!.instancePaths).toEqual(['bracket_0', 'bracket_1', 'bracket_2']);
   }, 60000);
 
+  it('accepts electronics and hardware grades in a multi-process BOM (issue #1794)', async () => {
+    const code = `
+      const arm = assembly('esp32-field-sensor-pod');
+      arm.part('al_housing', box(80, 50, 20), { material: 'aluminum-6061' });
+      arm.part('esp32_pcb', box(70, 44, 1.6).translate(0, 0, 8), { material: 'fr4' });
+      arm.part('gasket', box(78, 48, 1.5), { material: 'tpu-95a' });
+      arm.part('m3_screw', cylinder(8, 1.5), { material: 'stainless-304' });
+      return arm.model();
+    `;
+    const r = await inspectBomTool({ code });
+    if (!r.ok) throw new Error(r.error);
+    expect(r.ok).toBe(true);
+    const byName = new Map(r.rows.flatMap((row) =>
+      row.instancePaths.map((path) => [path, row] as const),
+    ));
+    expect(byName.get('esp32_pcb')?.material).toBe('fr4');
+    expect(byName.get('esp32_pcb')?.massGPerUnit).not.toBeNull();
+    expect(byName.get('gasket')?.material).toBe('tpu-95a');
+    expect(byName.get('gasket')?.process).toBe('3d-print');
+    expect(byName.get('m3_screw')?.material).toBe('stainless-304');
+    expect(byName.get('m3_screw')?.process).toBe('cnc');
+    expect(byName.get('al_housing')?.process).toBe('cnc');
+    // Every row has a real density source, so the total mass is complete.
+    expect(r.diagnostics.some((d) => d.code === 'bom.material.unassigned')).toBe(false);
+    expect(r.totals.totalMassG).not.toBeNull();
+  }, 60000);
+
   it('groups the four catalog fasteners into one purchased row by catalog id, not name', async () => {
     const r = await inspectBomTool({ code: ASSEMBLY_CODE });
     expect(r.ok).toBe(true);
