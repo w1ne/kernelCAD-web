@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
-import { verifyTool } from './verify';
+import { callMcpTool } from '../toolRegistry';
 import { parseContactDynamicsToolInput } from './contactDynamicsInput';
 import type { CheckContactDynamicsOutput } from './checkContactDynamics';
 
@@ -30,7 +30,7 @@ const dynamics = {
 
 describe('CAD contact dynamics MCP path', () => {
     it('rejects invalid dynamics before evaluating CAD', async () => {
-        const result = await verifyTool({ check: 'physics', code: 'throw new Error("must not evaluate")',
+        const result = await callMcpTool('verify', { check: 'physics', code: 'throw new Error("must not evaluate")',
             dynamics: { ...dynamics, dt_seconds: 0 } }) as CheckContactDynamicsOutput;
         expect(result.ok).toBe(false);
         expect(result).toMatchObject({ mode: 'contact-dynamics', error: expect.stringContaining('timestep') });
@@ -45,7 +45,7 @@ describe('CAD contact dynamics MCP path', () => {
             sequence: { order: [0, 1], min_cycles: 1, minCycles: 2 },
         } },
     ])('rejects unknown $field before evaluating CAD', async ({ field, input }) => {
-        const result = await verifyTool({ check: 'physics', code: 'throw new Error("must not evaluate")',
+        const result = await callMcpTool('verify', { check: 'physics', code: 'throw new Error("must not evaluate")',
             dynamics: input }) as CheckContactDynamicsOutput;
         expect(result).toMatchObject({ ok: false, mode: 'contact-dynamics',
             error: expect.stringContaining(`"${field}"`) });
@@ -61,12 +61,17 @@ describe('CAD contact dynamics MCP path', () => {
         expect(parsed.contactModel).toEqual(dynamics.contact_model);
     });
 
-    it('lowers captured BRep geometry into native contacts and measures passive displacement', async () => {
-        const result = await verifyTool({ check: 'physics', code, dynamics }) as CheckContactDynamicsOutput;
+    it('runs native contact dynamics through the registry with arbitrary declared effort names', async () => {
+        const namedCode = code.replace("arm.mate('drive',", "arm.mate('wheel / drive',")
+            .replace("arm.mate('passive',", "arm.mate('follower.rod',");
+        const study = { ...dynamics, efforts: { 'wheel / drive': 0.01, 'follower.rod': 0 } };
+        const original = structuredClone(study);
+        const result = await callMcpTool('verify', { check: 'physics', code: namedCode, dynamics: study }) as CheckContactDynamicsOutput;
+        expect(study).toEqual(original);
         expect(result.ok).toBe(true);
         if (!('pairs' in result)) throw new Error(JSON.stringify(result));
         expect(result.pairs[0].peakNormalForceN).toBeGreaterThan(0.01);
-        expect(result.finalJoints.find(j => j.name === 'passive')?.appliedEffort).toBe(0);
-        expect(Math.abs(result.finalJoints.find(j => j.name === 'passive')!.position)).toBeGreaterThan(0.001);
+        expect(result.finalJoints.find(j => j.kind === 'slide')?.appliedEffort).toBe(0);
+        expect(Math.abs(result.finalJoints.find(j => j.kind === 'slide')!.position)).toBeGreaterThan(0.001);
     }, 60000);
 });
