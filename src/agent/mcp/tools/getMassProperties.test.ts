@@ -182,9 +182,16 @@ describe('inspect({ of: "mass" })', () => {
   });
 
   it('rejects a finish-only token as a material with a .finish hint', async () => {
-    const r = await getMassPropertiesTool({ code: 'return box(10, 10, 10);', material: 'brass' });
+    const r = await getMassPropertiesTool({ code: 'return box(10, 10, 10);', material: 'glass' });
     expect(r.ok).toBe(false);
-    expect(r.error).toMatch(/\.finish\('brass'\)/);
+    expect(r.error).toMatch(/\.finish\('glass'\)/);
+  });
+
+  it('accepts brass as a grade now that it has a catalog density (issue #1794)', async () => {
+    const r = await getMassPropertiesTool({ code: 'return box(10, 10, 10);', material: 'brass' });
+    expect(r.ok).toBe(true);
+    expect(r.massProperties!.material).toBe('brass');
+    expect(r.massProperties!.densitySource).toBe('material');
   });
 
   it('rejects passing both density and material', async () => {
