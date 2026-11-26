@@ -268,6 +268,40 @@ describe('importSvgText — elements', () => {
   });
 });
 
+describe('importSvgText — skewX / skewY transforms', () => {
+  it('a skewX rect becomes the sheared parallelogram, flipped into Y-up', () => {
+    const r = importSvgText(svg(
+      '<g transform="translate(15 15) skewX(45)"><rect x="-5" y="-5" width="10" height="10"/></g>',
+      'width="40mm" height="30mm" viewBox="0 0 40 30"',
+    ));
+    const pts = points(r.regions[0].commands).map(p => p.map(v => Math.round(v * 1e9) / 1e9).join(','));
+    // SVG corners (10,10) (20,10) (20,20) (10,20) shear by x += y - 15 to
+    // (5,10) (15,10) (25,20) (15,20); the flip y -> 30 - y puts the SVG top
+    // edge at Y = 20, so the top edge leans LEFT of the bottom edge.
+    expect(new Set(pts)).toEqual(new Set(['5,20', '15,20', '25,10', '15,10']));
+    expect(r.regions[0].areaMm2).toBeCloseTo(100, 9);
+  });
+
+  it('a skewY circle becomes an exact oblique ellipse with the circle area', () => {
+    const r = importSvgText(svg(
+      '<circle cx="0" cy="0" r="6" transform="translate(20 15) skewY(-20)"/>',
+      'width="40mm" height="30mm" viewBox="0 0 40 30"',
+    ));
+    const arcs = nurbsOf(r.regions[0].commands);
+    expect(arcs).toHaveLength(4);
+    // Each quarter's u = 1/2 point lies on the sheared circle: undo the flip
+    // and the shear, and it is 6 mm from the centre.
+    const t = Math.tan((20 * Math.PI) / 180);
+    for (const arc of arcs) {
+      const [x, Y] = rationalMid(arc);
+      const lx = x - 20;
+      const ly = 30 - Y - 15 + t * lx;
+      expect(Math.hypot(lx, ly)).toBeCloseTo(6, 9);
+    }
+    expectAreaNear(r.regions[0].areaMm2, 36 * Math.PI);
+  });
+});
+
 describe('importSvgText — <use> references', () => {
   function extent(commands: readonly SketchCommand[]): [number, number, number, number] {
     const pts = points(commands);
@@ -639,8 +673,8 @@ describe('importSvgText — failure paths name what went wrong', () => {
   });
 
   it('an unsupported transform function names itself', () => {
-    const e = failure(() => importSvgText(svg('<g transform="skewX(20)"><rect x="0" y="0" width="1" height="1"/></g>')));
-    expect(e.message).toMatch(/transform function 'skewX\(\.\.\.\)' is not supported/);
+    const e = failure(() => importSvgText(svg('<g transform="perspective(20)"><rect x="0" y="0" width="1" height="1"/></g>')));
+    expect(e.message).toMatch(/transform function 'perspective\(\.\.\.\)' is not supported/);
   });
 
   it('a bad path command names the character and its offset', () => {

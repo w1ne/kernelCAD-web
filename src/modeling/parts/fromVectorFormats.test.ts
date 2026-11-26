@@ -671,6 +671,39 @@ describe('lib.fromSVG — round trip to a solid', () => {
       max: [expect.closeTo(80, 6), expect.closeTo(50, 6), expect.closeTo(3, 6)],
     });
   });
+
+  it('imports skewX / skewY cut-outs as the sheared parallelogram and oblique ellipse', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: process.cwd() });
+
+    const [outline, ...holes] = await api.lib.fromSVG('examples/interoperability/svg-skew/skew-bracket-plate.svg');
+    expect(holes).toHaveLength(2);
+    let solid = outline.extrude(3);
+    for (const hole of holes) solid = solid.subtract(hole.extrude(3));
+    const backend = await lower(session, solid.id);
+    const shape = backend.getReplicadShape();
+    expect(isValidShape(getOC(), shape.wrapped)).toBe(true);
+    // A shear has determinant 1: 60 x 30 plate less a 10 x 16 parallelogram
+    // and an r 6 disc sheared into an ellipse.
+    const exact = (1800 - 160 - 36 * Math.PI) * 3;
+    expect(Math.abs(backend.volume() - exact) / exact).toBeLessThan(1e-6);
+    expect(backend.boundingBox()).toMatchObject({
+      min: [expect.closeTo(0, 6), expect.closeTo(0, 6), expect.closeTo(0, 6)],
+      max: [expect.closeTo(60, 6), expect.closeTo(30, 6), expect.closeTo(3, 6)],
+    });
+    // Shear direction: at Y 21.5..22.5 (SVG y 7.5..8.5, near the slot top)
+    // skewX(30) shifts the slot 3.75..4.33 mm toward -X, so it covers
+    // x 6.25..15.67 there. The opposite shear would cover x 13.75..24.33.
+    const inSlot = OcctBackend.box(1, 1, 3, false).translate(7, 21.5, 0);
+    expect(backend.intersect(inSlot).volume()).toBeLessThan(1e-6);
+    const inPlate = OcctBackend.box(1, 1, 3, false).translate(21, 21.5, 0);
+    expect(backend.intersect(inPlate).volume()).toBeCloseTo(3, 6);
+    // Four quarter-ellipse bore walls are swept NURBS; the rest are four
+    // outer sides, four slot sides and two caps.
+    const types = shape.faces.map(face => face.geomType);
+    expect(types.filter(type => type === 'PLANE')).toHaveLength(4 + 4 + 2);
+    expect(types).toHaveLength(4 + 4 + 4 + 2);
+  });
 });
 
 describe('lib.fromDXF / lib.fromSVG — failures surface as actionable KernelErrors', () => {
