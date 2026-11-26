@@ -203,6 +203,9 @@ export async function callMcpTool(name: string, input: Record<string, unknown>):
   const args = definition
     ? foldMcpInputAliases(definition.inputSchema, input) as Record<string, unknown>
     : input;
+  // This new contract is strictly snake_case. Preserve its supplied keys so
+  // alias mirroring neither invents fields nor hides misspelled limits.
+  if (name === 'verify' && Object.hasOwn(input, 'dynamics')) args.dynamics = input.dynamics;
   // Sandbox mode: refuse out-of-workspace paths / network URLs before the
   // handler runs (no-op when the sandbox is off). See ./sandboxArgs.ts.
   guardMcpToolArgs(name, args);
