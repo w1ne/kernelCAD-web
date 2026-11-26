@@ -11,6 +11,7 @@ import {
   searchFastenerLibrary,
   withFastenerDesignation,
 } from './fastenerSearch';
+import { isElementLibraryQuery, searchElementLibrary } from './elements/search';
 import { remoteFindParts, RemoteDisabledError } from './remoteClient';
 import type { LicenseClass, PartRecord } from '../../shared/parts/types';
 
@@ -96,6 +97,12 @@ function mergeFastenerTable(query: string, opts: FindPartOpts, catalogHits: Part
   ];
 }
 
+function mergeElementTable(query: string, opts: FindPartOpts, catalogHits: PartRecord[]): PartRecord[] {
+  const table = searchElementLibrary(query, opts);
+  const seen = new Set(catalogHits.map((record) => record.id));
+  return [...catalogHits, ...table.filter((record) => !seen.has(record.id))];
+}
+
 export async function findPartHost(
   query: string,
   opts: FindPartOpts = {},
@@ -103,14 +110,18 @@ export async function findPartHost(
   const source = opts.source ?? 'auto';
   const catalog = loadCatalog();
   const libraryQuery = isFastenerLibraryQuery(query, opts);
+  const elementQuery = isElementLibraryQuery(query, opts);
   const catalogOpts = buildCatalogQueryOpts(opts);
-  if (libraryQuery) catalogOpts.limit = 5000;
+  if (libraryQuery || elementQuery) catalogOpts.limit = 5000;
   let local = filterByLicenseClass(
     queryCatalog(catalog, query, catalogOpts),
     opts.licenseClass,
   );
   if (libraryQuery) {
     local = filterByLicenseClass(mergeFastenerTable(query, opts, local), opts.licenseClass);
+  }
+  if (elementQuery) {
+    local = filterByLicenseClass(mergeElementTable(query, opts, local), opts.licenseClass);
   }
   const limit = opts.limit ?? 10;
   const remoteCandidate = remotePartsConfigured(opts);

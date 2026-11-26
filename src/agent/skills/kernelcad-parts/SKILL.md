@@ -1,13 +1,13 @@
 ---
 name: kernelcad-parts
-description: Bundled parts catalog — discover, fetch, and mate standard fasteners, bearings, motors, headers, and connectors. Use whenever the model needs an off-the-shelf component instead of hand-modeled placeholder geometry.
+description: Bundled parts catalog — discover, fetch, and mate standard fasteners, mechanical elements, bearings, motors, headers, and connectors. Use whenever a model needs a reusable component instead of hand-modeled placeholder geometry.
 ---
 
 # kernelcad-parts
 
-Load this skill when the agent needs an off-the-shelf component (M-series
-fastener, deep-groove ball bearing, NEMA stepper, pin header, JST-XH housing)
-and does not already know a STEP file path.
+Load this skill when the agent needs a standard component (fastener, motion
+element, bearing, NEMA stepper, pin header, JST-XH housing) and does not
+already know a STEP file path.
 
 The catalog ships **bundled** with the npm package — `npm install` resolves
 every bundled id offline. When a query has no bundled match, discovery and
@@ -107,6 +107,50 @@ the requirement names and the point/boundary count from the S3 range-proof CI
 job (`npm run test:standard-part-ranges`). Read those before quoting a
 range; they say "checked, not proven", and parts outside the first slice are
 listed in `STANDARD_PART_RANGE_REMAINING` instead of being claimed.
+
+## Standard and hobby mechanical elements
+
+Wave 1 adds twelve nominal, analytic families. `lib.part` synthesizes their
+solids in memory and attaches named connectors and `catalogPart` metadata;
+`lib.standard.*` exposes the same family path with typed shortcuts. Length is
+parametric for rails, extrusions, and leadscrews (50–2000, 50–3000, and
+50–1500 mm respectively). Use the industry size token as `size`:
+
+| Family | Sizes |
+|---|---|
+| `linear-rail` / `linear-carriage` | MGN7/9/12/15, HGR15/20/25; MGN7C/H through MGN15C/H, HGH15CA, HGH20CA, HGW20CC, HGH25CA |
+| `aluminum-extrusion` | 2020, 2040, 2060, 3030, 4040, 4080, v-slot-2020, v-slot-2040 |
+| `extrusion-bracket` / `extrusion-t-nut` | 2020/3030/4040 corner and plate forms; 20-series M3/M4/M5, 30-series M5/M6, 40-series M6/M8 |
+| `linear-bearing` / `shaft-support` | LM6UU–LM20UU; SK8/SK10/SK12/SK16 and SHF8/SHF10/SHF12 |
+| `leadscrew` / `leadscrew-nut` | Tr8x2/Tr8x4/Tr8x8; T8-flange and T8-anti-backlash |
+| `shaft-collar` / `shaft-coupler` | 5–20 mm solid and split collars; jaw-5x5 through jaw-10x12 and beam-5x5 through beam-8x8 |
+| `timing-pulley` | GT2 16T/20T/30T/36T/40T/60T bores, plus 20T idlers |
+
+```typescript
+const rail = await lib.standard.linearRail({ size: 'MGN12', lengthMm: 300 });
+const carriage = await lib.standard.linearCarriage({ size: 'MGN12H' });
+const extrusion = await lib.standard.aluminumExtrusion({ size: '2020', lengthMm: 450 });
+const nut = await lib.standard.extrusionTNut({ size: '20-M3' });
+const pulley = await lib.standard.timingPulley({ size: 'GT2-20T-5', beltWidthMm: 9 });
+const bearing = await lib.part({ family: 'linear-bearing', size: 'LM8UU' });
+const screw = await lib.part({ family: 'leadscrew', size: 'Tr8x8', lengthMm: 300 });
+```
+
+The corresponding shortcuts are `linearRail`, `linearCarriage`,
+`aluminumExtrusion`, `extrusionBracket`, `extrusionTNut`, `linearBearing`,
+`shaftSupport`, `leadscrew`, `leadscrewNut`, `shaftCollar`, `shaftCoupler`,
+and `timingPulley`. `find_part` accepts queries such as `MGN12 350`, `MGN12H`,
+`2020 extrusion 450`, `LM8UU`, `SK8`, `Tr8x8 300`, `T8 flange nut`,
+`jaw coupler 5x8`, `shaft collar 8`, and `GT2 20T`; stocked exemplars are
+available through `fetch_part` by their returned ids. Rails expose
+`base-mount`, `rail-axis`, `end-a`, and `end-b`; carriages expose `rail-mate`,
+`top-mount`, `front-end`, and `rear-end` for assembly mates.
+
+These solids are nominal reference envelopes with connector frames, not
+tolerance-certified purchasing geometry. Check the manufacturing drawing for
+the selected size before using it as a fit or hardware acceptance claim. The
+end-to-end slide workflow is in
+[`examples/parts/standard-elements-wave1.kcad.ts`](../../../examples/parts/standard-elements-wave1.kcad.ts).
 
 ## Fastener table — lib.part and lib.stack
 

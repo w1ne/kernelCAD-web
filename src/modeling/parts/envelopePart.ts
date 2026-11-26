@@ -14,6 +14,8 @@ import { snapshotCatalogPart, type PartRecord } from '../../shared/parts/types';
 import { isFixtureKind, type FastenerDetail, type ResolvedPart } from './familyTable';
 import { cachedFastenerSolid, threadFormFor } from './fastenerGeometry';
 import { attachPartConnectors } from './catalogConnectorAttach';
+import { elementSolid } from './elements/registry';
+import { elementRecord, type ResolvedElement } from './elements/types';
 
 export interface EnvelopeCtx {
   session: CaptureSession;
@@ -116,6 +118,29 @@ export async function synthesizeEnvelope(
     feature.metadata = {
       ...(feature.metadata ?? {}),
       catalogPart: snapshotCatalogPart(record),
+    };
+  }
+  return shape;
+}
+
+/** Browser-safe in-memory geometry path for reusable standard elements. */
+export async function synthesizeElementEnvelope(
+  ctx: EnvelopeCtx,
+  element: ResolvedElement,
+): Promise<Shape> {
+  await initOcct();
+  const backend = elementSolid(element);
+  const record = elementRecord(element);
+  const shape = ctx.session.createShape({
+    kind: 'importedStep', params: {}, inputs: {},
+    metadata: { sourcePath: `element:${element.id}` },
+  });
+  ctx.session.importedGeometry.set(shape.id, backend);
+  attachPartConnectors(ctx.session, shape.id, element.connectors);
+  const feature = ctx.session.getRecords().find((candidate) => candidate.id === shape.id);
+  if (feature) {
+    feature.metadata = {
+      ...(feature.metadata ?? {}), catalogPart: snapshotCatalogPart(record),
     };
   }
   return shape;

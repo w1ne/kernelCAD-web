@@ -13,11 +13,11 @@ import type { CaptureSession } from '../capture/captureSession';
 import {
   planStackFor,
   resolveDetail,
-  resolvePart,
+  resolvePartRequest,
   type PartRequest,
   type StackRequest,
 } from './familyTable';
-import { synthesizeEnvelope } from './envelopePart';
+import { synthesizeElementEnvelope, synthesizeEnvelope } from './envelopePart';
 
 export interface PlaceCtx {
   session: CaptureSession;
@@ -35,7 +35,8 @@ export interface PlacedStack {
 }
 
 async function shapeFor(ctx: PlaceCtx, request: PartRequest): Promise<Shape> {
-  const part = resolvePart(request);
+  const part = resolvePartRequest(request);
+  if ('size' in part) return synthesizeElementEnvelope(ctx, part);
   const detail = resolveDetail(request.detail, 'lib.part({ family, thread, lengthMm, detail })');
   if (detail === 'full') return synthesizeEnvelope(ctx, part, 'full');
   if (hasHostFs()) {
