@@ -102,14 +102,16 @@ describe('blockout_assembly', () => {
       parts: [
         { name: 'P1', bboxMm: [10, 10, 10], positionMm: [0, 0, 0], anchors: [{ name: 'floating', positionMm: [50, 50, 50] }] },
         { name: 'P2', bboxMm: [10, 10, 10], positionMm: [20, 0, 0], anchors: [{ name: 'floating', positionMm: [50, 50, 50] }] },
+        { name: 'R45', bboxMm: [10, 20, 10], positionMm: [0, 0, 0], rotationDeg: 45 },
       ],
       connections: [
         { from: 'P1.origin', to: 'P1.origin' },
         { from: 'P1.floating', to: 'P2.floating' },
+        { from: 'R45.origin', to: 'P1.origin' },
       ],
     });
     expect(result.ok).toBe(true);
-    expect(result.connection_count).toBe(2);
+    expect(result.connection_count).toBe(3);
     expect(result.script).not.toContain('.mate(');
     expect(result.script).toContain('same-part anchor reference');
     expect(result.script).toContain('anchor lies outside part solid');

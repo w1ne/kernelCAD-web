@@ -172,7 +172,8 @@ function renderPart(part: BlockoutPartInput, lines: string[]): Map<string, Emitt
     names.set(name, { emitted: name, worldMm, onBody });
     lines.push(`${bindingName}.connector(${safeString(name)}, ${frame(at)});`);
   };
-  add('origin', [0, 0, 0], true);
+  const originSourceLocal = inverseRotatePoint([-transform.shift[0], -transform.shift[1], -transform.shift[2]], rotation);
+  add('origin', [0, 0, 0], pointInBox(originSourceLocal, dims));
   add('bbox_center', transform.rotateLocal([dims[0] / 2, dims[1] / 2, dims[2] / 2]), true);
   const faces: Array<[string, Vec3]> = [
     ['bbox_x_min', [0, dims[1] / 2, dims[2] / 2]], ['bbox_x_max', [dims[0], dims[1] / 2, dims[2] / 2]],
