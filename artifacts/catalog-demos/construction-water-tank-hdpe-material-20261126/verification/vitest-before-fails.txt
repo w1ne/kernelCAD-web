@@ -1,0 +1,37 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/legacy-migrated/kernelcad-catalog-2000[39m
+
+ [31m❯[39m tests/integration/catalog/portableSiteWaterTankHdpeMaterial.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 427[2mms[22m[39m
+[31m     [31m×[31m renders the shell in polyethylene, the cap in polypropylene and the skid in steel[39m[32m 158[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/catalog/portableSiteWaterTankHdpeMaterial.test.ts[2m > [22mconstruction-equipment/portable-site-water-tank HDPE material[2m > [22mrenders the shell in polyethylene, the cap in polypropylene and the skid in steel
+[31m[1mAssertionError[22m: expected [ 'equipmentPaintColor', …(1) ] to deeply equal [ 'tankPolyethyleneColor', …(2) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   "tankPolyethyleneColor",[39m
+[32m-   "fillerCapColor",[39m
+[31m+   "equipmentPaintColor",[39m
+[2m    "structuralSteelColor",[22m
+[2m  ][22m
+
+[36m [2m❯[22m tests/integration/catalog/portableSiteWaterTankHdpeMaterial.test.ts:[2m27:95[22m[39m
+    [90m 25| [39m
+    [90m 26| [39m    expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+    [90m 27| [39m    expect(asset.params.filter((param) => param.type === 'color').map(…
+    [90m   | [39m                                                                                              [31m^[39m
+    [90m 28| [39m      'tankPolyethyleneColor', 'fillerCapColor', 'structuralSteelColor…
+    [90m 29| [39m    ])[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 00:42:36
+[2m   Duration [22m 6.72s[2m (transform 4.96s, setup 99ms, import 6.06s, tests 427ms, environment 0ms)[22m
+
