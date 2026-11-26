@@ -1,0 +1,41 @@
+{
+  "recordedDate": "2026-11-26",
+  "kernel": "Local OCCT model geometry",
+  "script": "stepped-shaft.kcad.ts",
+  "input": {
+    "profile": "stepped half-section, 100 mm long, radii 30 / 20 / 10 mm",
+    "axis": {
+      "through": [
+        0,
+        0
+      ],
+      "direction": [
+        1,
+        0
+      ]
+    }
+  },
+  "result": {
+    "analyticVolumeMm3": 119380.52083641214,
+    "volumeMm3": 119380.52083641215,
+    "volumeRelativeError": 1.2189522316046378e-16,
+    "bboxMm": [
+      100,
+      60,
+      60
+    ],
+    "solidComponents": 1,
+    "brepCheckValid": true,
+    "meshOpenEdgeCount": 0,
+    "stepBytes": 13293
+  },
+  "checks": {
+    "volumeWithin0p5Percent": true,
+    "bboxExact": true,
+    "brepCheckValid": true,
+    "oneSolid": true,
+    "watertightMesh": true,
+    "stepExportOk": true
+  },
+  "scope": "Local model validation only; not a deployed-behavior or hardware-acceptance claim."
+}

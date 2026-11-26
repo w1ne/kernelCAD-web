@@ -45,7 +45,8 @@ import {
 import { smoothSplineTangentOptions, type SmoothSplineOptions } from './smoothSplinePhases';
 
 import type { HermiteEndpoint2D, LoftPlaneSpec, LoftOptions } from './sketchOptions';
-import { ALLOWED_LOFT_KEYS, ALLOWED_EXTRUDE_KEYS, ALLOWED_SWEEP_KEYS, ALLOWED_REVOLVE_KEYS } from './sketchOptions';
+import { ALLOWED_LOFT_KEYS, ALLOWED_EXTRUDE_KEYS, ALLOWED_SWEEP_KEYS } from './sketchOptions';
+import { captureRevolveOptions, type RevolveOptions } from './revolveOptions';
 import { assertKnownKeys, assertEditableNumber, assertEditablePair, assertLoftPlaneEntry } from './sketchOptionGuards';
 export type { HermiteEndpoint2D, LoftPlaneSpec, LoftOptions } from './sketchOptions';
 
@@ -169,9 +170,15 @@ export class Sketch {
   }
 
   /**
-   * Revolve the sketch around the Z axis. The path coordinates are
-   * interpreted as `(radial-X, axial-Z)` — first coord = distance from axis,
-   * second coord = height along axis. Profile must stay on x ≥ 0.
+   * Revolve the sketch around the Z axis, or around an explicit in-plane axis.
+   * The default path coordinates are interpreted as `(radial-X, axial-Z)` —
+   * first coord = distance from the axis, second coord = height along it — and
+   * the profile must stay on x ≥ 0.
+   *
+   * `opts.axis` replaces the default axis with a line in sketch `(x, y)`
+   * coordinates: `through` is a point on the line and `direction` is its
+   * direction. The profile must stay entirely on one side of that line; a
+   * profile that crosses it is refused with `feature.revolve.crosses-axis`.
    *
    * @param opts.angleDeg sweep angle in degrees (default 360; number or
    *   ParamRef). Use a partial
@@ -184,50 +191,14 @@ export class Sketch {
    * angle range) happens at lowering time and surfaces as `feature.revolve.*`
    * diagnostics.
    */
-  revolve(opts?: { angleDeg?: Editable<number>; faceLabels?: FaceLabelsMap; symmetric?: boolean } | null): Shape {
-    // Tolerate an explicit `null`, as extrude does. A positional angle,
-    // `revolve(180)`, used to be read as an empty option bag and built a full
-    // 360° solid; reject it with the option-bag form.
-    opts ??= {};
-    if (typeof opts !== 'object' || Array.isArray(opts)) {
-      invalidArgs({
-        api: 'Sketch.revolve({ angleDeg })',
-        path: 'opts',
-        got: opts,
-        showType: true,
-        requires: 'an option object { angleDeg?, faceLabels?, symmetric? } or no argument (360°); the angle is not positional',
-        example: 'path()...close().revolve({ angleDeg: 180 })',
-        featureId: this.id,
-      });
-    }
-    assertKnownKeys(
-      opts,
-      ALLOWED_REVOLVE_KEYS,
-      this.id,
-      (key) => `Sketch.revolve: unknown option '${key}'.`,
-      'revolve',
-    );
-    const symmetric = symmetricParam(opts.symmetric, {
-      api: 'Sketch.revolve({ angleDeg, symmetric })',
-      requires: 'true (revolve angleDeg/2 to each side of the sketch plane) or false',
-      example: 'path()...close().revolve({ angleDeg: 90, symmetric: true })',
-      featureId: this.id,
-    });
-    const faceLabels = validateFaceLabels(opts.faceLabels, 'revolve');
-    const angleDeg = opts.angleDeg ?? 360;
+  revolve(opts?: RevolveOptions | null): Shape {
+    const { params, faceLabels } = captureRevolveOptions(opts, this.id);
     return this.session.createShape({
       kind: 'revolve',
       inputs: {
         sketch: { kind: 'feature', id: this.id },
       },
-      params: {
-        profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
-        // A ParamRef angle stays symbolic; the lowerer range-checks the
-        // resolved value.
-        angleDeg: toParam(angleDeg, 'deg'),
-        // Recorded only when true, so one-sided records stay byte-identical.
-        ...symmetric,
-      },
+      params,
       metadata: faceLabels ? { faceLabels } : undefined,
     });
   }
