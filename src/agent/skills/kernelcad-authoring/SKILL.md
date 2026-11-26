@@ -9,7 +9,7 @@ Write or edit `.kcad.ts` TypeScript models; run `kernelcad evaluate <file>` or `
 
 Single-file scripts refuse top-level `import`/`require` with `feature.invalid-args`; define helpers in the same file.
 
-This file is the core: units, the rules that prevent most failures, which API serves which intent, and the finish checklist. The full reference (every signature, CLI flag, material, recipe) lives in `references/*.md` beside this file; over MCP pull it with `lookup_authoring_skill({ section: '<id>' })` or `{ query: '...' }` (index at the end).
+Core: units, failure prevention, API selection and finish checks. Full signatures, CLI flags, materials and recipes are in `references/*.md`; use `lookup_authoring_skill({ section: '<id>' })` or `{ query: '...' }` over MCP (index below).
 
 ## Coordinate System
 
