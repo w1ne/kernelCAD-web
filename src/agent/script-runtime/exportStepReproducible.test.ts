@@ -38,7 +38,7 @@ describe('STEP export reproducibility', () => {
       const arm = assembly('repro');
       arm.part('base', box(20, 20, 5));
       arm.part('pin', cylinder(3, 15).translate(0, 0, 5));
-      return arm;
+      return arm.model();
     `;
     const a = await stepBytes(code);
     await nextSecond();

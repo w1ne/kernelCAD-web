@@ -21,7 +21,7 @@ const ASSEMBLY = `
   const a = assembly('pair');
   a.part('base', box(20, 20, 4).fillet(0.5), { at: [0, 0, 0] });
   a.part('post', cylinder(12, 3), { at: [10, 10, 4] });
-  return a;
+  return a.model();
 `;
 
 function countLowering(): { ids: string[] } {
