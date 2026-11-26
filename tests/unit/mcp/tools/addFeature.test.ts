@@ -79,4 +79,29 @@ describe('addFeatureTool', () => {
     expect(r.new_code).toBeUndefined();
     expect(r.sceneSummary).toBeUndefined();
   });
+
+  it('applies a bare edit to a same-line return without dropping the prefix (#1804)', async () => {
+    const r = await addFeatureTool({
+      code: `const plate = box(60, 40, 6); return plate;`,
+      feature_code: `plate.fillet(1.5)`,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.new_code).toBe(`const plate = box(60, 40, 6);\nreturn plate.fillet(1.5);`);
+    expect(r.diagnostics?.filter(d => d.severity === 'error')).toHaveLength(0);
+    // 60 x 40 x 6 = 14400 mm^3 before the fillet removes material.
+    expect(r.sceneSummary?.faceCount).toBeGreaterThan(6);
+    expect(r.sceneSummary?.volume).toBeLessThan(14400);
+  });
+
+  it('fails closed for a bare identifier instead of reporting an unchanged model (#1804)', async () => {
+    const code = [
+      `const plate = box(60, 40, 6);`,
+      `return plate;`,
+    ].join('\n');
+    const r = await addFeatureTool({ code, feature_code: `plate` });
+    expect(r.ok).toBe(false);
+    expect(r.errorCode).toBe('feature.add.expression-unused');
+    expect(r.new_code).toBeUndefined();
+    expect(r.sceneSummary).toBeUndefined();
+  });
 });

@@ -233,6 +233,49 @@ describe('addFeature primitive', () => {
     expect(r.new_code).toBe(`const plate = box(60, 40, 6);\r\nreturn plate.fillet(1.5);\r\n`);
   });
 
+  it('keeps prefix statements when the return shares their line (#1804)', () => {
+    const code = `const plate = box(60, 40, 6); return plate;`;
+    const r = guarded(code, `plate.fillet(1.5)`);
+    expect(r.ok).toBe(true);
+    expect(r.new_code).toBe(`const plate = box(60, 40, 6);\nreturn plate.fillet(1.5);`);
+    expectParseable(r.new_code);
+  });
+
+  it('inserts a derived declaration after same-line prefix statements (#1804)', () => {
+    const code = `  const plate = box(60, 40, 6); return plate;\r\n`;
+    const r = guarded(code, `const filleted = plate.fillet(1.5);`);
+    expect(r.ok).toBe(true);
+    expect(r.new_code).toBe(
+      `  const plate = box(60, 40, 6);\r\n  const filleted = plate.fillet(1.5);\r\n  return filleted;\r\n`,
+    );
+    expectParseable(r.new_code);
+  });
+
+  it('inserts after same-line prefix statements in insert-only mode (#1804)', () => {
+    const r = addFeature(`const plate = box(60, 40, 6); return plate;`, `const hole = cylinder(5, 2);`);
+    expect(r.ok).toBe(true);
+    expect(r.new_code).toBe(`const plate = box(60, 40, 6);\nconst hole = cylinder(5, 2);\nreturn plate;`);
+  });
+
+  it('does not split a braceless if that owns the return', () => {
+    const r = addFeature(`if (flag) return plate;`, `const hole = cylinder(5, 2);`);
+    expect(r.ok).toBe(true);
+    expect(r.new_code).toBe(`const hole = cylinder(5, 2);\nif (flag) return plate;`);
+  });
+
+  it('fails closed for a bare identifier that only restates the returned binding (#1804)', () => {
+    const code = [
+      `const plate = box(60, 40, 6);`,
+      `return plate;`,
+    ].join('\n');
+    for (const featureCode of [`plate`, `plate;`, `(plate)`]) {
+      const r = guarded(code, featureCode);
+      expect(r.ok).toBe(false);
+      expect(r.errorCode).toBe('feature.add.expression-unused');
+      expect(r.new_code).toBeUndefined();
+    }
+  });
+
   it('requireReturnRewrite fails closed for a declaration that does not derive from the returned binding', () => {
     const code = [
       `const plate = box(60, 40, 6);`,

@@ -167,7 +167,8 @@ function classifyBareCode(
 ): FeatureCodeEffect {
   if (statements.length === 1 && returnTarget) {
     const expression = asNode(statements[0].expression);
-    if (expression && rootIdentifier(expression) === returnTarget) {
+    // A bare `plate` would rewrite `return plate;` to itself: a silent no-op.
+    if (expression && expression.type !== 'Identifier' && rootIdentifier(expression) === returnTarget) {
       const expressionText = featureCode.slice(expression.start, expression.end).trim();
       return {
         kind: 'rewrite-return',
