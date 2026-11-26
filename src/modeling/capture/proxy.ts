@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { DrawingReviewPlan } from '../../shared/intent/drawingReview';
 import type { SheetMetalBeadOpts } from '../sheetMetalBead';
-import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3, Vec3 } from '../../shared/intent/types';
+import type { FeatureId, PatternSpec, PlaneSpec, EditableVec3, Vec3 } from '../../shared/intent/types';
 import { isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
 import { isMeshBackend } from '../../kernel/backends/meshBackend';
@@ -15,7 +15,6 @@ import type { CaptureSession } from './captureSession';
 import type { Sketch } from './sketch';
 import type { Curve3D } from './curveProxy';
 import type { ProjectCurveSource, ProjectCurveSourcePlane } from '../../shared/intent/projectCurveRecord';
-import { buildFaceInputRef, buildUpToFaceInputRef } from './shapeOperationFeatureRecords';
 import { assertProjectCurveOptions } from './projectCurveOptions';
 import { captureFilletIntersection } from './filletIntersectionCapture';
 import { captureBooleanSplit } from './booleanSplitCapture';
@@ -24,11 +23,9 @@ import type { Scene } from '../validation/scene';
 import { captureMoveFaces, captureOffsetFaces, type CanonicalFace, type FaceEditInput, type FaceSelector } from './faceEditCapture';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
 import type { Query, EdgeMarker, FaceMarker } from '../../kernel/naming/query';
-import {
-  assertCutoutOptionKeys, validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
-  resolveCutoutOpts,
-  type EditableCutoutOpts,
-} from '../validation/cutoutValidation';
+import type { EditableCutoutOpts } from '../validation/cutoutValidation';
+import type { EditablePadOpts } from '../validation/padValidation';
+import { captureCutout, capturePad } from './profileCapture';
 import { captureLattice, type LatticeOptions } from '../lattice/latticeCapture';
 import { isParamRef, isTypedParamRef, type Editable, type TypedParamRef } from '../../shared/runtime/paramRef';
 import { currentValue, paramValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
@@ -125,9 +122,6 @@ import {
   validateGridPatternOpts,
   validateLinearPatternOpts,
   validateCircularPatternOpts,
-  normalizeFaceSelector,
-  assertFeatureNameUniqueOnChain,
-  nextOrdinalForKindOnChain,
   assertScalarEdgeValue, assertFilletEndRadius, resolveShellRequest,
 } from './proxyFeatureChain';
 import { validateChamferLegOptions } from './chamferLegOptions';
@@ -1208,38 +1202,32 @@ export class Shape {
    * `feature.invalid-args`.
    */
   cutout(profile: import('./sketch').PathBuilder | import('./sketch').Sketch, opts: EditableCutoutOpts): Shape {
-    assertCutoutOptionKeys(opts, this.id);
-    const resolved = resolveCutoutOpts(opts, this.session.paramTable);
-    validateCutoutOpts(resolved, this.id);
-    // Auto-close a bare PathBuilder. Duck-type on `.close` to avoid pulling
-    // PathBuilder/Sketch class identifiers from sketch.ts (which imports Shape
-    // from this module — would create a top-level circular dep).
-    const isPathBuilder = typeof (profile as { close?: unknown }).close === 'function';
-    const sketch: import('./sketch').Sketch = isPathBuilder
-      ? (profile as import('./sketch').PathBuilder).close()
-      : (profile as import('./sketch').Sketch);
-    const sketchRecord = this.session.getRecords().find(r => r.id === sketch.id);
-    const commands = (sketchRecord?.metadata as { commands?: import('./sketch').SketchCommand[] })?.commands ?? [];
-    validateCutoutProfile(commands, this.id);
-    const faceSel = normalizeFaceSelector(opts.face);
-    const { params, metadata } = serializeCutoutParams(faceSel, opts);
-    if (opts.name !== undefined) {
-      assertFeatureNameUniqueOnChain(this.session.getRecords(), this.id, opts.name);
-    } else {
-      metadata.ordinal = nextOrdinalForKindOnChain(this.session.getRecords(), this.id, 'cutout');
-    }
-    const inputs: Record<string, FeatureRef> = {
-      target: { kind: 'feature', id: this.id },
-      profile: { kind: 'feature', id: sketch.id },
-      face: buildFaceInputRef(this.id, faceSel),
-    };
-    if (opts.upToFace !== undefined) inputs.upToFace = buildUpToFaceInputRef(this.id, opts.upToFace);
-    return this.session.createShape({
-      kind: 'cutout',
-      inputs,
-      params,
-      metadata,
-    });
+    return captureCutout(this.session, this.id, profile, opts);
+  }
+
+  /**
+   * Sketch-driven additive extrude — the counterpart of `.cutout()`. The
+   * closed profile starts on `face` and grows outward along that face's
+   * normal, then fuses into the body as one solid. Useful for bosses, pads,
+   * lugs and keyed plates whose outline hole() cannot express.
+   *
+   * Profile (x, y) use the same face frame as `.cutout()` / `.hole()`: mm
+   * from the centre of the face's outer boundary, with x along hole u. On
+   * top, front and right, profile y runs along hole v; on bottom, back and
+   * left it runs the opposite way.
+   *
+   * End the pad with `depth` (a positive height in mm) or `upToFace` (a
+   * planar body face ahead of the entry face). The result must add material
+   * and stay one connected solid; a pad parked over a void or a target face
+   * at or behind the entry face fails instead of returning a disconnected
+   * body.
+   *
+   * The profile may mix lines, arcs, `spline`, `smoothSpline`, `ellipse` /
+   * `ellipseArc`, `hermiteG2` and `nurbsSegment` segments. An unknown `opts`
+   * key throws `feature.invalid-args`.
+   */
+  pad(profile: import('./sketch').PathBuilder | import('./sketch').Sketch, opts: EditablePadOpts): Shape {
+    return capturePad(this.session, this.id, profile, opts);
   }
 
   /**

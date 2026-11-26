@@ -60,6 +60,11 @@ export function resolveCutoutOpts(opts: EditableCutoutOpts, table: ParamTable): 
 const CUTOUT_EXAMPLE =
   "plate.cutout(sketch().moveTo(0, 0).lineTo(20, 0).lineTo(20, 10).lineTo(0, 10).close(), { face: top, depth: 'through' })";
 
+/** The additive twin of {@link validateCutoutProfile} keeps one example per
+ *  operation, so a pad refusal never tells the author to cut. */
+const PAD_EXAMPLE =
+  "plate.pad(path().moveTo(0, 0).lineTo(20, 0).lineTo(20, 10).lineTo(0, 10).close(), { face: 'top', depth: 4 })";
+
 function isFiniteNumber(n: unknown): n is number {
   return typeof n === 'number' && Number.isFinite(n);
 }
@@ -231,30 +236,32 @@ export function validateCutoutOpts(opts: CutoutOpts, featureId: FeatureId | unde
 export function validateCutoutProfile(
   commands: readonly SketchCommand[],
   featureId: FeatureId | undefined,
+  op: 'cutout' | 'pad' = 'cutout',
 ): void {
+  const example = op === 'pad' ? PAD_EXAMPLE : CUTOUT_EXAMPLE;
   const closed = commands.some(c => c.kind === 'close');
   if (!closed) {
     const last = commands[commands.length - 1];
     invalidArgs({
-      api: 'cutout(profile, opts)',
+      api: `${op}(profile, opts)`,
       path: 'profile',
       gotText: `an open path of ${commands.length} segment(s), last command '${String(last?.kind ?? 'none')}', no close()`,
       requires:
         'a closed profile — the last segment must return to the start point and the path must end with .close()',
-      example: CUTOUT_EXAMPLE,
+      example,
       featureId,
     });
   }
   const crossing = hasStraightSelfIntersection(commands);
   if (crossing !== undefined) {
     invalidArgs({
-      api: 'cutout(profile, opts)',
+      api: `${op}(profile, opts)`,
       path: `profile segment ${crossing.i} × segment ${crossing.j}`,
       gotText: `a profile whose segment ${crossing.i} (from [${crossing.at[0]}, ${crossing.at[1]}]) crosses segment ${crossing.j}`,
       requires:
-        'a simple (non-self-intersecting) closed profile; walk the points in one consistent direction and remove the crossing, or split it into two cutouts',
+        `a simple (non-self-intersecting) closed profile; walk the points in one consistent direction and remove the crossing, or split it into two ${op}s`,
       unit: 'mm',
-      example: CUTOUT_EXAMPLE,
+      example,
       featureId,
     });
   }

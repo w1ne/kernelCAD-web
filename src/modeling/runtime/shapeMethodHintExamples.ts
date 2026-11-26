@@ -27,6 +27,7 @@ export const SHAPE_METHOD_HINT_EXAMPLES: Readonly<Record<string, string>> = {
   hole: "plate = plate.hole('top', { u: 0, v: 0, diameter: 3, depth: 'through' })",
   holes: "plate = plate.holes('top', { positions: [{ u: -10, v: 0 }, { u: 10, v: 0 }], diameter: 3, depth: 'through' })",
   cutout: "plate = plate.cutout(path().moveTo(-5, -3).lineTo(5, -3).lineTo(5, 3).lineTo(-5, 3).close(), { face: 'top', depth: 4 })",
+  pad: "plate = plate.pad(path().moveTo(-5, -3).lineTo(5, -3).lineTo(5, 3).lineTo(-5, 3).close(), { face: 'top', depth: 4 })",
   reflect: "plate = plate.reflect('yz')",
   mirror: "plate = plate.mirror({ plane: 'yz', offset: -1 })",
   patternLinear: 'plate = plate.patternLinear({ count: 3, direction: [1, 0, 0], spacing: 50 })',

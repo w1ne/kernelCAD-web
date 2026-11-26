@@ -43,6 +43,7 @@
         "mirror",
         "moveFaces",
         "offsetFaces",
+        "pad",
         "pattern",
         "pipe",
         "projectCurve",

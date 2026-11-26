@@ -92,7 +92,7 @@ function profileBboxRadius(commands: readonly SketchCommand[]): number {
   return maxR;
 }
 
-interface ResolvedEntry {
+export interface ResolvedEntry {
   face: Face;
   centroid: Vec3;
   normalOutward: Vec3;
@@ -100,7 +100,7 @@ interface ResolvedEntry {
   uBasis: Vec3;
 }
 
-function resolveEntry(
+export function resolveEntry(
   feature: FeatureRecord,
   target: OcctBackend,
   records: readonly FeatureRecord[] | undefined,
@@ -158,7 +158,7 @@ function deriveThroughDepth(
 /** Place the profile on `plane`. A `Drawing` has no spline or NURBS segment
  *  kinds, so a profile with one is built flat on XY by the NURBS lowerer and
  *  moved onto the plane by the plane's own local-to-world transform. */
-function profileSketchOnPlane(commands: readonly SketchCommand[], plane: replicad.Plane): replicad.Sketch {
+export function profileSketchOnPlane(commands: readonly SketchCommand[], plane: replicad.Plane): replicad.Sketch {
   if (!hasNurbsSegments(commands as SketchCommand[])) {
     return drawingFromCommands(commands).sketchOnPlane(plane) as replicad.Sketch;
   }
