@@ -3,13 +3,17 @@
 import { validateContactDynamicsStudyInput, type ContactDynamicsStudyInput, type ContactModel,
     type ContactPairRequirement } from '../../../modeling/runtime/contactDynamics';
 
-function record(value: unknown, name: string): Record<string, unknown> {
+function record(value: unknown, name: string, allowedKeys: readonly string[]): Record<string, unknown> {
     if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(`Invalid ${name} object.`);
+    const unknown = Object.keys(value).find((key) => !allowedKeys.includes(key));
+    if (unknown !== undefined) throw new Error(`Unknown ${name} field "${unknown}".`);
     return value as Record<string, unknown>;
 }
 
 function pairRequirement(value: unknown): ContactPairRequirement {
-    const pair = record(value, 'contact pair');
+    const pair = record(value, 'contact pair', [
+        'bodies', 'min_episodes', 'max_penetration_mm', 'max_normal_force_n', 'min_normal_force_n',
+    ]);
     return {
         bodies: pair.bodies as [string, string],
         minEpisodes: pair.min_episodes as number,
@@ -21,9 +25,10 @@ function pairRequirement(value: unknown): ContactPairRequirement {
 
 /** Translate the snake_case tool contract once; runtime APIs retain TypeScript naming. */
 export function parseContactDynamicsToolInput(value: unknown): ContactDynamicsStudyInput {
-    const input = record(value, 'dynamics');
+    const input = record(value, 'dynamics', ['steps', 'dt_seconds', 'efforts', 'pairs', 'contact_model', 'sequence']);
     if (!Array.isArray(input.pairs)) throw new Error('Dynamics requires an array of contact pairs.');
-    const sequence = input.sequence === undefined ? undefined : record(input.sequence, 'contact sequence');
+    const sequence = input.sequence === undefined ? undefined : record(input.sequence, 'contact sequence', ['order', 'min_cycles']);
+    if (input.contact_model !== undefined) record(input.contact_model, 'contact model', ['friction', 'solref', 'solimp']);
     const study: ContactDynamicsStudyInput = {
         steps: input.steps as number,
         dtSeconds: input.dt_seconds as number,
