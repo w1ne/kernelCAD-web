@@ -18,7 +18,6 @@ import { Shape } from '../capture/proxy';
 import type { FromSTEPContext } from './fromSTEP';
 import { importStepCached, isStepBackendHealed } from './stepParseCache';
 
-const execFileAsync = promisify(execFile);
 export const MAX_NATIVE_CAD_BYTES = 50 * 1024 * 1024;
 const MAX_CONVERTED_STEP_BYTES = 100 * 1024 * 1024;
 const CONVERSION_TIMEOUT_MS = 120_000;
@@ -209,6 +208,9 @@ async function executeCadmpeg(
   sourcePath: string,
 ): Promise<{ stdout: string; stderr: string }> {
   try {
+    // Single-file browser workers inline this host-only module. Initialize
+    // Node helpers only when the filesystem-guarded converter path is called.
+    const execFileAsync = promisify(execFile);
     return await execFileAsync(converter, args, {
       timeout: CONVERSION_TIMEOUT_MS,
       maxBuffer: CONVERSION_MAX_BUFFER_BYTES,
