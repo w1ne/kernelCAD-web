@@ -3,6 +3,7 @@
 import type { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
+import { invalidArgsText } from '../../../../shared/intent/invalidArgs';
 import { built, finished, type LowerContext, type LowerOutcome } from './context';
 
 /** `pad` — fuses a sketch-driven prism grown outward from a selected face. */
@@ -14,8 +15,14 @@ export async function lowerPad(ctx: LowerContext, r: FeatureRecord): Promise<Low
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `pad requires an input named 'target'.`,
-      hint: 'Chain .pad() onto a solid shape, passing a closed sketch profile.',
+      ...invalidArgsText({
+        api: 'pad(profile, opts)',
+        path: 'target',
+        gotText: 'no target input',
+        requires: 'a solid body chained before .pad()',
+        example: "box(40, 30, 10).pad(path().circle(0, 0, 4), { face: 'top', depth: 5 })",
+        hint: 'Chain .pad() onto a solid shape, passing a closed sketch profile.',
+      }),
     });
     throw new Error('pad: no target shape');
   }

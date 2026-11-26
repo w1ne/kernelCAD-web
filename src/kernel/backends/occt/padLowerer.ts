@@ -88,8 +88,14 @@ function resolvePadCommands(
         code: 'feature.invalid-args',
         featureId: feature.id,
         severity: 'error',
-        message: 'pad: profile sketch has no commands.',
-        hint: 'The pad profile must be a closed sketch built via path().moveTo(...).lineTo(...).close().',
+        ...invalidArgsText({
+          api: 'pad(profile, opts)',
+          path: 'profile',
+          gotText: 'a sketch with no path commands',
+          requires: 'a closed sketch built via path().moveTo(...).lineTo(...).close()',
+          example: PAD_EXAMPLE,
+          hint: 'The pad profile must be a closed sketch built via path().moveTo(...).lineTo(...).close().',
+        }),
       },
     };
   }
@@ -143,8 +149,15 @@ function resolveDepth(
       code: 'feature.invalid-args',
       featureId: feature.id,
       severity: 'error',
-      message: `pad: depth must be a positive finite number in mm; got ${String(depth)}.`,
-      hint: 'Pass opts.depth as a positive height, or opts.upToFace to end the pad on a planar body face.',
+      ...invalidArgsText({
+        api: 'pad(profile, { face, depth })',
+        path: 'opts.depth',
+        got: depth,
+        requires: 'a positive finite height in mm',
+        unit: 'mm',
+        example: PAD_EXAMPLE,
+        hint: 'Pass opts.depth as a positive height, or opts.upToFace to end the pad on a planar body face.',
+      }),
     },
   };
 }
@@ -250,8 +263,14 @@ export function lowerPad(
       code: 'feature.invalid-args',
       featureId: feature.id,
       severity: 'error',
-      message: `pad: the entry face must be planar; got a ${entrySurface} face.`,
-      hint: 'Select a planar face for the profile, or build the profile in XY, extrude it and union it. A curved entry face has no single tangent plane to grow the pad from.',
+      ...invalidArgsText({
+        api: 'pad(profile, opts)',
+        path: 'opts.face',
+        gotText: `a ${entrySurface} face`,
+        requires: 'a planar face for the profile; a curved entry face has no single tangent plane',
+        example: PAD_EXAMPLE,
+        hint: 'Select a planar face for the profile, or build the profile in XY, extrude it and union it. A curved entry face has no single tangent plane to grow the pad from.',
+      }),
     });
     return { backend: target, diagnostics };
   }

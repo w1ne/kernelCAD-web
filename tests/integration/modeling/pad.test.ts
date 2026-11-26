@@ -142,7 +142,7 @@ return shaft.pad(path().circle(0, 0, 2), { face: { ofSurfaceType: 'CYLINDER', ne
 `;
     const e = await errorOf(code);
     expect(e.code).toBe('feature.invalid-args');
-    expect(e.message).toContain('entry face must be planar');
+    expect(e.message).toContain('a planar face for the profile');
   }, 120_000);
 
   it('rejects a pad whose profile misses the body instead of returning two solids', async () => {

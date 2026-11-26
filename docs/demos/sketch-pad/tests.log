@@ -1,22 +1,22 @@
 
  RUN  v4.0.18 /data/worktrees/kernelCAD-web/foundation-parity-20261111
 
- ✓ tests/integration/modeling/pad.test.ts > Shape.pad > fuses a 10 x 10 x 5 pad to the top face as one valid solid 181ms
- ✓ tests/integration/modeling/pad.test.ts > Shape.pad > keeps a circular profile exact 43ms
+ ✓ tests/integration/modeling/pad.test.ts > Shape.pad > fuses a 10 x 10 x 5 pad to the top face as one valid solid 158ms
+ ✓ tests/integration/modeling/pad.test.ts > Shape.pad > keeps a circular profile exact 36ms
  ✓ tests/integration/modeling/pad.test.ts > Shape.pad > grows outward from a vertical side face 24ms
- ✓ tests/integration/modeling/pad.test.ts > Shape.pad > ends exactly on the plane of an upToFace target 78ms
+ ✓ tests/integration/modeling/pad.test.ts > Shape.pad > ends exactly on the plane of an upToFace target 72ms
  ✓ tests/integration/modeling/pad.test.ts > Shape.pad > resolves a ParamRef depth from the live parameter table 20ms
  ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects a zero depth 2ms
  ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects a negative depth 1ms
  ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects depth and upToFace together, and unknown option keys 3ms
- ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects a target face behind the entry face 10ms
- ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects a non-planar upToFace target 31ms
- ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects a non-planar entry face 8ms
- ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects a pad whose profile misses the body instead of returning two solids 15ms
+ ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects a target face behind the entry face 17ms
+ ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects a non-planar upToFace target 30ms
+ ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects a non-planar entry face 7ms
+ ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects a pad whose profile misses the body instead of returning two solids 16ms
  ✓ tests/integration/modeling/pad.test.ts > Shape.pad > rejects a self-intersecting profile with an actionable message 2ms
 
  Test Files  1 passed (1)
       Tests  13 passed (13)
-   Start at  08:46:07
-   Duration  4.69s (transform 3.22s, setup 84ms, import 3.81s, tests 685ms, environment 0ms)
+   Start at  09:00:48
+   Duration  4.32s (transform 2.96s, setup 78ms, import 3.50s, tests 632ms, environment 0ms)
 
