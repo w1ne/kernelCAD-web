@@ -9,6 +9,7 @@ import type { FaceSelector } from './proxy';
 
 const PATTERN_LINEAR_EXAMPLE = 'plate.patternLinear({ count: 4, direction: [1, 0, 0], spacing: 20 })';
 const PATTERN_CIRCULAR_EXAMPLE = 'plate.patternCircular({ count: 6, axis: [0, 0, 1], angleDeg: 360 })';
+const PATTERN_CIRCULAR_PIVOT_EXAMPLE = 'flange.patternCircular({ count: 6, axis: [0, 0, 1], pivot: [40, 25, 0] })';
 
 /**
  * Reject a missing / non-object pattern option bag, or one with a key the
@@ -296,14 +297,14 @@ export function validateLinearPatternOpts(
 
 /** `patternCircular` arg checks. Returns the resolved `angleDeg` (default 360). */
 export function validateCircularPatternOpts(
-  opts: { count: number; axis: [number, number, number]; angleDeg?: number },
+  opts: { count: number; axis: [number, number, number]; angleDeg?: number; pivot?: [number, number, number] },
   featureId: FeatureId,
 ): number {
     assertPatternOpts(
-      'patternCircular({ count, axis, angleDeg })',
+      'patternCircular({ count, axis, angleDeg, pivot })',
       'opts',
       opts,
-      ['count', 'axis', 'angleDeg'],
+      ['count', 'axis', 'angleDeg', 'pivot'],
       PATTERN_CIRCULAR_EXAMPLE,
       featureId,
     );
@@ -327,8 +328,21 @@ export function validateCircularPatternOpts(
         got: opts.axis,
         showType: !Array.isArray(opts.axis),
         requires:
-          'a 3-element array of finite numbers [x, y, z] — the rotation axis through the world origin ([0, 0, 1] for a bolt circle on an XY plate)',
+          'a 3-element array of finite numbers [x, y, z] — the rotation axis direction ([0, 0, 1] for a bolt circle on an XY plate); the line it turns about passes through pivot, or through the world origin when pivot is omitted',
         example: PATTERN_CIRCULAR_EXAMPLE,
+        featureId,
+      });
+    }
+    if (opts.pivot !== undefined && !isValidVec3(opts.pivot)) {
+      invalidArgs({
+        api: 'patternCircular({ pivot })',
+        path: 'opts.pivot',
+        got: opts.pivot,
+        showType: !Array.isArray(opts.pivot),
+        requires:
+          'a 3-element array of finite numbers [x, y, z] — a point ON the rotation axis in world mm, so a bolt circle centres on the boss it surrounds; omit it to rotate about the world origin',
+        unit: 'mm',
+        example: PATTERN_CIRCULAR_PIVOT_EXAMPLE,
         featureId,
       });
     }

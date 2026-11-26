@@ -1,0 +1,45 @@
+{
+  "recordedDate": "2026-11-26",
+  "kernel": "Local OCCT model geometry",
+  "scripts": [
+    "flange-bolt-circle.kcad.ts",
+    "no-pivot.kcad.ts"
+  ],
+  "api": "Shape.patternCircular({ count, axis, pivot })",
+  "cases": {
+    "withPivot": {
+      "analyticVolumeMm3": 66619.11473693544,
+      "volumeMm3": 66619.11473693543,
+      "bboxMm": [
+        90,
+        70,
+        18
+      ]
+    },
+    "withoutPivotControl": {
+      "note": "Copies rotate about the world origin, so the bolt circle leaves the flange.",
+      "bboxMinMaxMm": [
+        -76,
+        -76.00000000000001,
+        90,
+        76
+      ]
+    }
+  },
+  "result": {
+    "solidComponents": 1,
+    "brepCheckValid": true,
+    "meshOpenEdgeCount": 0,
+    "stepBytes": 33357
+  },
+  "checks": {
+    "volumeExact": true,
+    "bboxExact": true,
+    "oneSolid": true,
+    "brepCheckValid": true,
+    "watertightMesh": true,
+    "stepExportOk": true,
+    "pivotChangesPlacement": true
+  },
+  "scope": "Local model validation only; not a deployed-behavior or hardware-acceptance claim."
+}

@@ -555,6 +555,13 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
             count: { type: 'integer', minimum: 2 },
             axis: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
             angle_deg: { type: 'number', description: 'Optional; defaults to 360.' },
+            pivot: {
+              type: 'array',
+              items: { type: 'number' },
+              minItems: 3,
+              maxItems: 3,
+              description: 'Optional point ON the rotation axis in world mm; omit it to rotate about the world origin.',
+            },
           }, required: ['count', 'axis'] },
           grid:      { type: 'object', description: 'Required when kind=grid.', properties: {
             x: { type: 'object', description: 'First grid axis.', properties: {

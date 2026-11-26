@@ -1,0 +1,43 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/data/worktrees/kernelCAD-web/foundation-parity-20261111[39m
+
+ [31m×[39m tests/integration/patterns/circularPatternPivot.test.ts[2m > [22mcircular pattern pivot[2m > [22mplaces four lugs on a bolt circle about the flange centre[32m 95[2mms[22m[39m
+[31m   → expected -75 to be close to 5, received difference is 80, but expected 5e-7[39m
+ [32m✓[39m tests/integration/patterns/circularPatternPivot.test.ts[2m > [22mcircular pattern pivot[2m > [22mkeeps the world-origin behaviour when pivot is omitted[32m 28[2mms[22m[39m
+ [31m×[39m tests/integration/patterns/circularPatternPivot.test.ts[2m > [22mcircular pattern pivot[2m > [22maccepts a pivot point anywhere on the axis line[32m 32[2mms[22m[39m
+[31m   → expected -75 to be close to 5, received difference is 80, but expected 5e-7[39m
+ [32m✓[39m tests/integration/patterns/circularPatternPivot.test.ts[2m > [22mcircular pattern pivot[2m > [22mrecords the pivot on the pattern feature[32m 1[2mms[22m[39m
+ [32m✓[39m tests/integration/patterns/circularPatternPivot.test.ts[2m > [22mcircular pattern pivot[2m > [22mrejects a malformed pivot with a corrective invalid-args message[32m 3[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/patterns/circularPatternPivot.test.ts[2m > [22mcircular pattern pivot[2m > [22mplaces four lugs on a bolt circle about the flange centre
+[31m[1mAssertionError[22m: expected -75 to be close to 5, received difference is 80, but expected 5e-7[39m
+[36m [2m❯[22m tests/integration/patterns/circularPatternPivot.test.ts:[2m49:42[22m[39m
+    [90m 47| [39m    [90m// degrees about (40, 25). The union spans the full cross.[39m
+    [90m 48| [39m    [34mexpect[39m(pattern[33m.[39m[34mvolume[39m())[33m.[39m[34mtoBeCloseTo[39m([34m4_000[39m[33m,[39m [34m6[39m)[33m;[39m
+    [90m 49| [39m    [34mexpect[39m(pattern[33m.[39m[34mboundingBox[39m()[33m.[39mmin[[34m0[39m])[33m.[39m[34mtoBeCloseTo[39m([34m5[39m[33m,[39m [34m6[39m)[33m;[39m
+    [90m   | [39m                                         [31m^[39m
+    [90m 50| [39m    [34mexpect[39m(pattern[33m.[39m[34mboundingBox[39m()[33m.[39mmin[[34m1[39m])[33m.[39m[34mtoBeCloseTo[39m([33m-[39m[34m10[39m[33m,[39m [34m6[39m)[33m;[39m
+    [90m 51| [39m    [34mexpect[39m(pattern[33m.[39m[34mboundingBox[39m()[33m.[39mmin[[34m2[39m])[33m.[39m[34mtoBeCloseTo[39m([34m0[39m[33m,[39m [34m6[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/patterns/circularPatternPivot.test.ts[2m > [22mcircular pattern pivot[2m > [22maccepts a pivot point anywhere on the axis line
+[31m[1mAssertionError[22m: expected -75 to be close to 5, received difference is 80, but expected 5e-7[39m
+[36m [2m❯[22m tests/integration/patterns/circularPatternPivot.test.ts:[2m85:42[22m[39m
+    [90m 83| [39m    [35mif[39m ([33m![39mpattern) [35mthrow[39m [35mnew[39m [33mError[39m([32m'pattern did not lower'[39m)[33m;[39m
+    [90m 84| [39m    // A Z-axis through (40, 25, 500) is the same line as through (40,…
+    [90m 85| [39m    [34mexpect[39m(pattern[33m.[39m[34mboundingBox[39m()[33m.[39mmin[[34m0[39m])[33m.[39m[34mtoBeCloseTo[39m([34m5[39m[33m,[39m [34m6[39m)[33m;[39m
+    [90m   | [39m                                         [31m^[39m
+    [90m 86| [39m    [34mexpect[39m(pattern[33m.[39m[34mboundingBox[39m()[33m.[39mmax[[34m0[39m])[33m.[39m[34mtoBeCloseTo[39m([34m75[39m[33m,[39m [34m6[39m)[33m;[39m
+    [90m 87| [39m    [34mexpect[39m(pattern[33m.[39m[34mboundingBox[39m()[33m.[39mmin[[34m1[39m])[33m.[39m[34mtoBeCloseTo[39m([33m-[39m[34m10[39m[33m,[39m [34m6[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m3 passed[39m[22m[90m (5)[39m
+[2m   Start at [22m 09:47:30
+[2m   Duration [22m 6.26s[2m (transform 4.52s, setup 156ms, import 5.34s, tests 480ms, environment 0ms)[22m
+

@@ -95,11 +95,19 @@ function buildPatternInstances(pattern: PatternSpec): PatternInstance[] {
       });
     }
   } else if (pattern.kind === 'circular') {
+    // The instances turn about the axis LINE: through `pivot` when given,
+    // otherwise through the world origin (the pre-pivot record shape).
+    const pivot = pattern.pivot;
     for (let i = 1; i < pattern.count; i++) {
       const ang = (pattern.angleDeg / pattern.count) * i;
       instances.push({
         i,
-        applyTo: (sh) => sh.rotate(pattern.axis, ang),
+        applyTo: (sh) => (pivot === undefined
+          ? sh.rotate(pattern.axis, ang)
+          : sh
+            .translate(-pivot[0], -pivot[1], -pivot[2])
+            .rotate(pattern.axis, ang)
+            .translate(pivot[0], pivot[1], pivot[2])),
       });
     }
   } else {

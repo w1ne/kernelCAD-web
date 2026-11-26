@@ -57,6 +57,25 @@ describe('add_pattern_feature MCP tool', () => {
     expect(out.new_code).toContain('angleDeg: 180');
   });
 
+  it('inserts a circular-pattern call about an explicit axis point', async () => {
+    const out = await addPatternFeatureTool({
+      code: baseCode, target: 'plate', kind: 'circular',
+      circular: { count: 4, axis: [0, 0, 1], pivot: [40, 25, 0] },
+    });
+    expect(out.ok).toBe(true);
+    expect(out.new_code).toContain('plate.patternCircular({ count: 4, axis: [0, 0, 1], pivot: [40, 25, 0] });');
+  });
+
+  it('rejects a malformed circular-pattern pivot', async () => {
+    const out = await addPatternFeatureTool({
+      code: baseCode, target: 'flange', kind: 'circular',
+      circular: { count: 4, axis: [0, 0, 1], pivot: [40, 25] as never },
+    });
+    expect(out.ok).toBe(false);
+    expect(out.errorCode).toBe('feature.invalid-args');
+    expect(out.error).toContain('patternCircular({ pivot })');
+  });
+
   it('inserts a grid-pattern call', async () => {
     const out = await addPatternFeatureTool({
       code: baseCode, target: 'plate', kind: 'grid',

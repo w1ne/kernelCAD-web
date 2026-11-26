@@ -20,7 +20,7 @@ export interface AddPatternFeatureInput {
   target: string;
   kind: 'linear' | 'circular' | 'grid';
   linear?: { count: number; direction: Vec3Tuple; spacing: number };
-  circular?: { count: number; axis: Vec3Tuple; angleDeg?: number };
+  circular?: { count: number; axis: Vec3Tuple; angleDeg?: number; pivot?: Vec3Tuple };
   grid?: {
     x: { count: number; direction: Vec3Tuple; spacing: number };
     y: { count: number; direction: Vec3Tuple; spacing: number };
@@ -72,12 +72,17 @@ function buildCircularCall(input: AddPatternFeatureInput): PatternCallResult {
       api: "add_pattern_feature({ kind: 'circular', circular })",
       path: 'circular',
       gotText: 'nothing',
-      requires: 'a { count, axis, angleDeg? } object whenever kind is \'circular\'',
-      example: "{ kind: 'circular', target: 'plate', circular: { count: 6, axis: [0, 0, 1], angleDeg: 360 } }",
+      requires: 'a { count, axis, angleDeg?, pivot? } object whenever kind is \'circular\'',
+      example: "{ kind: 'circular', target: 'flange', circular: { count: 6, axis: [0, 0, 1], pivot: [40, 25, 0] } }",
     }).message } };
   }
   const angleDeg = input.circular.angleDeg ?? 360;
-  const err = validateCircular({ count: input.circular.count, axis: input.circular.axis, angleDeg });
+  const err = validateCircular({
+    count: input.circular.count,
+    axis: input.circular.axis,
+    angleDeg,
+    pivot: input.circular.pivot,
+  });
   if (err) {
     const code = err.field === 'count'
       ? 'feature.pattern.count-out-of-range'
@@ -85,7 +90,8 @@ function buildCircularCall(input: AddPatternFeatureInput): PatternCallResult {
     return { error: { ok: false, error: err.message, errorCode: code } };
   }
   const angleClause = input.circular.angleDeg !== undefined ? `, angleDeg: ${input.circular.angleDeg}` : '';
-  return { call: `${input.target}.patternCircular({ count: ${input.circular.count}, axis: ${fmtVec3(input.circular.axis)}${angleClause} });` };
+  const pivotClause = input.circular.pivot !== undefined ? `, pivot: ${fmtVec3(input.circular.pivot)}` : '';
+  return { call: `${input.target}.patternCircular({ count: ${input.circular.count}, axis: ${fmtVec3(input.circular.axis)}${angleClause}${pivotClause} });` };
 }
 
 function buildGridCall(input: AddPatternFeatureInput): PatternCallResult {

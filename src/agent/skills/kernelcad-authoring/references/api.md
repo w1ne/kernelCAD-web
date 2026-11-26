@@ -671,7 +671,7 @@ shape, not a copy.
 // Mechanical patterns:
 .patternLinear({ count, direction, spacing }: { count: number; direction: [number, number, number]; spacing: number }): Shape
 .patternGrid({ x, y }: { x: { count: number; direction: [number, number, number]; spacing: number }; y: { count: number; direction: [number, number, number]; spacing: number } }): Shape
-.patternCircular({ count, axis, angleDeg? }: { count: number; axis: [number, number, number] | 'X' | 'Y' | 'Z' | '-X' | '-Y' | '-Z'; angleDeg?: number }): Shape  // copies rotate about the world ORIGIN: build the source at its radius first, e.g. peg.translate(20, 0, 0).patternCircular({ count: 6, axis: 'Z' })
+.patternCircular({ count, axis, angleDeg?, pivot? }: { count: number; axis: [number, number, number] | 'X' | 'Y' | 'Z' | '-X' | '-Y' | '-Z'; angleDeg?: number; pivot?: [number, number, number] }): Shape  // copies rotate about the axis LINE: pivot is a point on it in world mm, e.g. flange.bolt.patternCircular({ count: 6, axis: 'Z', pivot: [40, 25, 0] }). Omit pivot to rotate about the world ORIGIN: build the source at its radius first, e.g. peg.translate(20, 0, 0).patternCircular({ count: 6, axis: 'Z' })
 
 // Apply an SE(3) Transform (returned by SolvedKinematics.transform()) to a shape.
 // Decomposes to translate + rotate via the existing transform pipes; no rebake.

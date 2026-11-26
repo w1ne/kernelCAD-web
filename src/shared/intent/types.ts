@@ -317,6 +317,9 @@ export interface CircularPatternSpec {
   count: number;
   axis: Vec3;
   angleDeg: number;
+  /** A point on the rotation axis in world mm. Absent means the world origin,
+   *  which is the behaviour every record written before `pivot` shipped. */
+  pivot?: Vec3;
 }
 
 export type PatternSpec = LinearPatternSpec | CircularPatternSpec | GridPatternSpec;

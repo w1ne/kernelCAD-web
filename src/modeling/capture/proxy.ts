@@ -809,7 +809,12 @@ export class Shape {
     return this.session.patternFeature(this, pattern);
   }
 
-  patternCircular(opts: { count: number; axis: [number, number, number] | 'X' | 'Y' | 'Z' | '-X' | '-Y' | '-Z'; angleDeg?: number }): Shape {
+  patternCircular(opts: {
+    count: number;
+    axis: [number, number, number] | 'X' | 'Y' | 'Z' | '-X' | '-Y' | '-Z';
+    angleDeg?: number;
+    pivot?: [number, number, number];
+  }): Shape {
     // An axis name ('Z', '-X') is the unit vector it names, as in every selector.
     const axisVec = typeof opts?.axis === 'string' ? axisNameToVec(opts.axis) : undefined;
     if (typeof opts?.axis === 'string' && axisVec === undefined) {
@@ -817,14 +822,17 @@ export class Shape {
         api: 'patternCircular({ axis })',
         path: 'axis',
         got: opts.axis,
-        requires: "an axis name 'X' | 'Y' | 'Z' (optionally signed, e.g. '-Z') or a 3-element array [x, y, z]: the rotation axis through the world origin",
-        example: "plate.patternCircular({ count: 6, axis: 'Z' })",
+        requires: "an axis name 'X' | 'Y' | 'Z' (optionally signed, e.g. '-Z') or a 3-element array [x, y, z]: the rotation axis direction",
+        example: "plate.patternCircular({ count: 6, axis: 'Z', pivot: [40, 25, 0] })",
         featureId: this.id,
       });
     }
-    const resolved = axisVec === undefined ? (opts as { count: number; axis: [number, number, number]; angleDeg?: number }) : { ...opts, axis: axisVec };
+    const resolved = axisVec === undefined
+      ? (opts as { count: number; axis: [number, number, number]; angleDeg?: number; pivot?: [number, number, number] })
+      : { ...opts, axis: axisVec };
     const angleDeg = validateCircularPatternOpts(resolved, this.id);
     const pattern: PatternSpec = { kind: 'circular', count: resolved.count, axis: resolved.axis, angleDeg };
+    if (resolved.pivot !== undefined) pattern.pivot = resolved.pivot;
     return this.session.patternFeature(this, pattern);
   }
 

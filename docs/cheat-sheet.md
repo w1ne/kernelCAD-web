@@ -217,7 +217,7 @@ Move a body into position, mirror it, or repeat it.
 | `Shape.mirror(plane: 'xy' \| 'xz' \| 'yz' \| { plane: 'xy' \| 'xz' \| 'yz'; offset: number }) => Shape` | Boolean union of the source and its reflection across a cardinal plane. |
 | `Shape.patternLinear({ count, direction, spacing }) => Shape` | Repeat this shape in a linear array. |
 | `Shape.patternGrid({ x: { count, direction, spacing }, y: { count, direction, spacing } }) => Shape` | Repeat this shape in a two-axis grid. |
-| `Shape.patternCircular({ count, axis: [x, y, z] \| 'X' \| 'Y' \| 'Z' \| '-X' \| '-Y' \| '-Z', angleDeg? }) => Shape` | Repeat this shape around an axis through the world origin (a bolt circle on an XY plate is `axis: 'Z'`). |
+| `Shape.patternCircular({ count, axis: [x, y, z] \| 'X' \| 'Y' \| 'Z' \| '-X' \| '-Y' \| '-Z', angleDeg?, pivot? }) => Shape` | Repeat this shape around an axis line (a bolt circle on an XY plate is `axis: 'Z'`). |
 | `Shape.recenter(opts?: { x?: boolean; y?: boolean; z?: boolean }) => Promise<Shape>` | Translate this Shape so its bounding-box center lands on the world origin, then return it for chaining. |
 | `Shape.seatOnFloor(opts?: { center?: boolean }) => Promise<Shape>` | Translate this Shape so it rests on the z = 0 floor (bbox min.z → 0), centered in x/y over the origin; returns it for chaining. |
 
