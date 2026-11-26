@@ -8,6 +8,7 @@
 
 import { addFeature } from './addFeature';
 import type { AddFeatureResult } from './addFeature';
+import { isValidIdentifier } from './sourceEditUtils';
 
 export interface AddEmbossTextInput {
   /** The .kcad.ts source code to edit. */
@@ -61,17 +62,30 @@ function serializeOpts(input: AddEmbossTextInput): string {
   return `{ ${fields.join(', ')} }`;
 }
 
+function deriveDefaultBinding(code: string): string {
+  let max = 0;
+  for (const m of code.matchAll(/const\s+_embossed_(\d+)\s*=/g)) {
+    const n = parseInt(m[1], 10);
+    if (n > max) max = n;
+  }
+  return `_embossed_${max + 1}`;
+}
+
 export function addEmbossText(input: AddEmbossTextInput): AddFeatureResult {
   if (typeof input.target !== 'string' || input.target.length === 0) {
     return { ok: false, error: 'add_emboss_text: target Shape variable name is required.' };
   }
+  if (!isValidIdentifier(input.target)) {
+    return { ok: false, error: `add_emboss_text: target must be a valid JS identifier; got ${JSON.stringify(input.target)}.` };
+  }
+  if (input.bindAs !== undefined && (typeof input.bindAs !== 'string' || !isValidIdentifier(input.bindAs))) {
+    return { ok: false, error: `add_emboss_text: bindAs must be a valid JS identifier; got ${JSON.stringify(input.bindAs)}.` };
+  }
   if (typeof input.textContent !== 'string' || input.textContent.trim().length === 0) {
     return { ok: false, error: 'add_emboss_text: textContent must be a non-empty string.' };
   }
+  const binding = input.bindAs ?? deriveDefaultBinding(input.code);
   const optsLiteral = serializeOpts(input);
-  const callExpr = `${input.target}.embossText(${optsLiteral})`;
-  const featureLine = input.bindAs
-    ? `const ${input.bindAs} = ${callExpr};`
-    : `${callExpr};`;
-  return addFeature(input.code, featureLine);
+  const featureLine = `const ${binding} = ${input.target}.embossText(${optsLiteral});`;
+  return addFeature(input.code, featureLine, { requireReturnRewrite: true });
 }

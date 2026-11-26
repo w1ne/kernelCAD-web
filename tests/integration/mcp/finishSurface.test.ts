@@ -38,7 +38,7 @@ describe('add_surface finishing ops dispatcher', () => {
     expect(r.new_code).toMatch(/const _sewn_1 = sew\(\[surf\]\)/);
   });
 
-  it('sew honors tolerance + require_closed + binding_name', async () => {
+  it('sew honors tolerance + require_closed + binding_name and surfaces open-shell honestly', async () => {
     const out = await addSurfaceTool({
       kind: 'sew',
       code: SEED_CODE,
@@ -47,9 +47,11 @@ describe('add_surface finishing ops dispatcher', () => {
       require_closed: true,
       binding_name: 'solid',
     } as never);
-    const r = out as { ok: boolean; new_code?: string };
-    expect(r.ok).toBe(true);
+    const r = out as { ok: boolean; new_code?: string; diagnostics?: Array<{ code: string }> };
+    // A single flat sheet is not watertight, so require_closed: true must fail evaluation honestly.
+    expect(r.ok).toBe(false);
     expect(r.new_code).toContain('const solid = sew([surf], { tolerance: 0.01, requireClosed: true });');
+    expect(r.diagnostics?.some(d => d.code === 'feature.surface-sew.open-shell')).toBe(true);
   });
 
   it('sew rejects an undeclared surface binding', async () => {
@@ -109,7 +111,7 @@ describe('add_surface finishing ops dispatcher', () => {
   // -------------------------------------------------------------------------
   // kind: 'draft'
   // -------------------------------------------------------------------------
-  it('routes add_surface kind:"draft" to the draft op and inserts a .draft() call', async () => {
+  it('routes add_surface kind:"draft" to the draft op, rewrites return, and changes volume (#911)', async () => {
     const out = await addSurfaceTool({
       kind: 'draft',
       code: SEED_CODE,
@@ -117,12 +119,34 @@ describe('add_surface finishing ops dispatcher', () => {
       angle_deg: 5,
       face: 'top',
     } as never);
-    const r = out as { ok: boolean; new_code?: string };
+    const r = out as { ok: boolean; new_code?: string; sceneSummary?: { volume?: number } };
     expect(r.ok).toBe(true);
     expect(r.new_code).toMatch(/const _drafted_1 = myBox\.draft\(5, \{ face: "top" \}\)/);
+    expect(r.new_code).toMatch(/return _drafted_1;\s*$/);
+    // Unmodified box(10, 10, 10) has volume 1000; 5° draft tapers it measurably.
+    expect(r.sceneSummary?.volume).toBeDefined();
+    expect(r.sceneSummary?.volume).toBeLessThan(1000);
   });
 
-  it('draft honors neutral_plane + pull_dir + binding_name', async () => {
+  it('draft honors neutral_plane + pull_dir + binding_name and produces real drafted geometry', async () => {
+    const out = await addSurfaceTool({
+      kind: 'draft',
+      code: SEED_CODE,
+      shape_binding: 'myBox',
+      angle_deg: 3,
+      face: 'front',
+      neutral_plane: 'bottom',
+      pull_dir: [0, 0, 1],
+      binding_name: 'drafted',
+    } as never);
+    const r = out as { ok: boolean; new_code?: string; sceneSummary?: { volume?: number } };
+    expect(r.ok).toBe(true);
+    expect(r.new_code).toContain('const drafted = myBox.draft(3, { face: "front", neutralPlane: "bottom", pullDir: [0,0,1] });');
+    expect(r.new_code).toMatch(/return drafted;\s*$/);
+    expect(r.sceneSummary?.volume).toBeLessThan(1000);
+  });
+
+  it('draft surfaces evaluation failure honestly instead of hardcoding ok:true (#911)', async () => {
     const out = await addSurfaceTool({
       kind: 'draft',
       code: SEED_CODE,
@@ -131,11 +155,41 @@ describe('add_surface finishing ops dispatcher', () => {
       face: 'side',
       neutral_plane: 'bottom',
       pull_dir: [0, 0, 1],
-      binding_name: 'drafted',
+    } as never);
+    const r = out as { ok: boolean; diagnostics?: Array<{ severity: string }> };
+    expect(r.ok).toBe(false);
+    expect(r.diagnostics?.some(d => d.severity === 'error')).toBe(true);
+  });
+
+  it('draft fails closed when shape_binding is not the returned expression (#911)', async () => {
+    const out = await addSurfaceTool({
+      kind: 'draft',
+      code: SEED_CODE,
+      shape_binding: 'cutter',
+      angle_deg: 5,
+      face: 'top',
+    } as never);
+    const r = out as { ok: boolean; errorCode?: string; new_code?: string };
+    expect(r.ok).toBe(false);
+    expect(r.errorCode).toBe('feature.add.expression-unused');
+    expect(r.new_code).toBeUndefined();
+  });
+
+  it('trim rewrites return when the script directly returns the trimmed surface', async () => {
+    const out = await addSurfaceTool({
+      kind: 'trim',
+      code: [
+        'const surf = nurbsSurface({ controls: [[[0,0,0],[10,0,0]],[[0,10,0],[10,10,0]]], degree: { u: 1, v: 1 } });',
+        'const cutter = box(20, 20, 5);',
+        'return surf;',
+      ].join('\n'),
+      surface_binding: 'surf',
+      by_binding: 'cutter',
+      op: 'trim',
     } as never);
     const r = out as { ok: boolean; new_code?: string };
-    expect(r.ok).toBe(true);
-    expect(r.new_code).toContain('const drafted = myBox.draft(3, { face: "side", neutralPlane: "bottom", pullDir: [0,0,1] });');
+    expect(r.new_code).toMatch(/const _trimmed_1 = surf\.trimTo\(cutter\);/);
+    expect(r.new_code).toMatch(/return _trimmed_1;\s*$/);
   });
 
   it('draft rejects an angle outside [0, 90]', async () => {
@@ -197,6 +251,7 @@ describe('add_surface finishing ops dispatcher', () => {
       require_closed: true,
     } as never);
     const r = out as { ok: boolean; diagnostics?: Array<{ code: string }> };
+    expect(r.ok).toBe(false);
     const openShell = (r.diagnostics ?? []).some(d => d.code === 'feature.surface-sew.open-shell');
     expect(openShell).toBe(true);
   }, 60_000);

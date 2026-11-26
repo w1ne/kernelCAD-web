@@ -15,6 +15,7 @@ export interface ShapeDraftOutput {
   diagnostics?: CompilerDiagnostic[];
   sceneSummary?: SceneSummary;
   error?: string;
+  errorCode?: string;
 }
 
 /**
@@ -27,11 +28,15 @@ export interface ShapeDraftOutput {
 export async function shapeDraftTool(input: ShapeDraftInput): Promise<ShapeDraftOutput> {
   const edit = shapeDraftEdit(input);
   if (!edit.ok || !edit.new_code) {
-    return { ok: false, error: edit.error };
+    return {
+      ok: false,
+      error: edit.error,
+      ...(edit.errorCode ? { errorCode: edit.errorCode } : {}),
+    };
   }
   const evalResult = await evaluateScriptTool({ code: edit.new_code });
   return {
-    ok: true,
+    ok: evalResult.ok,
     new_code: edit.new_code,
     step: evalResult.step,
     sceneSummary: evalResult.sceneSummary,

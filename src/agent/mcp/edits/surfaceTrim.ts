@@ -49,5 +49,5 @@ export function surfaceTrimEdit(input: SurfaceTrimInput): AddFeatureResult {
   const binding = input.binding_name ?? deriveDefaultBinding(input.code, input.op);
   const method = input.op === 'trim' ? 'trimTo' : 'split';
   const feature_code = `const ${binding} = ${input.surface_binding}.${method}(${input.by_binding});`;
-  return addFeature(input.code, feature_code);
+  return addFeature(input.code, feature_code, input.op === 'trim' ? { guardReturnEffect: true } : {});
 }

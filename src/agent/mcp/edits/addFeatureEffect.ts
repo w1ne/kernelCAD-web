@@ -202,7 +202,32 @@ function derivedBinding(statements: AcornNode[], returnTarget: string): string |
   return derived;
 }
 
-export function classifyFeatureCode(code: string, featureCode: string, returnIndex: number): FeatureCodeEffect {
+export interface ClassifyFeatureCodeOptions {
+  /**
+   * When true, a declaration that cannot retarget the top-level `return` fails
+   * closed instead of falling back to dead-code insertion.
+   */
+  requireReturnRewrite?: boolean;
+}
+
+function rejectNonReturnedDeclaration(returnTarget: string | null): FeatureCodeEffect {
+  const detail = returnTarget
+    ? `it does not derive from the returned binding "${returnTarget}"`
+    : 'the script does not end with a single-line `return <binding>;`';
+  return {
+    kind: 'reject',
+    error:
+      `Shape methods are immutable, so this edit cannot affect the returned geometry because ${detail}. ` +
+      `Target the returned binding directly, or update the script so the modified binding is returned.`,
+  };
+}
+
+export function classifyFeatureCode(
+  code: string,
+  featureCode: string,
+  returnIndex: number,
+  options: ClassifyFeatureCodeOptions = {},
+): FeatureCodeEffect {
   const program = parseProgram(featureCode);
   if (!program || program.statements.length === 0) return { kind: 'insert' };
 
@@ -213,10 +238,14 @@ export function classifyFeatureCode(code: string, featureCode: string, returnInd
   if (bareExpressionStatements(program.statements).length > 0) {
     return classifyBareCode(featureCode, program.statements, returnTarget, indent);
   }
-  if (!returnTarget) return { kind: 'insert' };
+  if (!returnTarget) {
+    return options.requireReturnRewrite ? rejectNonReturnedDeclaration(null) : { kind: 'insert' };
+  }
 
   const derived = derivedBinding(program.statements, returnTarget);
-  if (!derived) return { kind: 'insert' };
+  if (!derived) {
+    return options.requireReturnRewrite ? rejectNonReturnedDeclaration(returnTarget) : { kind: 'insert' };
+  }
   return {
     kind: 'rewrite-return',
     returnLine: `${indent}return ${derived};`,
