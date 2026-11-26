@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { beforeAll, describe, expect, it } from 'vitest';
+import { readFile } from 'node:fs/promises';
 import { isSceneBackend } from '../kernel/backends/sceneBackend';
 import { initOcct } from '../kernel/backends/occt/occtBackend';
 import { buildModel } from '../composition/buildModel';
@@ -65,5 +66,25 @@ describe('array return values', () => {
     });
     expect(sceneModel.returnValue).toBeInstanceOf(Scene);
     expect(sceneModel.rootId).toBe(sceneModel.returnValue.__sourceFeatureId());
+  }, 60_000);
+
+  it('builds and meshes the official fluent color-enclosure example', async () => {
+    const code = await readFile('examples/params/color-enclosure.kcad.ts', 'utf8');
+    const model = await buildModel({ code, fileName: 'examples/params/color-enclosure.kcad.ts' });
+
+    expect(model.returnValue).toBeInstanceOf(Scene);
+    expect(isSceneBackend(model.rootShape)).toBe(true);
+    if (!isSceneBackend(model.rootShape)) throw new Error('Expected an enclosure SceneBackend');
+    expect(model.rootShape.parts.map(part => part.name)).toEqual(['base', 'lid']);
+
+    const meshing = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
+    expect(meshing.failedFeatureIds).toEqual([]);
+    expect(meshing.features
+      .filter(feature => feature.assemblyFeatureId === model.rootId)
+      .map(feature => feature.assemblyPartName)
+      .sort()).toEqual(['base', 'lid']);
+    expect(meshing.bounds.max[0] - meshing.bounds.min[0]).toBeCloseTo(60, 4);
+    expect(meshing.bounds.max[1] - meshing.bounds.min[1]).toBeCloseTo(40, 4);
+    expect(meshing.bounds.max[2] - meshing.bounds.min[2]).toBeCloseTo(21, 4);
   }, 60_000);
 });

@@ -16,6 +16,7 @@
 
 import { CaptureSession } from '../capture/captureSession';
 import { Assembly } from '../capture/assembly';
+import { isAssemblyPartRef } from '../capture/assemblyParts';
 import type { ApiContext, KernelCadApi } from '../api';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ParamTable } from '../../shared/runtime/paramTable';
@@ -154,6 +155,7 @@ export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScrip
   } catch (e) {
     throw withShapeMethodHint(e, [...publicNames(Shape.prototype, Sketch.prototype, PathBuilder.prototype), ...Object.keys(apiGlobals)]);
   }
+  assertAssemblyReturnIsFinalized(returnValue);
   returnValue = normalizeArrayReturnValue(returnValue, session, code);
   // The returned model counts as consumed; then give statement-form
   // transforms (`p.translate(…); use(p)`) their pre-immutable meaning.
@@ -165,6 +167,26 @@ export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScrip
     paramTable: session.paramTable,
     returnValue,
   };
+}
+
+/** A fluent `assembly.part(...).part(...)` expression returns an
+ *  AssemblyPartRef, and a bare `assembly(...)` returns an Assembly. Neither
+ *  is a lowerable model until `.model()` / `.solvedModel(...)` records the
+ *  assembly scene. Fail at the authoring boundary instead of letting mesh
+ *  consumers report an empty viewport with HTTP 200. */
+function assertAssemblyReturnIsFinalized(returnValue: unknown): void {
+  if (!(returnValue instanceof Assembly) && !isAssemblyPartRef(returnValue)) return;
+
+  invalidArgs({
+    api: '.kcad.ts script return value',
+    path: 'return value',
+    gotText: returnValue instanceof Assembly
+      ? `an unfinished Assembly '${returnValue.name}'`
+      : `an unfinished AssemblyPartRef '${returnValue.name}'`,
+    requires: 'a Shape or Scene returned by arm.model() or arm.solvedModel(...)',
+    example: 'return arm.model();',
+    hint: 'Call .model() on the assembly, or append .model() to a chained assembly.part(...) expression, before returning it.',
+  });
 }
 
 /** Convert a returned list of solids into the same named Scene shape used by

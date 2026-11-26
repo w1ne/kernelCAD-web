@@ -1,0 +1,27 @@
+{
+  "invocation": "npx tsx docs/demos/unfinished-assembly-return/capture-demo.mts",
+  "sourceScript": "examples/params/color-enclosure.kcad.ts",
+  "negativeFixture": "docs/demos/unfinished-assembly-return/unfinished-assembly.kcad.ts",
+  "checks": [
+    "unfinished AssemblyPartRef diagnostic",
+    "Scene mesh names and bounds",
+    "GLB node and triangle output"
+  ],
+  "render": "scripts/lib/glbSoftwareRender.ts; triangles parsed from the locally exported GLB",
+  "browser": "none; offline SVG + Sharp + FFmpeg capture",
+  "dimensionsMm": [
+    60,
+    40,
+    21
+  ],
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "fps": 20,
+    "durationSeconds": 8,
+    "codec": "libx264",
+    "crf": 26,
+    "pixelFormat": "yuv420p"
+  },
+  "scope": "Local source evaluation and export only; no deployed Studio, hosted MCP, simulation, or hardware acceptance."
+}

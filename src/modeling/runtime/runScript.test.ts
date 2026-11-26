@@ -25,6 +25,20 @@ describe('runScript — module-style scripts', () => {
     expect(res.returnValue).toBe(8);
   });
 
+  it('gives an actionable error when a script returns an unfinished assembly', async () => {
+    const scripts = [
+      `const arm = assembly('raw');\narm.part('body', box(20, 10, 3));\nreturn arm;`,
+      `return assembly('raw').part('body', box(20, 10, 3));`,
+    ];
+
+    for (const code of scripts) {
+      await expect(runScript({ code, fileName: 'raw-assembly.kcad.ts' })).rejects.toMatchObject({
+        code: 'feature.invalid-args',
+        message: expect.stringContaining('return arm.model();'),
+      });
+    }
+  });
+
   it('handles `export const` + `export default` together', async () => {
     const res = await runScript({
       code: 'export const w = 10;\nexport default w * 3;',
