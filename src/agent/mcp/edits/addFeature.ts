@@ -2,10 +2,13 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/edits/addFeature.ts
 
+import { classifyFeatureCode } from './addFeatureEffect';
+
 export interface AddFeatureResult {
   ok: boolean;
   new_code?: string;
   error?: string;
+  errorCode?: string;
 }
 
 /**
@@ -31,6 +34,23 @@ export function addFeature(code: string, feature_code: string): AddFeatureResult
   // Indentation = leading whitespace of the return line.
   const indentMatch = returnLine.match(/^(\s*)/);
   const indent = indentMatch ? indentMatch[1] : '';
+
+  const effect = classifyFeatureCode(code, feature_code, returnIndex);
+  if (effect.kind === 'reject') {
+    return { ok: false, error: effect.error, errorCode: 'feature.add.expression-unused' };
+  }
+
+  if (effect.kind === 'rewrite-return') {
+    if (!effect.insertFeatureCode) {
+      // The snippet was a bare expression over the returned binding. Rewriting
+      // the return is enough; inserting the expression would be dead code.
+      lines[returnIndex] = effect.returnLine;
+      return { ok: true, new_code: lines.join('\n') };
+    }
+    lines.splice(returnIndex, 0, `${indent}${feature_code}`);
+    lines[returnIndex + 1] = effect.returnLine;
+    return { ok: true, new_code: lines.join('\n') };
+  }
 
   const insertLine = `${indent}${feature_code}`;
   lines.splice(returnIndex, 0, insertLine);

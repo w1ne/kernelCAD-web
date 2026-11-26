@@ -36,4 +36,47 @@ describe('addFeatureTool', () => {
     expect(r.new_code).toBeDefined();
     expect(r.diagnostics?.some(d => d.severity === 'error')).toBe(true);
   });
+
+  it('applies a bare immutable expression to the returned binding', async () => {
+    const code = [
+      `const plate = box(60, 40, 6);`,
+      `return plate;`,
+    ].join('\n');
+    const r = await addFeatureTool({ code, feature_code: `plate.fillet(1.5)` });
+    expect(r.ok).toBe(true);
+    expect(r.new_code).toContain(`return plate.fillet(1.5);`);
+    expect(r.new_code).toBe([
+      `const plate = box(60, 40, 6);`,
+      `return plate.fillet(1.5);`,
+    ].join('\n'));
+    // A filleted box has 26 faces; the unmodified box has 6.
+    expect(r.sceneSummary?.faceCount).toBeGreaterThan(6);
+    expect(r.sceneSummary?.volume).toBeLessThan(14400);
+  });
+
+  it('applies a declaration derived from the returned binding', async () => {
+    const code = [
+      `const plate = box(60, 40, 6);`,
+      `return plate;`,
+    ].join('\n');
+    const r = await addFeatureTool({ code, feature_code: `const filleted = plate.fillet(1.5);` });
+    expect(r.ok).toBe(true);
+    expect(r.new_code).toContain(`return filleted;`);
+    expect(r.sceneSummary?.faceCount).toBeGreaterThan(6);
+    expect(r.sceneSummary?.volume).toBeLessThan(14400);
+  });
+
+  it('fails closed instead of returning unchanged geometry for an unused expression', async () => {
+    const code = [
+      `const plate = box(60, 40, 6);`,
+      `const other = box(10, 10, 10);`,
+      `return other;`,
+    ].join('\n');
+    const r = await addFeatureTool({ code, feature_code: `plate.fillet(1.5)` });
+    expect(r.ok).toBe(false);
+    expect(r.errorCode).toBe('feature.add.expression-unused');
+    expect(r.error).toMatch(/bare expression/i);
+    expect(r.new_code).toBeUndefined();
+    expect(r.sceneSummary).toBeUndefined();
+  });
 });
