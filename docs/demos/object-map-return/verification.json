@@ -1,0 +1,58 @@
+{
+  "beforeDevelopF7231d509": {
+    "tool": "evaluate_script (local callMcpTool probe)",
+    "ok": true,
+    "volumeMm3": 1130.97,
+    "sizeMm": [
+      12,
+      12,
+      10
+    ],
+    "note": "Only drive_pinion (the last captured feature) was kept."
+  },
+  "negativeCase": {
+    "diagnosticCode": "feature.invalid-args",
+    "message": ".kcad.ts script return value: return value — got mixed object: Shape keys motor_plate; non-Shape entries (count: number); requires each value of a multi-body object return to be a Shape. Example: return { base: baseShape, lid: lidShape };",
+    "hint": "Remove non-Shape values, or build an assembly and return arm.model()."
+  },
+  "objectMapReturn": {
+    "source": "drive-plate.kcad.ts",
+    "returnKind": "Scene",
+    "partNames": [
+      "motor_plate",
+      "drive_pinion"
+    ],
+    "partVolumesMm3": {
+      "motor_plate": 4800,
+      "drive_pinion": 1130.9733552923256
+    },
+    "emittedMeshPartNames": [
+      "drive_pinion",
+      "motor_plate"
+    ],
+    "failedFeatureIds": [],
+    "boundsMm": [
+      40,
+      30,
+      14
+    ],
+    "glbBytes": 33100,
+    "glbSha256": "54d73ff93cb38ac0b375847a83094baf0359d6b644af76126dd640e10f9a9c2f",
+    "meshNodeNames": [
+      "drive_pinion",
+      "motor_plate"
+    ],
+    "triangleCount": 1016
+  },
+  "video": {
+    "file": "demo.mp4",
+    "sha256": "514b1c2ed127384d1fd113cf8eb64a20568888140be967b27325d7d4f6cc2b48",
+    "durationSeconds": 8,
+    "sizeBytes": 80149,
+    "codec_name": "h264",
+    "width": 1280,
+    "height": 720,
+    "avg_frame_rate": "20/1"
+  },
+  "scope": "Local source evaluation and export only; no deployed Studio, hosted MCP, simulation, or hardware acceptance."
+}
