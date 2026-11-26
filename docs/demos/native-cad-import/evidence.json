@@ -4,9 +4,9 @@
   "source": "docs/demos/native-cad-import/nist-ftc-06.kcad.ts",
   "sourceSha256": "c3f7b115d9947bb20fcf0c8d875ee18a1dacc0b8c46839dcbdeee3f4143f947f",
   "implementationSha256": {
-    "src/modeling/parts/fromNativeCAD.ts": "2c014f9206dd947841e7bf065844bd1544577a36bfc82d7d94cbd9411dd46870",
+    "src/modeling/parts/fromNativeCAD.ts": "af0180be057172d452428d6b69a282865b00872143db7952e5e6c7760f26af3f",
     "src/modeling/parts/hostParts.ts": "42c5ca513c22d7d120cb288e1714e4bf8c4cecba4eaa011d29dbdb27d0075adc",
-    "src/agent/cli/commands/importStep.ts": "2146d2c2b8776d0cea09c427c8349fae575f09093b4e8e0e74d32f59eaf47ce9",
+    "src/agent/cli/commands/importStep.ts": "85f486e56853b8fcf39446d4cafc1810c24881a21014c85b54ea498b373a13cf",
     "src/agent/mcp/tools/importStep.ts": "fcdca6060c08e35131214d39d5d941bb7fa834c613bfe1525727bf21ec616384",
     "src/kernel/import/stepBundleWriter.ts": "2c7199c71e726074bf726fdbdda53cd0aedd9278be2f6838c8867089a1c279b5"
   },

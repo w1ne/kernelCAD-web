@@ -28,94 +28,125 @@ export interface ImportStepCliResult {
   warnings?: string[];
 }
 
+interface PreparedImport {
+  inputPath: string;
+  nativeSolidWorks: boolean;
+  assemblyName: string;
+  outDir: string;
+}
+
+type PrepareImportResult = { ok: true; value: PreparedImport } | { ok: false; result: ImportStepCliResult };
+type ReadInputResult = { ok: true; bytes: Buffer } | { ok: false; result: ImportStepCliResult };
+
 function failure(exitCode: number, code: string, message: string, sourcePath?: string[]): ImportStepCliResult {
   return { exitCode, ok: false, error: { code, message, ...(sourcePath !== undefined ? { sourcePath } : {}) } };
 }
 
 export async function runImportStepCli(input: ImportStepCliInput): Promise<ImportStepCliResult> {
+  const prepared = prepareImport(input);
+  if (!prepared.ok) return prepared.result;
+  const source = await readImportSource(prepared.value, input.file);
+  if (!source.ok) return source.result;
+
+  try {
+    const conversion = prepared.value.nativeSolidWorks
+      ? await convertSolidWorksPart(prepared.value.inputPath, 'cli')
+      : undefined;
+    const imported = await importPreparedStep(prepared.value, source.bytes, conversion);
+    return success(imported.snapshot.warnings, imported.bundle, conversion);
+  } catch (error) {
+    return handleImportError(error);
+  }
+}
+
+function prepareImport(input: ImportStepCliInput): PrepareImportResult {
   const extension = extname(input.file).toLowerCase();
   const nativeSolidWorks = extension === '.sldprt';
   if (extension !== '.step' && extension !== '.stp' && !nativeSolidWorks) {
-    return failure(2, 'cli.invalid-args', `Expected a .step, .stp, or native SolidWorks .sldprt input file; got '${input.file}'.`);
+    return { ok: false, result: failure(2, 'cli.invalid-args', `Expected a .step, .stp, or native SolidWorks .sldprt input file; got '${input.file}'.`) };
   }
   if (typeof input.out !== 'string' || input.out.trim() === '') {
-    return failure(2, 'cli.invalid-args', '--out must name a destination directory.');
+    return { ok: false, result: failure(2, 'cli.invalid-args', '--out must name a destination directory.') };
   }
 
   const inputBaseName = basename(input.file);
   const assemblyName = input.name ?? inputBaseName.slice(0, -extension.length);
   const nameError = validateStepBundleName(assemblyName);
-  if (nameError !== undefined) return failure(2, 'cli.invalid-args', nameError);
+  if (nameError !== undefined) return { ok: false, result: failure(2, 'cli.invalid-args', nameError) };
+  return {
+    ok: true,
+    value: { inputPath: resolve(input.file), nativeSolidWorks, assemblyName, outDir: input.out },
+  };
+}
 
-  const inputPath = resolve(input.file);
-  let sourceBytes: Buffer;
+async function readImportSource(prepared: PreparedImport, inputLabel: string): Promise<ReadInputResult> {
   try {
-    if (nativeSolidWorks) {
-      const sourceStat = await stat(inputPath);
+    if (prepared.nativeSolidWorks) {
+      const sourceStat = await stat(prepared.inputPath);
       if (!sourceStat.isFile() || sourceStat.size === 0) {
-        return failure(2, 'cli.file-read', `Native CAD input '${inputPath}' is not a non-empty regular file.`);
+        return { ok: false, result: failure(2, 'cli.file-read', `Native CAD input '${prepared.inputPath}' is not a non-empty regular file.`) };
       }
       if (sourceStat.size > MAX_NATIVE_CAD_BYTES) {
-        return failure(2, 'cli.input-too-large', `Native CAD input is ${sourceStat.size} bytes; the import limit is ${MAX_NATIVE_CAD_BYTES} bytes.`);
+        return { ok: false, result: failure(2, 'cli.input-too-large', `Native CAD input is ${sourceStat.size} bytes; the import limit is ${MAX_NATIVE_CAD_BYTES} bytes.`) };
       }
     }
-    sourceBytes = await readFile(inputPath);
+    return { ok: true, bytes: await readFile(prepared.inputPath) };
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
-    return failure(2, 'cli.file-read', `Cannot read CAD input '${inputPath}': ${detail}`);
+    return { ok: false, result: failure(2, 'cli.file-read', `Cannot read CAD input '${resolve(inputLabel)}': ${detail}`) };
   }
+}
 
-  try {
-    let bytes = sourceBytes;
-    let conversion: Awaited<ReturnType<typeof convertSolidWorksPart>> | undefined;
-    if (nativeSolidWorks) {
-      try {
-        conversion = await convertSolidWorksPart(inputPath);
-      } catch (error) {
-        if (error instanceof KernelError) return failure(1, error.code, error.message);
-        throw error;
-      }
-      bytes = conversion.bytes;
-    }
-    const externalDocuments = nativeSolidWorks
-      ? new Map<string, Uint8Array>()
-      : await readStepExternalDocuments(inputPath, bytes);
-    const stepInputName = nativeSolidWorks
-      ? `${basename(inputPath, extname(inputPath))}.step`
-      : basename(inputPath);
-    const snapshot = await importStepAssembly(bytes, stepInputName, externalDocuments);
-    const bundle = await writeStepBundle({
-      inputName: inputPath,
-      inputBytes: sourceBytes,
-      externalDocuments,
-      outDir: input.out,
-      assemblyName,
-      snapshot,
-      ...(nativeSolidWorks ? {
-        sourceFormat: 'sldprt' as const,
-        conversionEngine: conversion!.version,
-      } : {}),
-    });
-    const conversionWarnings = conversion === undefined
-      ? []
-      : [
-          `Native SolidWorks part converted through ${conversion.version}; source feature history, PMI, and assembly relations are not preserved by the STEP B-rep handoff.`,
-          ...(conversion.report !== '' ? [`cadmpeg report: ${conversion.report}`] : []),
-        ];
-    return {
-      exitCode: 0,
-      ok: true,
-      bundle,
-      warnings: [...snapshot.warnings, ...bundle.renamedParts.map(renamedStepPartWarning), ...conversionWarnings],
-    };
-  } catch (error) {
-    if (error instanceof StepAssemblyImportError) {
-      return failure(1, `step.${error.reason}`, error.message, error.sourcePath);
-    }
-    const message = error instanceof Error ? error.message : String(error);
-    const alreadyExists = message.startsWith('Output path already exists:');
-    return failure(1, alreadyExists ? 'cli.output-exists' : 'cli.import-step-failed', message);
+async function importPreparedStep(
+  prepared: PreparedImport,
+  sourceBytes: Buffer,
+  conversion: Awaited<ReturnType<typeof convertSolidWorksPart>> | undefined,
+) {
+  const inputBytes = conversion?.bytes ?? sourceBytes;
+  const externalDocuments = conversion
+    ? new Map<string, Uint8Array>()
+    : await readStepExternalDocuments(prepared.inputPath, inputBytes);
+  const stepInputName = conversion
+    ? `${basename(prepared.inputPath, extname(prepared.inputPath))}.step`
+    : basename(prepared.inputPath);
+  const snapshot = await importStepAssembly(inputBytes, stepInputName, externalDocuments);
+  const bundle = await writeStepBundle({
+    inputName: prepared.inputPath,
+    inputBytes: sourceBytes,
+    externalDocuments,
+    outDir: prepared.outDir,
+    assemblyName: prepared.assemblyName,
+    snapshot,
+    ...(conversion ? { sourceFormat: 'sldprt' as const, conversionEngine: conversion.version } : {}),
+  });
+  return { snapshot, bundle };
+}
+
+function success(
+  snapshotWarnings: string[],
+  bundle: WrittenStepBundle,
+  conversion: Awaited<ReturnType<typeof convertSolidWorksPart>> | undefined,
+): ImportStepCliResult {
+  const conversionWarnings = conversion === undefined ? [] : [
+    `Native SolidWorks part converted through ${conversion.version}; source feature history, PMI, and assembly relations are not preserved by the STEP B-rep handoff.`,
+    ...(conversion.report !== '' ? [`cadmpeg report: ${conversion.report}`] : []),
+  ];
+  return {
+    exitCode: 0,
+    ok: true,
+    bundle,
+    warnings: [...snapshotWarnings, ...bundle.renamedParts.map(renamedStepPartWarning), ...conversionWarnings],
+  };
+}
+
+function handleImportError(error: unknown): ImportStepCliResult {
+  if (error instanceof KernelError) return failure(1, error.code, error.message);
+  if (error instanceof StepAssemblyImportError) {
+    return failure(1, `step.${error.reason}`, error.message, error.sourcePath);
   }
+  const message = error instanceof Error ? error.message : String(error);
+  const alreadyExists = message.startsWith('Output path already exists:');
+  return failure(1, alreadyExists ? 'cli.output-exists' : 'cli.import-step-failed', message);
 }
 
 export function importStepCommand(): Command {

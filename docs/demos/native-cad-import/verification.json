@@ -8,16 +8,21 @@
   },
   "checks": [
     {
-      "command": "npm run qc:build",
+      "command": "npx vitest run tests/unit/diagnostics/invalidArgsRatchet.test.ts tests/unit/scripts/qualityRatchet.test.ts --reporter=dot",
       "result": "passed",
-      "runtime": "Node 22.23.4",
-      "summary": "typecheck, CLI bundle, generated-reference drift check, all 128 cookbook snippets, and standard-part range proof"
+      "runtime": "Node 24.22.2",
+      "testFiles": 2,
+      "tests": 17
     },
     {
-      "command": "npm run qc:lint",
+      "command": "npm run typecheck",
       "result": "passed",
-      "runtime": "Node 22.23.4",
-      "summary": "repository ESLint and cookbook validation; lint emitted warnings but no errors"
+      "runtime": "Node 24.22.2"
+    },
+    {
+      "command": "npx eslint src/modeling/parts/fromNativeCAD.ts src/agent/cli/commands/importStep.ts src/modeling/parts/fromNativeCAD.test.ts src/agent/mcp/tools/importStep.ts src/agent/mcp/tools/importStep.test.ts",
+      "result": "passed",
+      "runtime": "Node 24.22.2"
     },
     {
       "command": "npx vitest run src/modeling/parts/fromNativeCAD.test.ts src/modeling/parts/fromSTEP.test.ts src/agent/mcp/tools/importStep.test.ts src/agent/mcp/toolRegistry.publicContract.test.ts src/kernel/import/stepBundleWriter.test.ts tests/unit/cli/sandboxCliAudit.test.ts --reporter=dot",
@@ -26,6 +31,11 @@
       "converter": "cadmpeg 0.6.12",
       "testFiles": 6,
       "tests": 140
+    },
+    {
+      "command": "npm run build:cli:bundle",
+      "result": "passed",
+      "runtime": "Node 24.22.2"
     },
     {
       "command": "npm run test:package",
@@ -71,5 +81,15 @@
   "runtime": {
     "node": "24.22.2 from .nvmrc for focused tests, typecheck, package audit and demo replay; repository-wide qc:build and qc:lint passed with Node 22.23.4",
     "cadmpeg": "0.6.12"
+  },
+  "ciFeedback": {
+    "initialHead": "372e06f7372d0dfdf4af353b3c8242cec087a770",
+    "check": "test-shard (3) failed in run 45865046573",
+    "confirmedCauses": [
+      "The new source added three direct feature.invalid-args raises instead of using invalidArgs(...).",
+      "Quality ratchet measured runImportStepCli complexity 26 and convertSolidWorksPart complexity 19; the limit is 15."
+    ],
+    "correction": "Route native input validation through invalidArgs and split import preparation, reading, conversion and bundle writing into smaller functions.",
+    "localRetest": "Both ratchets passed (17 tests); focused native import suite passed (140 tests). Hosted rerun pending."
   }
 }

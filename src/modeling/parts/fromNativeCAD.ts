@@ -35,6 +35,8 @@ export interface ConvertedNativeCADStep {
   report: string;
 }
 
+type NativeCADCaller = 'api' | 'cli';
+
 /** Import a native SolidWorks part as exact B-rep through cadmpeg and OCCT. */
 export async function fromNativeCAD(
   ctx: FromSTEPContext,
@@ -109,79 +111,96 @@ export async function fromNativeCAD(
   return shape;
 }
 
-export async function convertSolidWorksPart(sourcePath: string): Promise<ConvertedNativeCADStep> {
+export async function convertSolidWorksPart(
+  sourcePath: string,
+  caller: NativeCADCaller = 'api',
+): Promise<ConvertedNativeCADStep> {
+  await validateSolidWorksSource(sourcePath, caller);
+  const converter = process.env.KERNELCAD_CADMPEG_BIN?.trim() || 'cadmpeg';
+  const tempDir = await mkdtemp(join(tmpdir(), 'kernelcad-native-cad-'));
+  const outputPath = join(tempDir, 'converted.step');
+  try {
+    const version = await readCadmpegVersion(converter, sourcePath);
+    return await convertCadmpegOutput(converter, sourcePath, outputPath, version);
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
+  }
+}
+
+async function validateSolidWorksSource(sourcePath: string, caller: NativeCADCaller): Promise<void> {
   if (extname(sourcePath).toLowerCase() !== '.sldprt') {
-    invalidArgs({
-      api: 'convertSolidWorksPart(path)',
-      path: 'path',
-      got: sourcePath,
-      requires: 'a native SolidWorks part file with the .sldprt extension',
-      example: "kernelcad import-step 'parts/bracket.sldprt' --out ./bracket-import",
-    });
+    invalidNativeCADInput(sourcePath, 'a native SolidWorks part file with the .sldprt extension', caller);
   }
   let sourceStat;
   try {
     sourceStat = await stat(sourcePath);
   } catch {
-    throw new KernelError(
-      'feature.invalid-args',
-      `lib.fromNativeCAD: cannot read native CAD part at ${sourcePath}.`,
-      undefined,
-      `invalid-args.lib.fromNativeCAD.path — verify the path '${sourcePath}' exists and is readable.`,
-    );
+    invalidNativeCADInput(sourcePath, 'an existing readable native SolidWorks part file', caller);
   }
   if (!sourceStat.isFile() || sourceStat.size === 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `lib.fromNativeCAD: ${sourcePath} is not a non-empty native CAD file.`,
-      undefined,
-      'invalid-args.lib.fromNativeCAD.empty — pass a non-empty SolidWorks part file.',
-    );
+    invalidNativeCADInput(`${sourcePath} (${sourceStat.size} bytes)`, 'a non-empty regular SolidWorks part file', caller);
   }
   if (sourceStat.size > MAX_NATIVE_CAD_BYTES) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `lib.fromNativeCAD: ${basename(sourcePath)} is ${sourceStat.size} bytes; the current import limit is ${MAX_NATIVE_CAD_BYTES} bytes.`,
-      undefined,
-      'invalid-args.lib.fromNativeCAD.too-large — use a native part smaller than 50 MiB.',
+    invalidNativeCADInput(
+      `${sourcePath} (${sourceStat.size} bytes)`,
+      `a native part no larger than ${MAX_NATIVE_CAD_BYTES} bytes`,
+      caller,
     );
   }
+}
 
-  const converter = process.env.KERNELCAD_CADMPEG_BIN?.trim() || 'cadmpeg';
-  const tempDir = await mkdtemp(join(tmpdir(), 'kernelcad-native-cad-'));
-  const outputPath = join(tempDir, 'converted.step');
-  try {
-    const versionResult = await executeCadmpeg(converter, ['--version'], sourcePath);
-    const version = versionResult.stdout.trim();
-    const parsedVersion = version.match(/^cadmpeg\s+(\d+)\.(\d+)\.(\d+)/);
-    if (!parsedVersion) {
-      throw conversionError(sourcePath, `unexpected cadmpeg version response: ${version || '(empty)'}`);
-    }
-    const numericVersion = parsedVersion.slice(1).map(Number);
-    if (numericVersion[0] === 0 && (numericVersion[1] < 6 || (numericVersion[1] === 6 && numericVersion[2] < 12))) {
-      throw conversionError(
-        sourcePath,
-        `${version} is older than the supported minimum cadmpeg 0.6.12`,
-        'Install cadmpeg 0.6.12 or newer; the native file was not imported.',
-      );
-    }
+function invalidNativeCADInput(got: unknown, requires: string, caller: NativeCADCaller): never {
+  const context = caller === 'cli'
+    ? {
+        api: 'kernelcad import-step <input.cad>',
+        path: 'input.cad',
+        code: 'cli.invalid-args' as const,
+        example: "kernelcad import-step 'parts/bracket.sldprt' --out ./bracket-import",
+      }
+    : {
+        api: 'lib.fromNativeCAD(path)',
+        path: 'path',
+        code: 'feature.invalid-args' as const,
+        example: "await lib.fromNativeCAD('parts/bracket.sldprt')",
+      };
+  invalidArgs({ ...context, got, requires });
+}
 
-    const conversionResult = await executeCadmpeg(converter, ['convert', sourcePath, '-o', outputPath], sourcePath);
-    const outputStat = await stat(outputPath).catch(() => undefined);
-    if (!outputStat?.isFile() || outputStat.size === 0) {
-      throw conversionError(sourcePath, 'cadmpeg exited without writing a STEP file');
-    }
-    if (outputStat.size > MAX_CONVERTED_STEP_BYTES) {
-      throw conversionError(sourcePath, `cadmpeg output exceeds the ${MAX_CONVERTED_STEP_BYTES}-byte STEP import limit`);
-    }
-    const bytes = await readFile(outputPath);
-    if (!/^\s*ISO-10303-21\b/.test(bytes.subarray(0, 256).toString('latin1'))) {
-      throw conversionError(sourcePath, 'cadmpeg output is not a STEP Part 21 file');
-    }
-    return { bytes, version, report: clip(`${conversionResult.stdout}\n${conversionResult.stderr}`, 2400) };
-  } finally {
-    await rm(tempDir, { recursive: true, force: true });
+async function readCadmpegVersion(converter: string, sourcePath: string): Promise<string> {
+  const result = await executeCadmpeg(converter, ['--version'], sourcePath);
+  const version = result.stdout.trim();
+  const parsed = version.match(/^cadmpeg\s+(\d+)\.(\d+)\.(\d+)/);
+  if (!parsed) throw conversionError(sourcePath, `unexpected cadmpeg version response: ${version || '(empty)'}`);
+  const [major, minor, patch] = parsed.slice(1).map(Number);
+  if (major === 0 && (minor < 6 || (minor === 6 && patch < 12))) {
+    throw conversionError(
+      sourcePath,
+      `${version} is older than the supported minimum cadmpeg 0.6.12`,
+      'Install cadmpeg 0.6.12 or newer; the native file was not imported.',
+    );
   }
+  return version;
+}
+
+async function convertCadmpegOutput(
+  converter: string,
+  sourcePath: string,
+  outputPath: string,
+  version: string,
+): Promise<ConvertedNativeCADStep> {
+  const result = await executeCadmpeg(converter, ['convert', sourcePath, '-o', outputPath], sourcePath);
+  const outputStat = await stat(outputPath).catch(() => undefined);
+  if (!outputStat?.isFile() || outputStat.size === 0) {
+    throw conversionError(sourcePath, 'cadmpeg exited without writing a STEP file');
+  }
+  if (outputStat.size > MAX_CONVERTED_STEP_BYTES) {
+    throw conversionError(sourcePath, `cadmpeg output exceeds the ${MAX_CONVERTED_STEP_BYTES}-byte STEP import limit`);
+  }
+  const bytes = await readFile(outputPath);
+  if (!/^\s*ISO-10303-21\b/.test(bytes.subarray(0, 256).toString('latin1'))) {
+    throw conversionError(sourcePath, 'cadmpeg output is not a STEP Part 21 file');
+  }
+  return { bytes, version, report: clip(`${result.stdout}\n${result.stderr}`, 2400) };
 }
 
 async function executeCadmpeg(
