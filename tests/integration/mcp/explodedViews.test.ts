@@ -11,14 +11,21 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { callMcpTool } from '../../../src/agent/mcp/toolRegistry';
 
-const ASSEMBLY = `
-const arm = assembly('enclosure');
-arm.part('plate', box(40, 30, 3), { material: 'aluminum' });
-arm.part('standoff_0', cylinder(3, 12), { at: [6, 6, 3], material: 'pla' });
-arm.part('standoff_1', cylinder(3, 12), { at: [34, 24, 3], material: 'pla' });
-arm.part('lid', box(40, 30, 2), { at: [0, 0, 15], material: 'abs' });
-return arm.model();
-`;
+function readCookbookAssembly(): string {
+  const markdown = readFileSync(join(process.cwd(), 'cookbook/snippets/exploded-assembly-drawing.md'), 'utf8');
+  const match = markdown.match(/```typescript\r?\n([\s\S]*?)\r?\n```/);
+  if (!match?.[1]) throw new Error('exploded-assembly-drawing cookbook snippet has no TypeScript block');
+  return match[1];
+}
+
+const ASSEMBLY = readCookbookAssembly();
+
+const EXAMPLE = readFileSync(join(process.cwd(), 'examples/exploded/enclosure.kcad.ts'), 'utf8');
+
+type InspectedAssembly = {
+  ok: boolean;
+  parts?: Array<{ name: string; bbox: { min: [number, number, number]; max: [number, number, number] } }>;
+};
 
 beforeAll(async () => {
   const { initOcct } = await import('../../../src/kernel/backends/occt/occtBackend');
@@ -34,6 +41,24 @@ afterEach(() => {
 });
 
 describe('export svg-drawing exploded balloons + parts list', () => {
+  it('keeps the cookbook and CLI example standoffs 6 mm wide and 12 mm tall', async () => {
+    for (const code of [ASSEMBLY, EXAMPLE]) {
+      const inspected = await callMcpTool('inspect', { of: 'assembly', code }) as InspectedAssembly;
+      expect(inspected.ok).toBe(true);
+
+      for (let i = 0; i < 4; i++) {
+        const part = inspected.parts?.find(({ name }) => name === `standoff_${i}`);
+        expect(part, `missing standoff_${i}`).toBeDefined();
+        if (!part) continue;
+
+        const size = part.bbox.max.map((max, axis) => max - part.bbox.min[axis]!);
+        expect(size[0]).toBeCloseTo(6, 3);
+        expect(size[1]).toBeCloseTo(6, 3);
+        expect(size[2]).toBeCloseTo(12, 3);
+      }
+    }
+  }, 120000);
+
   it('balloon count equals BOM unique items and each balloon number matches its BOM row', async () => {
     const bom = await callMcpTool('inspect', { of: 'bom', code: ASSEMBLY }) as {
       ok: boolean;

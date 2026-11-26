@@ -70,7 +70,7 @@ for (let i = 0; i < 4; i++) {
 }
 
 for (let i = 0; i < 4; i++) {
-  arm.part(`standoff_${i}`, cylinder(3, STANDOFF_H), { material: 'pla' })
+  arm.part(`standoff_${i}`, cylinder(STANDOFF_H, 3), { material: 'pla' })
     .connector('bottom', {
       type: 'frame',
       origin: { kind: 'vec3', value: [0, 0, 0] },

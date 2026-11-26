@@ -18,7 +18,7 @@ arm.part('plate', box(80, 60, 3), { material: 'aluminum' });
 for (let i = 0; i < 4; i++) {
   const x = i % 2 === 0 ? 8 : 72;
   const y = i < 2 ? 8 : 52;
-  arm.part('standoff_' + i, cylinder(3, 12), { at: [x, y, 3], material: 'pla' });
+  arm.part('standoff_' + i, cylinder(12, 3), { at: [x, y, 3], material: 'pla' });
 }
 arm.part('board', box(68, 48, 1.6), { at: [6, 6, 15], material: 'pla' });
 arm.part('lid', box(80, 60, 2), { at: [0, 0, 16.6], material: 'abs' });
