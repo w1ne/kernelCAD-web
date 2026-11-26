@@ -432,10 +432,20 @@ export class MujocoSession {
         return out;
     }
 
-    /** Run forward kinematics and contact generation (no integration). */
-    forward(): void {
+    /** Run forward kinematics and contacts without integration; optionally set the solver timestep first. */
+    forward(dtSeconds?: number): void {
         this.assertAlive();
+        if (dtSeconds !== undefined) {
+            if (!Number.isFinite(dtSeconds) || dtSeconds <= 0) throw new Error('MujocoSession.forward: timestep must be positive and finite.');
+            this.model.opt.timestep = dtSeconds;
+        }
         this.mujoco.mj_forward(this.model, this.data);
+    }
+
+    /** A contact acceptance study owns every drive; hidden native controllers invalidate it. */
+    assertNoActuators(): void {
+        this.assertAlive();
+        if (modelCount(this.model, 'nu') !== 0) throw new Error('Contact dynamics requires an actuator-free model; apply joint efforts explicitly.');
     }
 
 
@@ -855,6 +865,11 @@ export function createMujocoSession(
     jointOrder: readonly { mjcfName: string; mateName: string }[],
 ): MujocoSession {
     const model = mujoco.MjModel.from_xml_string(mjcfXml);
-    const data = new mujoco.MjData(model);
-    return new MujocoSession(mujoco, model, data, bodyOrder, jointOrder);
+    try {
+        const data = new mujoco.MjData(model);
+        return new MujocoSession(mujoco, model, data, bodyOrder, jointOrder);
+    } catch (error) {
+        model.delete();
+        throw error;
+    }
 }

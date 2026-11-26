@@ -22,12 +22,19 @@ arm.mate('passive', 'base.guide', 'follower.guide', 'prismatic', { stiffnessNPer
 return arm.model();
 `;
 const dynamics = {
-    steps: 1000, dtSeconds: 0.0005, efforts: { drive: 0.01 },
-    contactModel: { friction: [1, 0.005, 0.0001], solref: [0.002, 1], solimp: [0.99, 0.999, 0.001] },
-    pairs: [{ bodies: ['driver', 'follower'], minEpisodes: 1, maxPenetrationMm: 1 }],
+    steps: 1000, dt_seconds: 0.0005, efforts: { drive: 0.01 },
+    contact_model: { friction: [1, 0.005, 0.0001], solref: [0.002, 1], solimp: [0.99, 0.999, 0.001] },
+    pairs: [{ bodies: ['driver', 'follower'], min_episodes: 1, max_penetration_mm: 1 }],
 };
 
 describe('CAD contact dynamics MCP path', () => {
+    it('rejects invalid dynamics before evaluating CAD', async () => {
+        const result = await verifyTool({ check: 'physics', code: 'throw new Error("must not evaluate")',
+            dynamics: { ...dynamics, dt_seconds: 0 } }) as CheckContactDynamicsOutput;
+        expect(result.ok).toBe(false);
+        expect(result).toMatchObject({ mode: 'contact-dynamics', error: expect.stringContaining('timestep') });
+    });
+
     it('lowers captured BRep geometry into native contacts and measures passive displacement', async () => {
         const result = await verifyTool({ check: 'physics', code, dynamics }) as CheckContactDynamicsOutput;
         expect(result.ok).toBe(true);

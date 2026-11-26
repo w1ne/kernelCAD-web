@@ -98,14 +98,14 @@ verify({
   code,
   dynamics: {
     steps: 1000,
-    dtSeconds: 0.0005,
+    dt_seconds: 0.0005,
     efforts: { drive: 0.01 }, // CAD mate name; hinge N·m, slide N
-    contactModel: {
+    contact_model: {
       friction: [1, 0.005, 0.0001],
       solref: [0.002, 1],
       solimp: [0.99, 0.999, 0.001],
     },
-    pairs: [{ bodies: ['driver', 'follower'], minEpisodes: 1, maxPenetrationMm: 1 }],
+    pairs: [{ bodies: ['driver', 'follower'], min_episodes: 1, max_penetration_mm: 1 }],
   },
 });
 ```
@@ -116,8 +116,8 @@ the native solver at the initial and every completed integration frontier.
 It returns initial/final scalar coordinates and velocities, load-bearing
 contact episodes, first/last contact times, maximum summed normal load,
 and maximum signed-distance penetration for each requested pair. Specify
-`maxNormalForceN` to enforce a load limit, or `minNormalForceN` to filter small
-contact events. An optional `sequence: { order: [0, 1], minCycles: 1 }` requires
+`max_normal_force_n` to enforce a load limit, or `min_normal_force_n` to filter small
+contact events. An optional `sequence: { order: [0, 1], min_cycles: 1 }` requires
 ordered onsets of those contact pairs; `contactSequence` reports completed
 cycles and unexpected/simultaneous onsets. Contact chatter is not proof of
 an escapement cycle. Use an appropriate normal-force threshold and validate
@@ -141,3 +141,9 @@ frame; `MujocoSession.contactWrenchesNow()` exposes its normal/tangential
 forces and torque. See
 [MuJoCo contact computation](https://mujoco.readthedocs.io/en/stable/computation/)
 and [mj_contactForce](https://mujoco.readthedocs.io/en/stable/APIreference/APIfunctions.html#mj-contactforce).
+
+The tool input uses snake_case; native TypeScript runtime inputs use camelCase.
+`ContactDynamicsStudyInput.contactModel` is applied during CAD-to-MJCF compilation.
+`runContactDynamics` accepts an already compiled, actuator-free session and does
+not replace its contact material. The requested timestep is set before the
+initial load calculation as well as every integration step.

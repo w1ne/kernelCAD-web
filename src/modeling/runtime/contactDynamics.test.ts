@@ -61,6 +61,55 @@ describe('torque-driven native contact dynamics', () => {
     });
 });
 
+function overlapModel(dt: number, actuator = '') {
+    return `<mujoco><option gravity="0 0 0" timestep="${dt}"/>
+      <default><geom solref="0.001 1" solimp="0.99 0.999 0.001"/></default>
+      <worldbody>
+        <body name="fixed"><geom type="sphere" size="0.01"/></body>
+        <body name="follower" pos="0 0.019 0">
+          <joint name="passive" type="slide" axis="0 1 0"/>
+          <geom type="sphere" size="0.01" mass="1"/>
+        </body>
+      </worldbody>${actuator}</mujoco>`;
+}
+
+const overlapInput: ContactDynamicsInput = {
+    steps: 1, dtSeconds: 0.0005, efforts: {},
+    pairs: [{ bodies: ['fixed', 'follower'], minEpisodes: 1, maxPenetrationMm: 2, maxNormalForceN: 100 }],
+};
+
+describe('forward study initialization', () => {
+    it('uses the study timestep for the initial load gate, independent of the XML default', async () => {
+        const run = async (xmlTimestep: number) => {
+            const session = await loadMujocoSession(overlapModel(xmlTimestep), ['fixed', 'follower'], []);
+            try { return runContactDynamics(session, overlapInput); }
+            finally { session.dispose(); }
+        };
+        const matchingTimestep = await run(overlapInput.dtSeconds);
+        const differentTimestep = await run(0.002);
+        // The initial 1 mm overlap produces 1000 N. Using the 2 ms XML
+        // default at t=0 would under-report 62.5 N and pass the 100 N gate.
+        expect(matchingTimestep.ok).toBe(false);
+        expect(matchingTimestep.pairs[0].peakNormalForceN).toBeCloseTo(1000, 6);
+        expect(matchingTimestep.pairs[0].firstContactSeconds).toBe(0);
+        expect(differentTimestep).toEqual(matchingTimestep);
+    });
+
+    it.each(['', ' name="hidden-position-control"'])(
+        'rejects a native actuator%s before changing effort or advancing the state', async (name) => {
+            const actuator = `<actuator><position${name} joint="passive" kp="1000"/></actuator>`;
+            const session = await loadMujocoSession(overlapModel(0.0005, actuator), ['fixed', 'follower'], []);
+            try {
+                session.setJointEfforts({ passive: 0.25 });
+                const before = session.scalarJointStatesNow();
+                expect(() => runContactDynamics(session, overlapInput)).toThrow(/actuator/i);
+                expect(session.timeSeconds).toBe(0);
+                expect(session.scalarJointStatesNow()).toEqual(before);
+            } finally { session.dispose(); }
+        },
+    );
+});
+
 describe('ordered physical contact events', () => {
     it('requires the declared onset order rather than counting contacts alone', async () => {
         const xml = `<mujoco><compiler angle="radian"/>

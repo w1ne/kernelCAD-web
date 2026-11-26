@@ -144,29 +144,29 @@ const verifyToolEntry: ToolRegistryEntry = {
         dynamics: {
           type: 'object', additionalProperties: false,
           description: "check:'physics' — separate forward dynamics acceptance. Applied effort is N or N·m by CAD mate name. Contacts require explicit convex pieces. Does not certify geometry or physical hardware.",
-          required: ['steps', 'dtSeconds', 'efforts', 'pairs'],
+          required: ['steps', 'dt_seconds', 'efforts', 'pairs'],
           properties: {
             steps: { type: 'integer', minimum: 1, maximum: 20000 },
-            dtSeconds: { type: 'number', exclusiveMinimum: 0, maximum: 0.01 },
+            dt_seconds: { type: 'number', exclusiveMinimum: 0, maximum: 0.01 },
             efforts: { type: 'object', additionalProperties: { type: 'number' } },
             pairs: {
               type: 'array', minItems: 1, maxItems: 32,
-              items: { type: 'object', additionalProperties: false, required: ['bodies', 'minEpisodes', 'maxPenetrationMm'], properties: {
+              items: { type: 'object', additionalProperties: false, required: ['bodies', 'min_episodes', 'max_penetration_mm'], properties: {
                 bodies: { type: 'array', minItems: 2, maxItems: 2, items: { type: 'string' } },
-                minEpisodes: { type: 'integer', minimum: 0 },
-                maxPenetrationMm: { type: 'number', minimum: 0 },
-                maxNormalForceN: { type: 'number', minimum: 0 },
-                minNormalForceN: { type: 'number', minimum: 0 },
+                min_episodes: { type: 'integer', minimum: 0 },
+                max_penetration_mm: { type: 'number', minimum: 0 },
+                max_normal_force_n: { type: 'number', minimum: 0 },
+                min_normal_force_n: { type: 'number', minimum: 0 },
               } },
             },
-            contactModel: { type: 'object', additionalProperties: false, required: ['friction', 'solref', 'solimp'], properties: {
+            contact_model: { type: 'object', additionalProperties: false, required: ['friction', 'solref', 'solimp'], properties: {
               friction: { type: 'array', minItems: 3, maxItems: 3, items: { type: 'number', minimum: 0 } },
               solref: { type: 'array', minItems: 2, maxItems: 2, items: { type: 'number', exclusiveMinimum: 0 } },
               solimp: { type: 'array', minItems: 3, maxItems: 3, items: { type: 'number', exclusiveMinimum: 0 } },
             } },
-            sequence: { type: 'object', additionalProperties: false, required: ['order', 'minCycles'], properties: {
+            sequence: { type: 'object', additionalProperties: false, required: ['order', 'min_cycles'], properties: {
               order: { type: 'array', minItems: 2, maxItems: 32, items: { type: 'integer', minimum: 0 } },
-              minCycles: { type: 'integer', minimum: 1 },
+              min_cycles: { type: 'integer', minimum: 1 },
             } },
           },
         },

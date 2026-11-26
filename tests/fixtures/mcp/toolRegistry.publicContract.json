@@ -965,13 +965,13 @@
         },
         "symmetry_tolerance_mm": {
           "type": "number",
-          "minimum": 0.000001,
+          "minimum": 1e-06,
           "default": 0.05,
           "description": "check:'geometry-quality' — maximum sampled mirror-to-mesh distance, mm."
         },
         "mesh_deflection_mm": {
           "type": "number",
-          "minimum": 1e-7,
+          "minimum": 1e-07,
           "description": "check:'geometry-quality' — absolute mesh deflection, defaults to tolerance/4; must be <= tolerance/2."
         },
         "asserted_plane": {
@@ -1011,7 +1011,7 @@
           "description": "check:'physics' — separate forward dynamics acceptance. Applied effort is N or N·m by CAD mate name. Contacts require explicit convex pieces. Does not certify geometry or physical hardware.",
           "required": [
             "steps",
-            "dtSeconds",
+            "dt_seconds",
             "efforts",
             "pairs"
           ],
@@ -1021,7 +1021,7 @@
               "minimum": 1,
               "maximum": 20000
             },
-            "dtSeconds": {
+            "dt_seconds": {
               "type": "number",
               "exclusiveMinimum": 0,
               "maximum": 0.01
@@ -1041,8 +1041,8 @@
                 "additionalProperties": false,
                 "required": [
                   "bodies",
-                  "minEpisodes",
-                  "maxPenetrationMm"
+                  "min_episodes",
+                  "max_penetration_mm"
                 ],
                 "properties": {
                   "bodies": {
@@ -1053,26 +1053,26 @@
                       "type": "string"
                     }
                   },
-                  "minEpisodes": {
+                  "min_episodes": {
                     "type": "integer",
                     "minimum": 0
                   },
-                  "maxPenetrationMm": {
+                  "max_penetration_mm": {
                     "type": "number",
                     "minimum": 0
                   },
-                  "maxNormalForceN": {
+                  "max_normal_force_n": {
                     "type": "number",
                     "minimum": 0
                   },
-                  "minNormalForceN": {
+                  "min_normal_force_n": {
                     "type": "number",
                     "minimum": 0
                   }
                 }
               }
             },
-            "contactModel": {
+            "contact_model": {
               "type": "object",
               "additionalProperties": false,
               "required": [
@@ -1115,7 +1115,7 @@
               "additionalProperties": false,
               "required": [
                 "order",
-                "minCycles"
+                "min_cycles"
               ],
               "properties": {
                 "order": {
@@ -1127,7 +1127,7 @@
                     "minimum": 0
                   }
                 },
-                "minCycles": {
+                "min_cycles": {
                   "type": "integer",
                   "minimum": 1
                 }
