@@ -62,6 +62,11 @@ export const ACCEPTED_MATERIAL_NAMES: readonly AnyMaterialName[] = [
   ...(Object.keys(MATERIAL_ALIASES) as MaterialAlias[]),
 ];
 
+/** Broad material family. Callers use it for policy that depends on whether
+ *  the stock is metallic or polymeric (for example BOM process inference);
+ *  it carries no structural numbers of its own. */
+export type MaterialFamily = 'metal' | 'polymer';
+
 interface EngineeringMaterialRow {
   /** Catalog row supplying density / E / yield, or `null` when the grade
    *  declares them in `own` (it has no catalog row). */
@@ -71,6 +76,7 @@ interface EngineeringMaterialRow {
   readonly nu: number;
   /** Default appearance finish token; `undefined` when no honest token exists. */
   readonly finish: FinishToken | undefined;
+  readonly family: MaterialFamily;
 }
 
 // Poisson's ratio sources: mild steel 0.29 and Al 6061-T6 0.33 from MIL-HDBK-5J
@@ -79,13 +85,13 @@ interface EngineeringMaterialRow {
 // Nylon (PA12): E 1700 MPa and yield 45 MPa from the same datasheet family;
 // density 1010 kg/m^3 is the PA12 bulk density (ISO 1183).
 const ROWS: Readonly<Record<EngineeringMaterialName, EngineeringMaterialRow>> = Object.freeze({
-  'mild-steel': { catalog: 'steel', nu: 0.29, finish: 'steel' },
+  'mild-steel': { catalog: 'steel', nu: 0.29, finish: 'steel', family: 'metal' },
   // US material name → UK-spelled finish token that exists in FINISHES.
-  'aluminum-6061': { catalog: 'aluminum', nu: 0.33, finish: 'aluminium' },
-  pla: { catalog: 'pla', nu: 0.36, finish: 'pla' },
+  'aluminum-6061': { catalog: 'aluminum', nu: 0.33, finish: 'aluminium', family: 'metal' },
+  pla: { catalog: 'pla', nu: 0.36, finish: 'pla', family: 'polymer' },
   // No `petg` finish token exists; density seeds, appearance is left alone.
-  petg: { catalog: 'pet', nu: 0.4, finish: undefined },
-  abs: { catalog: 'abs', nu: 0.35, finish: 'abs' },
+  petg: { catalog: 'pet', nu: 0.4, finish: undefined, family: 'polymer' },
+  abs: { catalog: 'abs', nu: 0.35, finish: 'abs', family: 'polymer' },
   // ASA (acrylonitrile styrene acrylate): density 1.05 g/cm^3 (ISO 1183), E
   // 2120 MPa and tensile strength 37 MPa (X-Y, ISO 527) from the Bambu Lab ASA
   // TDS V3.0; nu 0.35 as for ABS (same styrenic family). Z-direction layer
@@ -96,12 +102,14 @@ const ROWS: Readonly<Record<EngineeringMaterialName, EngineeringMaterialRow>> = 
     own: { yieldStressPa: 37e6, youngsModulusPa: 2.12e9, densityKgPerM3: 1050 },
     nu: 0.35,
     finish: 'abs',
+    family: 'polymer',
   },
   nylon: {
     catalog: null,
     own: { yieldStressPa: 45e6, youngsModulusPa: 1.7e9, densityKgPerM3: 1010 },
     nu: 0.39,
     finish: 'nylon',
+    family: 'polymer',
   },
 });
 
@@ -133,6 +141,11 @@ export function poissonRatio(name: EngineeringMaterialName): number {
 /** Default finish token for a canonical grade (undefined when none). */
 export function defaultFinish(name: EngineeringMaterialName): FinishToken | undefined {
   return ROWS[name].finish;
+}
+
+/** Metal or polymer for a canonical grade. */
+export function materialFamily(name: EngineeringMaterialName): MaterialFamily {
+  return ROWS[name].family;
 }
 
 /** The catalog row a grade reads, or null for a self-declared grade. Exposed
