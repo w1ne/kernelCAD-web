@@ -41,7 +41,8 @@
   "scripts": {
     "dev": "vite --config vite.player.config.ts",
     "build": "npm run build:cli && npm run build:player",
-    "build:cli": "tsc --noEmit -p tsconfig.cli.json && node scripts/build-cli.mjs",
+    "build:cli": "tsc --noEmit -p tsconfig.cli.json && npm run build:cli:bundle",
+    "build:cli:bundle": "node scripts/build-cli.mjs",
     "build:player": "vite build -c vite.player.config.ts",
     "dist:skills": "npx tsx scripts/distGenerate.mjs",
     "eval": "npx tsx eval/run.ts",
@@ -95,7 +96,7 @@
     "typecheck:examples:all": "tsx scripts/typecheckExamples.ts --all",
     "test:ratchet": "vitest run tests/unit/scripts/qualityRatchet.test.ts tests/unit/scripts/cycleRatchet.test.ts",
     "qc:lint": "npm run lint && npm run cookbook:validate",
-    "qc:build": "npm run typecheck && npm run build:cli && npm run cookbook:build && npm run skill:out-of-scope && git diff --exit-code src/agent/skills && npm run cookbook:evaluate && npm run test:standard-part-ranges",
+    "qc:build": "npm run typecheck && npm run build:cli:bundle && npm run cookbook:build && npm run skill:out-of-scope && git diff --exit-code src/agent/skills && npm run cookbook:evaluate && npm run test:standard-part-ranges",
     "qc:test": "npm test",
     "qc": "npm run qc:lint && npm run qc:build && npm run qc:test",
     "listing:zip": "node scripts/agentPlugin/buildChatGptZip.mjs",
