@@ -150,6 +150,50 @@ describe('functional review exports', () => {
     await expect(svg({decisionResolutions:{unknown:{note:'x',provenance:'y'}}},source)).rejects.toThrow(/declared decision/);
     await expect(svg({decisionResolutions:{[key]:{note:'',provenance:'y'}}},source)).rejects.toThrow(/nonempty/);
   });
+  it('includes explicit hole and counterbore callouts on default PDF sheets without inferred datums', async () => {
+    const source = `
+      const bezel = box(100, 60, 8)
+        .hole('top', { u: -30, v: 0, diameter: 3.4, depth: 'through', counterbore: { diameter: 6.5, depth: 2.5 } })
+        .hole('top', { u: 30, v: 0, diameter: 3.4, depth: 'through', counterbore: { diameter: 6.5, depth: 2.5 } });
+      return bezel;
+    `;
+    const result = await runAndExport({
+      code: source,
+      fileName: 'front-bezel.kcad.ts',
+      format: 'pdf-drawing',
+      options: { format: 'pdf-drawing', date: '2026-10-12' },
+    });
+    expect(result.bytes.length).toBeGreaterThan(0);
+    expect(result.drawingReport?.generalTolerance).toBeUndefined();
+    expect(result.drawingReport?.annotations.some(a => a.kind === 'datum')).toBe(false);
+    const holeCalls = result.drawingReport?.annotations.filter(a => a.kind === 'hole') ?? [];
+    expect(holeCalls.length).toBeGreaterThan(0);
+    expect(holeCalls.some(a => a.text.includes('3.4') && a.text.includes('6.5'))).toBe(true);
+  });
+
+  it('populates title-block part name and declared material when targeting an assembly part', async () => {
+    const source = `
+      const base = box(120, 80, 10);
+      const bezel = box(100, 60, 8).hole('top', { u: 0, v: 0, diameter: 4, depth: 'through' });
+      const arm = assembly('enclosure')
+        .part('base-frame', base, { material: 'mild-steel' })
+        .part('front-bezel', bezel, { material: 'aluminum-6061' });
+      return arm.model();
+    `;
+    const preview = await runAndExport({
+      code: source,
+      fileName: 'studio-export.kcad.ts',
+      format: 'svg-drawing',
+      feature_id: 'hole_1',
+      options: { format: 'svg-drawing', pdfSheet: true, date: '2026-10-12' },
+    });
+    const svgText = new TextDecoder().decode(preview.bytes);
+    expect(svgText).toContain('front-bezel');
+    expect(svgText).toContain('aluminum-6061');
+    expect(svgText).not.toContain('studio-export');
+    expect(preview.drawingReport?.annotations.some(a => a.kind === 'hole')).toBe(true);
+  });
+
   it('rejects review requests before architectural source and option early returns', async () => {
     await expect(svg({style:'architectural'})).rejects.toThrow(/architectural/);
     await expect(runAndExport({code,fileName:'functional.kcad.ts',format:'pdf-drawing',options:{format:'pdf-drawing',style:'architectural'}})).rejects.toThrow(/architectural/);

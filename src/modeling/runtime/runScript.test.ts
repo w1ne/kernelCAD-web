@@ -39,6 +39,14 @@ describe('runScript — module-style scripts', () => {
     }
   });
 
+  it('gives an actionable error when a script returns a plain object map of CAD values', async () => {
+    const code = `const base = box(20, 10, 3);\nconst lid = box(20, 10, 2);\nreturn { base, lid };`;
+    await expect(runScript({ code, fileName: 'object-map.kcad.ts' })).rejects.toMatchObject({
+      code: 'feature.invalid-args',
+      message: expect.stringMatching(/plain object map \(\{ base, lid \}\).*solvedModel/i),
+    });
+  });
+
   it('handles `export const` + `export default` together', async () => {
     const res = await runScript({
       code: 'export const w = 10;\nexport default w * 3;',

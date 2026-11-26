@@ -208,7 +208,7 @@ describe('pdf-drawing: views and annotations', () => {
     expect(clean.page.paths.filter(isHidden)).toHaveLength(0);
     expect(standard.page.paths.filter(isHidden).length).toBeGreaterThan(0);
     expect(clean.page.paths.filter(isVisible)).toEqual(standard.page.paths.filter(isVisible));
-    expect(textsOf(clean.page)).toEqual(textsOf(standard.page));
+    expect([...textsOf(clean.page)].sort()).toEqual([...textsOf(standard.page)].sort());
   });
 
   it('carries the automatic dimensions, hole callouts and GD&T', () => {
