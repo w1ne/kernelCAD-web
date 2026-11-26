@@ -17,6 +17,7 @@
 import { CaptureSession } from '../capture/captureSession';
 import { Assembly } from '../capture/assembly';
 import { isAssemblyPartRef } from '../capture/assemblyParts';
+import { Scene } from '../validation/scene';
 import type { ApiContext, KernelCadApi } from '../api';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ParamTable } from '../../shared/runtime/paramTable';
@@ -156,6 +157,7 @@ export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScrip
     throw withShapeMethodHint(e, [...publicNames(Shape.prototype, Sketch.prototype, PathBuilder.prototype), ...Object.keys(apiGlobals)]);
   }
   assertAssemblyReturnIsFinalized(returnValue);
+  assertPlainObjectMapReturnNotCad(returnValue);
   returnValue = normalizeArrayReturnValue(returnValue, session, code);
   // The returned model counts as consumed; then give statement-form
   // transforms (`p.translate(…); use(p)`) their pre-immutable meaning.
@@ -186,6 +188,37 @@ function assertAssemblyReturnIsFinalized(returnValue: unknown): void {
     requires: 'a Shape or Scene returned by arm.model() or arm.solvedModel(...)',
     example: 'return arm.model();',
     hint: 'Call .model() on the assembly, or append .model() to a chained assembly.part(...) expression, before returning it.',
+  });
+}
+
+/** A plain object map (`return { base: partA, lid: partB }`) is not rendered
+ *  by Studio or MCP evaluators and would silently drop all returned bodies.
+ *  Reject it at the authoring boundary with an actionable diagnostic. */
+function assertPlainObjectMapReturnNotCad(returnValue: unknown): void {
+  if (returnValue === null || typeof returnValue !== 'object' || Array.isArray(returnValue)) return;
+  const proto = Object.getPrototypeOf(returnValue);
+  // Scripts run inside a Node vm realm, so a plain `{ a, b }` literal has that
+  // realm's `Object.prototype` (prototype of prototype is null, constructor 'Object').
+  const isPlainObject = proto === null
+    || proto === Object.prototype
+    || (proto.constructor?.name === 'Object' && Object.getPrototypeOf(proto) === null);
+  if (!isPlainObject) return;
+  const cadEntries = Object.entries(returnValue as Record<string, unknown>).filter(([, value]) =>
+    value instanceof Shape
+    || value instanceof Scene
+    || value instanceof Assembly
+    || isAssemblyPartRef(value),
+  );
+  if (cadEntries.length === 0) return;
+  const preview = cadEntries.map(([key]) => key).slice(0, 6).join(', ');
+  const suffix = cadEntries.length > 6 ? ', ...' : '';
+  invalidArgs({
+    api: '.kcad.ts script return value',
+    path: 'return value',
+    gotText: `a plain object map ({ ${preview}${suffix} }) containing CAD values`,
+    requires: 'a Shape, a Scene returned by arm.model() or arm.solvedModel(...), or an array of Shapes',
+    example: "return assembly('model').part('a', partA).part('b', partB).model();",
+    hint: 'Return arm.model() or arm.solvedModel(...) (or an array [partA, partB]) instead of a plain object map.',
   });
 }
 

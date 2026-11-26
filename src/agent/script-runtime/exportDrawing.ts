@@ -52,8 +52,8 @@ export async function exportSvgDrawing(
       material: opts.titleBlock?.material, revision: opts.titleBlock?.revision,
     }) };
     const assemblies = run.session.assemblies as Map<string, Assembly>;
-    const material = pdf.material ?? sharedAssemblyMaterial(firstAssemblyOrUndefined(assemblies));
-    opts = pdfSheetOptions(pdf, material);
+    const resolved = resolvePdfTargetMetadata(pdf, assemblies, targetId);
+    opts = pdfSheetOptions(resolved.pdf, resolved.material);
   }
   return renderDrawingSheet(opts, fileName, lowered, targetId, run, diagnostics, featureCount);
 }
@@ -75,15 +75,15 @@ export async function exportPdfDrawing(
   const pdf = (input.options as PdfDrawingOptions | undefined) ?? { format: 'pdf-drawing' as const };
   const architectural = pdf.style === 'architectural';
   const assemblies = run.session.assemblies as Map<string, Assembly>;
-  const material = pdf.material ?? sharedAssemblyMaterial(firstAssemblyOrUndefined(assemblies));
-  const svgOpts = pdfSheetOptions(pdf, material);
+  const resolved = resolvePdfTargetMetadata(pdf, assemblies, targetId);
+  const svgOpts = pdfSheetOptions(resolved.pdf, resolved.material);
   const sheet = await renderDrawingSheet(svgOpts, fileName, lowered, targetId, run, diagnostics, featureCount);
   if (sheet.bytes.length === 0) return sheet;
   const svg = new TextDecoder().decode(sheet.bytes);
   const modelName = svgOpts.modelName ?? drawingModelName(fileName);
   const bytes = svgSheetsToPdf([svg], {
-    title: pdf.title ?? modelName,
-    subject: `${architectural ? 'Architectural floor plan' : 'Engineering drawing'}: ${pdf.partName ?? modelName}`,
+    title: resolved.pdf.title ?? modelName,
+    subject: `${architectural ? 'Architectural floor plan' : 'Engineering drawing'}: ${resolved.pdf.partName ?? modelName}`,
     creator: `${KERNELCAD_NAME} pdf-drawing export`,
     producer: attributionGenerator(),
   });
@@ -162,7 +162,7 @@ function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): 
       plan: pdf.plan,
       zoneGrid: pdf.zoneGrid,
     }),
-    autoAnnotate: pdf.autoAnnotate ?? (authored ? false : { include: ['overall'] }),
+    autoAnnotate: pdf.autoAnnotate ?? (authored ? false : { include: ['overall', 'holes'] }),
   };
 }
 
@@ -170,6 +170,35 @@ function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): 
 function drawingModelName(fileName: string): string {
   const baseName = fileName.split(/[\\/]/).pop() ?? fileName;
   return baseName.replace(/(\.kcad)?\.ts$/, '');
+}
+
+/** Resolve default title-block metadata for a PDF/sheet export. When
+ *  `targetId` identifies a specific assembly part (e.g. per-part order-pack
+ *  drawings or `feature_id` exports), fall back to that part's name and
+ *  declared material instead of generic file-name / empty-material defaults. */
+function resolvePdfTargetMetadata(
+  pdf: PdfDrawingOptions,
+  assemblies: Map<string, Assembly>,
+  targetId: string,
+): { pdf: PdfDrawingOptions; material: string | undefined } {
+  for (const arm of assemblies.values()) {
+    const matched = arm.__parts().find(p => p.originalShape.id === targetId);
+    if (matched !== undefined) {
+      return {
+        pdf: {
+          ...pdf,
+          ...(pdf.title === undefined ? { title: matched.name } : {}),
+          ...(pdf.partName === undefined ? { partName: matched.name } : {}),
+          ...(pdf.modelName === undefined ? { modelName: matched.name } : {}),
+        },
+        material: pdf.material ?? matched.material,
+      };
+    }
+  }
+  return {
+    pdf,
+    material: pdf.material ?? sharedAssemblyMaterial(firstAssemblyOrUndefined(assemblies)),
+  };
 }
 
 /** The material every assembly part declares, when they all declare the same one. */
