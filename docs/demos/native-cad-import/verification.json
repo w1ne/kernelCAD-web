@@ -89,7 +89,7 @@
       "The new source added three direct feature.invalid-args raises instead of using invalidArgs(...).",
       "Quality ratchet measured runImportStepCli complexity 26 and convertSolidWorksPart complexity 19; the limit is 15."
     ],
-    "correction": "Route native input validation through invalidArgs and split import preparation, reading, conversion and bundle writing into smaller functions.",
-    "localRetest": "Both ratchets passed (17 tests); focused native import suite passed (140 tests). Hosted rerun pending."
+    "correction": "Route native input validation through invalidArgs and split import preparation, reading, conversion and bundle writing into smaller functions. The existing STEP importer regression now checks that .sldprt receives the native API guidance while .sldasm and STEP error cases retain AP214/AP242 solid-body guidance.",
+    "localRetest": "Both ratchets passed (17 tests); focused native import suite passed (140 tests). Hosted rerun pending. The SolidWorks STEP import file passed (9 tests) after that assertion update; the next hosted rerun will verify the full shard."
   }
 }
