@@ -61,7 +61,15 @@ function findFamily(query: string): string | undefined {
   const rule = FAMILY_RULES.find(([pattern]) => pattern.test(text));
   if (rule !== undefined) return rule[1];
   const bySize = elementFamilySpecs().find((c) =>
-    Object.keys(c.sizes).some((size) => text.includes(normalize(size))));
+    Object.keys(c.sizes).some((size) => {
+      const normalizedSize = normalize(size);
+      // A numeric size such as a 5 mm collar must not match an unrelated
+      // designation that merely contains the same digit (for example M5x16).
+      if (!/^\d+(?:\.\d+)?$/.test(normalizedSize)) return text.includes(normalizedSize);
+      if (text === normalizedSize) return true;
+      return c.family === 'shaft-collar'
+        && new RegExp(`\\b${normalizedSize}\\s*mm\\b`, 'i').test(query);
+    }));
   return bySize?.family;
 }
 

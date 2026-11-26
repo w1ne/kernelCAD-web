@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-11-26T23:10:48.380139+00:00",
+  "video": "demo.mp4",
+  "videoSha256": "35364b1a6d499de5c97101c9bb78d5f889f7a123fa33445047180d997285643e",
+  "durationSec": 16.0,
+  "canvas": "1920x1080",
+  "fps": 24,
+  "source": "examples/parts/standard-elements-wave1.kcad.ts",
+  "sourceSha256": "415b11864e23cf0bf12d7df473ab3ed899949a1efc395db6c54f6e09356b60c3",
+  "verificationSha256": "3d80b55adee67d7888e831867513c029a1a58b3b24af5344e8c6f9eda65ee9f1",
+  "inputSha256": {
+    "assembly.hero.png": "af97f4658190adc4c0adfe1c210bcb915f3245c4d9bef7a269b8b5e2f4b353ab",
+    "frames/00.png": "e5150109b6b424e5bd359642dda7421d5665ab1f198c33efccec19c0afb13995",
+    "frames/01.png": "fd62c6ddf502bf59b7da68b22db3c5382ef7c5d5c5e0b185a08688b45429af3f",
+    "frames/02.png": "e67346903dc08f9207bffff2a99f8792e4bfc1b6d28dac653d9fcc13e2221f63",
+    "frames/03.png": "9a8ae373d3aadf9ccb44f377b48edceb11b03bd2ed4991e3786bf9f6c0991c38"
+  },
+  "invocations": [
+    "npx tsx src/agent/cli/index.ts render examples/parts/standard-elements-wave1.kcad.ts --preset studio --background dark --width 1800 --height 1200 --no-watermark -o docs/demos/standard-elements-wave1/assembly.hero.png",
+    "npx tsx src/agent/cli/index.ts render inspect examples/parts/standard-elements-wave1.kcad.ts docs/demos/standard-elements-wave1/inspect --channels rgb --views iso,right,top --width 1200 --height 900 --no-watermark",
+    "npx tsx docs/demos/standard-elements-wave1/verify.mts",
+    "python3 docs/demos/standard-elements-wave1/capture-demo.py"
+  ],
+  "provenance": "Annotated still sequence composed from a deterministic local KernelCAD render and local evaluate_script/review_cad results. No screen recording, deployed-platform capture, hardware test, or manufacturing acceptance."
+}

@@ -1,0 +1,53 @@
+{
+  "bundleVersion": 1,
+  "scriptPath": "/data/worktrees/hermes-kernelcad-web-qa-20261110/examples/parts/standard-elements-wave1.kcad.ts",
+  "generatedAt": "2026-11-26T23:05:45.491Z",
+  "requestedChannels": [
+    "rgb"
+  ],
+  "emittedChannels": [
+    "rgb"
+  ],
+  "viewport": {
+    "width": 1200,
+    "height": 900
+  },
+  "views": [
+    "iso",
+    "right",
+    "top"
+  ],
+  "bounds": {
+    "min": [
+      -175,
+      -13.5,
+      -20
+    ],
+    "max": [
+      186,
+      13.5,
+      13
+    ]
+  },
+  "command": {
+    "name": "kernelcad render inspect",
+    "channels": [
+      "rgb"
+    ],
+    "views": [
+      "iso",
+      "right",
+      "top"
+    ]
+  },
+  "caveats": [
+    "Channels are view-dependent and reflect the same camera, visibility filter, tail-feature filtering, and reference-image visibility used for RGB."
+  ],
+  "channels": {
+    "rgb": {
+      "iso": "channels/rgb/iso.png",
+      "right": "channels/rgb/right.png",
+      "top": "channels/rgb/top.png"
+    }
+  }
+}

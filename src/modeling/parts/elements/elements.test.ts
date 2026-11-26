@@ -6,6 +6,7 @@ import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import { KernelError } from '../../../shared/intent/kernelError';
 import { findPartHost } from '../findPart';
 import { elementFamilySpecs, elementSolid, isElementFamily, resolveElement } from './registry';
+import { searchElementLibrary } from './search';
 
 const CASES = [
   { family: 'linear-rail', size: 'MGN12', lengthMm: 350, box: [350, 12, 8], names: ['base-mount', 'rail-axis', 'end-a', 'end-b'] },
@@ -102,5 +103,11 @@ describe('standard mechanical element library', () => {
       expect(match, query).toBeDefined();
       if (lengthMm !== undefined) expect(match?.attributes.lengthMm).toBe(lengthMm);
     }
+  });
+
+  it('does not infer a numeric-only element family from an unrelated size token', () => {
+    expect(searchElementLibrary('DIN 912 M5x16')).toEqual([]);
+    expect(searchElementLibrary('5').map((record) => record.id)).toEqual(['element-shaft-collar-5']);
+    expect(searchElementLibrary('5 mm').map((record) => record.id)).toEqual(['element-shaft-collar-5']);
   });
 });

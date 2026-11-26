@@ -8,11 +8,11 @@ const tNutShape = (await lib.standard.extrusionTNut({ size: '20-M3' })).rotate([
 const pulleyShape = (await lib.standard.timingPulley({ size: 'GT2-20T-5' })).rotate([0, 1, 0], -90);
 
 const slide = assembly('standard-elements-wave1-slide');
-const frame = slide.part('frame', frameProfile.rotate([0, 1, 0], 90).translate(-175, 0, -10));
-const rail = slide.part('rail', railShape);
-const carriage = slide.part('carriage', carriageShape);
-const tNut = slide.part('t-nut', tNutShape);
-const pulley = slide.part('pulley', pulleyShape);
+slide.part('frame', frameProfile.rotate([0, 1, 0], 90).translate(-175, 0, -10));
+slide.part('rail', railShape);
+slide.part('carriage', carriageShape);
+slide.part('t-nut', tNutShape);
+slide.part('pulley', pulleyShape);
 
 slide.virtualJoint('world-base', { type: 'fixed', parentFrame: 'world', childLink: 'frame' });
 slide.mate('rail-seat', 'frame.slot-neg-x', 'rail.base-mount', 'fastened');
