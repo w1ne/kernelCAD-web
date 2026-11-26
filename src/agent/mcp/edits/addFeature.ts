@@ -2,10 +2,26 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/edits/addFeature.ts
 
+import { classifyFeatureCode } from './addFeatureEffect';
+
 export interface AddFeatureResult {
   ok: boolean;
   new_code?: string;
   error?: string;
+  errorCode?: string;
+}
+
+export interface AddFeatureOptions {
+  /**
+   * Opt-in safety check for tools that let an agent write an arbitrary
+   * expression. When set, a bare immutable expression over the returned
+   * binding is applied to the return, a declaration chain derived from it is
+   * retargeted, and anything that cannot reach the return fails closed.
+   *
+   * Defaults to false so internal typed editors keep their insert-only
+   * contract: they compose a declaration and adjust the return themselves.
+   */
+  guardReturnEffect?: boolean;
 }
 
 /**
@@ -19,7 +35,11 @@ export interface AddFeatureResult {
  * Indentation of the inserted line matches the indentation of the `return`
  * line it precedes.
  */
-export function addFeature(code: string, feature_code: string): AddFeatureResult {
+export function addFeature(
+  code: string,
+  feature_code: string,
+  options: AddFeatureOptions = {},
+): AddFeatureResult {
   const returnIndex = findLastTopLevelReturnLine(code);
   if (returnIndex < 0) {
     return { ok: false, error: 'no return statement found at top level — cannot place new feature.' };
@@ -31,6 +51,26 @@ export function addFeature(code: string, feature_code: string): AddFeatureResult
   // Indentation = leading whitespace of the return line.
   const indentMatch = returnLine.match(/^(\s*)/);
   const indent = indentMatch ? indentMatch[1] : '';
+
+  const effect = options.guardReturnEffect === true
+    ? classifyFeatureCode(code, feature_code, returnIndex)
+    : { kind: 'insert' as const };
+  const carriageReturn = returnLine.endsWith('\r') ? '\r' : '';
+  if (effect.kind === 'reject') {
+    return { ok: false, error: effect.error, errorCode: 'feature.add.expression-unused' };
+  }
+
+  if (effect.kind === 'rewrite-return') {
+    if (!effect.insertFeatureCode) {
+      // The snippet was a bare expression over the returned binding. Rewriting
+      // the return is enough; inserting the expression would be dead code.
+      lines[returnIndex] = `${effect.returnLine}${carriageReturn}`;
+      return { ok: true, new_code: lines.join('\n') };
+    }
+    lines.splice(returnIndex, 0, `${indent}${feature_code}`);
+    lines[returnIndex + 1] = `${effect.returnLine}${carriageReturn}`;
+    return { ok: true, new_code: lines.join('\n') };
+  }
 
   const insertLine = `${indent}${feature_code}`;
   lines.splice(returnIndex, 0, insertLine);
