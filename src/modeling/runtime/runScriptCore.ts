@@ -157,9 +157,9 @@ export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScrip
     throw withShapeMethodHint(e, [...publicNames(Shape.prototype, Sketch.prototype, PathBuilder.prototype), ...Object.keys(apiGlobals)]);
   }
   assertAssemblyReturnIsFinalized(returnValue);
-  assertPlainObjectMapReturnNotCad(returnValue);
   returnValue = normalizeArrayReturnValue(returnValue, session, code);
   returnValue = normalizeObjectReturnValue(returnValue, session);
+  assertPlainObjectMapReturnNotCad(returnValue);
   // The returned model counts as consumed; then give statement-form
   // transforms (`p.translate(…); use(p)`) their pre-immutable meaning.
   if (returnValue instanceof Shape) session.markConsumed(returnValue.id);
@@ -192,21 +192,14 @@ function assertAssemblyReturnIsFinalized(returnValue: unknown): void {
   });
 }
 
-/** A plain object map (`return { base: partA, lid: partB }`) is not rendered
- *  by Studio or MCP evaluators and would silently drop all returned bodies.
- *  Reject it at the authoring boundary with an actionable diagnostic. */
+/** A plain object map containing non-Shape CAD values (`Scene`, `Assembly`,
+ *  `AssemblyPartRef`) cannot be lowered by `normalizeObjectReturnValue` and
+ *  would otherwise fall back to the tail path and drop bodies. Reject it at
+ *  the authoring boundary with an actionable diagnostic. */
 function assertPlainObjectMapReturnNotCad(returnValue: unknown): void {
-  if (returnValue === null || typeof returnValue !== 'object' || Array.isArray(returnValue)) return;
-  const proto = Object.getPrototypeOf(returnValue);
-  // Scripts run inside a Node vm realm, so a plain `{ a, b }` literal has that
-  // realm's `Object.prototype` (prototype of prototype is null, constructor 'Object').
-  const isPlainObject = proto === null
-    || proto === Object.prototype
-    || (proto.constructor?.name === 'Object' && Object.getPrototypeOf(proto) === null);
-  if (!isPlainObject) return;
-  const cadEntries = Object.entries(returnValue as Record<string, unknown>).filter(([, value]) =>
-    value instanceof Shape
-    || value instanceof Scene
+  if (!isPlainObject(returnValue)) return;
+  const cadEntries = Object.entries(returnValue).filter(([, value]) =>
+    value instanceof Scene
     || value instanceof Assembly
     || isAssemblyPartRef(value),
   );
@@ -216,10 +209,10 @@ function assertPlainObjectMapReturnNotCad(returnValue: unknown): void {
   invalidArgs({
     api: '.kcad.ts script return value',
     path: 'return value',
-    gotText: `a plain object map ({ ${preview}${suffix} }) containing CAD values`,
-    requires: 'a Shape, a Scene returned by arm.model() or arm.solvedModel(...), or an array of Shapes',
+    gotText: `a plain object map ({ ${preview}${suffix} }) containing non-Shape CAD values`,
+    requires: 'a Shape, a Scene returned by arm.model() or arm.solvedModel(...), an array of Shapes, or a plain object map of Shapes',
     example: "return assembly('model').part('a', partA).part('b', partB).model();",
-    hint: 'Return arm.model() or arm.solvedModel(...) (or an array [partA, partB]) instead of a plain object map.',
+    hint: 'Return arm.model() or arm.solvedModel(...) (or a map/array whose values are Shapes) instead of wrapping an Assembly or Scene in an object.',
   });
 }
 
