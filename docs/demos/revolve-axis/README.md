@@ -44,8 +44,9 @@ analytic volume, a watertight mesh and a STEP export, then writes
 [`verification.json`](verification.json) and the three PNG frames.
 
 [`behavior-removed-test.log`](behavior-removed-test.log) is the same regression
-run with the lowerer forced back to the default axis: 4 geometry cases fail,
-including the offset-axis and horizontal-axis volumes. [`tests.log`](tests.log)
+run with the lowerer forced back to the default axis: 5 geometry cases fail,
+including the offset-axis, negative-side and horizontal-axis volumes.
+[`tests.log`](tests.log)
 is the passing run on the new implementation: 12 tests.
 
 ## Video

@@ -1,7 +1,9 @@
 
  RUN  v4.0.18 /data/worktrees/kernelCAD-web/foundation-parity-20261111
 
- × tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > revolves around an offset vertical axis 62ms
+ × tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > revolves around an offset vertical axis 67ms
+   → expected 9424.77796076938 to be close to 6283.185307179586, received difference is 3141.5926535897934, but expected 0.0005
+ × tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > revolves a profile on the negative side of the axis 5ms
    → expected 9424.77796076938 to be close to 6283.185307179586, received difference is 3141.5926535897934, but expected 0.0005
  × tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > revolves around a horizontal axis 5ms
    → expected 2513.274122871834 to be close to 3015.928947446201, received difference is 502.654824574367, but expected 0.0005
@@ -12,12 +14,12 @@
  ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > keeps default-axis records free of axis params 4ms
  ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > refuses a profile that crosses the explicit axis 2ms
  ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > refuses a zero axis direction 2ms
- ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > refuses a malformed axis { axis: { through: [5, 0] } } 1ms
- ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > refuses a malformed axis { axis: { through: [5, 0], direction: [0, 1], origin: [0, 0] } } 2ms
- ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > refuses a malformed axis { axis: [5, 0, 0, 1] } 2ms
+ ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > refuses a malformed axis { axis: { through: [5, 0] } } 2ms
+ ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > refuses a malformed axis { axis: { through: [5, 0], direction: [0, 1], origin: [0, 0] } } 1ms
+ ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > refuses a malformed axis { axis: [5, 0, 0, 1] } 1ms
  ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > refuses a malformed axis { axis: { through: [5], direction: [0, 1] } } 1ms
 
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
 
  FAIL  tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > revolves around an offset vertical axis
 AssertionError: expected 9424.77796076938 to be close to 6283.185307179586, received difference is 3141.5926535897934, but expected 0.0005
@@ -29,47 +31,59 @@ AssertionError: expected 9424.77796076938 to be close to 6283.185307179586, rece
      48|     const bb = shape.boundingBox();
      49|     expect(bb.min[0]).toBeCloseTo(-10, 3);
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > revolves a profile on the negative side of the axis
+AssertionError: expected 9424.77796076938 to be close to 6283.185307179586, received difference is 3141.5926535897934, but expected 0.0005
+ ❯ tests/integration/modeling/revolveAxis.test.ts:63:39
+     61|     const model = await build(code);
+     62|     expect(errors(model), JSON.stringify(model.diagnostics)).toEqual([…
+     63|     expect(model.tailShape!.volume()).toBeCloseTo(2000 * Math.PI, 3);
+       |                                       ^
+     64|     const bb = model.tailShape!.boundingBox();
+     65|     expect(bb.min[2]).toBeCloseTo(-10, 6);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
 
  FAIL  tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > revolves around a horizontal axis
 AssertionError: expected 2513.274122871834 to be close to 3015.928947446201, received difference is 502.654824574367, but expected 0.0005
- ❯ tests/integration/modeling/revolveAxis.test.ts:65:28
-     63|     expect(isTopologicallyValid(wrappedOf(shape))).toBe(true);
-     64|     // Pappus: 10 * 8 area, centroid 6 mm from the axis -> 960 pi.
-     65|     expect(shape.volume()).toBeCloseTo(960 * Math.PI, 3);
+ ❯ tests/integration/modeling/revolveAxis.test.ts:77:28
+     75|     expect(isTopologicallyValid(wrappedOf(shape))).toBe(true);
+     76|     // Pappus: 10 * 8 area, centroid 6 mm from the axis -> 960 pi.
+     77|     expect(shape.volume()).toBeCloseTo(960 * Math.PI, 3);
        |                            ^
-     66|     const bb = shape.boundingBox();
-     67|     expect(bb.min[0]).toBeCloseTo(0, 6);
+     78|     const bb = shape.boundingBox();
+     79|     expect(bb.min[0]).toBeCloseTo(0, 6);
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
 
  FAIL  tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > centres a symmetric partial revolve on the explicit axis
 AssertionError: expected 628.3185307179585 to be close to 753.9822368615503, received difference is 125.66370614359175, but expected 0.005
- ❯ tests/integration/modeling/revolveAxis.test.ts:81:28
-     79|     expect(errors(model), JSON.stringify(model.diagnostics)).toEqual([…
-     80|     const shape = model.tailShape!;
-     81|     expect(shape.volume()).toBeCloseTo((960 * Math.PI) / 4, 2);
+ ❯ tests/integration/modeling/revolveAxis.test.ts:93:28
+     91|     expect(errors(model), JSON.stringify(model.diagnostics)).toEqual([…
+     92|     const shape = model.tailShape!;
+     93|     expect(shape.volume()).toBeCloseTo((960 * Math.PI) / 4, 2);
        |                            ^
-     82|     const bb = shape.boundingBox();
-     83|     const s45 = Math.sin(Math.PI / 4);
+     94|     const bb = shape.boundingBox();
+     95|     const s45 = Math.sin(Math.PI / 4);
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
 
  FAIL  tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > accepts a ParamRef axis point and records it symbolically
 AssertionError: expected 9424.77796076938 to be close to 6283.185307179586, received difference is 3141.5926535897934, but expected 0.0005
- ❯ tests/integration/modeling/revolveAxis.test.ts:102:39
-    100|     );
-    101|     expect(errors(model), JSON.stringify(model.diagnostics)).toEqual([…
-    102|     expect(model.tailShape!.volume()).toBeCloseTo(2000 * Math.PI, 3);
+ ❯ tests/integration/modeling/revolveAxis.test.ts:114:39
+    112|     );
+    113|     expect(errors(model), JSON.stringify(model.diagnostics)).toEqual([…
+    114|     expect(model.tailShape!.volume()).toBeCloseTo(2000 * Math.PI, 3);
        |                                       ^
-    103|     const revolve = model.records.find((f) => f.kind === 'revolve')!;
-    104|     expect(revolve.params.axisThroughX.expression).toContain('axisX');
+    115|     const revolve = model.records.find((f) => f.kind === 'revolve')!;
+    116|     expect(revolve.params.axisThroughX.expression).toContain('axisX');
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
 
 
  Test Files  1 failed (1)
-      Tests  4 failed | 7 passed (11)
-   Start at  02:43:23
-   Duration  4.52s (transform 3.30s, setup 95ms, import 3.94s, tests 375ms, environment 0ms)
+      Tests  5 failed | 7 passed (12)
+   Start at  03:11:40
+   Duration  4.19s (transform 2.85s, setup 75ms, import 3.39s, tests 375ms, environment 0ms)
 
