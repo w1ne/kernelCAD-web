@@ -40,6 +40,24 @@ const CLEARANCE_CODE = `
   return arm.solvedModel({});
 `;
 
+const NEGATIVE_CLEARANCE_CODE = `
+  const arm = assembly('sweep-negative-clearance');
+  const clear = param('Clear', 2);
+  const a = box(20, 20, 20, true);
+  const b = box(20, 20, 20, true).translate(clear.add(20), 0, 0);
+  arm.part('a', a);
+  arm.part('b', b);
+  return arm.solvedModel({});
+`;
+
+const THROWING_COMBO_CODE = `
+  const arm = assembly('sweep-throwing-combo');
+  const mode = param('Mode', 'ok', { choices: ['ok', 'throw'] });
+  if (mode.value === 'throw') throw new Error('synthetic combo failure');
+  arm.part('a', box(20, 20, 20, true));
+  return arm.solvedModel({});
+`;
+
 const HOLE_MISMATCH_CODE = `
   const arm = assembly('sweep-bracket');
   const h = param('HeightMm', 5);
@@ -125,6 +143,53 @@ describe('sweepTolerance', () => {
     expect(
       firstFail!.diagnostics.some((d) => d.code === 'assembly.interference.overlap'),
     ).toBe(true);
+  });
+
+  it('overrides and restores an existing error default while keeping overlap on its gate only', async () => {
+    const previousValidateDefault = process.env.KERNELCAD_VALIDATE_DEFAULT;
+    process.env.KERNELCAD_VALIDATE_DEFAULT = 'error';
+    try {
+      const r = await sweepTolerance({
+        code: NEGATIVE_CLEARANCE_CODE,
+        params: { Clear: { values: [2, -1] } },
+        gates: { interference: true, mountingHoles: true, jointAxis: true },
+        boundaryBudget: 0,
+      });
+
+      const negativeClearance = r.results.find((row) => row.combo['Clear'] === -1)!;
+      expect(negativeClearance.gates).toEqual({
+        interference: 'fail',
+        'mounting-holes': 'pass',
+        'joint-axis': 'pass',
+      });
+      expect(negativeClearance.diagnostics).toHaveLength(1);
+      expect(negativeClearance.diagnostics).toMatchObject([
+        { gate: 'interference', code: 'assembly.interference.overlap' },
+      ]);
+      expect(Object.keys(r.firstFailure)).toEqual(['interference']);
+      expect(r.firstFailure['interference']?.combo['Clear']).toBe(-1);
+      expect(process.env.KERNELCAD_VALIDATE_DEFAULT).toBe('error');
+    } finally {
+      if (previousValidateDefault === undefined) delete process.env.KERNELCAD_VALIDATE_DEFAULT;
+      else process.env.KERNELCAD_VALIDATE_DEFAULT = previousValidateDefault;
+    }
+  });
+
+  it('reports one evaluation diagnostic when a combo throws before producing a model', async () => {
+    const r = await sweepTolerance({
+      code: THROWING_COMBO_CODE,
+      params: { Mode: { values: ['ok', 'throw'] } },
+      gates: { interference: true, mountingHoles: true, jointAxis: true },
+      boundaryBudget: 0,
+    });
+
+    const failedCombo = r.results.find((row) => row.combo['Mode'] === 'throw')!;
+    expect(failedCombo.verdict).toBe('fail');
+    expect(failedCombo.diagnostics).toHaveLength(1);
+    expect(failedCombo.diagnostics[0]).toMatchObject({ gate: 'evaluation' });
+    expect(['interference', 'mounting-holes', 'joint-axis']).not.toContain(
+      failedCombo.diagnostics[0]?.gate,
+    );
   });
 
   it('min/max/steps range expands to an inclusive linspace', async () => {
