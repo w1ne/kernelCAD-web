@@ -1,0 +1,28 @@
+{
+  "invocation": "npx tsx docs/demos/object-map-return/capture-demo.mts",
+  "sourceScript": "docs/demos/object-map-return/drive-plate.kcad.ts",
+  "negativeSource": "inline mixed object map { motor_plate: Shape, count: number }",
+  "checks": [
+    "mixed object map diagnostic",
+    "Scene part names from object keys",
+    "mesh bounds",
+    "GLB node and triangle output"
+  ],
+  "render": "scripts/lib/glbSoftwareRender.ts; triangles parsed from the locally exported GLB",
+  "browser": "none; offline SVG + Sharp + FFmpeg capture",
+  "dimensionsMm": [
+    40,
+    30,
+    14
+  ],
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "fps": 20,
+    "durationSeconds": 8,
+    "codec": "libx264",
+    "crf": 26,
+    "pixelFormat": "yuv420p"
+  },
+  "scope": "Local source evaluation and export only; no deployed Studio, hosted MCP, simulation, or hardware acceptance."
+}

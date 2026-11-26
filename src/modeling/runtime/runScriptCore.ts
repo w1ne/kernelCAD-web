@@ -159,6 +159,7 @@ export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScrip
   assertAssemblyReturnIsFinalized(returnValue);
   assertPlainObjectMapReturnNotCad(returnValue);
   returnValue = normalizeArrayReturnValue(returnValue, session, code);
+  returnValue = normalizeObjectReturnValue(returnValue, session);
   // The returned model counts as consumed; then give statement-form
   // transforms (`p.translate(…); use(p)`) their pre-immutable meaning.
   if (returnValue instanceof Shape) session.markConsumed(returnValue.id);
@@ -272,6 +273,44 @@ function normalizeArrayReturnValue(returnValue: unknown, session: CaptureSession
     assembly.part(name, shape);
   });
   return assembly.model();
+}
+
+/** Convert a returned `{ name: shape, ... }` map into a named Scene, one part
+ *  per key. Without this the map falls back to the last captured feature, so
+ *  the mesh path shows an empty viewport while BOM and review see every part.
+ *  Objects with no Shape values stay plain data; a mixed map is rejected. */
+function normalizeObjectReturnValue(returnValue: unknown, session: CaptureSession): unknown {
+  if (!isPlainObject(returnValue)) return returnValue;
+
+  const entries = Object.entries(returnValue);
+  const shapeKeys = entries.filter(([, value]) => value instanceof Shape).map(([key]) => key);
+  if (shapeKeys.length === 0) return returnValue;
+  if (shapeKeys.length !== entries.length) {
+    const badEntries = entries
+      .filter(([, value]) => !(value instanceof Shape))
+      .map(([key, value]) => `${key}: ${arrayEntryType(value)}`)
+      .join(', ');
+    invalidArgs({
+      api: '.kcad.ts script return value',
+      path: 'return value',
+      gotText: `mixed object: Shape keys ${shapeKeys.join(', ')}; non-Shape entries (${badEntries})`,
+      requires: 'each value of a multi-body object return to be a Shape',
+      example: 'return { base: baseShape, lid: lidShape };',
+      hint: 'Remove non-Shape values, or build an assembly and return arm.model().',
+    });
+  }
+
+  const assembly = new Assembly('script-return', session);
+  for (const [name, shape] of entries) assembly.part(name, shape as Shape);
+  return assembly.model();
+}
+
+/** Scripts may run in a separate realm, so its object literals inherit a
+ *  different `Object.prototype`: accept any prototype that ends the chain. */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
+  const proto = Object.getPrototypeOf(value) as object | null;
+  return proto === null || Object.getPrototypeOf(proto) === null;
 }
 
 function arrayEntryType(value: unknown): string {

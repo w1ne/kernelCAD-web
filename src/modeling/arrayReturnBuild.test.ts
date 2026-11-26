@@ -55,6 +55,50 @@ describe('array return values', () => {
     );
   });
 
+  it('keeps every Shape of a returned object map as a part named by its key (#1799)', async () => {
+    const model = await buildModel({
+      code: `const plate = box(20, 10, 3);\nconst pin = cylinder(12, 2).translate(25, 0, 0);\n` +
+        `const arm = assembly('declared');\narm.part('plate', plate);\n` +
+        `return { motor_plate: plate, drive_pinion: pin };`,
+      fileName: 'object-return.kcad.ts',
+    });
+
+    expect(model.returnValue).toBeInstanceOf(Scene);
+    expect(model.rootId).toBe((model.returnValue as Scene).__sourceFeatureId());
+    if (!isSceneBackend(model.rootShape)) throw new Error('Expected an object-return SceneBackend');
+    expect(model.rootShape.parts.map(part => part.name)).toEqual(['motor_plate', 'drive_pinion']);
+    const partsByName = new Map(model.rootShape.parts.map(part => [part.name, part]));
+    expect(partsByName.get('motor_plate')?.shape.volume()).toBeCloseTo(600, 5);
+    expect(partsByName.get('drive_pinion')?.shape.volume()).toBeCloseTo(48 * Math.PI, 2);
+
+    const meshing = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
+    expect(meshing.failedFeatureIds).toEqual([]);
+    expect(meshing.features
+      .filter(feature => feature.assemblyFeatureId === model.rootId)
+      .map(feature => feature.assemblyPartName)
+      .sort()).toEqual(['drive_pinion', 'motor_plate']);
+    expect(meshing.bounds.max[0] - meshing.bounds.min[0]).toBeCloseTo(27, 3);
+    expect(meshing.bounds.max[2] - meshing.bounds.min[2]).toBeCloseTo(12, 3);
+  }, 60_000);
+
+  it('rejects object maps that mix Shapes with non-Shape values', async () => {
+    const error = await buildModel({
+      code: `const bracket = box(20, 10, 3);\nreturn { bracket, count: 42 };`,
+      fileName: 'mixed-object-return.kcad.ts',
+    }).then(() => undefined, (reason: unknown) => reason);
+    expect(error instanceof KernelError).toBe(true);
+    expect((error as KernelError).code).toBe('feature.invalid-args');
+    expect((error as KernelError).message).toMatch(
+      /got mixed object: Shape keys bracket; non-Shape entries \(count: number\); requires each value of a multi-body object return to be a Shape/i,
+    );
+  });
+
+  it('leaves plain-data object returns without Shapes on the tail path', async () => {
+    const model = await buildModel({ code: 'box(20, 10, 3);\nreturn { note: 1 };', fileName: 'data-return.kcad.ts' });
+    expect(model.returnValue).toEqual({ note: 1 });
+    expect(model.rootId).toBe(model.tailId);
+  }, 60_000);
+
   it('keeps direct Shape and Scene returns on their existing paths', async () => {
     const shapeModel = await buildModel({ code: 'return box(20, 10, 3);', fileName: 'shape-return.kcad.ts' });
     expect(shapeModel.returnValue).toHaveProperty('id');
