@@ -126,6 +126,25 @@ describe("inspect({ of: 'bom' })", () => {
     expect(minZ).toBeCloseTo(0, 3);
   }, 60000);
 
+  it('reports the evaluated param width for a parametric sheet-metal blank (#1789)', async () => {
+    const code = `
+      const w = param('width', 80, { min: 40, max: 140 });
+      const p = path().moveTo(0, 0).lineTo(w, 0).lineTo(w, 30).lineTo(0, 30).close();
+      const blank = sheetMetal(p, { thickness: 2, kFactor: 0.38 }).bend({ atX: w - 22 }, -90, 3);
+      const arm = assembly('sm-repro');
+      arm.part('bracket', blank, { material: 'mild-steel' });
+      return arm.model();
+    `;
+    const r = await inspectBomTool({ code });
+    expect(r.ok).toBe(true);
+    if (!r.ok) throw new Error('expected ok');
+    const row = r.rows.find((candidate) => candidate.name === 'bracket');
+    expect(row).toBeDefined();
+    expect(row!.bboxMm.max[0] - row!.bboxMm.min[0]).toBeCloseTo(80, 3);
+    expect(row!.bboxMm.max[1] - row!.bboxMm.min[1]).toBeCloseTo(30, 3);
+    expect(row!.bboxMm.max[2] - row!.bboxMm.min[2]).toBeCloseTo(2, 3);
+  }, 60000);
+
   it('splits identical geometry into separate rows when the declared density differs', async () => {
     const code = `
       const arm = assembly('mix');

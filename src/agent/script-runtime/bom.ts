@@ -382,7 +382,11 @@ function createBomRow(
 export async function computeBom(arm: Assembly, session: CaptureSession): Promise<BomResult> {
   const diagnostics: CompilerDiagnostic[] = [];
   const groups = new Map<string, BomRow & { __density: number | null }>();
-  const records = session.getRecords();
+  // Resolve `param(...)` refs against the live table: the sketch commands
+  // stored on a sheet-metal root keep their authored ParamRefs, so the raw
+  // records would flatten with `evaluated: 0` and report a zero-width blank
+  // bbox while STEP/DXF use the true dimensions (#1789).
+  const records = session.resolvedRecords();
   let item = 0;
 
   for (const part of arm.__parts()) {
