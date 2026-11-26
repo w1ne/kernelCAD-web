@@ -78,7 +78,7 @@ export const API_IDIOMS: readonly ApiIdiom[] = [
   {
     id: 'point-arrays',
     aliases: ['pushpoints', 'rarray', 'polararray', 'grid points', 'hole pattern', 'bolt circle', 'array of holes', 'distribute'],
-    use: 'Compute the positions in plain JS and pass them as positions: [{ u, v }, ...] to one holes() call (a rectangular array is two nested maps; a bolt circle is Math.cos / Math.sin of the angle). Repeated bodies use patternLinear({ count, direction, spacing }), patternGrid({ x, y }) and patternCircular({ count, axis: [0, 0, 1] }).',
+    use: 'Compute the positions in plain JS and pass them as positions: [{ u, v }, ...] to one holes() call (a rectangular array is two nested maps; a bolt circle is Math.cos / Math.sin of the angle). Repeated bodies use patternLinear({ count, direction, spacing }), patternGrid({ x, y }) and patternCircular({ count, axis: [0, 0, 1], pivot: [cx, cy, cz] }) (pivot is a point on the axis line; omit it to rotate about the world origin).',
     example: "plate.holes('top', { positions: [0, 90, 180, 270].map((a) => ({ u: 20 * Math.cos(a * Math.PI / 180), v: 20 * Math.sin(a * Math.PI / 180) })), diameter: 4, depth: 'through' })",
     entries: ['holes', 'patternLinear', 'patternGrid', 'patternCircular'],
   },

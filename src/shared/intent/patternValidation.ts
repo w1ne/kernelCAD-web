@@ -24,6 +24,7 @@ export interface PatternValidationError {
 
 const LINEAR_EXAMPLE = 'plate.patternLinear({ count: 4, direction: [1, 0, 0], spacing: 20 })';
 const CIRCULAR_EXAMPLE = 'plate.patternCircular({ count: 6, axis: [0, 0, 1], angleDeg: 360 })';
+const CIRCULAR_PIVOT_EXAMPLE = 'flange.patternCircular({ count: 6, axis: [0, 0, 1], pivot: [40, 25, 0] })';
 const GRID_EXAMPLE =
   'plate.patternGrid({ x: { count: 4, direction: [1, 0, 0], spacing: 20 }, y: { count: 3, direction: [0, 1, 0], spacing: 15 } })';
 
@@ -78,7 +79,7 @@ export function validateLinear(opts: {
 }
 
 export function validateCircular(opts: {
-  count: number; axis: Vec3; angleDeg: number;
+  count: number; axis: Vec3; angleDeg: number; pivot?: Vec3;
 }): PatternValidationError | null {
   if (!Number.isInteger(opts.count) || opts.count < 2) {
     return err('count', {
@@ -98,8 +99,20 @@ export function validateCircular(opts: {
       got: opts.axis,
       showType: !Array.isArray(opts.axis),
       requires:
-        'a 3-element array of finite numbers [x, y, z] — the rotation axis through the world origin ([0, 0, 1] for a bolt circle on an XY plate)',
+        'a 3-element array of finite numbers [x, y, z] — the rotation axis direction ([0, 0, 1] for a bolt circle on an XY plate); the line it turns about passes through pivot, or through the world origin when pivot is omitted',
       example: CIRCULAR_EXAMPLE,
+    });
+  }
+  if (opts.pivot !== undefined && !isValidVec3(opts.pivot)) {
+    return err('pivot', {
+      api: 'patternCircular({ pivot })',
+      path: 'pivot',
+      got: opts.pivot,
+      showType: !Array.isArray(opts.pivot),
+      requires:
+        'a 3-element array of finite numbers [x, y, z] — a point ON the rotation axis in world mm; omit it to rotate about the world origin',
+      unit: 'mm',
+      example: CIRCULAR_PIVOT_EXAMPLE,
     });
   }
   if (typeof opts.angleDeg !== 'number' || !Number.isFinite(opts.angleDeg) || opts.angleDeg === 0) {
