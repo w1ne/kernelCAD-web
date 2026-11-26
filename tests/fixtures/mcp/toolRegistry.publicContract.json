@@ -2226,7 +2226,7 @@
   },
   {
     "name": "add_feature",
-    "description": "Use this when you need to insert a new feature line into a script. Insert a new feature line into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. Primitives that accept faceLabels (box, cylinder, extrudeRect, extrudeCircle, extrudePolygon, extrudeRoundedRect) can receive `opts.faceLabels` in the inserted code — use `lookup_api` to see `featureKindFaceLabels` for the full value schema.",
+    "description": "Use this when you need to insert a new feature line into a script. Insert a new feature line into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. Shape methods are immutable: a bare expression that edits the returned binding (for example `plate.fillet(1.5)` when the script ends `return plate;`) replaces the return value, while any other bare expression fails closed with `feature.add.expression-unused` instead of succeeding on unchanged geometry. Primitives that accept faceLabels (box, cylinder, extrudeRect, extrudeCircle, extrudePolygon, extrudeRoundedRect) can receive `opts.faceLabels` in the inserted code — use `lookup_api` to see `featureKindFaceLabels` for the full value schema.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2236,7 +2236,7 @@
         },
         "feature_code": {
           "type": "string",
-          "description": "Single-statement source line to insert (e.g. `const hole = cylinder(5, 2).translate(10, 10, -1);`)."
+          "description": "Single-statement source line to insert (e.g. `const hole = cylinder(5, 2).translate(10, 10, -1);`). A bare Shape edit such as `plate.fillet(1.5)` is applied to the returned binding."
         }
       },
       "required": [

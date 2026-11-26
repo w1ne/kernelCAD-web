@@ -11,13 +11,31 @@ const baseCode = [
 ].join('\n');
 
 describe('add_pattern_feature MCP tool', () => {
-  it('inserts a linear-pattern call', async () => {
+  it('applies a bare linear-pattern call to the returned binding', async () => {
     const out = await addPatternFeatureTool({
       code: baseCode, target: 'plate', kind: 'linear',
       linear: { count: 4, direction: [1, 0, 0], spacing: 20 },
     });
     expect(out.ok).toBe(true);
-    expect(out.new_code).toContain('plate.patternLinear({ count: 4, direction: [1, 0, 0], spacing: 20 });');
+    expect(out.new_code).toBe([
+      'const plate = box(100, 60, 6);',
+      'return plate.patternLinear({ count: 4, direction: [1, 0, 0], spacing: 20 });',
+    ].join('\n'));
+  });
+
+  it('fails closed when the pattern target is not the returned binding', async () => {
+    const out = await addPatternFeatureTool({
+      code: [
+        'const plate = box(100, 60, 6);',
+        'const other = box(10, 10, 10);',
+        'return other;',
+      ].join('\n'),
+      target: 'plate', kind: 'linear',
+      linear: { count: 4, direction: [1, 0, 0], spacing: 20 },
+    });
+    expect(out.ok).toBe(false);
+    expect(out.errorCode).toBe('feature.add.expression-unused');
+    expect(out.new_code).toBeUndefined();
   });
 
   it('inserts a circular-pattern call with omitted angleDeg', async () => {

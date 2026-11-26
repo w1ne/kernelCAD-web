@@ -18,12 +18,13 @@ export interface AddFeatureOutput {
   diagnostics?: CompilerDiagnostic[];
   sceneSummary?: SceneSummary;
   error?: string;
+  errorCode?: string;
 }
 
 export async function addFeatureTool(input: AddFeatureInput): Promise<AddFeatureOutput> {
-  const edit = addFeature(input.code, input.feature_code);
+  const edit = addFeature(input.code, input.feature_code, { guardReturnEffect: true });
   if (!edit.ok || !edit.new_code) {
-    return { ok: false, error: edit.error };
+    return { ok: false, error: edit.error, errorCode: edit.errorCode };
   }
   const evalResult = await evaluateScriptTool({ code: edit.new_code });
   return {
