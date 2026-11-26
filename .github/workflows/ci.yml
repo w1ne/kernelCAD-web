@@ -287,8 +287,10 @@ jobs:
       # dist/cli/index.js; we rebuild it in each shard's runner because jobs
       # run on separate runners with isolated FS. The shared build cache
       # keeps this fast (~10-15s on hit).
+      # The separate required build-and-checks job runs the CLI typecheck.
+      # Each test runner needs only the actual bundle, not another typecheck.
       - name: Build CLI bundle (required by integration tests)
-        run: npm run build:cli
+        run: npm run build:cli:bundle
       # The two standard-component fidelity tests render the real authored CAD
       # with the same publish preset as the committed 4:3 thumbnail. Only the
       # shard containing those tests needs a browser; avoid 8 redundant downloads.
@@ -318,8 +320,10 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup-cad
+      # The separate required build-and-checks job runs the CLI typecheck.
+      # Each test runner needs only the actual bundle, not another typecheck.
       - name: Build CLI bundle (required by integration tests)
-        run: npm run build:cli
+        run: npm run build:cli:bundle
       - name: QC — vitest, tests related to the changed files
         run: npm test -- --changed "origin/${{ github.base_ref }}" --passWithNoTests --exclude 'tests/integration/catalog/catalogIndex.test.ts'
 
