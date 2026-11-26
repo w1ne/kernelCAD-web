@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/importStep.ts
 //
-// MCP `import_step` tool: bring a user's own STEP or STL file in as the base
+// MCP `import_step` tool: bring a user's STEP, STL or native SolidWorks part in as the base
 // body of a new script. On the hosted connector the server cannot read the
 // user's disk, and Claude does not forward chat attachments to remote MCP
 // servers, so `lib.fromSTEP(path)` alone gives a chat user no way in. This
@@ -12,7 +12,7 @@
 //     declared through `_meta['openai/fileParams']`, or
 //   - `content_base64`: the raw bytes, for small files a client inlines.
 // It writes the file plus a starter `<name>.kcad.ts` (`lib.fromSTEP` /
-// `lib.fromSTL`) into output_dir, evaluates it, and returns the script path,
+// `lib.fromSTL` / `lib.fromNativeCAD`) into output_dir, evaluates it, and returns the script path,
 // its code and the body's bounding box so the agent can keep modelling on it.
 
 import { mkdir, mkdtemp } from 'node:fs/promises';
@@ -44,8 +44,8 @@ export interface ImportStepInput {
   content_base64?: string;
   /** Original file name; used for format detection when bytes are inlined. */
   file_name?: string;
-  /** 'step' | 'stl'; detected from the bytes when omitted. */
-  format?: 'step' | 'stl';
+  /** STEP, STL or native SolidWorks part; detected from the bytes/name when omitted. */
+  format?: 'step' | 'stl' | 'sldprt';
   /** Directory for the imported file and starter script (default: a fresh temp dir). */
   output_dir?: string;
   /** Base name for the written files, default 'imported'. */
@@ -56,7 +56,7 @@ export interface ImportStepInput {
 
 export interface ImportStepOutput {
   ok: boolean;
-  format?: 'step' | 'stl';
+  format?: 'step' | 'stl' | 'sldprt';
   /** The imported file as written to disk. */
   model_path?: string;
   /** Starter script whose base body is the imported file; pass it as { file } to other tools. */
@@ -84,8 +84,8 @@ export async function checkFetchUrl(raw: string): Promise<string | undefined> {
   return undefined;
 }
 
-/** STEP by its ISO-10303-21 header, else STL (binary size match or ASCII 'solid'), else the extension. */
-export function detectFormat(bytes: Uint8Array, fileName?: string): 'step' | 'stl' | undefined {
+/** STEP by its ISO-10303-21 header, else STL (binary size match or ASCII 'solid'), else a supported extension. */
+export function detectFormat(bytes: Uint8Array, fileName?: string): 'step' | 'stl' | 'sldprt' | undefined {
   const head = Buffer.from(bytes.subarray(0, 512)).toString('latin1').trimStart();
   if (head.startsWith('ISO-10303-21')) return 'step';
   if (bytes.byteLength >= 84) {
@@ -93,16 +93,19 @@ export function detectFormat(bytes: Uint8Array, fileName?: string): 'step' | 'st
     if (84 + 50 * n === bytes.byteLength) return 'stl';
   }
   if (/^solid[\s\S]*facet/i.test(Buffer.from(bytes.subarray(0, 4096)).toString('latin1').trimStart())) return 'stl';
-  const ext = fileName?.toLowerCase().match(/\.(step|stp|stl)$/)?.[1];
+  const ext = fileName?.toLowerCase().match(/\.(step|stp|stl|sldprt)$/)?.[1];
   if (ext === 'step' || ext === 'stp') return 'step';
   if (ext === 'stl') return 'stl';
+  if (ext === 'sldprt') return 'sldprt';
   return undefined;
 }
 
-export function starterScript(fileBase: string, format: 'step' | 'stl', allowOpen: boolean): string {
+export function starterScript(fileBase: string, format: 'step' | 'stl' | 'sldprt', allowOpen: boolean): string {
   const call = format === 'step'
     ? `await lib.fromSTEP('./${fileBase}')`
-    : `await lib.fromSTL('./${fileBase}'${allowOpen ? ', { allowOpen: true }' : ''})`;
+    : format === 'sldprt'
+      ? `await lib.fromNativeCAD('./${fileBase}')`
+      : `await lib.fromSTL('./${fileBase}'${allowOpen ? ', { allowOpen: true }' : ''})`;
   return [
     `// Base body imported by import_step from ${fileBase}.`,
     `const base = ${call};`,
@@ -116,7 +119,9 @@ function validateInput(input: ImportStepInput): string | undefined {
   const sources = [input.url, input.upload, input.content_base64].filter(s => s !== undefined);
   if (sources.length !== 1) return 'Provide exactly one of url, upload or content_base64.';
   if (!NAME_RE.test(input.name ?? 'imported')) return 'name must be 1-64 characters of letters, digits, ".", "_" or "-".';
-  if (input.format !== undefined && input.format !== 'step' && input.format !== 'stl') return "format must be 'step' or 'stl'.";
+  if (input.format !== undefined && input.format !== 'step' && input.format !== 'stl' && input.format !== 'sldprt') {
+    return "format must be 'step', 'stl' or 'sldprt'.";
+  }
   return undefined;
 }
 
@@ -203,7 +208,7 @@ async function runImport(input: ImportStepInput): Promise<ImportStepOutput> {
   if (typeof source === 'string') return fail(source);
   if (source.bytes.byteLength === 0) return fail('the file is empty.');
   const format = input.format ?? detectFormat(source.bytes, source.fileName);
-  if (format === undefined) return fail('could not tell whether the file is STEP or STL; pass format.');
+  if (format === undefined) return fail('could not tell whether the file is STEP or STL, or a native SolidWorks .sldprt; pass format.');
   const target = await prepareDir(input.output_dir);
   if (typeof target === 'string') return fail(target);
 

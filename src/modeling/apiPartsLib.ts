@@ -7,6 +7,7 @@ import type { ApiContext, KernelCadApi } from './api';
 // browser — see parts/hostParts.ts.
 import {
   fromSTEPViaHost,
+  fromNativeCADViaHost,
   fromBREPViaHost,
   fromSTLViaHost,
   from3MFViaHost,
@@ -27,6 +28,8 @@ export function makePartsLib(ctx: ApiContext): Pick<KernelCadApi, 'lib'> {
     lib: {
       fromSTEP: (path, opts) =>
         fromSTEPViaHost({ session, scriptDir: ctx.scriptDir }, path, opts),
+      fromNativeCAD: (path, opts) =>
+        fromNativeCADViaHost({ session, scriptDir: ctx.scriptDir }, path, opts),
       fromBREP: (path) => fromBREPViaHost({ session, scriptDir: ctx.scriptDir }, path),
       fromSTL: (path, opts) =>
         fromSTLViaHost({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),

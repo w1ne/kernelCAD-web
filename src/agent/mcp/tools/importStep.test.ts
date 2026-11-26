@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from 'vitest';
-import { mkdtempSync, rmSync, readFileSync, writeFileSync, symlinkSync, mkdirSync, chmodSync, linkSync } from 'node:fs';
+import { mkdtempSync, rmSync, readFileSync, writeFileSync, symlinkSync, mkdirSync, chmodSync, linkSync, existsSync } from 'node:fs';
 import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
 import type { IncomingMessage, ClientRequest } from 'node:http';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import { exportModelTool } from './exportModel';
-import { importStepTool, detectFormat, isPrivateAddress, checkFetchUrl, IMPORT_MAX_BYTES } from './importStep';
+import { importStepTool, detectFormat, starterScript, isPrivateAddress, checkFetchUrl, IMPORT_MAX_BYTES } from './importStep';
 import { setFetchDepsForTest, type FetchDeps, type Resolver } from './importStepFetch';
 
 interface FakeReply { status: number; headers?: Record<string, string>; body?: Buffer[]; hang?: boolean; error?: string }
@@ -60,6 +60,9 @@ function fakeNet(dns: Record<string, string[]>, reply: (url: string) => FakeRepl
 let dir: string;
 let stepBytes: Buffer;
 let stlBytes: Buffer;
+const nativeFixturePath = resolve('tests/fixtures/native-cad-import/nist_ftc_06_asme1_rd_sw1802.SLDPRT');
+const canRunNativeImport = process.env.KERNELCAD_CADMPEG_BIN !== undefined
+  && existsSync(process.env.KERNELCAD_CADMPEG_BIN);
 
 describe('import_step', () => {
   beforeAll(async () => {
@@ -90,6 +93,21 @@ describe('import_step', () => {
     expect(r.format).toBe('stl');
     expect(r.code).toContain("lib.fromSTL('./imported.stl')");
     expect(r.bbox!.size[0]).toBeCloseTo(30, 3);
+  }, 60000);
+
+  it.skipIf(!canRunNativeImport)('imports a real native SolidWorks part and evaluates its B-rep starter script', async () => {
+    const bytes = readFileSync(nativeFixturePath);
+    const r = await importStepTool({
+      content_base64: bytes.toString('base64'),
+      file_name: 'nist_ftc_06_asme1_rd_sw1802.SLDPRT',
+      output_dir: join(dir, 'native'),
+      name: 'nist-ftc-06',
+    });
+    expect(r.error).toBeUndefined();
+    expect(r.ok).toBe(true);
+    expect(r.format).toBe('sldprt');
+    expect(r.code).toContain("await lib.fromNativeCAD('./nist-ftc-06.sldprt')");
+    expect(r.bbox!.size.every(value => value > 0)).toBe(true);
   }, 60000);
 
   it('downloads a ChatGPT upload reference through the pinned connection', async () => {
@@ -209,6 +227,9 @@ describe('import_step', () => {
     expect(detectFormat(new Uint8Array(stlBytes))).toBe('stl');
     expect(detectFormat(new TextEncoder().encode('solid x\n facet normal 0 0 1'))).toBe('stl');
     expect(detectFormat(new Uint8Array([1, 2, 3]), 'a.STP')).toBe('step');
+    expect(detectFormat(new Uint8Array([1, 2, 3]), 'a.SLDPRT')).toBe('sldprt');
+    expect(detectFormat(new Uint8Array([1, 2, 3]), 'a.sldasm')).toBeUndefined();
+    expect(starterScript('part.sldprt', 'sldprt', false)).toContain("lib.fromNativeCAD('./part.sldprt')");
     for (const ip of [
       '10.0.0.1', '127.0.0.1', '169.254.169.254', '172.16.0.1', '192.168.1.1', '100.64.0.1', '0.0.0.0', '198.18.0.1', '198.19.255.255',
       '192.0.0.8', '192.0.2.1', '198.51.100.1', '203.0.113.1', '192.88.99.1', '224.0.0.1', '240.0.0.1', '255.255.255.255',

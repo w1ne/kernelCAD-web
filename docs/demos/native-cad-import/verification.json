@@ -1,0 +1,75 @@
+{
+  "checkedAt": "2026-11-26",
+  "gap": "No generic KernelCAD API, CLI, or MCP import path accepted a native SolidWorks .sldprt; fromSTEP explicitly refused it.",
+  "reproduction": {
+    "fixture": "tests/fixtures/native-cad-import/nist_ftc_06_asme1_rd_sw1802.SLDPRT",
+    "beforeImplementation": "The new API regression test failed because api.lib.fromNativeCAD was undefined.",
+    "test": "src/modeling/parts/fromNativeCAD.test.ts"
+  },
+  "checks": [
+    {
+      "command": "npm run qc:build",
+      "result": "passed",
+      "runtime": "Node 22.23.4",
+      "summary": "typecheck, CLI bundle, generated-reference drift check, all 128 cookbook snippets, and standard-part range proof"
+    },
+    {
+      "command": "npm run qc:lint",
+      "result": "passed",
+      "runtime": "Node 22.23.4",
+      "summary": "repository ESLint and cookbook validation; lint emitted warnings but no errors"
+    },
+    {
+      "command": "npx vitest run src/modeling/parts/fromNativeCAD.test.ts src/modeling/parts/fromSTEP.test.ts src/agent/mcp/tools/importStep.test.ts src/agent/mcp/toolRegistry.publicContract.test.ts src/kernel/import/stepBundleWriter.test.ts tests/unit/cli/sandboxCliAudit.test.ts --reporter=dot",
+      "result": "passed",
+      "runtime": "Node 24.22.2",
+      "converter": "cadmpeg 0.6.12",
+      "testFiles": 6,
+      "tests": 140
+    },
+    {
+      "command": "npm run test:package",
+      "result": "passed",
+      "runtime": "Node 24.22.2",
+      "summary": "built npm package audit"
+    },
+    {
+      "command": "KERNELCAD_CADMPEG_BIN=$PWD/.tmp/cadmpeg/cadmpeg-x86_64-unknown-linux-gnu/cadmpeg node --import tsx docs/demos/native-cad-import/capture-demo.mts",
+      "result": "passed",
+      "checks": {
+        "nativeSolidCount": 1,
+        "nativeBrepValid": true,
+        "stepTwinBrepValid": true,
+        "volumeDifferenceMm3": 11.15033,
+        "maxBoundsDifferenceMm": 0.000003,
+        "cliManifestFormat": "sldprt",
+        "cliConversionEngine": "cadmpeg 0.6.12",
+        "cliInputHashMatchesFixture": true
+      },
+      "runtime": "Node 24.22.2"
+    },
+    {
+      "command": "node --import tsx docs/demos/native-cad-import/make-video.mts",
+      "result": "passed",
+      "media": {
+        "codec": "H.264",
+        "width": 1280,
+        "height": 720,
+        "fps": 24,
+        "durationSeconds": 9,
+        "bytes": 154675
+      },
+      "visualInspection": "Reviewed the title frame, poster frame, and a 1 fps contact sheet of the full clip. The model, command, measurements and limitation captions are visible.",
+      "runtime": "Node 24.22.2"
+    }
+  ],
+  "evidence": "evidence.json",
+  "videoEvidence": "video-evidence.json",
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false,
+  "runtime": {
+    "node": "24.22.2 from .nvmrc for focused tests, typecheck, package audit and demo replay; repository-wide qc:build and qc:lint passed with Node 22.23.4",
+    "cadmpeg": "0.6.12"
+  }
+}

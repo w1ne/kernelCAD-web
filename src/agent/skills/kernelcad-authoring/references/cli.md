@@ -51,6 +51,11 @@ kernelcad render path/to/script.kcad.ts --preset publish --background transparen
 # exact bbox + volume, cylindrical holes (axis, diameter, depth, blind/through)
 kernelcad inspect step path/to/part.step
 
+# Translate STEP assemblies or a native SolidWorks part into a project bundle.
+# Native .sldprt requires cadmpeg 0.6.12+ on PATH (or KERNELCAD_CADMPEG_BIN);
+# the handoff preserves exact B-rep geometry, not SolidWorks history, PMI or mates.
+kernelcad import-step parts/bracket.sldprt --out ./bracket-import
+
 # Rebuild an editable feature-tree script from an STL / OBJ / 3MF mesh, verified
 # against the mesh (volume IoU + surface deviation; --strict exits 1 unless faithful)
 kernelcad reconstruct path/to/part.stl -o /tmp/part.kcad.ts

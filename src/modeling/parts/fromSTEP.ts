@@ -48,14 +48,20 @@ export async function fromSTEP(ctx: FromSTEPContext, path: string, opts?: FromSt
   assertSolidIndex(opts?.solid);
 
   // Native SolidWorks bytes are not STEP. Refuse before any read or parse
-  // so a .sldprt/.sldasm path cannot reach the OCCT STEP reader.
+  // so a native part cannot reach the OCCT STEP reader by mistake. Use
+  // lib.fromNativeCAD for .sldprt; assemblies remain unsupported here.
   if (isSolidworksNativePath(path)) {
+    const isNativePart = /\.sldprt$/i.test(path);
     invalidArgs({
       api: 'lib.fromSTEP(path)',
       path: 'path',
       got: path,
-      requires: 'a STEP file; export SolidWorks parts or assemblies as STEP AP214 or AP242 with solid bodies',
-      example: "await lib.fromSTEP('parts/servo.step')",
+      requires: isNativePart
+        ? 'a STEP file, or use lib.fromNativeCAD(path) for a native .sldprt part; native assemblies still need a STEP AP214/AP242 export'
+        : 'a STEP file; export SolidWorks assemblies as STEP AP214 or AP242 with solid bodies',
+      example: isNativePart
+        ? "await lib.fromNativeCAD('parts/bracket.sldprt')"
+        : "await lib.fromSTEP('parts/assembly.step')",
       hintSlug: 'invalid-args.lib.fromSTEP.solidworks',
     });
   }

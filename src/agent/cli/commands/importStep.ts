@@ -3,13 +3,15 @@
 // `kernelcad import-step` translates STEP product assemblies into a portable
 // KernelCAD source + exact native BREP asset bundle.
 
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { basename, extname, resolve } from 'node:path';
 import { Command } from 'commander';
+import { convertSolidWorksPart, MAX_NATIVE_CAD_BYTES } from '../../../modeling/parts/fromNativeCAD';
 import { importStepAssembly } from '../../../kernel/import/stepAssemblyImport';
 import { StepAssemblyImportError } from '../../../kernel/import/stepAssemblyTypes';
 import { readStepExternalDocuments } from '../../../kernel/import/stepExternalDocuments';
 import { renamedStepPartWarning, validateStepBundleName, writeStepBundle, type WrittenStepBundle } from '../../../kernel/import/stepBundleWriter';
+import { KernelError } from '../../../shared/intent/kernelError';
 
 export interface ImportStepCliInput {
   file: string;
@@ -32,8 +34,9 @@ function failure(exitCode: number, code: string, message: string, sourcePath?: s
 
 export async function runImportStepCli(input: ImportStepCliInput): Promise<ImportStepCliResult> {
   const extension = extname(input.file).toLowerCase();
-  if (extension !== '.step' && extension !== '.stp') {
-    return failure(2, 'cli.invalid-args', `Expected a .step or .stp input file; got '${input.file}'.`);
+  const nativeSolidWorks = extension === '.sldprt';
+  if (extension !== '.step' && extension !== '.stp' && !nativeSolidWorks) {
+    return failure(2, 'cli.invalid-args', `Expected a .step, .stp, or native SolidWorks .sldprt input file; got '${input.file}'.`);
   }
   if (typeof input.out !== 'string' || input.out.trim() === '') {
     return failure(2, 'cli.invalid-args', '--out must name a destination directory.');
@@ -45,26 +48,66 @@ export async function runImportStepCli(input: ImportStepCliInput): Promise<Impor
   if (nameError !== undefined) return failure(2, 'cli.invalid-args', nameError);
 
   const inputPath = resolve(input.file);
-  let bytes: Buffer;
+  let sourceBytes: Buffer;
   try {
-    bytes = await readFile(inputPath);
+    if (nativeSolidWorks) {
+      const sourceStat = await stat(inputPath);
+      if (!sourceStat.isFile() || sourceStat.size === 0) {
+        return failure(2, 'cli.file-read', `Native CAD input '${inputPath}' is not a non-empty regular file.`);
+      }
+      if (sourceStat.size > MAX_NATIVE_CAD_BYTES) {
+        return failure(2, 'cli.input-too-large', `Native CAD input is ${sourceStat.size} bytes; the import limit is ${MAX_NATIVE_CAD_BYTES} bytes.`);
+      }
+    }
+    sourceBytes = await readFile(inputPath);
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
-    return failure(2, 'cli.file-read', `Cannot read STEP input '${inputPath}': ${detail}`);
+    return failure(2, 'cli.file-read', `Cannot read CAD input '${inputPath}': ${detail}`);
   }
 
   try {
-    const externalDocuments = await readStepExternalDocuments(inputPath, bytes);
-    const snapshot = await importStepAssembly(bytes, basename(inputPath), externalDocuments);
+    let bytes = sourceBytes;
+    let conversion: Awaited<ReturnType<typeof convertSolidWorksPart>> | undefined;
+    if (nativeSolidWorks) {
+      try {
+        conversion = await convertSolidWorksPart(inputPath);
+      } catch (error) {
+        if (error instanceof KernelError) return failure(1, error.code, error.message);
+        throw error;
+      }
+      bytes = conversion.bytes;
+    }
+    const externalDocuments = nativeSolidWorks
+      ? new Map<string, Uint8Array>()
+      : await readStepExternalDocuments(inputPath, bytes);
+    const stepInputName = nativeSolidWorks
+      ? `${basename(inputPath, extname(inputPath))}.step`
+      : basename(inputPath);
+    const snapshot = await importStepAssembly(bytes, stepInputName, externalDocuments);
     const bundle = await writeStepBundle({
       inputName: inputPath,
-      inputBytes: bytes,
+      inputBytes: sourceBytes,
       externalDocuments,
       outDir: input.out,
       assemblyName,
       snapshot,
+      ...(nativeSolidWorks ? {
+        sourceFormat: 'sldprt' as const,
+        conversionEngine: conversion!.version,
+      } : {}),
     });
-    return { exitCode: 0, ok: true, bundle, warnings: [...snapshot.warnings, ...bundle.renamedParts.map(renamedStepPartWarning)] };
+    const conversionWarnings = conversion === undefined
+      ? []
+      : [
+          `Native SolidWorks part converted through ${conversion.version}; source feature history, PMI, and assembly relations are not preserved by the STEP B-rep handoff.`,
+          ...(conversion.report !== '' ? [`cadmpeg report: ${conversion.report}`] : []),
+        ];
+    return {
+      exitCode: 0,
+      ok: true,
+      bundle,
+      warnings: [...snapshot.warnings, ...bundle.renamedParts.map(renamedStepPartWarning), ...conversionWarnings],
+    };
   } catch (error) {
     if (error instanceof StepAssemblyImportError) {
       return failure(1, `step.${error.reason}`, error.message, error.sourcePath);
@@ -77,12 +120,12 @@ export async function runImportStepCli(input: ImportStepCliInput): Promise<Impor
 
 export function importStepCommand(): Command {
   return new Command('import-step')
-    .description('Translate a STEP assembly into a .kcad.ts project with exact native BREP part assets')
-    .argument('<input.step>', 'path to an ISO-10303-21 STEP file (.step or .stp)')
+    .description('Translate a STEP assembly or SolidWorks part into a .kcad.ts project with exact native BREP assets')
+    .argument('<input.cad>', 'path to STEP (.step/.stp) or a native SolidWorks part (.sldprt)')
     .requiredOption('--out <directory>', 'new output bundle directory; an existing path is never overwritten')
     .option('--name <assembly-name>', 'root assembly and generated script name; defaults to the input filename')
     .option('--json', 'emit a machine-readable result')
-    .addHelpText('after', '\nBundle contents: <name>.kcad.ts, manifest.json, parts/*.brep\nLocal relative DOCUMENT_FILE dependencies are read recursively and hashed; references must stay within the input directory.\n')
+    .addHelpText('after', '\nBundle contents: <name>.kcad.ts, manifest.json, parts/*.brep\nNative .sldprt input requires cadmpeg 0.6.12 or newer (or KERNELCAD_CADMPEG_BIN). It is converted to exact STEP B-rep geometry; original feature history, PMI, and assembly relations are not preserved.\nSTEP relative DOCUMENT_FILE dependencies are read recursively and hashed; references must stay within the input directory.\n')
     .action(async (file: string, opts: { out: string; name?: string; json?: boolean }) => {
       const result = await runImportStepCli({
         file,

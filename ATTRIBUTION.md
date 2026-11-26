@@ -52,6 +52,15 @@ hand edits.
 | --- | --- | --- | --- | --- |
 | SolidCraft CI ledger (`assets/reference-parts/solidcraft/`, `docs/solidcraft-ledger.md`) | [tangency-labs/solidcraft](https://github.com/tangency-labs/solidcraft) | `expected.json` and `recipe.json` for each oracle case. Engine code and reference meshes are not included. kernelCAD `.kcad.ts` parts under `parts/` are original. | Apache-2.0 (upstream is Apache-2.0 OR MIT; this copy uses Apache-2.0). Text: [`LICENSE-APACHE`](assets/reference-parts/solidcraft/LICENSE-APACHE) | `7a6c884418698e9c9fb0e6f97b9b847998c58c49` |
 
+## Native CAD import test data and optional converter
+
+The NIST FTC-06 SolidWorks part and STEP geometry twin under
+`tests/fixtures/native-cad-import/` are U.S. Government works in the public
+domain; the fixture README records the source page and checksums. Native
+SolidWorks import can invoke cadmpeg 0.6.12 or newer as an external command.
+KernelCAD does not bundle cadmpeg source or binaries; its Apache-2.0 license
+and project link are recorded in [NOTICE](NOTICE).
+
 ## Opt-in solid-modeling dependency
 
 `@classcad/smlibwasm` is pinned to 0.6.2. The ClassCAD JavaScript bindings are

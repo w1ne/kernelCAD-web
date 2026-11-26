@@ -89,6 +89,17 @@ describe('lib.fromSTEP', () => {
     await expect(api.lib.fromSTEP('does-not-exist.step')).rejects.toThrowError(/cannot read STEP/);
   });
 
+  it('keeps native SolidWorks parts off the STEP reader and points to the native importer', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: tmpDir });
+    await expect(api.lib.fromSTEP('body.sldprt')).rejects.toMatchObject({
+      code: 'feature.invalid-args',
+      message: expect.stringContaining('lib.fromNativeCAD'),
+      hint: expect.stringContaining('lib.fromNativeCAD'),
+    });
+    expect(session.getRecords()).toHaveLength(0);
+  });
+
   it('rejects empty path', async () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session, scriptDir: tmpDir });

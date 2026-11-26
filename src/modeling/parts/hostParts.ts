@@ -26,6 +26,7 @@ import type { Shape } from '../capture/proxy';
 import type { Sketch } from '../capture/sketch';
 import type { CaptureSession } from '../capture/captureSession';
 import type { FromStepOptions } from './fromSTEP';
+import type { FromNativeCADOptions } from './fromNativeCAD';
 import type { FromSTLOptions, MeshFromGLBOptions } from './fromMeshFormats';
 import type { From3MFOptions } from './fromMeshFormats';
 import type { FromDXFOptions, FromSVGOptions } from './fromVectorFormats';
@@ -48,6 +49,16 @@ export async function fromSTEPViaHost(
   requireHostFs('lib.fromSTEP()');
   const { fromSTEP } = await import('./fromSTEP');
   return fromSTEP(ctx, path, opts);
+}
+
+export async function fromNativeCADViaHost(
+  ctx: HostPartsCtx,
+  path: string,
+  opts?: FromNativeCADOptions,
+): Promise<Shape> {
+  requireHostFs('lib.fromNativeCAD()');
+  const { fromNativeCAD } = await import('./fromNativeCAD');
+  return fromNativeCAD(ctx, path, opts);
 }
 
 export async function fromBREPViaHost(ctx: HostPartsCtx, path: string): Promise<Shape> {

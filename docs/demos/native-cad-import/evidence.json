@@ -1,0 +1,83 @@
+{
+  "scope": "Local kernelCAD Node API, CLI import-step, and OCCT B-rep validation. It does not establish deployed behavior or hardware acceptance.",
+  "invocation": "node --import tsx docs/demos/native-cad-import/capture-demo.mts",
+  "source": "docs/demos/native-cad-import/nist-ftc-06.kcad.ts",
+  "sourceSha256": "c3f7b115d9947bb20fcf0c8d875ee18a1dacc0b8c46839dcbdeee3f4143f947f",
+  "implementationSha256": {
+    "src/modeling/parts/fromNativeCAD.ts": "2c014f9206dd947841e7bf065844bd1544577a36bfc82d7d94cbd9411dd46870",
+    "src/modeling/parts/hostParts.ts": "42c5ca513c22d7d120cb288e1714e4bf8c4cecba4eaa011d29dbdb27d0075adc",
+    "src/agent/cli/commands/importStep.ts": "2146d2c2b8776d0cea09c427c8349fae575f09093b4e8e0e74d32f59eaf47ce9",
+    "src/agent/mcp/tools/importStep.ts": "fcdca6060c08e35131214d39d5d941bb7fa834c613bfe1525727bf21ec616384",
+    "src/kernel/import/stepBundleWriter.ts": "2c7199c71e726074bf726fdbdda53cd0aedd9278be2f6838c8867089a1c279b5"
+  },
+  "fixture": {
+    "nativeFile": "tests/fixtures/native-cad-import/nist_ftc_06_asme1_rd_sw1802.SLDPRT",
+    "nativeSha256": "6612f7bc9b2b15373789afe8032a153d84af7d619dbeb984c3a75cb360456bd3",
+    "referenceStep": "tests/fixtures/native-cad-import/nist_ftc_06_asme1_ap242-e2.stp",
+    "referenceStepSha256": "b87afb7f25adc0d44d12e182209d50f0b085b533c0742fb8ffd58f4c87403447"
+  },
+  "cli": {
+    "command": "kernelcad import-step tests/fixtures/native-cad-import/nist_ftc_06_asme1_rd_sw1802.SLDPRT --out ./native-part --json",
+    "outputFormat": "sldprt",
+    "conversionEngine": "cadmpeg 0.6.12",
+    "inputSha256": "6612f7bc9b2b15373789afe8032a153d84af7d619dbeb984c3a75cb360456bd3",
+    "partAssets": 1,
+    "definitionCount": 1,
+    "occurrenceCount": 1,
+    "script": "nist_ftc_06_asme1_rd_sw1802.kcad.ts",
+    "manifest": "manifest.json",
+    "conversionWarnings": [
+      "Native SolidWorks part converted through cadmpeg 0.6.12; source feature history, PMI, and assembly relations are not preserved by the STEP B-rep handoff.",
+      "cadmpeg report: decode report (sldprt): depth=full, geometry_transferred=true dialect: sldprt:sw-version-pre-12000 — read detected, write targets unknown dialect: parasolid:format-13006 dialect: parasolid:format-13006 dialect: parasolid:format-13006 dialect: parasolid:format-13006 dialect: parasolid:format-13006 dialect: parasolid:format-13006 dialect: parasolid:format-13006 dialect: parasolid:format-13006 dialect: parasolid:format-13006 dialect: parasolid:format-13006 dialect: parasolid:format-13006 dialect: parasolid:format-13006 dialect: parasolid:format-13006 losses: [warning/design_intent] the archive walk of Contents/Config-0 stopped before the end of the stream, so its scalars keep no parameter class [warning/other] Added a second sphere target to 1 SWIFT annotation(s) under the unique count-text and equal-radius assumption. [warning/other] 2 SWIFT geometric-tolerance display(s) select faces through a document written in place with one or two strings, read as the document layout of sldprt.md section 2.3 with one or two of its three strings [warning/other] 5 SWIFT geometric-tolerance display(s) retain no established semantic annotation [warning/material] unresolved appearance binding: owner_class=VisualStates identity=ThirdPtyStore/VisualStates appearance_index=0 reason=display-state scope does not resolve to active configuration bodies source_offset=0 [warning/material] 1 native appearance ownership or display-state relation(s) remain unresolved. [warning/design_intent] 166 planar or spatial sketch constraint(s) retain native relation kinds and operands without complete neutral geometric semantics. [warning/design_intent] 3 sketch entity geometry record(s) retain native kinds without solved neutral geometry. [warning/design_intent] 11 typed feature(s) retain native or unresolved required operation operands. [warning/design_intent] 2 extrusion feature-reference profile(s) lack decoded non-construction curves. [warning/design_intent] 4 native edge selection(s) retain an unresolved terminal feature owner. note: outer version word: 0x00000004; 52 CRC-validated block(s), 52 tail-directory entry/entries, 14 cache-cell(s), 0 compound stream(s) note: active Parasolid B-rep candidate: Contents/Config-0-Partition (119931 bytes, schema SCH_3000269_30000_13006) note: Parasolid body streams supply the typed topology and analytic carriers used by decode check: OK (0 error(s), 4 wa"
+    ]
+  },
+  "nativeBody": {
+    "solidCount": 1,
+    "validBrep": true,
+    "volumeMm3": 3323546.070805,
+    "boundsMm": {
+      "min": [
+        -152.4,
+        0,
+        -247.65
+      ],
+      "max": [
+        152.4,
+        97.790003,
+        0
+      ]
+    }
+  },
+  "referenceBody": {
+    "solidCount": 1,
+    "validBrep": true,
+    "volumeMm3": 3323557.221135,
+    "boundsMm": {
+      "min": [
+        -152.4,
+        0,
+        -247.65
+      ],
+      "max": [
+        152.4,
+        97.79,
+        0
+      ]
+    }
+  },
+  "comparison": {
+    "volumeDifferenceMm3": 11.15033,
+    "maxBoundsDifferenceMm": 0.000003,
+    "volumeToleranceMm3": 20,
+    "boundsToleranceMm": 0.01
+  },
+  "limitations": [
+    "One NIST FTC-06 SolidWorks 2018 part was measured; this does not qualify every .sldprt version or feature type.",
+    "The STEP handoff carries geometry, not the original feature history, PMI, assembly relations or mates.",
+    "The video paints the validated OCCT tessellation in a deterministic software projection; the Studio viewport capture could not attach to the existing CDP sessions.",
+    "No simulation, deployment or physical hardware test was performed."
+  ],
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}

@@ -1,0 +1,47 @@
+{
+  "invocation": "node --import tsx docs/demos/native-cad-import/make-video.mts",
+  "sources": [
+    "nist-ftc-06.kcad.ts",
+    "capture-demo.mts",
+    "evidence.json",
+    "geometry.json"
+  ],
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "titleSeconds": 3,
+    "orbitFrames": 48,
+    "orbitFps": 8,
+    "codec": "H.264 libx264",
+    "crf": 26,
+    "pixelFormat": "yuv420p",
+    "audio": false
+  },
+  "rendering": "Deterministic software projection of the OCCT mesh produced from lib.fromNativeCAD; not a Studio viewport capture.",
+  "browserCaptureAttempt": "Existing CDP sessions at 127.0.0.1:9222 and :9223 were reused; Playwright attached to each websocket but timed out before capture. No additional browser was launched.",
+  "media": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "9.000000",
+      "size": "154675"
+    }
+  },
+  "poster": "poster.png",
+  "posterSha256": "4096b1ebffe0c542287c831ea5a9eebf18c56dcf1d467e2540fef2ae3715be10",
+  "videoSha256": "409149a127b568551466c371f1db6bc2d6a3221688b8038d9a365b5ffd9fee11",
+  "replay": "Run capture-demo.mts with cadmpeg 0.6.12 on PATH, then make-video.mts. The input fixture is checked in with source and checksum.",
+  "scope": "Local kernelCAD Node API, CLI import-step, and OCCT B-rep validation. It does not establish deployed behavior or hardware acceptance.",
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}

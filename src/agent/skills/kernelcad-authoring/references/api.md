@@ -208,9 +208,15 @@ select<T>(items: Iterable<T>): ShapeList<T>;
 
 // STEP — the default for vendor catalog components.
 // Length units (mm, inch, metre) come back in millimetres.
-// SolidWorks .sldprt/.sldasm are refused. Save as STEP AP214 or AP242 with
-// solid bodies. opts.solid picks one body (zero-based) from a multi-body file.
+// SolidWorks .sldprt uses the native CAD path below; .sldasm and other
+// native formats are refused. opts.solid picks one body (zero-based) from a
+// multi-body file.
 lib.fromSTEP(path: string, opts?: { solid?: number }): Promise<Shape>;
+
+// Native SolidWorks part — local cadmpeg 0.6.12+ converts to STEP, then the
+// ordinary exact B-rep reader validates the result. Geometry only: no source
+// feature history, PMI or assembly relations. No mesh fallback.
+lib.fromNativeCAD(path: string, opts?: { solid?: number }): Promise<Shape>;
 
 // Native BREP — lossless (exact analytic surfaces and full topology, no
 // schema translation, no tessellation). Every downstream op is valid on the

@@ -24,6 +24,11 @@ The default font of Text, Lato Regular, is included unmodified (in dist/_fonts.j
 
 The license text is in fonts/OFL.txt.
 
+Optional native SolidWorks CAD import may invoke the external cadmpeg command
+(version 0.6.12 or newer). KernelCAD does not bundle or redistribute cadmpeg.
+The upstream project is available under the Apache License, Version 2.0:
+https://github.com/cadmpeg/cadmpeg
+
 SolidCraft reference oracle
 
 The case files under assets/reference-parts/solidcraft/cases/ are expected.json
