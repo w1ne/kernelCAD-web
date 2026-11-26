@@ -869,7 +869,11 @@ export function createMujocoSession(
         const data = new mujoco.MjData(model);
         return new MujocoSession(mujoco, model, data, bodyOrder, jointOrder);
     } catch (error) {
-        model.delete();
+        try {
+            model.delete();
+        } catch {
+            // Preserve the construction failure if native cleanup also fails.
+        }
         throw error;
     }
 }

@@ -1,0 +1,70 @@
+{
+  "durationSeconds": 2,
+  "timestepSeconds": [
+    0.0005,
+    0.00025
+  ],
+  "efforts": {
+    "wheel": -0.00001
+  },
+  "pairs": [
+    {
+      "bodies": [
+        "wheel",
+        "entry"
+      ],
+      "minEpisodes": 2,
+      "maxPenetrationMm": 0.1,
+      "minNormalForceN": 0.0001
+    },
+    {
+      "bodies": [
+        "wheel",
+        "exit"
+      ],
+      "minEpisodes": 2,
+      "maxPenetrationMm": 0.1,
+      "minNormalForceN": 0.0001
+    }
+  ],
+  "sequence": {
+    "order": [
+      0,
+      1
+    ],
+    "minCycles": 2
+  },
+  "contactModel": {
+    "friction": [
+      0.2,
+      0,
+      0
+    ],
+    "solref": [
+      0.001,
+      1
+    ],
+    "solimp": [
+      0.99,
+      0.999,
+      0.001
+    ]
+  },
+  "assumptions": {
+    "radiusMm": 34,
+    "densitiesKgM3": {
+      "wheel": 8500,
+      "anchor": 7850,
+      "entry": 4000,
+      "exit": 4000,
+      "base": 2700
+    },
+    "jointDampingNmsPerRad": 1e-7,
+    "anchorStiffnessNmPerRad": 0,
+    "initialWheelCounterclockwiseDeg": 47.4,
+    "initialAnchorCounterclockwiseDeg": 7.5,
+    "initialVelocities": 0,
+    "gravity": "Z-down; hinge axes Z, mechanism XY. No in-plane gravitational oscillator.",
+    "limitations": "No oscillator or calibrated dynamics existed in the animation. Profiles preserve un-bevelled tooth/pallet outlines; decorative pinion/arbors/fasteners omitted from moving inertia; no hardware acceptance."
+  }
+}
