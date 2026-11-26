@@ -1,0 +1,9 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/portableSiteWaterTankMaterials.test.ts (1 test) 539ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  18:56:17
+   Duration  9.97s (transform 7.44s, setup 160ms, import 9.10s, tests 539ms, environment 0ms)

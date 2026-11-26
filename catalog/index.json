@@ -66332,7 +66332,7 @@
       "id": "portable-site-water-tank",
       "kit": "construction-equipment",
       "title": "Portable site water tank",
-      "description": "Skid-mounted water tank with fill cap, outlet valve and protective frame. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Skid-mounted site water tank with a moulded fill neck, screw cap and drain valve. Material controls: polyethylene shell, polypropylene filler cap, galvanised skid steel; siteBlue and weatheredPolyethylene presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -66351,7 +66351,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/portable-site-water-tank.kcad.ts",
       "preview": "/assets/construction-equipment-portable-site-water-tank.png",
-      "sourceSha256": "bd9790f6e4f843dbf74f1e3a9ea0f09bbb7525be5c2c32d65310ede78012b89f",
+      "sourceSha256": "bb51e123a8a830c8ab25a58edfd4a82685f41f6a807479aa0ffa250e514603df",
       "triangleBudget": 2200,
       "params": [
         {
@@ -66364,33 +66364,41 @@
           "step": 0.05
         },
         {
-          "name": "equipmentPaintColor",
+          "name": "tankPolyethyleneColor",
           "type": "color",
-          "default": "#e1a31b",
-          "label": "Equipment enamel paint"
+          "default": "#e7ecee",
+          "label": "Polyethylene tank shell"
+        },
+        {
+          "name": "polypropyleneCapColor",
+          "type": "color",
+          "default": "#20262a",
+          "label": "Polypropylene filler cap"
         },
         {
           "name": "structuralSteelColor",
           "type": "color",
           "default": "#89969a",
-          "label": "Exposed structural steel"
+          "label": "Galvanised skid and valve steel"
         }
       ],
       "presets": {
-        "weathered": {
-          "equipmentPaintColor": "#a87b36",
-          "structuralSteelColor": "#716b61"
+        "siteBlue": {
+          "tankPolyethyleneColor": "#3f7fb5",
+          "polypropyleneCapColor": "#1d2327",
+          "structuralSteelColor": "#7d8b90"
         },
-        "highVisibility": {
-          "equipmentPaintColor": "#f06b26",
-          "structuralSteelColor": "#c1c7c2"
+        "weatheredPolyethylene": {
+          "tankPolyethyleneColor": "#cfd6d2",
+          "polypropyleneCapColor": "#2b2d2c",
+          "structuralSteelColor": "#716b61"
         }
       },
       "stats": {
-        "triangles": 136,
+        "triangles": 180,
         "sizeM": [
           0.9024,
-          1.075,
+          1.078,
           0.6536
         ],
         "minUpM": 0,
@@ -66398,24 +66406,32 @@
       },
       "palette": [
         {
-          "name": "equipmentPaintColor",
-          "color": "#e1a31b",
-          "parts": [
-            "skid-base",
-            "tank-body",
-            "filler-neck",
-            "tank-skid--1",
-            "tank-skid-1"
-          ],
-          "param": "equipmentPaintColor"
-        },
-        {
           "name": "structuralSteelColor",
           "color": "#89969a",
           "parts": [
-            "outlet-valve"
+            "skid-base",
+            "outlet-valve",
+            "tank-skid--1",
+            "tank-skid-1"
           ],
           "param": "structuralSteelColor"
+        },
+        {
+          "name": "tankPolyethyleneColor",
+          "color": "#e7ecee",
+          "parts": [
+            "tank-body",
+            "filler-neck"
+          ],
+          "param": "tankPolyethyleneColor"
+        },
+        {
+          "name": "polypropyleneCapColor",
+          "color": "#20262a",
+          "parts": [
+            "filler-cap"
+          ],
+          "param": "polypropyleneCapColor"
         }
       ]
     },
