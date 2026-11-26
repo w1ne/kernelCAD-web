@@ -27,9 +27,9 @@ separate semantic concern; this color correction does not establish equipment
 dimensions, performance or physical acceptance, and the branch is not deployed.
 
 The Nov 26 material review corrected the existing `portable-site-water-tank`:
-the shell uses a polyethylene color control, the separate polypropylene cap is
-visible above its seated fill neck, and the skids and outlet use structural
-steel. The [review handoff](../../../artifacts/catalog-demos/construction-water-tank-hdpe-material-20261126/README.md)
+the polyethylene shell, separate polypropylene cap and steel skids/outlet now
+have distinct color controls. The cap is visible above its seated fill neck.
+The [review handoff](../../../artifacts/catalog-demos/construction-water-tank-polyethylene-material-20261126/README.md)
 contains the five-preview ledger, source diff, before/after renders, refreshed
 catalog index, local checks and inspected MP4. This is a low-poly scene prop;
 the local render and material labels do not establish potable-water compliance,
@@ -89,7 +89,7 @@ deployment or hardware acceptance.
 | `masonry-mixer` | Masonry mortar mixer | Portable drum mixer with reinforced frame, tilting cradle and transport wheels. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
 | `portable-air-compressor` | Portable site air compressor | Towable compressor enclosure with access panels, hose ports and single axle. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
 | `towable-light-tower` | Towable site light tower | Wheeled generator trailer with four stabilizer jacks, telescoping mast and a selectable 2/4/6-head lamp bank. | scale · mast extension · lamp count · equipment enamel · structural steel · tire rubber · lamp lenses · weathered · highVisibility |
-| `portable-site-water-tank` | Portable site water tank | Skid-mounted potable-water tank with moulded fill neck, screw cap, drain valve and longitudinal support skids. | scale · UV-stabilised polyethylene shell · polypropylene filler cap · galvanised structural steel · potableBlue · weatheredHdpe |
+| `portable-site-water-tank` | Portable site water tank | Skid-mounted site water tank with moulded fill neck, screw cap, drain valve and longitudinal support skids. | scale · polyethylene tank shell · polypropylene filler cap · galvanised structural steel · siteBlue · weatheredPolyethylene |
 | `mobile-fuel-tank` | Mobile site fuel tank | Bunded fuel pod on a towable chassis with hose reel, pump box and filler neck. | scale · equipment enamel paint · tire and grip rubber · exposed structural steel · weathered · highVisibility |
 | `pipe-roller-stand` | Pipe roller stand | Adjustable pipe support stand with paired rollers, screw post and tripod feet. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |
 | `portable-core-drill-stand` | Portable core drill stand | Anchored core-drilling rig with guide column, sliding carriage and base plate. | scale · equipment enamel paint · exposed structural steel · weathered · highVisibility |

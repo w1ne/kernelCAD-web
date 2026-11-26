@@ -81,12 +81,13 @@ def build() -> list[Path]:
          "shell #e7ecee; cap #20262a; skid #89969a", (60, 140, 90))
     draw.text((700, 200), "Regression test", fill=INK, font=font(24, True))
     for offset, text in enumerate([
-        "portableSiteWaterTankHdpeMaterial.test.ts",
-        "· colour knobs: polyethylene, polypropylene, steel",
-        "· presets: potableBlue #3f7fb5, weatheredHdpe #cfd6d2",
+        "portableSiteWaterTankMaterials.test.ts",
+        "· materials: polyethylene / polypropylene / steel",
+        "· presets: siteBlue / weatheredPolyethylene",
         "· palette: shell and neck / cap / skid and valve",
         "· GLB colours checked per part",
-        "· bounds check: neck seats on shell; cap extends above neck",
+        "· neck seats on shell",
+        "· cap extends above the neck",
         "· fails on the pre-fix source, passes after",
         "",
         "ESLint clean · construction gate 60/60",

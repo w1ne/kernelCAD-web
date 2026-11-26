@@ -1,4 +1,4 @@
-# Portable site water tank — HDPE material review (26 November 2026)
+# Portable site water tank — material review (26 November 2026)
 
 ## Conclusion
 
@@ -6,9 +6,9 @@ One material mismatch was found in a five-asset audit of
 `construction-equipment`. The portable site water tank rendered its shell,
 fill neck and support skids in the same yellow equipment enamel as the mobile
 fuel tank, so the preview read as a second fuel pod. The original outlet valve
-already used the structural-steel control. The shell is now UV-stabilised
-polyethylene, a separate polypropylene screw cap was added, and the skids and
-valve use galvanised steel. The fill neck now seats on the tank shell, and the
+already used the structural-steel control. The shell uses polyethylene, a
+separate polypropylene screw cap was added, and the skids and valve use
+galvanised steel. The fill neck now seats on the tank shell, and the
 14 mm cap is exposed above it. The 2,200 triangle budget is unchanged; the
 model grows from 136 to 180 triangles.
 
@@ -17,19 +17,19 @@ model grows from 136 to 180 triangles.
 `catalog/kits/construction-equipment/portable-site-water-tank.kcad.ts`
 
 - Replaced `equipmentPaintColor` with the separate shell and cap controls,
-  `tankPolyethyleneColor` (#e7ecee) and `fillerCapColor` (#20262a), and retained
+  `tankPolyethyleneColor` (#e7ecee) and `polypropyleneCapColor` (#20262a), and retained
   `structuralSteelColor` (#89969a) for the skid and outlet.
 - Replaced the `weathered`/`highVisibility` machine presets with two tank
-  schemes: `potableBlue` (#3f7fb5 shell) and `weatheredHdpe` (#cfd6d2 shell).
+  schemes: `siteBlue` (#3f7fb5 shell) and `weatheredPolyethylene` (#cfd6d2 shell).
 - Split the former combined filler neck into a polyethylene neck and a
   polypropylene screw cap.
 - Moved the skid base and both tank skids from painted enamel to galvanised
   steel.
-- Rewrote the header and meta description to state the potable-water
-  material constraint.
+- Rewrote the header and meta description to name the vessel materials without
+  implying potable-water certification.
 
 The regression test is
-`tests/integration/catalog/portableSiteWaterTankHdpeMaterial.test.ts`. It
+`tests/integration/catalog/portableSiteWaterTankMaterials.test.ts`. It
 checks the colour-knob list, both presets, palette zones for all seven parts,
 the shell/neck/cap connections and visible cap dimensions, selected exported
 GLB colours, and that no shell part retains the former #e1a31b enamel.
@@ -54,11 +54,11 @@ GLB colours, and that no shell part retains the former #e1a31b enamel.
 ```bash
 npx tsx scripts/renderCatalogPreviews.ts portable-site-water-tank
 npx tsx scripts/buildAssetCatalog.ts
-npx vitest run tests/integration/catalog/portableSiteWaterTankHdpeMaterial.test.ts
+npx vitest run tests/integration/catalog/portableSiteWaterTankMaterials.test.ts
 npx vitest run tests/integration/catalog/
 python3 scripts/checkCatalogQuality.py --kit construction-equipment
-npx eslint catalog/kits/construction-equipment/ tests/integration/catalog/portableSiteWaterTankHdpeMaterial.test.ts
-python3 artifacts/catalog-demos/construction-water-tank-hdpe-material-20261126/make_demo.py
+npx eslint catalog/kits/construction-equipment/ tests/integration/catalog/portableSiteWaterTankMaterials.test.ts
+python3 artifacts/catalog-demos/construction-water-tank-polyethylene-material-20261126/make_demo.py
 ```
 
 ## Claims

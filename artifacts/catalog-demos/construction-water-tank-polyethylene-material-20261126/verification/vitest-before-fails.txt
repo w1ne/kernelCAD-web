@@ -1,0 +1,36 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/portableSiteWaterTankMaterials.test.ts (1 test | 1 failed) 438ms
+     × renders the shell in polyethylene, the cap in polypropylene and the skid in steel 162ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/portableSiteWaterTankMaterials.test.ts > construction-equipment/portable-site-water-tank material mapping > renders the shell in polyethylene, the cap in polypropylene and the skid in steel
+AssertionError: expected [ 'equipmentPaintColor', …(1) ] to deeply equal [ 'tankPolyethyleneColor', …(2) ]
+
+- Expected
++ Received
+
+  [
+-   "tankPolyethyleneColor",
+-   "polypropyleneCapColor",
++   "equipmentPaintColor",
+    "structuralSteelColor",
+  ]
+
+ ❯ tests/integration/catalog/portableSiteWaterTankMaterials.test.ts:27:95
+     25|
+     26|     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+     27|     expect(asset.params.filter((param) => param.type === 'color').map(…
+       |                                                                                               ^
+     28|       'tankPolyethyleneColor', 'polypropyleneCapColor', 'structuralSte…
+     29|     ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  18:41:33
+   Duration  6.40s (transform 4.65s, setup 79ms, import 5.74s, tests 438ms, environment 0ms)

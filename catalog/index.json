@@ -66332,7 +66332,7 @@
       "id": "portable-site-water-tank",
       "kit": "construction-equipment",
       "title": "Portable site water tank",
-      "description": "Skid-mounted potable-water tank with a moulded fill neck, screw cap and drain valve. Material controls: UV-stabilised polyethylene shell, polypropylene filler cap, galvanised skid steel; potableBlue and weatheredHdpe presets.",
+      "description": "Skid-mounted site water tank with a moulded fill neck, screw cap and drain valve. Material controls: polyethylene shell, polypropylene filler cap, galvanised skid steel; siteBlue and weatheredPolyethylene presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -66351,7 +66351,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/portable-site-water-tank.kcad.ts",
       "preview": "/assets/construction-equipment-portable-site-water-tank.png",
-      "sourceSha256": "5804ec9e0e08496959f53ac3a7ac83fb3208da3d6ce51472b028eda60e0f4941",
+      "sourceSha256": "bb51e123a8a830c8ab25a58edfd4a82685f41f6a807479aa0ffa250e514603df",
       "triangleBudget": 2200,
       "params": [
         {
@@ -66367,10 +66367,10 @@
           "name": "tankPolyethyleneColor",
           "type": "color",
           "default": "#e7ecee",
-          "label": "UV-stabilised polyethylene shell"
+          "label": "Polyethylene tank shell"
         },
         {
-          "name": "fillerCapColor",
+          "name": "polypropyleneCapColor",
           "type": "color",
           "default": "#20262a",
           "label": "Polypropylene filler cap"
@@ -66383,14 +66383,14 @@
         }
       ],
       "presets": {
-        "potableBlue": {
+        "siteBlue": {
           "tankPolyethyleneColor": "#3f7fb5",
-          "fillerCapColor": "#1d2327",
+          "polypropyleneCapColor": "#1d2327",
           "structuralSteelColor": "#7d8b90"
         },
-        "weatheredHdpe": {
+        "weatheredPolyethylene": {
           "tankPolyethyleneColor": "#cfd6d2",
-          "fillerCapColor": "#2b2d2c",
+          "polypropyleneCapColor": "#2b2d2c",
           "structuralSteelColor": "#716b61"
         }
       },
@@ -66426,12 +66426,12 @@
           "param": "tankPolyethyleneColor"
         },
         {
-          "name": "fillerCapColor",
+          "name": "polypropyleneCapColor",
           "color": "#20262a",
           "parts": [
             "filler-cap"
           ],
-          "param": "fillerCapColor"
+          "param": "polypropyleneCapColor"
         }
       ]
     },

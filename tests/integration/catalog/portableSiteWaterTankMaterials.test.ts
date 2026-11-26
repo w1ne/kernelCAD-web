@@ -4,8 +4,8 @@
 // yellow equipment-enamel color as the fuel pod, and there was no separate cap
 // part. The preview read as a second fuel tank and the material zones could not
 // be changed independently.
-// The shell is now UV-stabilised polyethylene, the filler cap polypropylene and
-// the skid galvanised steel.
+// The shell is polyethylene, the filler cap polypropylene and the skid
+// galvanised steel.
 import { resolve } from 'node:path';
 import { NodeIO } from '@gltf-transform/core';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -19,24 +19,24 @@ beforeAll(async () => {
   await initOcct();
 }, 120_000);
 
-describe('construction-equipment/portable-site-water-tank HDPE material', () => {
+describe('construction-equipment/portable-site-water-tank material mapping', () => {
   it('renders the shell in polyethylene, the cap in polypropylene and the skid in steel', async () => {
     const { asset, glb } = await buildCatalogAssetWithGlb(repoRoot, source);
 
     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBudget);
     expect(asset.params.filter((param) => param.type === 'color').map((param) => param.name)).toEqual([
-      'tankPolyethyleneColor', 'fillerCapColor', 'structuralSteelColor',
+      'tankPolyethyleneColor', 'polypropyleneCapColor', 'structuralSteelColor',
     ]);
-    expect(Object.keys(asset.presets)).toEqual(['potableBlue', 'weatheredHdpe']);
+    expect(Object.keys(asset.presets)).toEqual(['siteBlue', 'weatheredPolyethylene']);
     for (const preset of Object.values(asset.presets)) {
       expect(Object.keys(preset).sort()).toEqual([
-        'fillerCapColor', 'structuralSteelColor', 'tankPolyethyleneColor',
+        'polypropyleneCapColor', 'structuralSteelColor', 'tankPolyethyleneColor',
       ]);
     }
 
     const zone = (name: string) => asset.palette.find((candidate) => candidate.name === name);
     expect(zone('tankPolyethyleneColor')?.parts.slice().sort()).toEqual(['filler-neck', 'tank-body']);
-    expect(zone('fillerCapColor')?.parts).toEqual(['filler-cap']);
+    expect(zone('polypropyleneCapColor')?.parts).toEqual(['filler-cap']);
     expect(zone('structuralSteelColor')?.parts.slice().sort()).toEqual([
       'outlet-valve', 'skid-base', 'tank-skid--1', 'tank-skid-1',
     ]);
