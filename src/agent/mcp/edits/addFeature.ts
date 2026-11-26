@@ -46,17 +46,27 @@ export function addFeature(
   feature_code: string,
   options: AddFeatureOptions = {},
 ): AddFeatureResult {
-  const returnIndex = findLastTopLevelReturnLine(code);
-  if (returnIndex < 0) {
+  const returnSite = findLastTopLevelReturn(code);
+  if (!returnSite) {
     return { ok: false, error: 'no return statement found at top level — cannot place new feature.' };
   }
 
   // Preserve source line endings.
   const lines = code.split('\n');
-  const returnLine = lines[returnIndex];
+  const returnIndex = returnSite.line;
   // Indentation = leading whitespace of the return line.
-  const indentMatch = returnLine.match(/^(\s*)/);
+  const indentMatch = lines[returnIndex].match(/^(\s*)/);
   const indent = indentMatch ? indentMatch[1] : '';
+  // `const plate = box(60, 40, 6); return plate;` — move the return onto its own
+  // line so neither insertion nor a return rewrite drops the prefix statements.
+  const prefix = lines[returnIndex].slice(0, returnSite.column);
+  if (/[;}]\s*$/.test(prefix)) {
+    const returnPart = `${indent}${lines[returnIndex].slice(returnSite.column)}`;
+    const prefixCarriageReturn = returnPart.endsWith('\r') ? '\r' : '';
+    lines.splice(returnIndex, 1, `${prefix.trimEnd()}${prefixCarriageReturn}`, returnPart);
+    return addFeature(lines.join('\n'), feature_code, options);
+  }
+  const returnLine = lines[returnIndex];
 
   const shouldGuard = options.guardReturnEffect === true || options.requireReturnRewrite === true;
   const effect = shouldGuard
@@ -86,11 +96,6 @@ export function addFeature(
   return { ok: true, new_code: lines.join('\n') };
 }
 
-/**
- * Find the line index (0-based) of the last `return` statement at brace
- * depth 0. Tracks string literals, template strings, and `{}` nesting.
- * Returns -1 if no top-level return is present.
- */
 interface ReturnScanState {
   depth: number;
   inStr: '"' | "'" | '`' | null;
@@ -120,16 +125,28 @@ function skipCommentOrString(line: string, i: number, state: ReturnScanState): n
   return i;
 }
 
-function findLastTopLevelReturnLine(code: string): number {
+interface ReturnPosition {
+  /** 0-based line index. */
+  line: number;
+  /** 0-based column of the `return` keyword on that line. */
+  column: number;
+}
+
+/**
+ * Find the position of the last `return` statement at brace depth 0. Tracks
+ * string literals, template strings, and `{}` nesting. Returns null if no
+ * top-level return is present.
+ */
+function findLastTopLevelReturn(code: string): ReturnPosition | null {
   const lines = code.split('\n');
   const state: ReturnScanState = { depth: 0, inStr: null, inLineComment: false, inBlockComment: false };
-  let lastReturnLine = -1;
+  let last: ReturnPosition | null = null;
 
   for (let li = 0; li < lines.length; li++) {
     const line = lines[li];
     state.inLineComment = false;
     let i = 0;
-    let lineHasTopLevelReturn = false;
+    let lineReturnColumn = -1;
 
     while (i < line.length) {
       const next = skipCommentOrString(line, i, state);
@@ -144,7 +161,7 @@ function findLastTopLevelReturnLine(code: string): number {
         const before = i === 0 ? ' ' : line[i - 1];
         const after = line[i + 6] ?? ' ';
         if (!/[A-Za-z0-9_$]/.test(before) && !/[A-Za-z0-9_$]/.test(after)) {
-          lineHasTopLevelReturn = true;
+          lineReturnColumn = i;
           i += 6;
           continue;
         }
@@ -152,8 +169,8 @@ function findLastTopLevelReturnLine(code: string): number {
       i++;
     }
 
-    if (lineHasTopLevelReturn) lastReturnLine = li;
+    if (lineReturnColumn >= 0) last = { line: li, column: lineReturnColumn };
   }
 
-  return lastReturnLine;
+  return last;
 }
