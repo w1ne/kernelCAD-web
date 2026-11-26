@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bracket plate whose cut-outs are drawn with skewX/skewY transforms,
+     as hand-written and Illustrator/Inkscape-exported SVG uses them, for
+     lib.fromSVG.
+     Plate: 60 x 30 mm.
+     Slot: a 10 x 16 mm rect centred at (15, 15), sheared by skewX(30) into
+       a parallelogram (top edge shifted -4.62 mm, bottom +4.62 mm in SVG
+       y-down coordinates).
+     Bore: an r 6 mm circle centred at (42, 15), sheared by skewY(-20)
+       into an oblique ellipse.
+     A shear has determinant 1, so the areas are unchanged:
+     Area: 1800 - 160 - 36 pi mm^2. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="60mm" height="30mm" viewBox="0 0 60 30">
+  <rect x="0" y="0" width="60" height="30" fill="#888"/>
+  <g transform="translate(15 15) skewX(30)">
+    <rect x="-5" y="-8" width="10" height="16" fill="#fff"/>
+  </g>
+  <circle cx="0" cy="0" r="6" transform="translate(42 15) skewY(-20)" fill="#fff"/>
+</svg>

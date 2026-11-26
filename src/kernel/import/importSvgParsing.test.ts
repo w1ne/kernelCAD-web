@@ -89,12 +89,46 @@ describe('parseTransform characterisation', () => {
     expect(e.message).toBe(`${WHERE}: transform 'matrix' needs 6 numbers, got 3.`);
   });
 
+  it('skewX shears x by tan(angle) * y and leaves y alone', () => {
+    const m = parseTransform('skewX(45)', WHERE);
+    expect(m.map(v => Math.round(v * 1e12) / 1e12)).toEqual([1, 0, 1, 1, 0, 0]);
+    const [x, y] = transformedPoint(parseTransform('skewX(30)', WHERE), 2, 3);
+    expect(x).toBeCloseTo(2 + 3 * Math.tan(Math.PI / 6), 12);
+    expect(y).toBe(3);
+  });
+
+  it('skewY shears y by tan(angle) * x and leaves x alone', () => {
+    const [x, y] = transformedPoint(parseTransform('skewY(-20)', WHERE), 4, 1);
+    expect(x).toBe(4);
+    expect(y).toBeCloseTo(1 - 4 * Math.tan((20 * Math.PI) / 180), 12);
+  });
+
+  it('a skew composes in list order with the other functions', () => {
+    // translate(10 0) skewX(45): the shear applies to the point first.
+    expect(transformedPoint(parseTransform('translate(10 0) skewX(45)', WHERE), 0, 2)
+      .map(v => Math.round(v * 1e12) / 1e12)).toEqual([12, 2]);
+  });
+
+  it('a skew needs exactly one angle', () => {
+    const e = failure(() => parseTransform('skewY(10, 20)', WHERE));
+    expect(e.reason).toBe('malformed-attribute');
+    expect(e.message).toBe(`${WHERE}: transform 'skewY' needs 1 angle, got 2.`);
+  });
+
+  it('a 90-degree skew collapses the plane and is refused', () => {
+    const e = failure(() => parseTransform('skewX(-270)', WHERE));
+    expect(e.reason).toBe('malformed-attribute');
+    expect(e.message).toBe(
+      `${WHERE}: transform 'skewX(-270)' shears by an odd multiple of 90 degrees, which has no finite matrix.`,
+    );
+  });
+
   it('an unsupported function names itself and lists the supported set', () => {
-    const e = failure(() => parseTransform('skewX(20)', WHERE));
+    const e = failure(() => parseTransform('perspective(20)', WHERE));
     expect(e.reason).toBe('unsupported-element');
     expect(e.message).toBe(
-      `${WHERE}: transform function 'skewX(...)' is not supported. ` +
-        'Supported: translate, scale, rotate, matrix. Flatten the transform in the source tool.',
+      `${WHERE}: transform function 'perspective(...)' is not supported. ` +
+        'Supported: translate, scale, rotate, skewX, skewY, matrix. Flatten the transform in the source tool.',
     );
   });
 

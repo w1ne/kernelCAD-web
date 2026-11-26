@@ -121,16 +121,39 @@ function transformStep(name: string, args: number[], where: string): Matrix {
       return rotateStep(args);
     case 'matrix':
       return matrixStep(args, where);
+    case 'skewX':
+    case 'skewY':
+      return skewStep(name, args, where);
     default:
-      // skewX/skewY are representable as a matrix, but they are rare enough
-      // in exported CAD profiles that supporting them untested would be a
-      // worse trade than naming them.
       throw new SvgParseError(
         'unsupported-element',
         `${where}: transform function '${name}(...)' is not supported. ` +
-          'Supported: translate, scale, rotate, matrix. Flatten the transform in the source tool.',
+          'Supported: translate, scale, rotate, skewX, skewY, matrix. Flatten the transform in the source tool.',
       );
   }
+}
+
+/**
+ * skewX(a) is [1 0 tan a 1 0 0] and skewY(a) is [1 tan a 0 1 0 0]. The
+ * result is not a similarity, so circles and arcs under it take the exact
+ * rational-ellipse path, the same as a sheared matrix().
+ */
+function skewStep(name: 'skewX' | 'skewY', args: number[], where: string): Matrix {
+  if (args.length !== 1) {
+    throw new SvgParseError(
+      'malformed-attribute',
+      `${where}: transform '${name}' needs 1 angle, got ${args.length}.`,
+    );
+  }
+  const a = (args[0] * Math.PI) / 180;
+  if (Math.abs(Math.cos(a)) < 1e-12) {
+    throw new SvgParseError(
+      'malformed-attribute',
+      `${where}: transform '${name}(${args[0]})' shears by an odd multiple of 90 degrees, which has no finite matrix.`,
+    );
+  }
+  const t = Math.tan(a);
+  return name === 'skewX' ? [1, 0, t, 1, 0, 0] : [1, t, 0, 1, 0, 0];
 }
 
 function translateStep(args: number[]): Matrix {
