@@ -111,7 +111,7 @@ Turn a profile into a solid, or grow one along a path.
 | Call | What it does |
 |---|---|
 | `Sketch.extrude(depth: Editable<number>, opts?: { faceLabels?, twistAngle?, taperDeg?, symmetric? }) => Shape` | Extrude this closed sketch normal to its plane by `depth` (mm). |
-| `Sketch.revolve(opts?: { angleDeg?: Editable<number>, faceLabels?, symmetric? }) => Shape` | Revolve around the Z axis, 360 degrees unless `angleDeg` (number or ParamRef). |
+| `Sketch.revolve(opts?: { angleDeg?: Editable<number>, faceLabels?, symmetric?, axis?: { through: [Editable<number>, Editable<number>], direction: [Editable<number>, Editable<number>] } }) => Shape` | Revolve around the Z axis by default, or around an explicit in-plane axis from `opts.axis`, 360 degrees unless `angleDeg` (number or ParamRef). |
 | `Sketch.revolve() => Shape` | Revolve 360 degrees around the Z axis. |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine?, section?: 'axial' \| 'transverse', bendRadius? }) => Shape` | Sweep this profile along a 3D rail. |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine?, bendRadius? }) => Shape` | Sweep this profile along a 3D rail. |

@@ -39,6 +39,18 @@ export interface LoftPlaneSpec {
   rotationDeg?: Editable<number>;
 }
 
+/**
+ * Explicit in-plane axis for `Sketch.revolve`.
+ *
+ * `through` is a point on the axis and `direction` is the axis direction, both
+ * in sketch `(x, y)` coordinates. The default axis is the sketch's `x = 0`
+ * line, which becomes world +Z after the profile is lifted to the XZ plane.
+ */
+export interface RevolveAxis {
+  through: [Editable<number>, Editable<number>];
+  direction: [Editable<number>, Editable<number>];
+}
+
 /** Options accepted by `Sketch.loft`. */
 export interface LoftOptions {
   spacing?: Editable<number>;
@@ -83,4 +95,7 @@ export const ALLOWED_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle', 'taperD
 /** Option keys `Sketch.sweep` accepts. Unknown keys often hide a typo. */
 export const ALLOWED_SWEEP_KEYS = new Set(['frenet', 'transitionMode', 'spine', 'section', 'faceLabels', 'bendRadius']);
 /** Option keys `Sketch.revolve` accepts. */
-export const ALLOWED_REVOLVE_KEYS = new Set(['angleDeg', 'faceLabels', 'symmetric']);
+export const ALLOWED_REVOLVE_KEYS = new Set(['angleDeg', 'faceLabels', 'symmetric', 'axis']);
+
+/** Keys a `Sketch.revolve({ axis })` entry accepts. */
+export const ALLOWED_REVOLVE_AXIS_KEYS = new Set(['through', 'direction']);

@@ -1,0 +1,21 @@
+
+ RUN  v4.0.18 /data/worktrees/kernelCAD-web/foundation-parity-20261111
+
+ ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > revolves around an offset vertical axis 86ms
+ ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > revolves a profile on the negative side of the axis 7ms
+ ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > revolves around a horizontal axis 11ms
+ ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > centres a symmetric partial revolve on the explicit axis 97ms
+ ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > accepts a ParamRef axis point and records it symbolically 5ms
+ ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > keeps default-axis records free of axis params 4ms
+ ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > refuses a profile that crosses the explicit axis 2ms
+ ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > refuses a zero axis direction 2ms
+ ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > refuses a malformed axis { axis: { through: [5, 0] } } 2ms
+ ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > refuses a malformed axis { axis: { through: [5, 0], direction: [0, 1], origin: [0, 0] } } 1ms
+ ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > refuses a malformed axis { axis: [5, 0, 0, 1] } 1ms
+ ✓ tests/integration/modeling/revolveAxis.test.ts > Sketch.revolve axis > refuses a malformed axis { axis: { through: [5], direction: [0, 1] } } 1ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  02:47:17
+   Duration  5.41s (transform 3.99s, setup 111ms, import 4.65s, tests 538ms, environment 0ms)
+

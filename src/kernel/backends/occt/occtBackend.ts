@@ -391,9 +391,9 @@ export class OcctBackend implements ShapeBackend {
   }
 
   /**
-   * Revolve a sketch-tagged OcctBackend around the Z axis. The sketch's
-   * 2D drawing is lifted onto the XZ plane (so the path's first coord is
-   * radial-X, second coord is axial-Z) and revolved around `[0,0,1]`.
+   * Revolve a sketch-tagged OcctBackend around its default Z axis or an
+   * explicit world-space axis. The sketch's 2D drawing is lifted onto the XZ
+   * plane (so the path's first coord is radial-X, second coord is axial-Z).
    *
    * @param sketch the sketch-tagged backend whose drawing is the profile.
    * @param angleDeg sweep angle in degrees. Default 360 (full revolve).
@@ -402,6 +402,8 @@ export class OcctBackend implements ShapeBackend {
    *   revolving 360 and cutting with a boolean half-space). Values outside
    *   `(0, 360]` are rejected by the caller (lowerer) — this method
    *   does not re-validate.
+   * @param axis world-space rotation axis direction. Default `[0,0,1]`.
+   * @param origin world-space point on the rotation axis. Default `[0,0,0]`.
    *
    * The returned `OcctBackend` is a normal 3D solid with no `kind` tag.
    *
@@ -409,13 +411,20 @@ export class OcctBackend implements ShapeBackend {
    * @throws {Error} If Replicad rejects the geometry (e.g. self-intersecting
    *   profile). Caller must catch and map to a diagnostic.
    */
-  static revolveFromSketch(sketch: OcctBackend, angleDeg: number = 360): OcctBackend {
+  static revolveFromSketch(sketch: OcctBackend, angleDeg: number = 360, axis: [number, number, number] = [0, 0, 1], origin: [number, number, number] = [0, 0, 0]): OcctBackend {
     if (sketch.kind !== 'sketch' || (!sketch._drawing && !sketch._hasNurbs)) {
       throw new Error('OcctBackend.revolveFromSketch: input is not a sketch.');
     }
+    const atOrigin = origin[0] === 0 && origin[1] === 0 && origin[2] === 0;
+    // Keep the historical no-options call for the default axis so existing
+    // geometry is byte-identical.
+    const options = atOrigin
+      ? (angleDeg === 360 ? undefined : { angle: angleDeg })
+      : (angleDeg === 360 ? { origin } : { origin, angle: angleDeg });
     if (sketch._hasNurbs && sketch._commands) {
       // NURBS path — build the wire on XZ (so path-y becomes world-z) and
-      // revolve around world Z, matching the Drawing-side behaviour.
+      // revolve around the requested world axis, matching the Drawing-side
+      // behaviour.
       const built = buildNurbsProfileOnPlane(sketch._commands, 'XZ');
       const revolvable = built as unknown as {
         revolve: (
@@ -423,10 +432,7 @@ export class OcctBackend implements ShapeBackend {
           opts?: { origin?: [number, number, number]; angle?: number },
         ) => ReplicadShape3D;
       };
-      if (angleDeg === 360) {
-        return new OcctBackend(revolvable.revolve([0, 0, 1]));
-      }
-      return new OcctBackend(revolvable.revolve([0, 0, 1], { angle: angleDeg }));
+      return new OcctBackend(revolvable.revolve(axis, options));
     }
     const lifted = sketch._drawing!.sketchOnPlane('XZ');
     const single = lifted as unknown as {
@@ -435,10 +441,7 @@ export class OcctBackend implements ShapeBackend {
         opts?: { origin?: [number, number, number]; angle?: number },
       ) => ReplicadShape3D;
     };
-    if (angleDeg === 360) {
-      return new OcctBackend(single.revolve([0, 0, 1]));
-    }
-    return new OcctBackend(single.revolve([0, 0, 1], { angle: angleDeg }));
+    return new OcctBackend(single.revolve(axis, options));
   }
 
   /**
