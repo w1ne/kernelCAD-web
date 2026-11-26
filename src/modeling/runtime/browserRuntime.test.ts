@@ -103,7 +103,7 @@ describe('browser runtime — modern API surface', () => {
         const a = assembly('bracket');
         a.part('base', box(10, 10, 10));
         a.part('boss', box(4, 4, 4));
-        return a;
+        return a.model();
       `,
     });
     expect(result.returnValue).toBeDefined();

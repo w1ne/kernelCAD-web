@@ -37,6 +37,14 @@ import type {
 import type { AssemblyState } from './assemblyState';
 import type { WrapGeomOptions, WrapGeomRecord } from '../mates/tendon';
 
+const assemblyPartRefs = new WeakSet<object>();
+
+/** Internal runtime check used to diagnose a script that returns a fluent
+ *  part reference instead of terminating the chain with `.model()`. */
+export function isAssemblyPartRef(value: unknown): value is AssemblyPartRef {
+  return typeof value === 'object' && value !== null && assemblyPartRefs.has(value);
+}
+
 function normalizeConnectors(
   partName: string,
   featureId: FeatureId,
@@ -600,6 +608,7 @@ export function makePartRef(
     solve: (poses) => owner.solve(poses),
     solvedModel: (...args) => owner.solvedModel(...args),
   };
+  assemblyPartRefs.add(ref);
   return ref;
 }
 

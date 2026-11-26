@@ -1,0 +1,48 @@
+{
+  "negativeCase": {
+    "source": "unfinished-assembly.kcad.ts",
+    "diagnosticCode": "feature.invalid-args",
+    "message": ".kcad.ts script return value: return value — got an unfinished AssemblyPartRef 'lid'; requires a Shape or Scene returned by arm.model() or arm.solvedModel(...). Example: return arm.model();",
+    "hint": "Call .model() on the assembly, or append .model() to a chained assembly.part(...) expression, before returning it."
+  },
+  "correctedExample": {
+    "source": "examples/params/color-enclosure.kcad.ts",
+    "returnKind": "Scene",
+    "partNames": [
+      "base",
+      "lid"
+    ],
+    "emittedMeshPartNames": [
+      "base",
+      "lid"
+    ],
+    "failedFeatureIds": [],
+    "boundsMm": [
+      60,
+      40,
+      21
+    ],
+    "glbBytes": 3440,
+    "glbSha256": "f6b8f48e7ec271451cd75a3bf385e7ec000b06609c60ad057b2a6e50e0d28b5d",
+    "meshNodeNames": [
+      "base",
+      "lid"
+    ],
+    "materialNames": [
+      "abs",
+      "base"
+    ],
+    "triangleCount": 24
+  },
+  "video": {
+    "file": "demo.mp4",
+    "sha256": "a78648efb55007171c8b7ed71180a7711113571b2bc8e34d51da389f89f0552a",
+    "durationSeconds": 8,
+    "sizeBytes": 78572,
+    "codec_name": "h264",
+    "width": 1280,
+    "height": 720,
+    "avg_frame_rate": "20/1"
+  },
+  "scope": "Local source evaluation and export only; no deployed Studio, hosted MCP, simulation, or hardware acceptance."
+}

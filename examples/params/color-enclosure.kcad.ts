@@ -21,4 +21,5 @@ const lid = box(60, 40, 3).translate(0, 0, 18).finish('abs', { color: lidColor }
 
 return assembly('enclosure')
   .part('base', base)
-  .part('lid', lid);
+  .part('lid', lid)
+  .model();
