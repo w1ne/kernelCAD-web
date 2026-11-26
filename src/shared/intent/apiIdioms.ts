@@ -34,6 +34,13 @@ export const API_IDIOMS: readonly ApiIdiom[] = [
     entries: ['path', 'extrude', 'cutout', 'hole', 'holes', 'rotateX'],
   },
   {
+    id: 'pad',
+    aliases: ['pad', 'boss', 'raised pad', 'extrude join', 'join extrude', 'add material to a face'],
+    use: "Shape.pad(profile, { face, depth | upToFace }) is the additive counterpart of cutout: the closed profile starts on the selected face, grows OUTWARD along its normal, and fuses into the body. Use it for bosses, pads, lugs and keyed plates instead of building a prism and unioning it by hand. Profile coordinates use the same face frame as cutout/hole (mm from the face centre), and depth must be positive.",
+    example: "plate.pad(path().circle(0, 0, 6), { face: 'top', depth: 8 })",
+    entries: ['pad', 'path', 'circle', 'cutout'],
+  },
+  {
     id: 'string-selectors',
     aliases: ['selector', 'selectors', 'string selector', 'face selector', 'edge selector'],
     use: "Selection is by query object, not by selector string. Faces: a canonical name ('top', 'bottom', 'front', 'back', 'left', 'right') or a FaceQuery: { byNormal: 'Z', extreme: 'Z' } is the highest upward-facing face, { atZ: 10 } the face at that height. Edges: selectEdges(body, { parallel: 'Z' }) are the vertical edges, { atZ: h } the edges at a height, { perpendicular: 'Z' } the horizontal ones, { ofCurveType: 'CIRCLE' } the round ones; select(edges).sortBy('Z').last is the topmost.",

@@ -601,6 +601,15 @@ shape, not a copy.
 // `face` defaults to the face that selected the edges; it must border every edge.
 .chamfer(distance, edges, { distance2?: number, angleDeg?: number, face?: FaceSelector }): Shape
 
+// Additive sketch-driven extrude — the counterpart of .cutout(). The closed
+// profile starts on `face` and grows OUTWARD along its normal, then fuses into
+// the body. End with a positive `depth` in mm or `upToFace` (a planar body face
+// ahead of the entry face). Profile coordinates use the same face frame as
+// cutout/hole (mm from the face centre). One valid solid with more volume than
+// the base is required; a detached or unchanged result fails.
+.pad(profile: PathBuilder | Sketch, opts: { face: FaceSelector | string; depth?: number; upToFace?: FaceRef }): Shape
+//   boss: plate.pad(path().circle(0, 0, 6), { face: 'top', depth: 8 })
+
 // Face features:
 .shell(thickness: number, opts: { face?: FaceSelector | FaceSelector[]; closed?: true }): Shape  // name faces to open them
 // Open several faces in one shell: a sleeve open at both ends.

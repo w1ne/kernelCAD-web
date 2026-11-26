@@ -27,7 +27,7 @@ Those selectors do not survive a later edit.
 | Task | What it covers |
 |---|---|
 | [Start a shape](#start-a-shape) | The first call in any model: a solid primitive, or a 2D profile to extrude. |
-| [Add material](#add-material) | Turn a profile into a solid, or grow one along a path. |
+| [Add material](#add-material) | Turn a profile into a solid, grow one along a path, or pad it onto a face. |
 | [Remove material](#remove-material) | Cut into a solid: bolt holes, pockets, slots, plain subtraction. |
 | [Combine shapes](#combine-shapes) | Merge or intersect solids, or group them without paying for a boolean. |
 | [Finish edges](#finish-edges) | Break edges, add draft, hollow out a wall or fill it with a lattice, fold sheet metal. |
@@ -106,7 +106,7 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 
 ## Add material
 
-Turn a profile into a solid, or grow one along a path.
+Turn a profile into a solid, grow one along a path, or pad it onto a face.
 
 | Call | What it does |
 |---|---|
@@ -120,6 +120,7 @@ Turn a profile into a solid, or grow one along a path.
 | `variableSweep(spine: Curve3D \| Sketch \| Vec3[], sections: Array<{ t: number; profile: Sketch }>, opts?: { closed?: boolean; continuity?: "C0" \| "C1" \| "C2" }) => Shape` | Multi-section sweep that blends `sections[i].profile` along the spine at the section's `t ∈ [0, 1]` spine parameter. |
 | `helix({ radius: Editable<number>, pitch: Editable<number>, turns: Editable<number>, axis?, pointsPerTurn?, startAngle?: Editable<number> }) => [number, number, number][]` | Helix rail for `Sketch.sweep`. |
 | `rib(base: Shape, centerline: [number, number][], opts: { thickness: number, height: number, startZ?: number }) => Shape` | Create a vertical, constant-thickness rib from an open XY centerline and fuse it to the base. |
+| `Shape.pad(profile: PathBuilder \| Sketch, opts: { face: FaceSelector \| string, depth?: number, upToFace?: FaceRef }) => Shape` | Sketch-driven ADDITIVE extrude — the counterpart of `cutout`. |
 
 ## Remove material
 

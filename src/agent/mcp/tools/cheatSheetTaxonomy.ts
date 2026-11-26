@@ -99,8 +99,8 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   },
   {
     task: 'Add material',
-    blurb: 'Turn a profile into a solid, or grow one along a path.',
-    names: ['extrude', 'revolve', 'sweep', 'loft', 'variableSweep', 'helix', 'rib'],
+    blurb: 'Turn a profile into a solid, grow one along a path, or pad it onto a face.',
+    names: ['extrude', 'revolve', 'sweep', 'loft', 'variableSweep', 'helix', 'rib', 'pad'],
   },
   {
     task: 'Remove material',

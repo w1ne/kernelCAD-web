@@ -15,6 +15,7 @@ import { lowerCurve3d, lowerEmbossText, lowerProjectCurve, lowerVariableSweep } 
 import { lowerChamfer, lowerFillet } from './edgeFeatures';
 import { lowerFilletIntersection } from './filletIntersection';
 import { lowerCutout, lowerHole, lowerHoles } from './holes';
+import { lowerPad } from './pad';
 import { lowerImported, lowerSdfMaterialize } from './imported';
 import { lowerLattice } from './lattice';
 import { lowerLoft } from './loft';
@@ -75,6 +76,7 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   hole: lowerHole,
   holes: lowerHoles,
   cutout: lowerCutout,
+  pad: lowerPad,
   // symmetry and instancing
   mirror: lowerMirror,
   pattern: lowerPattern,

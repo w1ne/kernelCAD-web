@@ -65,6 +65,13 @@ function upToFaceApi(feature: FeatureRecord): { api: string; example: string; op
       operation: 'holes',
     };
   }
+  if (feature.kind === 'pad') {
+    return {
+      api: 'pad(profile, { face, upToFace })',
+      example: "plate.pad(profile, { face: 'top', upToFace: { kind: 'canonical', face: 'top' } })",
+      operation: 'pad',
+    };
+  }
   return {
     api: 'cutout(profile, { face, upToFace })',
     example: "plate.cutout(profile, { face: 'top', upToFace: { kind: 'canonical', face: 'bottom' } })",
@@ -149,14 +156,15 @@ export function buildUpToFaceTool(
     );
   }
   const axis = normalize(entry.axisIntoBody);
+  const directionLabel = feature.kind === 'pad' ? 'pad direction' : 'cut direction';
   const { origin, normal } = targetPlane(face);
   const cos = dot(axis, normal);
   if (Math.abs(cos) < PARALLEL_TOL) {
     return invalid(
       feature,
-      'a target plane parallel to the cut direction',
-      'a target plane that is not parallel to the cut direction, so the cut reaches it',
-      'Pick a face that crosses the cut axis, or use depth.',
+      `a target plane parallel to the ${directionLabel}`,
+      `a target plane that is not parallel to the ${directionLabel}, so the ${feature.kind === 'pad' ? 'pad reaches' : 'cut reaches'} it`,
+      'Pick a face that crosses the feature axis, or use depth.',
     );
   }
   const away: Vec3 = cos > 0 ? normal : [-normal[0], -normal[1], -normal[2]];
@@ -164,9 +172,9 @@ export function buildUpToFaceTool(
   if (!(effectiveDepth > AHEAD_TOL)) {
     return invalid(
       feature,
-      `${effectiveDepth.toFixed(4)} mm along the cut direction`,
+      `${effectiveDepth.toFixed(4)} mm along the ${directionLabel}`,
       'a target plane strictly ahead of the entry face; behind or on the entry face is invalid',
-      'Pick a face ahead of the entry face along the cut direction.',
+      `Pick a face ahead of the entry face along the ${directionLabel}.`,
     );
   }
   const through = cos > 0;
@@ -191,7 +199,11 @@ export function buildUpToFaceTool(
     };
   }
   try {
-    const trimOrigin = addScaled(origin, away, through ? OVERSHOOT : 0);
+    // A cut opens cleanly when it overshoots an exit face. A pad must end
+    // exactly on the target plane: overshoot would leave a 0.01 mm cap beyond
+    // the face the author selected.
+    const overshoot = feature.kind === 'pad' ? 0 : OVERSHOOT;
+    const trimOrigin = addScaled(origin, away, through ? overshoot : 0);
     const tool = longTool.cut(halfSpaceBox(trimOrigin, away, size)) as replicad.Shape3D;
     return { tool, effectiveDepth, through };
   } catch (e) {
