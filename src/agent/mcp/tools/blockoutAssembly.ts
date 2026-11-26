@@ -63,7 +63,27 @@ function safeCommentText(v: string): string {
 }
 function binding(name: string): string { return `part_${name.replace(/[^A-Za-z0-9_$]/g, '_')}`; }
 function anchorName(s: string): string { return s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'anchor'; }
+const COINCIDENT_ANCHOR_TOL_MM = 1e-3;
 const ASSEMBLY_BINDING = 'blockoutAssembly';
+
+interface EmittedAnchor {
+  emitted: string;
+  worldMm: Vec3;
+  onBody: boolean;
+}
+
+interface ResolvedEndpoint {
+  part: string;
+  anchor: string;
+  worldMm: Vec3;
+  onBody: boolean;
+}
+
+function pointInBox(point: Vec3, dims: Vec3, tol = COINCIDENT_ANCHOR_TOL_MM): boolean {
+  return point[0] >= -tol && point[0] <= dims[0] + tol
+    && point[1] >= -tol && point[1] <= dims[1] + tol
+    && point[2] >= -tol && point[2] <= dims[2] + tol;
+}
 
 function validateAnchors(anchors: unknown, label: string): string | undefined {
   if (anchors === undefined) return undefined;
@@ -127,15 +147,15 @@ function createPartTransform(dims: Vec3, rotation: Vec3): PartTransform {
     const rotated = rotatePoint(point, rotation);
     return [rotated[0] + shift[0], rotated[1] + shift[1], rotated[2] + shift[2]];
   };
-  const rotations = [...rotation.entries()].reverse().map(([axis, degrees]) => degrees ? `.rotate([${axis === 0 ? '1, 0, 0' : axis === 1 ? '0, 1, 0' : '0, 0, 1'}], ${degrees})` : '').join('');
+  const rotations = [...rotation.entries()].map(([axis, degrees]) => degrees ? `.rotate([${axis === 0 ? '1, 0, 0' : axis === 1 ? '0, 1, 0' : '0, 0, 1'}], ${degrees})` : '').join('');
   const normalization = shift.some(value => Math.abs(value) > 1e-10) ? `.translate(${shift.join(', ')})` : '';
   return { min, max, shift, rotateLocal, model: `box(${dims.join(', ')})${rotations}${normalization}` };
 }
 
 const frame = (at: Vec3): string => `{ type: 'frame', origin: { kind: 'vec3', value: [${at.join(', ')}] } }`;
 
-/** Emit one placeholder solid, its bbox anchors, and its user anchors. Returns anchor-name lookup. */
-function renderPart(part: BlockoutPartInput, lines: string[]): Map<string, string> {
+/** Emit one placeholder solid, its bbox anchors, and its user anchors. Returns anchor metadata lookup. */
+function renderPart(part: BlockoutPartInput, lines: string[]): Map<string, EmittedAnchor> {
   const dims = part.bboxMm;
   const pos = part.positionMm;
   const rotation: Vec3 = typeof part.rotationDeg === 'number' ? [0, 0, part.rotationDeg] : part.rotationDeg ?? [0, 0, 0];
@@ -144,39 +164,85 @@ function renderPart(part: BlockoutPartInput, lines: string[]): Map<string, strin
   lines.push(`// ${safeCommentText(part.name)}: bbox ${dims.join(' x ')} mm placeholder solid.`);
   lines.push(`// Rotated bbox envelope: ${transform.max.map((max, axis) => max - transform.min[axis]).join(' x ')} mm; normalized so its lower corner is at local [0,0,0].`);
   lines.push(`const ${bindingName} = ${ASSEMBLY_BINDING}.part(${safeString(part.name)}, ${transform.model}, { at: [${pos.join(', ')}] });`);
-  const names = new Map<string, string>();
+  const names = new Map<string, EmittedAnchor>();
   const used = new Set<string>();
-  const add = (name: string, at: Vec3): void => {
+  const add = (name: string, at: Vec3, onBody: boolean): void => {
     used.add(name);
-    names.set(name, name);
+    const worldMm: Vec3 = [clean(pos[0] + at[0]), clean(pos[1] + at[1]), clean(pos[2] + at[2])];
+    names.set(name, { emitted: name, worldMm, onBody });
     lines.push(`${bindingName}.connector(${safeString(name)}, ${frame(at)});`);
   };
-  add('origin', [0, 0, 0]);
-  add('bbox_center', transform.rotateLocal([dims[0] / 2, dims[1] / 2, dims[2] / 2]));
+  add('origin', [0, 0, 0], true);
+  add('bbox_center', transform.rotateLocal([dims[0] / 2, dims[1] / 2, dims[2] / 2]), true);
   const faces: Array<[string, Vec3]> = [
     ['bbox_x_min', [0, dims[1] / 2, dims[2] / 2]], ['bbox_x_max', [dims[0], dims[1] / 2, dims[2] / 2]],
     ['bbox_y_min', [dims[0] / 2, 0, dims[2] / 2]], ['bbox_y_max', [dims[0] / 2, dims[1], dims[2] / 2]],
     ['bbox_z_min', [dims[0] / 2, dims[1] / 2, 0]], ['bbox_z_max', [dims[0] / 2, dims[1] / 2, dims[2]]],
   ];
-  for (const [name, origin] of faces) add(name, transform.rotateLocal(origin));
+  for (const [name, origin] of faces) add(name, transform.rotateLocal(origin), true);
   for (const anchor of part.anchors ?? []) {
-    const placedTarget: Vec3 = [anchor.positionMm[0] - pos[0], anchor.positionMm[1] - pos[1], anchor.positionMm[2] - pos[2]];
+    const localAt: Vec3 = [clean(anchor.positionMm[0] - pos[0]), clean(anchor.positionMm[1] - pos[1]), clean(anchor.positionMm[2] - pos[2])];
     const sourceLocal = inverseRotatePoint([
-      placedTarget[0] - transform.shift[0], placedTarget[1] - transform.shift[1], placedTarget[2] - transform.shift[2],
+      localAt[0] - transform.shift[0], localAt[1] - transform.shift[1], localAt[2] - transform.shift[2],
     ], rotation);
     const emitted = uniqueName(`anchor_${anchorName(anchor.name)}`, used);
-    names.set(anchor.name, emitted);
-    lines.push(`${bindingName}.connector(${safeString(emitted)}, ${frame(sourceLocal)});`);
+    names.set(anchor.name, { emitted, worldMm: [clean(anchor.positionMm[0]), clean(anchor.positionMm[1]), clean(anchor.positionMm[2])], onBody: pointInBox(sourceLocal, dims) });
+    lines.push(`${bindingName}.connector(${safeString(emitted)}, ${frame(localAt)});`);
   }
   return names;
 }
 
-function resolveEndpoint(ref: string, anchors: Map<string, Map<string, string>>): { part: string; anchor: string } | undefined {
+function resolveEndpoint(ref: string, anchors: Map<string, Map<string, EmittedAnchor>>): ResolvedEndpoint | undefined {
   const dot = ref.indexOf('.');
   if (dot <= 0) return undefined;
   const partName = ref.slice(0, dot);
   const anchor = anchors.get(partName)?.get(ref.slice(dot + 1));
-  return anchor ? { part: partName, anchor } : undefined;
+  return anchor ? { part: partName, anchor: anchor.emitted, worldMm: anchor.worldMm, onBody: anchor.onBody } : undefined;
+}
+
+function connectionSkipReason(from: ResolvedEndpoint, to: ResolvedEndpoint, offset: Vec3, distanceMm: number): string | undefined {
+  if (from.part === to.part) return 'same-part anchor reference';
+  if (distanceMm > COINCIDENT_ANCHOR_TOL_MM) return `anchors are ${Number(distanceMm.toFixed(3))} mm apart, offset [${offset.join(', ')}] mm`;
+  if (!from.onBody || !to.onBody) return 'anchor lies outside part solid';
+  return undefined;
+}
+
+function emitConnections(
+  connections: readonly BlockoutConnectionInput[],
+  anchors: Map<string, Map<string, EmittedAnchor>>,
+  lines: string[],
+  warnings: string[],
+): number {
+  let connectionCount = 0;
+  let fastenedCount = 0;
+  let intentOnlyCount = 0;
+  for (const connection of connections) {
+    const from = resolveEndpoint(connection.from, anchors);
+    const to = resolveEndpoint(connection.to, anchors);
+    if (!from || !to) {
+      warnings.push(`${connection.from} -> ${connection.to}: endpoint does not resolve to a known part.anchor; no mate was created.`);
+      continue;
+    }
+    connectionCount++;
+    const offset: Vec3 = [clean(to.worldMm[0] - from.worldMm[0]), clean(to.worldMm[1] - from.worldMm[1]), clean(to.worldMm[2] - from.worldMm[2])];
+    const distanceMm = Math.hypot(offset[0], offset[1], offset[2]);
+    const skipReason = connectionSkipReason(from, to, offset, distanceMm);
+    if (!skipReason) {
+      fastenedCount++;
+      lines.push(`${ASSEMBLY_BINDING}.mate(${safeString(`connection_${connectionCount}_${anchorName(`${connection.from}_${connection.to}`)}`)}, ${safeString(`${from.part}.${from.anchor}`)}, ${safeString(`${to.part}.${to.anchor}`)}, 'fastened');`);
+      continue;
+    }
+    intentOnlyCount++;
+    lines.push(`// Connection ${connectionCount} (connectivity intent only; ${skipReason} — omitted from geometric fastened mates so positionMm placements are preserved): ${safeCommentText(from.part)}.${safeCommentText(from.anchor)} -> ${safeCommentText(to.part)}.${safeCommentText(to.anchor)}`);
+  }
+  if (intentOnlyCount > 0 && fastenedCount > 0) {
+    warnings.push('Connections encode anchor connectivity intent only: coincident on-body anchors emit fastened mates, while non-coincident connections are recorded as comments so part positionMm placements are preserved; no wire, harness or route geometry is generated.');
+  } else if (intentOnlyCount > 0) {
+    warnings.push('Connections encode anchor connectivity intent only: non-coincident connections are recorded as comments rather than fastened mates so part positionMm placements are preserved; no wire, harness or route geometry is generated.');
+  } else if (fastenedCount > 0) {
+    warnings.push('Connections encode anchor connectivity intent only (fastened mates at coincident anchors); no wire, harness or route geometry is generated.');
+  }
+  return connectionCount;
 }
 
 /** Validate a parts list and emit an evaluable placeholder assembly script. positionMm is the bbox lower corner. */
@@ -190,20 +256,9 @@ export function blockoutAssemblyTool(input: BlockoutAssemblyInput): BlockoutAsse
     '// Anchors: <part>.origin = bbox corner = local [0,0,0]; <part>.bbox_center = local bbox center.',
     `const ${ASSEMBLY_BINDING} = assembly(${safeString(input.name?.trim() || 'blockout')});`,
   ];
-  const anchors = new Map<string, Map<string, string>>();
+  const anchors = new Map<string, Map<string, EmittedAnchor>>();
   for (const part of input.parts) anchors.set(part.name, renderPart(part, lines));
-  let connectionCount = 0;
-  if (input.connections?.length) warnings.push('Connections encode anchor connectivity intent only (fastened mates); no wire, harness or route geometry is generated.');
-  for (const connection of input.connections ?? []) {
-    const from = resolveEndpoint(connection.from, anchors);
-    const to = resolveEndpoint(connection.to, anchors);
-    if (!from || !to) {
-      warnings.push(`${connection.from} -> ${connection.to}: endpoint does not resolve to a known part.anchor; no mate was created.`);
-      continue;
-    }
-    connectionCount++;
-    lines.push(`${ASSEMBLY_BINDING}.mate(${safeString(`connection_${connectionCount}_${anchorName(`${connection.from}_${connection.to}`)}`)}, ${safeString(`${from.part}.${from.anchor}`)}, ${safeString(`${to.part}.${to.anchor}`)}, 'fastened');`);
-  }
+  const connectionCount = emitConnections(input.connections ?? [], anchors, lines, warnings);
   lines.push(`return ${ASSEMBLY_BINDING}.model();`, '');
   return { ok: true, part_count: input.parts.length, connection_count: connectionCount, script: lines.join('\n'), warnings };
 }
