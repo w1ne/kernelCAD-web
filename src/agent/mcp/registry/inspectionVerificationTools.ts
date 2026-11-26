@@ -104,7 +104,7 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n" +
       "- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs actuator capacities declared on arm.revolute / arm.prismatic joints ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }). No actuator coverage returns ok:false with assembly.joint.static-hold.no-actuator; unavailable assembly mass properties return ok:false with assembly.joint.static-hold.mass-unavailable; mate-only mechanicalJoint chains are not evaluated; check their torqueNm ratings with 'motion-load' (quasi_static: true).\n" +
       "- 'motion-load' — loads on each driven joint (mechanicalJoint on a revolute mate) while the model moves: gravity, inertia from the animationView tracks (finite differences), optional external forces. Mass and inertia come from the solids and density/material, or a part's massKg. Returns per joint peak torque vs the mechanicalJoint torqueNm (margin; < 1x error, < 2x warning), axial / radial force and bending moment on the actuator shaft (checked only against radialLimitN / axialLimitN; without them 'no rating, not checked'), the radial load on each of up to two coaxial supports (each at its station on the shaft: the actuator at the joint origin, else the support's connector on the axis, else the middle of its material nearest the shaft; an ambiguous station is a mechanism.load.not-resolved warning, not a number), the worst pose, a torque-vs-time series, and `partLoads` (the worst wrench per part and side in that part's own frame, which `feaStudy({ loadsFrom })` consumes) ({ file | code, motion_mode?: 'tracks'|'range'|'poses', motion_poses?: [{ joint: value }], sample_ms?, range_samples?, quasi_static?, gravity?, motion_loads?: [{ part, point, force, from_ms?, to_ms? }], supports?: { joint: [parts] }, series_points? }). Pass supports to compare with and without a bushing. Rigid bodies, tree mate graphs, no friction.\n" +
-      "- 'physics' — mechanism truth: rest-pose continuity, contact and interpenetration; budgeted joint-range collision/DOF sweep; and, when within the physics budget, static equilibrium and drop-on-release under gravity ({ file | code, assembly?, physics? }). Returns { ok, mechanism: 'real'|'broken'|'unverified', failures[], coverage }. A skipped sweep reports warning mechanism.unverified-budget-exceeded with coverage.sweep:false; a skipped physics pass reports warning mechanism.physics-budget-exceeded with coverage.physics:false. A closed-loop mate graph reports warning mechanism.physics-unsupported with coverage.physics:false and stays unverified: that rejection is unsupported topology, not a dynamics failure. Any of these skips leaves a clean mechanism unverified, but a completed rest-pose error still makes it broken. A physics budget skip occurs before MuJoCo runs.\n" +
+      "- 'physics' — mechanism truth: rest-pose continuity, contact and interpenetration; budgeted joint-range collision/DOF sweep; and, when within the physics budget, static equilibrium and drop-on-release under gravity ({ file | code, assembly?, physics? }). Returns { ok, mechanism: 'real'|'broken'|'unverified', failures[], coverage }. A skipped sweep reports warning mechanism.unverified-budget-exceeded with coverage.sweep:false; a skipped physics pass reports warning mechanism.physics-budget-exceeded with coverage.physics:false. A closed-loop mate graph reports warning mechanism.physics-unsupported with coverage.physics:false and stays unverified: that rejection is unsupported topology, not a dynamics failure. Any of these skips leaves a clean mechanism unverified, but a completed rest-pose error still makes it broken. A physics budget skip occurs before MuJoCo runs. Pass dynamics to run applied-effort forward simulation instead, with per-step contact-load, penetration and onset gates.\n" +
       "- 'edge-radius' — general edge-break specification on final BREP ({ file | code, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', feature_id?, assembly?, parts?, edges?, faces? }). Reports sharp convex/concave edges, analytic cylindrical/toroidal fillet radii and spherical junctions, and heuristic planar chamfer strips. Radius bounds apply only to fillets; selectors/points are part-local. Unknown/empty coverage cannot pass.\n" +
       "- 'clearance-range' — per mating pair, actual vs planned minimum clearance at rest and across the declared joint range ({ file | code, assembly?, min_clearance_mm?, samples_per_mate? }). Planned values come from solvedModel({}, { clearances }) and, for every movable (non-fastened) mate pair not declared there, from min_clearance_mm or dfmSpec({ minClearance }); ignored and declared-contact pairs are exempt. Poses are the pose-envelope samples (rest, each limited mate's min, interior and max, coupled mates driven through their source); distance is exact BREP. Each row { a, b, planned, plannedSource, at: rest|range, actual, worstSample, status: pass|fail|unknown, reason }. A movable mate with no limits, an unsolved pose or an unmeasured pair gives unknown, never pass; ok only when every row passes.\n" +
       'All params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.',
@@ -141,6 +141,35 @@ const verifyToolEntry: ToolRegistryEntry = {
           },
         },
         assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+        dynamics: {
+          type: 'object', additionalProperties: false,
+          description: "check:'physics' — separate forward dynamics acceptance. Applied effort is N or N·m by CAD mate name. Contacts require explicit convex pieces. Does not certify geometry or physical hardware.",
+          required: ['steps', 'dtSeconds', 'efforts', 'pairs'],
+          properties: {
+            steps: { type: 'integer', minimum: 1, maximum: 20000 },
+            dtSeconds: { type: 'number', exclusiveMinimum: 0, maximum: 0.01 },
+            efforts: { type: 'object', additionalProperties: { type: 'number' } },
+            pairs: {
+              type: 'array', minItems: 1, maxItems: 32,
+              items: { type: 'object', additionalProperties: false, required: ['bodies', 'minEpisodes', 'maxPenetrationMm'], properties: {
+                bodies: { type: 'array', minItems: 2, maxItems: 2, items: { type: 'string' } },
+                minEpisodes: { type: 'integer', minimum: 0 },
+                maxPenetrationMm: { type: 'number', minimum: 0 },
+                maxNormalForceN: { type: 'number', minimum: 0 },
+                minNormalForceN: { type: 'number', minimum: 0 },
+              } },
+            },
+            contactModel: { type: 'object', additionalProperties: false, required: ['friction', 'solref', 'solimp'], properties: {
+              friction: { type: 'array', minItems: 3, maxItems: 3, items: { type: 'number', minimum: 0 } },
+              solref: { type: 'array', minItems: 2, maxItems: 2, items: { type: 'number', exclusiveMinimum: 0 } },
+              solimp: { type: 'array', minItems: 3, maxItems: 3, items: { type: 'number', exclusiveMinimum: 0 } },
+            } },
+            sequence: { type: 'object', additionalProperties: false, required: ['order', 'minCycles'], properties: {
+              order: { type: 'array', minItems: 2, maxItems: 32, items: { type: 'integer', minimum: 0 } },
+              minCycles: { type: 'integer', minimum: 1 },
+            } },
+          },
+        },
         min_radius_mm: { type: 'number', minimum: 0, description: "check:'edge-radius' — minimum fillet radius in mm (does not imply sharp-edge prohibition)." },
         max_radius_mm: { type: 'number', minimum: 0, description: "check:'edge-radius' — maximum fillet radius in mm; must be >= min_radius_mm." },
         require_edge_break: { type: 'string', enum: ['external', 'internal', 'all'], description: "check:'edge-radius' — prohibit sharp convex/external, concave/internal, or all edges." },

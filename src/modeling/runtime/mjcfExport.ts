@@ -124,6 +124,12 @@ export interface AssemblyToMjcfOptions {
      *  of lowering every part again (each lower is a new OCCT shape that the
      *  WASM heap keeps for the rest of the process). */
     readonly scene?: SceneBackend;
+    /** Optional explicit contact solver parameters for dynamic acceptance. */
+    readonly contactModel?: {
+        readonly friction: readonly [number, number, number];
+        readonly solref: readonly [number, number];
+        readonly solimp: readonly [number, number, number];
+    };
 }
 
 export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions = {}): Promise<MjcfExportResult> {
@@ -173,6 +179,7 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
         jointOrder,
         bodyOrder,
         restPoses,
+        opts.contactModel,
     );
 
     const tendonBlockLines = emitTendonBlock(resolvedTendons, spatialChildrenByTendon);
@@ -515,6 +522,7 @@ function emitWorldbodyBlocks(
     jointOrder: { mjcfName: string; mateName: string }[],
     bodyOrder: string[],
     restPoses: NumericPoses,
+    contactModel?: AssemblyToMjcfOptions['contactModel'],
 ): string[] {
     function partAttachPos(part: AssemblyPartStored): Vec3 {
         // Root bodies use the part's `at` placement (mm → m). Non-root
@@ -586,9 +594,12 @@ function emitWorldbodyBlocks(
         // Friction triple matches MuJoCo's default for general body
         // contacts (sliding, torsional, rolling) — sufficient for
         // static-equilibrium and drop-test scoring.
+        const contactAttrs = contactModel === undefined
+            ? 'friction="1.0 0.005 0.0001"'
+            : `friction="${contactModel.friction.map(fmtNum).join(' ')}" solref="${contactModel.solref.map(fmtNum).join(' ')}" solimp="${contactModel.solimp.map(fmtNum).join(' ')}"`;
         for (const collision of collisionMeshes.get(partName) ?? []) {
             lines.push(
-                `${indent}  <geom type="mesh" mesh="${escapeXml(collision.assetName)}" contype="1" conaffinity="1" group="1" friction="1.0 0.005 0.0001"/>`,
+                `${indent}  <geom type="mesh" mesh="${escapeXml(collision.assetName)}" contype="1" conaffinity="1" group="1" ${contactAttrs}/>`,
             );
         }
 

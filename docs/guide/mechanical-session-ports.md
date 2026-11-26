@@ -87,3 +87,57 @@ npx vitest run src/modeling/runtime/mujocoMechanicalPorts.test.ts \
 [Measured trace and local demo](../demos/mechanical-session-ports-20261125/README.md).
 
 [Body-origin velocity observation demo and independent frame test](../demos/mechanical-body-velocity-20261125/README.md).
+
+## Contact-driven forward verification
+
+Use the existing verification tool with an explicit forward-dynamics study:
+
+```ts
+verify({
+  check: 'physics',
+  code,
+  dynamics: {
+    steps: 1000,
+    dtSeconds: 0.0005,
+    efforts: { drive: 0.01 }, // CAD mate name; hinge N·m, slide N
+    contactModel: {
+      friction: [1, 0.005, 0.0001],
+      solref: [0.002, 1],
+      solimp: [0.99, 0.999, 0.001],
+    },
+    pairs: [{ bodies: ['driver', 'follower'], minEpisodes: 1, maxPenetrationMm: 1 }],
+  },
+});
+```
+
+This mode is separate from the existing hold/release and swept-collision checks.
+It exports the authored assembly to MJCF, applies constant effort, and evaluates
+the native solver at the initial and every completed integration frontier.
+It returns initial/final scalar coordinates and velocities, load-bearing
+contact episodes, first/last contact times, maximum summed normal load,
+and maximum signed-distance penetration for each requested pair. Specify
+`maxNormalForceN` to enforce a load limit, or `minNormalForceN` to filter small
+contact events. An optional `sequence: { order: [0, 1], minCycles: 1 }` requires
+ordered onsets of those contact pairs; `contactSequence` reports completed
+cycles and unexpected/simultaneous onsets. Contact chatter is not proof of
+an escapement cycle. Use an appropriate normal-force threshold and validate
+timing, displacement, recoil and energy balance separately.
+
+Contacting bodies must declare their convex collision pieces with
+`part.collision([...])`. Declare one piece per tooth/pallet where needed;
+a whole nonconvex mesh has a convex-hull contact approximation. The tool
+reports missing collision pieces or substituted inertia as errors. It reports
+assumed-density parts and the contact model parameters. Use measured density,
+mass, damping and friction when validating a real mechanism. The current
+input permits scalar revolute/prismatic and fixed joints, up to 20,000
+steps at a timestep no greater than 10 ms. Choose the timestep for the
+mechanism and compare with a smaller timestep before accepting results.
+The default friction and compliant contact parameters are modeling
+assumptions, not measured surface properties. Results are rigid-body model
+evidence, not FEA contact-stress, wear or hardware acceptance.
+
+The native contact-force API is MuJoCo's `mj_contactForce`, in the contact
+frame; `MujocoSession.contactWrenchesNow()` exposes its normal/tangential
+forces and torque. See
+[MuJoCo contact computation](https://mujoco.readthedocs.io/en/stable/computation/)
+and [mj_contactForce](https://mujoco.readthedocs.io/en/stable/APIreference/APIfunctions.html#mj-contactforce).

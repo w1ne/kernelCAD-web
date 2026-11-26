@@ -136,6 +136,13 @@ export interface CompiledContact {
     readonly distM: number;
 }
 
+/** Native solver contact wrench, in MuJoCo's contact frame. */
+export interface MujocoContactWrench extends CompiledContact {
+    readonly active: boolean;
+    readonly forceN: readonly [number, number, number];
+    readonly torqueNm: readonly [number, number, number];
+}
+
 export interface CompiledBodyDynamics {
     readonly id: number;
     readonly name: string;
@@ -676,6 +683,38 @@ export class MujocoSession {
             });
         }
         return out;
+    }
+
+    /**
+     * Read actual constraint-solver contact wrenches after forward/stepFixed.
+     * Force component 0 is normal; components 1 and 2 are tangential.
+     * Inactive (margin-only) contacts are explicitly marked, not counted as load.
+     */
+    contactWrenchesNow(): MujocoContactWrench[] {
+        this.assertAlive();
+        const ncon = Number(this.data.ncon);
+        const contacts = this.compiledContacts();
+        if (contacts.length !== ncon) throw new Error('Incomplete native contact observation.');
+        if (ncon === 0) return [];
+        const buffer = new this.mujoco.DoubleBuffer(6);
+        try {
+            return contacts.map((contact, id) => {
+                const native = this.data.contact.get(id);
+                const address = Number(native?.efc_address);
+                if (!Number.isInteger(address) || !Number.isFinite(contact.distM)) {
+                    throw new Error('Invalid native contact observation.');
+                }
+                const active = address >= 0;
+                this.mujoco.mj_contactForce(this.model, this.data, id, buffer);
+                const v = Array.from(buffer.GetView() as ArrayLike<number>);
+                if (v.length !== 6 || !v.every(Number.isFinite)) {
+                    throw new Error('Non-finite native contact wrench.');
+                }
+                return { ...contact, active, forceN: [v[0], v[1], v[2]], torqueNm: [v[3], v[4], v[5]] };
+            });
+        } finally {
+            buffer.delete();
+        }
     }
 
     /**

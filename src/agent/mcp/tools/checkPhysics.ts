@@ -14,6 +14,8 @@ import {
   type MechanismCoverage,
 } from '../../../modeling/runtime/mechanismTruth';
 import { loadMujocoSession } from '../../../modeling/runtime/mujocoSession';
+import { checkContactDynamics, type CheckContactDynamicsOutput } from './checkContactDynamics';
+import type { ContactDynamicsInput } from '../../../modeling/runtime/contactDynamics';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export interface CheckPhysicsInput extends EvaluateInput {
@@ -21,9 +23,12 @@ export interface CheckPhysicsInput extends EvaluateInput {
   assembly?: string;
   /** Set false to run only the kinematic criteria (no physics engine). Default true. */
   physics?: boolean;
+  /** Optional explicit forward-dynamics contact acceptance run. */
+  dynamics?: ContactDynamicsInput;
 }
 
 export type CheckPhysicsOutput =
+  | CheckContactDynamicsOutput
   | {
       ok: boolean;
       source: 'local';
@@ -62,6 +67,10 @@ export async function checkPhysicsTool(input: CheckPhysicsInput): Promise<CheckP
         : 'physics: no assembly captured by the script.',
       errorCode: 'feature.invalid-args',
     };
+  }
+  if (input.dynamics !== undefined) {
+    if (input.physics === false) return { ok: false, source: 'local', mode: 'contact-dynamics', error: 'Dynamics requires physics enabled.' };
+    return checkContactDynamics(arm, input.dynamics);
   }
   const verdict = input.physics === false
     ? await checkMechanismTruth(arm)
