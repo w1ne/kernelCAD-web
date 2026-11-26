@@ -66332,7 +66332,7 @@
       "id": "portable-site-water-tank",
       "kit": "construction-equipment",
       "title": "Portable site water tank",
-      "description": "Skid-mounted site water tank with a moulded fill neck, screw cap and drain valve. Material controls: polyethylene shell, polypropylene filler cap, galvanised skid steel; siteBlue and weatheredPolyethylene presets.",
+      "description": "Skid-mounted site water tank with a moulded fill neck, screw cap and side outlet valve. Material controls: polyethylene shell, polypropylene filler cap, galvanised skid steel; siteBlue and weatheredPolyethylene presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -66351,7 +66351,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/portable-site-water-tank.kcad.ts",
       "preview": "/assets/construction-equipment-portable-site-water-tank.png",
-      "sourceSha256": "bb51e123a8a830c8ab25a58edfd4a82685f41f6a807479aa0ffa250e514603df",
+      "sourceSha256": "090e6ffb1e3ae6ff2d6a2ba1547b784c9b1f045072660f25371e18d148723065",
       "triangleBudget": 2200,
       "params": [
         {
