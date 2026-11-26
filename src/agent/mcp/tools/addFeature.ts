@@ -22,7 +22,7 @@ export interface AddFeatureOutput {
 }
 
 export async function addFeatureTool(input: AddFeatureInput): Promise<AddFeatureOutput> {
-  const edit = addFeature(input.code, input.feature_code);
+  const edit = addFeature(input.code, input.feature_code, { guardReturnEffect: true });
   if (!edit.ok || !edit.new_code) {
     return { ok: false, error: edit.error, errorCode: edit.errorCode };
   }

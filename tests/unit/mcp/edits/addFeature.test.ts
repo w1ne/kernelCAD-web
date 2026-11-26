@@ -7,6 +7,11 @@ function expectParseable(code: string): void {
   expect(() => parseCode(code)).not.toThrow();
 }
 
+/** The opt-in contract used by the `add_feature` and `add_pattern_feature` tools. */
+function guarded(code: string, featureCode: string) {
+  return addFeature(code, featureCode, { guardReturnEffect: true });
+}
+
 describe('addFeature primitive', () => {
   it('inserts a feature before the last return statement', () => {
     const code = [
@@ -87,12 +92,26 @@ describe('addFeature primitive', () => {
     expectParseable(r.new_code);
   });
 
+  it('keeps insert-only behavior by default for typed editors', () => {
+    const code = [
+      `const plate = box(60, 40, 6);`,
+      `return plate;`,
+    ].join('\n');
+    const r = addFeature(code, `const filleted = plate.fillet(1.5);`);
+    expect(r.ok).toBe(true);
+    expect(r.new_code).toBe([
+      `const plate = box(60, 40, 6);`,
+      `const filleted = plate.fillet(1.5);`,
+      `return plate;`,
+    ].join('\n'));
+  });
+
   it('rewrites the return for a bare shape edit over the returned binding', () => {
     const code = [
       `const plate = box(60, 40, 6);`,
       `return plate;`,
     ].join('\n');
-    const r = addFeature(code, `plate.fillet(1.5)`);
+    const r = guarded(code, `plate.fillet(1.5)`);
     expect(r.ok).toBe(true);
     expect(r.new_code).toBe([
       `const plate = box(60, 40, 6);`,
@@ -106,7 +125,7 @@ describe('addFeature primitive', () => {
       `const plate = box(60, 40, 6);`,
       `  return plate;`,
     ].join('\n');
-    const r = addFeature(code, `plate.fillet(1.5).chamfer(0.4);`);
+    const r = guarded(code, `plate.fillet(1.5).chamfer(0.4);`);
     expect(r.ok).toBe(true);
     expect(r.new_code).toBe([
       `const plate = box(60, 40, 6);`,
@@ -121,7 +140,7 @@ describe('addFeature primitive', () => {
       `const other = box(10, 10, 10);`,
       `return other;`,
     ].join('\n');
-    const r = addFeature(code, `plate.fillet(1.5)`);
+    const r = guarded(code, `plate.fillet(1.5)`);
     expect(r.ok).toBe(false);
     expect(r.errorCode).toBe('feature.add.expression-unused');
     expect(r.error).toMatch(/bare expression/i);
@@ -134,7 +153,7 @@ describe('addFeature primitive', () => {
       `const plate = box(60, 40, 6);`,
       `return plate;`,
     ].join('\n');
-    const r = addFeature(code, `const hole = cylinder(5, 2);\nplate.subtract(hole);`);
+    const r = guarded(code, `const hole = cylinder(5, 2);\nplate.subtract(hole);`);
     expect(r.ok).toBe(false);
     expect(r.errorCode).toBe('feature.add.expression-unused');
     expect(r.error).toMatch(/bare expression/i);
@@ -148,7 +167,7 @@ describe('addFeature primitive', () => {
       `  .translate(5, 0, 0)`,
       `  .fillet(2);`,
     ].join('\n');
-    const r = addFeature(code, `a.fillet(1)`);
+    const r = guarded(code, `a.fillet(1)`);
     expect(r.ok).toBe(false);
     expect(r.errorCode).toBe('feature.add.expression-unused');
   });
@@ -158,7 +177,7 @@ describe('addFeature primitive', () => {
       `const plate = box(60, 40, 6);`,
       `return plate;`,
     ].join('\n');
-    const r = addFeature(code, `const filleted = plate.fillet(1.5);`);
+    const r = guarded(code, `const filleted = plate.fillet(1.5);`);
     expect(r.ok).toBe(true);
     expect(r.new_code).toBe([
       `const plate = box(60, 40, 6);`,
@@ -173,7 +192,7 @@ describe('addFeature primitive', () => {
       `const plate = box(60, 40, 6);`,
       `return plate;`,
     ].join('\n');
-    const r = addFeature(code, `const filleted = plate.fillet(1.5);\nconst finished = filleted.chamfer(0.4);`);
+    const r = guarded(code, `const filleted = plate.fillet(1.5);\nconst finished = filleted.chamfer(0.4);`);
     expect(r.ok).toBe(true);
     expect(r.new_code).toContain(`const finished = filleted.chamfer(0.4);\nreturn finished;`);
     expectParseable(r.new_code);
@@ -184,7 +203,7 @@ describe('addFeature primitive', () => {
       `const plate = box(60, 40, 6);`,
       `return plate;`,
     ].join('\n');
-    const r = addFeature(code, `const hole = cylinder(5, 2);`);
+    const r = guarded(code, `const hole = cylinder(5, 2);`);
     expect(r.ok).toBe(true);
     expect(r.new_code).toBe([
       `const plate = box(60, 40, 6);`,
@@ -198,7 +217,7 @@ describe('addFeature primitive', () => {
       `const plate = box(60, 40, 6);`,
       `return plate;`,
     ].join('\n');
-    const r = addFeature(code, `const face = surfaceFromBoundary([plate, plate]);`);
+    const r = guarded(code, `const face = surfaceFromBoundary([plate, plate]);`);
     expect(r.ok).toBe(true);
     expect(r.new_code).toBe([
       `const plate = box(60, 40, 6);`,
@@ -209,7 +228,7 @@ describe('addFeature primitive', () => {
 
   it('preserves CRLF line endings when rewriting the return', () => {
     const code = `const plate = box(60, 40, 6);\r\nreturn plate;\r\n`;
-    const r = addFeature(code, `plate.fillet(1.5)`);
+    const r = guarded(code, `plate.fillet(1.5)`);
     expect(r.ok).toBe(true);
     expect(r.new_code).toBe(`const plate = box(60, 40, 6);\r\nreturn plate.fillet(1.5);\r\n`);
   });

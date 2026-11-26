@@ -35,7 +35,7 @@ export interface AddPatternFeatureOutput {
   diagnostics?: CompilerDiagnostic[];
   sceneSummary?: SceneSummary;
   error?: string;
-  errorCode?: 'feature.pattern.count-out-of-range' | 'feature.invalid-args';
+  errorCode?: 'feature.pattern.count-out-of-range' | 'feature.invalid-args' | 'feature.add.expression-unused';
 }
 
 function fmtVec3(v: Vec3Tuple): string {
@@ -145,8 +145,12 @@ export async function addPatternFeatureTool(
   const call = built.call;
 
   const feature_code = input.assign_to ? `const ${input.assign_to} = ${call}` : call;
-  const edit = addFeature(input.code, feature_code);
-  if (!edit.ok || !edit.new_code) return { ok: false, error: edit.error };
+  const edit = addFeature(input.code, feature_code, { guardReturnEffect: true });
+  if (!edit.ok || !edit.new_code) {
+    return edit.errorCode
+      ? { ok: false, error: edit.error, errorCode: edit.errorCode as 'feature.add.expression-unused' }
+      : { ok: false, error: edit.error };
+  }
   const evalResult = await evaluateScriptTool({ code: edit.new_code });
   return {
     ok: evalResult.ok,

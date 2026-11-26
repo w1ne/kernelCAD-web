@@ -75,33 +75,43 @@ interface ReturnSite {
   target: string | null;
 }
 
+function locationLine(node: AcornNode, edge: 'start' | 'end'): number | null {
+  const loc = node.loc;
+  if (typeof loc !== 'object' || loc === null) return null;
+  const line = (loc as Record<string, { line?: unknown } | undefined>)[edge]?.line;
+  return typeof line === 'number' ? line : null;
+}
+
+function lastReturnStatement(statements: AcornNode[]): AcornNode | null {
+  let last: AcornNode | null = null;
+  for (const statement of statements) {
+    if (statement.type === 'ReturnStatement') last = statement;
+  }
+  return last;
+}
+
 /**
- * Locate the last top-level `return` in the script and, when it returns a
- * single identifier on one line, report that binding. Multi-line or complex
- * return expressions are not rewritten: touching them could break the chain.
+ * The single identifier a return statement exposes, when the whole statement
+ * is on one line. Multi-line or complex return expressions are not reported:
+ * rewriting them could break the chain.
  */
+function returnedIdentifier(statement: AcornNode): string | null {
+  const argument = asNode(statement.argument);
+  if (argument?.type !== 'Identifier' || typeof argument.name !== 'string') return null;
+  const start = locationLine(statement, 'start');
+  const end = locationLine(statement, 'end');
+  return start !== null && start === end ? argument.name : null;
+}
+
+/** Locate the last top-level `return` in the script. */
 function findReturnSite(code: string): ReturnSite | null {
   const program = parseProgram(code);
   if (!program) return null;
-  let last: AcornNode | null = null;
-  for (const statement of program.statements) {
-    if (statement.type === 'ReturnStatement') last = statement;
-  }
+  const last = lastReturnStatement(program.statements);
   if (!last) return null;
-
-  const loc = last.loc;
-  const lineIndex = typeof loc === 'object' && loc !== null
-    ? (loc as { start?: { line?: unknown } }).start?.line
-    : undefined;
-  if (typeof lineIndex !== 'number') return null;
-
-  const argument = asNode(last.argument);
-  const sameLine = typeof loc === 'object' && loc !== null
-    && (loc as { start?: { line?: unknown } }).start?.line === (loc as { end?: { line?: unknown } }).end?.line;
-  const target = sameLine && argument?.type === 'Identifier' && typeof argument.name === 'string'
-    ? argument.name
-    : null;
-  return { lineIndex: lineIndex - 1, target };
+  const start = locationLine(last, 'start');
+  if (start === null) return null;
+  return { lineIndex: start - 1, target: returnedIdentifier(last) };
 }
 
 function leadingWhitespace(line: string): string {
@@ -139,65 +149,77 @@ function rejectBareExpression(featureCode: string, returnTarget: string | null):
  *   derived binding (`const f = plate.fillet(1.5)` -> insert + `return f;`).
  * - Any other bare expression fails closed; it cannot change the returned geometry.
  */
-export function classifyFeatureCode(code: string, featureCode: string, returnIndex: number): FeatureCodeEffect {
-  const program = parseProgram(featureCode);
-  if (!program || program.statements.length === 0) return { kind: 'insert' };
-
-  const returnSite = findReturnSite(code);
-  const returnTarget = returnSite && returnSite.lineIndex === returnIndex ? returnSite.target : null;
-  const lines = code.split('\n');
-  const returnLine = lines[returnIndex] ?? '';
-  const indent = leadingWhitespace(returnLine);
-
-  const bareExpressions = program.statements.filter(
+function bareExpressionStatements(statements: AcornNode[]): AcornNode[] {
+  return statements.filter(
     statement => statement.type === 'ExpressionStatement' && !isDirective(statement),
   );
+}
 
-  if (bareExpressions.length > 0) {
-    const [onlyStatement] = program.statements;
-    if (program.statements.length === 1 && bareExpressions.length === 1 && returnTarget) {
-      const expression = asNode(onlyStatement.expression);
-      const root = rootIdentifier(expression);
-      if (expression && root === returnTarget) {
-        const expressionText = featureCode.slice(expression.start, expression.end).trim();
-        return {
-          kind: 'rewrite-return',
-          returnLine: `${indent}return ${expressionText};`,
-          insertFeatureCode: false,
-        };
-      }
+/**
+ * A single bare expression over the returned binding can replace the return.
+ * Every other bare statement would be discarded, so it fails closed.
+ */
+function classifyBareCode(
+  featureCode: string,
+  statements: AcornNode[],
+  returnTarget: string | null,
+  indent: string,
+): FeatureCodeEffect {
+  if (statements.length === 1 && returnTarget) {
+    const expression = asNode(statements[0].expression);
+    if (expression && rootIdentifier(expression) === returnTarget) {
+      const expressionText = featureCode.slice(expression.start, expression.end).trim();
+      return {
+        kind: 'rewrite-return',
+        returnLine: `${indent}return ${expressionText};`,
+        insertFeatureCode: false,
+      };
     }
-    return rejectBareExpression(featureCode, returnTarget);
   }
+  return rejectBareExpression(featureCode, returnTarget);
+}
 
-  if (!returnTarget) return { kind: 'insert' };
-
-  // Follow declaration chains that start at the returned binding. Only a
-  // method chain rooted at a reachable binding is an edit of that object;
-  // constructors that merely take it as an argument return a different entity.
+/**
+ * Follow declaration chains that start at the returned binding. Only a method
+ * chain rooted at a reachable binding is an edit of that object; constructors
+ * that merely take it as an argument return a different entity.
+ */
+function derivedBinding(statements: AcornNode[], returnTarget: string): string | null {
   const reachable = new Set([returnTarget]);
-  let derivedBinding: string | null = null;
-  for (const statement of program.statements) {
+  let derived: string | null = null;
+  for (const statement of statements) {
     if (statement.type !== 'VariableDeclaration') continue;
     for (const declarator of nodeList(statement.declarations)) {
       const id = asNode(declarator.id);
       const init = asNode(declarator.init);
       if (id?.type !== 'Identifier' || typeof id.name !== 'string' || !init) continue;
       const initRoot = rootIdentifier(init);
-      if (initRoot !== null && reachable.has(initRoot)) {
-        reachable.add(id.name);
-        derivedBinding = id.name;
-      }
+      if (initRoot === null || !reachable.has(initRoot)) continue;
+      reachable.add(id.name);
+      derived = id.name;
     }
   }
+  return derived;
+}
 
-  if (derivedBinding) {
-    return {
-      kind: 'rewrite-return',
-      returnLine: `${indent}return ${derivedBinding};`,
-      insertFeatureCode: true,
-    };
+export function classifyFeatureCode(code: string, featureCode: string, returnIndex: number): FeatureCodeEffect {
+  const program = parseProgram(featureCode);
+  if (!program || program.statements.length === 0) return { kind: 'insert' };
+
+  const returnSite = findReturnSite(code);
+  const returnTarget = returnSite && returnSite.lineIndex === returnIndex ? returnSite.target : null;
+  const indent = leadingWhitespace(code.split('\n')[returnIndex] ?? '');
+
+  if (bareExpressionStatements(program.statements).length > 0) {
+    return classifyBareCode(featureCode, program.statements, returnTarget, indent);
   }
+  if (!returnTarget) return { kind: 'insert' };
 
-  return { kind: 'insert' };
+  const derived = derivedBinding(program.statements, returnTarget);
+  if (!derived) return { kind: 'insert' };
+  return {
+    kind: 'rewrite-return',
+    returnLine: `${indent}return ${derived};`,
+    insertFeatureCode: true,
+  };
 }
