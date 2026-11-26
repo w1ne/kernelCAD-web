@@ -224,8 +224,8 @@ function resolveAttenuationColor(pbr: PBRMaterial | undefined): string {
  *  0 (no glow) otherwise. */
 function resolveEmissive(pbr: PBRMaterial | undefined): { emissive: THREE.ColorRepresentation; emissiveIntensity: number } {
   const emissive = pbr?.emissive !== undefined
-    ? resolveColor(pbr.emissive) ?? '#000000'
-    : '#000000';
+    ? resolveColor(pbr.emissive) ?? 0x000000
+    : 0x000000;
   return {
     emissive,
     emissiveIntensity: pbr?.emissive !== undefined ? pbr.emissiveIntensity ?? 1 : pbr?.emissiveIntensity ?? 0,

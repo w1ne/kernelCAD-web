@@ -1,0 +1,115 @@
+{
+  "ok": true,
+  "viewerError": "Viewer unavailable. Set KERNELCAD_VIEWER_DIST to a separately supplied viewer bundle containing index.html. CAD geometry remains available.",
+  "step": {
+    "validity": {
+      "status": "valid",
+      "checks": [
+        "build",
+        "feature-health",
+        "finite-geometry"
+      ],
+      "volume": 44920.27933914084
+    },
+    "snapshots": {
+      "status": "unavailable",
+      "frame": {
+        "view": "iso",
+        "width": 512,
+        "height": 512,
+        "bounds": {
+          "min": [
+            -42.5,
+            -39.099999999999994,
+            -10
+          ],
+          "max": [
+            42.5,
+            76.5,
+            4
+          ]
+        }
+      },
+      "out_dir": "/data/tmp/andrii/kernelcad-step-cAjLIL",
+      "error": "Step snapshots require an existing browser attachment (PW_CDP_URL)."
+    }
+  },
+  "sceneSummary": {
+    "valid": true,
+    "volume": 44920.27933914084,
+    "faceCount": 456,
+    "size": [
+      85,
+      115.6,
+      14
+    ]
+  },
+  "featureCount": 998,
+  "diagnostics": [],
+  "featureHealth": [],
+  "selections": [
+    {
+      "consumerFeatureId": "hole_1",
+      "selectorText": "top",
+      "syntax": "lineage",
+      "fingerprints": [
+        {
+          "entityKind": "face",
+          "geomType": "PLANE",
+          "producer": "cylinder_3",
+          "role": "top",
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "size": 167.8744591964895,
+          "centroid": [
+            3.552713678800501e-15,
+            5.798133721323502e-16,
+            1.972
+          ]
+        }
+      ],
+      "partDiagonal": 21.04860920045788
+    }
+  ],
+  "requirements": {
+    "ok": true,
+    "entries": [],
+    "summary": {
+      "pass": 0,
+      "fail": 0,
+      "notEvaluated": 0
+    }
+  },
+  "ports": [],
+  "parts": {
+    "count": 5,
+    "names": [
+      "base",
+      "wheel",
+      "anchor",
+      "entry",
+      "exit"
+    ]
+  },
+  "mechanism": "real",
+  "mechanismSummary": {
+    "verdict": "real",
+    "maxLevel": "ok",
+    "statement": "Motion checked: 1 pose across 2 joints (each joint at its limits), all mates satisfied, no collisions, fastened parts stay rigid. Not checked: joint 'wheel' rotation has no limits, range not checked (+1 more). Gravity not checked.",
+    "checked": [
+      "1 pose across 2 joints (each joint at its limits)",
+      "all mates satisfied",
+      "no collisions",
+      "fastened parts stay rigid"
+    ],
+    "skipped": [
+      "joint 'wheel' rotation has no limits, range not checked",
+      "joint 'anchor' rotation has no limits, range not checked"
+    ],
+    "failures": []
+  },
+  "reviewHint": "This model has articulated mates, and evaluate_script's mechanism check is shallow: it does not check joint-support intents, pose-envelope overlap at declared mate limits, or gravity drop / static hold. Run review_cad for pose-envelope + gravity checks before calling the mechanism done."
+}

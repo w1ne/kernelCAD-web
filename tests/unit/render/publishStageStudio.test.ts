@@ -4,7 +4,7 @@
 //
 // Studio stage state: AgX tone mapping, real self-shadowing, studio softbox
 // IBL replacement of the default room probe, and a clean restore on clear.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
 import {
   applyPublishStage, buildStudioBackdropTexture, buildStudioSoftboxEnvironment, capturePublishFrame,
@@ -197,8 +197,34 @@ describe('publish / studio stage', () => {
     clearPublishStage(scene);
   });
 
+  it('preserves the sRGB backdrop palette at the canvas boundary', () => {
+    const addColorStop = vi.fn();
+    const context = {
+      createRadialGradient: () => ({ addColorStop }),
+      fillStyle: undefined as unknown,
+      fillRect: () => undefined,
+    };
+    const canvas = { width: 0, height: 0, getContext: () => context };
+    vi.stubGlobal('document', { createElement: () => canvas });
+    try {
+      const backdrop = buildStudioBackdropTexture();
+      expect(backdrop).toBeInstanceOf(THREE.CanvasTexture);
+      expect(addColorStop.mock.calls).toEqual([
+        [0, 'rgb(247,249,252)'],
+        [0.62, 'rgb(238,242,247)'],
+        [1, 'rgb(221,228,238)'],
+      ]);
+      expect((backdrop as THREE.CanvasTexture).colorSpace).toBe(THREE.SRGBColorSpace);
+      (backdrop as THREE.CanvasTexture).dispose();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('declines without WebGL; the backdrop falls back to a flat colour', () => {
     expect(buildStudioSoftboxEnvironment(stubRenderer())).toBeUndefined();
-    expect(buildStudioBackdropTexture()).toBeInstanceOf(THREE.Color);
+    const backdrop = buildStudioBackdropTexture();
+    expect(backdrop).toBeInstanceOf(THREE.Color);
+    expect((backdrop as THREE.Color).getHexString()).toBe('eef2f7');
   });
 });

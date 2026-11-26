@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-26T21:33:15.335Z",
-  "sourceSha256": "dc8ec149d6c342132a78e674ee3c0cb12296a49b0ec55c1edc01c55af2719257",
-  "mjcfSha256": "b1db8e960cc51266f4a60af2f52dc1558ea7510724b2a2bd0a98a2a8eb776951",
-  "videoSha256": "2817ac7464d621a71900e33afc9999cf10d895f7a533029b79880f4adf0c2192",
+  "generatedAt": "2026-11-26T21:56:17.567Z",
+  "sourceSha256": "42c60675f264c5c3b8daf2d5b060a018c16a24d610f341b8fceb87ae750e3774",
+  "mjcfSha256": "5998ed4927ac357c163a44c721abdf1f290ef3930393a62e424374d3faef9a83",
+  "videoSha256": "d78b169a1f64ddf62f2f768e4b3390d4c1ffc9da3c400903d8db5e7057cd5e6a",
   "fps": 20,
   "width": 1280,
   "height": 720,
@@ -13,17 +13,17 @@
   "fullVideoDecode": "passed",
   "visualInspection": {
     "status": "reviewed",
-    "reviewedAt": "2026-11-26T21:35:19.296605+00:00",
+    "reviewedAt": "2026-11-26T21:58:52.268206+00:00",
     "decodedFrames": [
-      "decoded-first.jpg",
       "decoded-final.jpg"
     ],
-    "result": "Gold 15-tooth wheel, blue anchor and red pallets are recognizable. The 4.3x entry inset shows the tooth at its loaded pallet boundary. Small wheel motion and a sustained entry load are visible. Units, acceptance failure and 0.000426 mm penetration are readable; no clipped labels. Convex-decomposition seams remain visible in the technical collision view."
+    "result": "The anchor jaw meets the ruby back face without covering it. The gold wheel, blue anchor, red pallets, 4.3x entry-contact inset, 0.1112-degree wheel advance, force trace and 0.000426 mm penetration are readable. No clipped labels. Convex-decomposition seams remain visible in the technical collision view."
   },
   "validation": {
-    "sourceEvaluation": "exit 0; 998 features; no diagnostics",
+    "compositionEvaluation": "exit 0; 998 features; no diagnostics",
+    "fullMcpEvaluation": "ok true; mechanism real; 998 features; no diagnostics; no overlap ignore or validation bypass",
     "timestepRuns": "4000 x 0.5 ms and 8000 x 0.25 ms; both fail the repeated-contact requirement",
-    "scopedLint": "run-studies.ts and capture-demo.ts passed",
+    "scopedLint": "run-studies.ts, capture-demo.ts and evaluate-mcp.ts passed",
     "gitDiffCheck": "passed"
   }
 }

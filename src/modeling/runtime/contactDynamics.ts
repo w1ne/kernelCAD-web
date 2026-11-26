@@ -104,8 +104,9 @@ export function validateContactModel(model: ContactModel | undefined, dtSeconds:
     if (model === undefined) return;
     if (!model || !numericTuple(model.friction, 3, nonnegative) ||
         !numericTuple(model.solref, 2, positive) || model.solref[0] < 2 * dtSeconds ||
-        !numericTuple(model.solimp, 3, positive) || model.solimp[0] > model.solimp[1] || model.solimp[1] >= 1) {
-        throw new Error('Invalid contact model: friction, positive solref (time constant >= 2 dt), and ordered solimp values below 1 required.');
+        !numericTuple(model.solimp, 3, positive) || model.solimp[0] > model.solimp[1] ||
+        model.solimp[0] < 0.0001 || model.solimp[1] > 0.9999) {
+        throw new Error('Invalid contact model: friction, positive solref (time constant >= 2 dt), and ordered solimp impedance values within [0.0001, 0.9999] with positive width required.');
     }
 }
 

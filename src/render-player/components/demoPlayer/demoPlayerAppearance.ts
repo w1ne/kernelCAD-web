@@ -13,7 +13,7 @@ export interface FeatureAppearanceOverride {
   featureId: string;
   /** `#rrggbb` base colour. */
   color?: string;
-  /** `#rrggbb` emissive colour; `#000000` = off. */
+  /** `#rrggbb` emissive colour; black = off. */
   emissive?: string;
 }
 

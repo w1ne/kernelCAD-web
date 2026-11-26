@@ -133,8 +133,20 @@ input permits scalar revolute/prismatic and fixed joints, up to 20,000
 steps at a timestep no greater than 10 ms. Choose the timestep for the
 mechanism and compare with a smaller timestep before accepting results.
 The default friction and compliant contact parameters are modeling
-assumptions, not measured surface properties. Results are rigid-body model
-evidence, not FEA contact-stress, wear or hardware acceptance.
+assumptions, not measured surface properties. Native CAD contact export uses
+`condim=3`: normal contact plus sliding friction in the two tangent directions.
+The `friction` tuple retains sliding, torsional and rolling coefficients, but
+torsional and rolling friction are inactive in this contact dimension. MuJoCo
+clamps active friction coefficients below `1e-5` to that minimum, so setting the
+sliding coefficient to zero does not produce an exactly frictionless contact.
+See [contact dimensions](https://mujoco.readthedocs.io/en/stable/XMLreference.html#body-geom-condim)
+and [engine constants](https://mujoco.readthedocs.io/en/stable/APIreference/APIglobals.html#engine-constants).
+
+The first two `solimp` values must be ordered and lie within the inclusive range
+`[0.0001, 0.9999]`; the transition width must be positive. These bounds prevent
+MuJoCo from silently clamping the requested impedance. The positive `solref`
+time constant must be at least twice the selected timestep. Results are
+rigid-body model evidence, not FEA contact-stress, wear or hardware acceptance.
 
 The native contact-force API is MuJoCo's `mj_contactForce`, in the contact
 frame; `MujocoSession.contactWrenchesNow()` exposes its normal/tangential

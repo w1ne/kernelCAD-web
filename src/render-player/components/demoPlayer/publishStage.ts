@@ -54,6 +54,13 @@ const STUDIO_ENV_INTENSITY = 0.44;
 const STUDIO_TONE_MAPPING = THREE.AgXToneMapping;
 const STUDIO_TONE_MAPPING_EXPOSURE = 1.08;
 
+/** Scene colours use the same numeric sRGB representation as the light rig. */
+const STUDIO_BACKDROP_COLOURS = {
+  highlight: 0xf7f9fc,
+  base: 0xeef2f7,
+  horizon: 0xdde4ee,
+} as const;
+
 interface LightSpec {
   kind: 'directional' | 'hemisphere';
   color: number;
@@ -269,17 +276,17 @@ export function buildStudioSoftboxEnvironment(renderer: THREE.WebGLRenderer): TH
  *  grey horizon, so the silhouette separates without a hard backdrop edge.
  *  Falls back to a flat colour where there is no DOM (node / jsdom tests). */
 export function buildStudioBackdropTexture(): THREE.Texture | THREE.Color {
-  if (typeof document === 'undefined') return new THREE.Color('#eef2f7');
+  if (typeof document === 'undefined') return new THREE.Color(STUDIO_BACKDROP_COLOURS.base);
   const size = 512;
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d');
-  if (!ctx) return new THREE.Color('#eef2f7');
+  if (!ctx) return new THREE.Color(STUDIO_BACKDROP_COLOURS.base);
   const gradient = ctx.createRadialGradient(size * 0.5, size * 0.42, size * 0.06, size * 0.5, size * 0.58, size * 0.85);
-  gradient.addColorStop(0, '#f7f9fc');
-  gradient.addColorStop(0.62, '#eef2f7');
-  gradient.addColorStop(1, '#dde4ee');
+  gradient.addColorStop(0, new THREE.Color(STUDIO_BACKDROP_COLOURS.highlight).getStyle(THREE.SRGBColorSpace));
+  gradient.addColorStop(0.62, new THREE.Color(STUDIO_BACKDROP_COLOURS.base).getStyle(THREE.SRGBColorSpace));
+  gradient.addColorStop(1, new THREE.Color(STUDIO_BACKDROP_COLOURS.horizon).getStyle(THREE.SRGBColorSpace));
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, size, size);
   const texture = new THREE.CanvasTexture(canvas);

@@ -117,11 +117,12 @@ function pallet(entry) {
 }
 const entryPts = pallet(true), exitPts = pallet(false);
 const anchorPieces = [];
-let anchor = cylinder(0.124 * R, 0.180 * R, 48).translate(0, 0, -0.062 * R)
-  .hole('top', { u: 0, v: 0, diameter: 0.120 * R, depth: 'through' });
+let anchor = cylinder(0.124 * R, 0.180 * R, 48).translate(0, 0, -0.062 * R);
 anchorPieces.push(cylinder(0.124 * R, 0.180 * R, 48).translate(0, 0, -0.062 * R));
 for (const side of [-1, 1]) {
-  const pts = [], b0 = side * 56.8 * deg, b1 = side * 66.5 * deg;
+  // Open pallet seat: the jaw ends at the ruby's existing 59-degree back face.
+  // This removes the old jaw/ruby overlap without changing either contact profile.
+  const pts = [], b0 = side * 59 * deg, b1 = side * 66.5 * deg;
   const lo = tip(thetaA)[0] - 0.014, hi = tip(thetaB)[0] + 0.036;
   for (let i = 0; i < 8; ++i) pts.push(loc(hi, b0 + (b1 - b0) * i / 7));
   pts.push([side * 0.72, -0.24], [side * 0.44, -0.03], [side * 0.17, 0.12], [0, 0.14],
@@ -134,6 +135,14 @@ const stemPts = [[-0.068, 0.12], [-0.038, 0.36], [-0.038, 0.54], [-0.088, 0.65],
   [0.024, 0.65], [0.064, 0.73], [0.088, 0.65], [0.038, 0.54], [0.038, 0.36], [0.068, 0.12]];
 anchor = anchor.union(poly(stemPts, -0.046 * R, 0.046 * R));
 anchorPieces.push(...pieces(stemPts, -0.046 * R, 0.046 * R));
+// Cut the arbor bore last: arm unions otherwise refill the hole in the hub.
+// Use an explicit axis point; the union face centroid is not the arbor datum.
+anchor = anchor.hole({ byNormal: 'Z', extreme: 'Z' }, { at: [0, 0, 0.062 * R], axis: [0, 0, -1], diameter: 0.120 * R, depth: 'through' });
+const mountRadius = (rIn + rOut) / 2;
+const entrySeat = loc(mountRadius, -59 * deg).map((v) => v * R);
+const exitSeat = loc(mountRadius, 59 * deg).map((v) => v * R);
+const entryMount = [entrySeat[0], entrySeat[1], 0];
+const exitMount = [exitSeat[0], exitSeat[1], 0];
 const plate = box(2.5 * R, 3.4 * R, 4, true).translate(0, 0.55 * R, -8);
 const axle1 = cylinder(10, 0.060 * R, 32).translate(0, 0, -6);
 const axle2 = cylinder(10, 0.050 * R, 32).translate(0, center * R, -6);
@@ -143,11 +152,11 @@ arm.part('base', base, { density: 2700 }).collision([plate, axle1, axle2])
   .connector('wheel', axis([0, 0, 0])).connector('anchor', axis([0, center * R, 0]));
 arm.part('wheel', wheel.color('#cfac46'), { density: Number(wheelDensity) }).collision(wheelPieces).connector('axis', axis([0, 0, 0]));
 arm.part('anchor', anchor.color('#2b5485'), { density: Number(anchorDensity) }).collision(anchorPieces)
-  .connector('axis', axis([0, 0, 0])).connector('entry', fixed([0, 0, 0])).connector('exit', fixed([0, 0, 0]));
+  .connector('axis', axis([0, 0, 0])).connector('entry', fixed(entryMount)).connector('exit', fixed(exitMount));
 arm.part('entry', poly(entryPts, -0.048 * R, 0.048 * R).color('#c41e3a'), { density: Number(palletDensity) })
-  .collision(pieces(entryPts, -0.048 * R, 0.048 * R)).connector('mount', fixed([0, 0, 0]));
+  .collision(pieces(entryPts, -0.048 * R, 0.048 * R)).connector('mount', fixed(entryMount));
 arm.part('exit', poly(exitPts, -0.048 * R, 0.048 * R).color('#c41e3a'), { density: Number(palletDensity) })
-  .collision(pieces(exitPts, -0.048 * R, 0.048 * R)).connector('mount', fixed([0, 0, 0]));
+  .collision(pieces(exitPts, -0.048 * R, 0.048 * R)).connector('mount', fixed(exitMount));
 arm.mate('wheel', 'base.wheel', 'wheel.axis', 'revolute', { pose: 47.4, dampingNmmsPerDeg: 0.000001745329 });
 arm.mate('anchor', 'base.anchor', 'anchor.axis', 'revolute', { pose: phiInitialDeg,
   stiffnessNmmPerDeg: Number(anchorStiffness), springRefDeg: 0, dampingNmmsPerDeg: 0.000001745329 });

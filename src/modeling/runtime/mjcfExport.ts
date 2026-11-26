@@ -594,9 +594,11 @@ function emitWorldbodyBlocks(
         // Friction triple matches MuJoCo's default for general body
         // contacts (sliding, torsional, rolling) — sufficient for
         // static-equilibrium and drop-test scoring.
+        // Preserve explicit solver values exactly; geometry formatting can
+        // round small coefficients to zero or change a time-constant bound.
         const contactAttrs = contactModel === undefined
             ? 'friction="1.0 0.005 0.0001"'
-            : `friction="${contactModel.friction.map(fmtNum).join(' ')}" solref="${contactModel.solref.map(fmtNum).join(' ')}" solimp="${contactModel.solimp.map(fmtNum).join(' ')}"`;
+            : `friction="${contactModel.friction.map(String).join(' ')}" solref="${contactModel.solref.map(String).join(' ')}" solimp="${contactModel.solimp.map(String).join(' ')}"`;
         for (const collision of collisionMeshes.get(partName) ?? []) {
             lines.push(
                 `${indent}  <geom type="mesh" mesh="${escapeXml(collision.assetName)}" contype="1" conaffinity="1" group="1" ${contactAttrs}/>`,
