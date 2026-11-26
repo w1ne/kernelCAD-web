@@ -5,6 +5,7 @@ import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import type { SketchCommand } from '../../../../shared/capture/sketchCommand';
 import type { CompilerDiagnostic } from '../../../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
+import { invalidArgsError } from '../../../../shared/intent/invalidArgs';
 import { emptyResultDiagnostic } from '../additiveNoOp';
 import { built, noShape, type LowerContext, type LowerOutcome } from './context';
 
@@ -205,32 +206,54 @@ function resolveRevolveAxis(r: FeatureRecord): RevolveAxisWorld | { error: Compi
   if (present === 0) {
     return { axis: [0, 0, 1], origin: [0, 0, 0], custom: false };
   }
-  const invalid = (message: string, hint: string): { error: CompilerDiagnostic } => ({
-    error: {
-      target: 'export-occt',
-      code: 'feature.invalid-args',
+  const invalid = (
+    path: string,
+    gotText: string,
+    requires: string,
+    hint: string,
+  ): { error: CompilerDiagnostic } => {
+    const error = invalidArgsError({
+      api: 'Sketch.revolve({ axis })',
+      path,
+      gotText,
+      requires,
+      example: "path()...close().revolve({ axis: { through: [0, 0], direction: [0, 1] } })",
       featureId: r.id,
-      severity: 'error',
-      message,
       hint,
-    },
-  });
+    });
+    return {
+      error: {
+        target: 'export-occt',
+        code: error.code,
+        featureId: r.id,
+        severity: 'error',
+        message: error.message,
+        hint: error.hint ?? hint,
+      },
+    };
+  };
   if (present !== 4) {
     return invalid(
-      `revolve axis is incomplete (through=[${throughX}, ${throughY}], direction=[${dirX}, ${dirY}]).`,
+      'opts.axis',
+      `through=[${throughX}, ${throughY}], direction=[${dirX}, ${dirY}]`,
+      'all four axis params: the through point and the direction',
       'Record the axis through and direction together — use Sketch.revolve({ axis: { through, direction } }).',
     );
   }
   const values = [throughX!, throughY!, dirX!, dirY!];
   if (!values.every((value) => Number.isFinite(value))) {
     return invalid(
-      `revolve axis must be finite; got through=[${throughX}, ${throughY}], direction=[${dirX}, ${dirY}].`,
+      'opts.axis',
+      `through=[${throughX}, ${throughY}], direction=[${dirX}, ${dirY}]`,
+      'finite numbers or ParamRefs for the axis through point and direction',
       'Pass finite numbers or ParamRefs for the axis through point and direction.',
     );
   }
   if (Math.hypot(dirX!, dirY!) < 1e-12) {
     return invalid(
-      `revolve axis direction must be non-zero; got [${dirX}, ${dirY}].`,
+      'opts.axis.direction',
+      `[${dirX}, ${dirY}]`,
+      'a non-zero [dx, dy] direction in sketch coordinates',
       'Pass a non-zero [dx, dy] direction in sketch coordinates.',
     );
   }
