@@ -8,7 +8,7 @@ export const IMPORT_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     type: 'object',
     properties: {
       ok: { type: 'boolean' },
-      format: { type: 'string', enum: ['step', 'stl'] },
+      format: { type: 'string', enum: ['step', 'stl', 'sldprt'] },
       model_path: { type: 'string', description: 'The imported file on disk.' },
       script_path: { type: 'string', description: 'Starter .kcad.ts whose base body is the imported file; pass as { file } to other tools.' },
       code: { type: 'string', description: 'Source of the starter script.' },

@@ -34,6 +34,7 @@ import type { HermiteEndpoint } from '../kernel/geometry/hermiteG2';
 import type { SketchModule } from './sketch/index';
 import type { FontPath } from '../shared/fonts/fontPath';
 import type { FromStepOptions } from './parts/fromSTEP';
+import type { FromNativeCADOptions } from './parts/fromNativeCAD';
 import type { From3MFOptions, FromSTLOptions, MeshFromGLBOptions } from './parts/fromMeshFormats';
 import type { FetchPartOpts } from './parts/fetchPart';
 import type { FindPartOpts, FindPartResult } from './parts/findPart';
@@ -97,11 +98,20 @@ export interface ApiContext {
 export interface PartsLib {
   /**
    * Import a STEP file. Length units are normalized to millimetres.
-   * Native SolidWorks `.sldprt`/`.sldasm` files are refused — export to
-   * STEP AP214/AP242 first. Pass `opts.solid` to pick one body from a
-   * multi-body file.
+   * Native SolidWorks `.sldprt` files use `fromNativeCAD` instead. Pass
+   * `opts.solid` to pick one body from a multi-body file.
    */
   fromSTEP(path: string, opts?: FromStepOptions): Promise<Shape>;
+  /**
+   * Import a native SolidWorks part through the local cadmpeg converter and
+   * the exact STEP B-rep reader. Requires cadmpeg 0.6.12 or newer on PATH, or
+   * `KERNELCAD_CADMPEG_BIN` set to its executable. Only `.sldprt` parts are
+   * accepted; assemblies and other native CAD formats are refused.
+   * `opts.solid` selects one zero-based body from a multi-solid part. This
+   * translates geometry, not the source feature history; invalid or
+   * non-solid output fails without a mesh fallback.
+   */
+  fromNativeCAD(path: string, opts?: FromNativeCADOptions): Promise<Shape>;
   /**
    * Import an OCCT native BREP file. Exact analytic surfaces + full topology
    * (no schema translation, no tessellation) — the result is a true B-rep

@@ -44,7 +44,7 @@ export const CLI_SANDBOX_ARGS: Readonly<Record<string, CliSandboxSpec>> = {
   'dynamics run': { args: { scenario: 'read' } },
   evaluate: { args: { file: 'read' }, options: { baseline: 'read', traceOut: 'write' } },
   export: { args: { file: 'read' }, options: { out: 'write', connectorManifest: 'write' } },
-  'import-step': { args: { 'input.step': 'read' }, options: { out: 'write' } },
+  'import-step': { args: { 'input.cad': 'read' }, options: { out: 'write' } },
   'inspect step': { args: { file: 'read' } },
   'inspect continuity': { args: { file: 'read' } },
   'inspect curvature': { args: { file: 'read' } },

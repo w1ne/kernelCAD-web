@@ -127,7 +127,7 @@ modes keep working:
 
 | Refused mode | Offline equivalent |
 | --- | --- |
-| `import_step` `url` / `upload` | `content_base64`, or a file in the workspace with `kernelcad import-step` |
+| `import_step` `url` / `upload` | `content_base64`, or a STEP/STL/`.sldprt` file in the workspace with `kernelcad import-step` (`.sldprt` needs local cadmpeg 0.6.12+) |
 | `fetch_part` / `find_part` `partsBaseUrl`, `fetch_part` `model.url` | The bundled catalog, or `lib.fromSTEP('vendor/part.step')` from the workspace |
 | `trace_from_image` with an `http(s)` image | A workspace path or a `data:` URL |
 | `render_preview` / `kernelcad render --base-url`, URL `environment` | The bundled player and HDRI presets |

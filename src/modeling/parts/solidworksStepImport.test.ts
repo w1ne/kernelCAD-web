@@ -203,8 +203,12 @@ describe('SolidWorks STEP import', () => {
         await api.lib.fromSTEP(path);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        expect(message).toMatch(/AP214|AP242/);
-        expect(message).toMatch(/solid bodies/);
+        if (name === 'cube.sldprt') {
+          expect(message).toContain('lib.fromNativeCAD');
+        } else {
+          expect(message).toMatch(/AP214|AP242/);
+          expect(message).toMatch(/solid bodies/);
+        }
         expect(message).not.toMatch(/replicad failed|Unresolved Reference|Failed to load STEP/);
       }
     }

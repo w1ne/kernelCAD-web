@@ -128,7 +128,7 @@ Finish once, after the booleans: a boss or rib merged into a body BEFORE `.finis
 
 ## Standard parts and vendor geometry
 
-Use `lib.fromSTEP(...)` for off-the-shelf components whenever physical fit matters:
+Use `lib.fromSTEP(...)` for off-the-shelf components whenever physical fit matters. For a native SolidWorks part, `lib.fromNativeCAD(...)` is the local exact-B-rep path; install cadmpeg 0.6.12 or newer and expect geometry only, with no feature history or PMI:
 
 - Good candidates: motors, servos, bearings, shafts, fasteners, hinges, sensors, PCBs, connectors, rails, and purchased enclosures.
 - Store or reference the vendor STEP file deliberately; name the source, version, and license/terms in nearby metadata or README when the file is part of a demo/portfolio bundle.
