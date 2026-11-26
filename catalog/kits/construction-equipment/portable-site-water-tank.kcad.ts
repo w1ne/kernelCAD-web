@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: CC0-1.0
 // Skid-mounted site-water scene prop with a moulded fill neck, separate screw
-// cap and drain valve. The polyethylene shell, polypropylene cap and galvanised
-// steel support distinguish the vessel from painted site equipment.
+// cap and side outlet valve. The polyethylene shell, polypropylene cap and
+// galvanised steel support distinguish the vessel from painted site equipment.
 meta({
   name: "portable-site-water-tank",
   license: 'CC0-1.0',
   title: "Portable site water tank",
-  description: "Skid-mounted site water tank with a moulded fill neck, screw cap and drain valve. Material controls: polyethylene shell, polypropylene filler cap, galvanised skid steel; siteBlue and weatheredPolyethylene presets.",
+  description: "Skid-mounted site water tank with a moulded fill neck, screw cap and side outlet valve. Material controls: polyethylene shell, polypropylene filler cap, galvanised skid steel; siteBlue and weatheredPolyethylene presets.",
   tags: ['construction equipment', 'roadworks', 'jobsite', 'low poly', 'CC0'],
   kit: 'construction-equipment',
   category: 'prop',
