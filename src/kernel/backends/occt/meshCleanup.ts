@@ -147,8 +147,15 @@ class CleanupState {
   readonly V: Float64Array;
   readonly T: Int32Array;
   readonly alive: Uint8Array;
-  /** Triangles around each vertex (may hold dead entries; filtered on read). */
-  readonly star: number[][];
+  /** Triangles around each vertex (may hold dead entries; filtered on read),
+   *  in flat CSR form: vertex v owns starData[starStart[v], starStart[v + 1])
+   *  and uses its first starLen[v] entries. A per-vertex `number[]` cost
+   *  ~100 MB of heap on a 644k-triangle export (#1773). A vertex that
+   *  outgrows its slot moves to `starOverflow` and gets starLen -1. */
+  readonly starStart: Int32Array;
+  readonly starLen: Int32Array;
+  readonly starData: Int32Array;
+  readonly starOverflow = new Map<number, number[]>();
   readonly scale: number;
   /** Preserve the exact mesh envelope when merging vertices. */
   readonly min: Float64Array;
@@ -159,8 +166,18 @@ class CleanupState {
     this.T = Int32Array.from(mesh.triangles);
     const nt = this.T.length / 3;
     this.alive = new Uint8Array(nt).fill(1);
-    this.star = Array.from({ length: this.V.length / 3 }, () => [] as number[]);
-    for (let t = 0; t < nt; t++) for (let k = 0; k < 3; k++) this.star[this.T[3 * t + k]].push(t);
+    const nv = this.V.length / 3;
+    this.starStart = new Int32Array(nv + 1);
+    this.starLen = new Int32Array(nv);
+    this.starData = new Int32Array(this.T.length);
+    for (let i = 0; i < this.T.length; i++) this.starStart[this.T[i] + 1]++;
+    for (let v = 0; v < nv; v++) this.starStart[v + 1] += this.starStart[v];
+    for (let t = 0; t < nt; t++) {
+      for (let k = 0; k < 3; k++) {
+        const v = this.T[3 * t + k];
+        this.starData[this.starStart[v] + this.starLen[v]++] = t;
+      }
+    }
     let s = 0;
     this.min = new Float64Array([Infinity, Infinity, Infinity]);
     this.max = new Float64Array([-Infinity, -Infinity, -Infinity]);
@@ -174,18 +191,50 @@ class CleanupState {
     this.scale = s;
   }
 
-  liveStar(v: number): number[] {
+  liveStar(v: number): Star {
     // Prune stale triangle IDs in place. Mesh cleanup repeatedly visits
     // adjacent stars, and .filter() allocated millions of short arrays on
     // dense exports even when no vertex was eligible to collapse.
-    const list = this.star[v];
+    const list = this.rawStar(v);
     let length = 0;
     for (let i = 0; i < list.length; i++) {
       const t = list[i];
       if (this.alive[t] === 1 && this.hasVertex(t, v)) list[length++] = t;
     }
-    list.length = length;
-    return list;
+    if (Array.isArray(list)) {
+      list.length = length;
+      return list;
+    }
+    this.starLen[v] = length;
+    return list.subarray(0, length);
+  }
+
+  /** v's star entries, stale ones included. */
+  rawStar(v: number): Star {
+    const n = this.starLen[v];
+    if (n < 0) return this.starOverflow.get(v)!;
+    const start = this.starStart[v];
+    return this.starData.subarray(start, start + n);
+  }
+
+  pushStar(v: number, t: number): void {
+    const n = this.starLen[v];
+    if (n < 0) {
+      this.starOverflow.get(v)!.push(t);
+    } else if (this.starStart[v] + n < this.starStart[v + 1]) {
+      this.starData[this.starStart[v] + n] = t;
+      this.starLen[v] = n + 1;
+    } else {
+      const list = Array.from(this.rawStar(v));
+      list.push(t);
+      this.starOverflow.set(v, list);
+      this.starLen[v] = -1;
+    }
+  }
+
+  clearStar(v: number): void {
+    this.starOverflow.delete(v);
+    this.starLen[v] = 0;
   }
 
   hasVertex(t: number, v: number): boolean {
@@ -250,7 +299,7 @@ class CleanupState {
     return dx * dx + dy * dy + dz * dz;
   }
 
-  ring(v: number, star: number[]): Set<number> {
+  ring(v: number, star: Star): Set<number> {
     const r = new Set<number>();
     for (const t of star) for (let k = 0; k < 3; k++) { const x = this.T[3 * t + k]; if (x !== v) r.add(x); }
     return r;
@@ -291,7 +340,7 @@ class CleanupState {
   }
 
   canCollapse(
-    v: number, u: number, star: number[], ringV: Set<number>, planeTolerance: number,
+    v: number, u: number, star: Star, ringV: Set<number>, planeTolerance: number,
     nOld: Float64Array, nNew: Float64Array,
   ): boolean {
     // A topological collapse must not erase an extreme tip and shrink the
@@ -357,7 +406,7 @@ class CleanupState {
     return !(qNew < 1e-3 && qNew < this.quality(a, b, c));
   }
 
-  collapse(v: number, u: number, star: number[]): void {
+  collapse(v: number, u: number, star: Star): void {
     for (const t of star) {
       const i = 3 * t;
       if (this.T[i] === u || this.T[i + 1] === u || this.T[i + 2] === u) {
@@ -365,14 +414,14 @@ class CleanupState {
         continue;
       }
       for (let k = 0; k < 3; k++) if (this.T[i + k] === v) this.T[i + k] = u;
-      this.star[u].push(t);
+      this.pushStar(u, t);
     }
-    this.star[v] = [];
+    this.clearStar(v);
   }
 
   /** The live triangle holding the directed edge a→b, or -1 (at most one when manifold). */
   triangleWithEdge(a: number, b: number): number {
-    const list = this.star[a];
+    const list = this.rawStar(a);
     for (let n = 0; n < list.length; n++) {
       const t = list[n];
       if (!this.alive[t]) continue;
@@ -440,8 +489,8 @@ class CleanupState {
       return null;
     }
     // Star bookkeeping: t gains q, s gains c (stale entries are skipped on read).
-    this.star[q].push(t);
-    this.star[c].push(s);
+    this.pushStar(q, t);
+    this.pushStar(c, s);
     return [t, s, this.triangleWithEdge(a, c), this.triangleWithEdge(c, b), this.triangleWithEdge(b, q), this.triangleWithEdge(q, a)];
   }
 
@@ -578,6 +627,9 @@ class CleanupState {
     triangles.length = triangleIndexCount;
   }
 }
+
+/** A vertex's incident triangles: a view into the CSR buffer, or an overflow list. */
+type Star = Int32Array | number[];
 
 const SCRATCH_N = new Float64Array(3);
 const SCRATCH_A = new Float64Array(3);
