@@ -81,7 +81,7 @@ def draw_frame(frame: int, evidence: dict, fonts_by_name: dict[str, ImageFont.Fr
 
     write_text(draw, (58, 30), "kernelCAD / closed-loop swept collision", title, PRIMARY)
     write_text(draw, (60, 80), "LOCAL ENGINE REPLAY   ·   four-bar crank-rocker   ·   BREP cutoff report", small, SECONDARY)
-    write_text(draw, (60, 100), "check_swept_collision · joint=crank · range=[120,200,2]", small, ACCENT)
+    write_text(draw, (60, 100), "swept-collision result · joint=crank · range=[120,200,2]", small, ACCENT)
 
     draw.rounded_rectangle((52, 120, 816, 605), radius=16, fill=PANEL, outline=GRID, width=2)
     draw.rounded_rectangle((838, 120, 1228, 605), radius=16, fill=PANEL, outline=GRID, width=2)
