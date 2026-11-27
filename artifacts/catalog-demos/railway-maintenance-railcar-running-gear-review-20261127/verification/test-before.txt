@@ -1,0 +1,5 @@
+Original source (temporary copy of the kit under /tmp; repository file not swapped).
+Run 1, full test: AssertionError: expected [ 'scale', 'railSteel', ...(3) ] to deeply equal [ 'scale', 'railSteel', ...(4) ] (no glass control)
+Run 2, control assertion removed: AssertionError: two wheels on one rail: expected 4 to be 2
+ Test Files  1 failed (1)
+      Tests  1 failed (1)

@@ -1,0 +1,1 @@
+railway/maintenance-railcar: 2472 tris (preview label; npx tsx scripts/renderCatalogPreviews.ts maintenance-railcar)
