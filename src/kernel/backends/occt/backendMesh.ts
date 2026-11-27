@@ -233,8 +233,11 @@ function meshFacesIndividually(
  *  boxed `number[]` grown by `push` plus its doubling copies dominated the
  *  evaluator's peak memory on dense parts. */
 class GrowableFloat64 {
-  data = new Float64Array(3 * 1024);
+  data: Float64Array;
   length = 0;
+  constructor(capacity = 3 * 1024) {
+    this.data = new Float64Array(capacity);
+  }
   reserve(extra: number): void {
     const need = this.length + extra;
     if (need <= this.data.length) return;
@@ -245,8 +248,11 @@ class GrowableFloat64 {
 }
 
 class GrowableUint32 {
-  data = new Uint32Array(3 * 1024);
+  data: Uint32Array;
   length = 0;
+  constructor(capacity = 3 * 1024) {
+    this.data = new Uint32Array(capacity);
+  }
   reserve(extra: number): void {
     const need = this.length + extra;
     if (need <= this.data.length) return;
@@ -324,6 +330,30 @@ function appendFaceTriangulation(
   }
 }
 
+/** Node and triangle totals of the faces' cached triangulations. */
+function countFaceTriangulations(
+  oc: ReturnType<typeof getOC>,
+  shape: replicad.Shape3D,
+): { nodes: number; triangles: number } {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const o = oc as any;
+  let nodes = 0;
+  let triangles = 0;
+  for (const face of shape.faces) {
+    const location = new o.TopLoc_Location_1();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handle = o.BRep_Tool.Triangulation((face as any).wrapped, location, 0);
+    if (!handle.IsNull()) {
+      const tri = handle.get();
+      nodes += tri.NbNodes() as number;
+      triangles += tri.NbTriangles() as number;
+    }
+    handle.delete();
+    location.delete();
+  }
+  return { nodes, triangles };
+}
+
 function readFaceTriangulations(
   oc: ReturnType<typeof getOC>,
   shape: replicad.Shape3D,
@@ -333,8 +363,13 @@ function readFaceTriangulations(
   // replicad's `Shape3D.mesh()` minus the redundant _mesh() call that
   // would overwrite our relative-mode triangulation with the absolute-mode
   // default.
-  const rawTriangles = new GrowableUint32();
-  const rawVertices = new GrowableFloat64();
+  // Size the buffers from the cached triangulations first. Doubling from a
+  // small buffer left ~50 MB of dead typed arrays awaiting GC on a
+  // 644k-triangle part, against ~16 MB of data (#1773). Faces re-meshed
+  // below still grow the buffers.
+  const size = countFaceTriangulations(oc, shape);
+  const rawTriangles = new GrowableUint32(Math.max(3 * 1024, 3 * size.triangles));
+  const rawVertices = new GrowableFloat64(Math.max(3 * 1024, 3 * size.nodes));
   for (const face of shape.faces) {
     if (appendFaceTriangulation(oc, face, rawVertices, rawTriangles)) continue;
     // The whole-shape relative-deflection pass can leave individual faces

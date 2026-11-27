@@ -84,7 +84,9 @@ describe('STL export peak memory (#1585)', () => {
     expect(bytes.byteLength).toBe(84 + triangles * 50);
     expect(new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(80, true)).toBe(triangles);
     // Three runs each on one machine: 459 to 755 MB before the fix, 83 to
-    // 197 MB after.
+    // 197 MB after. #1773: mesh cleanup later raised it to 249 to 280 MB and
+    // the budget flaked on CI; pre-sized read-back buffers and flat cleanup
+    // stars bring it to 218 to 228 MB (9 of 10 runs).
     expect(grewMb, `peak RSS grew ${grewMb.toFixed(0)} MB for ${triangles} triangles`).toBeLessThan(300);
   });
 });

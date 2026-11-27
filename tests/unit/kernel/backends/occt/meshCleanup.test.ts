@@ -40,6 +40,20 @@ describe('cleanupExportMesh', () => {
     expect([...zs].sort((a, b) => a - b)).toEqual([0, 10]);
   });
 
+  it('keeps the star of a vertex that absorbs many collapses (#1773)', () => {
+    // 40 rows: corner vertices take triangles from many collapsed rows, so a
+    // star outgrows its initial slot and then grows again.
+    const mesh = splitWallBox(40);
+    const stats = cleanupExportMesh(mesh);
+    expect(stats.applied).toBe(true);
+    expect(stats.collapsed).toBe(39 * 4);
+    expect(mesh.triangles.length / 3).toBe(12);
+    expect(mesh.vertices.length / 3).toBe(8);
+    const zs = new Set<number>();
+    for (let i = 2; i < mesh.vertices.length; i += 3) zs.add(mesh.vertices[i]);
+    expect([...zs].sort((a, b) => a - b)).toEqual([0, 10]);
+  });
+
   it('preserves unreferenced geometric envelope points when no vertex collapses', () => {
     const mesh = splitWallBox(1);
     // A BRep tessellator can retain an exact surface extremum even when
