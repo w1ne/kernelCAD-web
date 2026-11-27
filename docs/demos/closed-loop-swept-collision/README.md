@@ -1,8 +1,10 @@
 # Closed-loop swept-collision overlap report
 
-This bundle demonstrates the native `checkSweptCollision` workflow on the
-four-bar cookbook fixture. The `verification.json` result is captured by the
-local `check_swept_collision` MCP-tool wrapper from an actual BREP sweep.
+This bundle demonstrates swept-collision verification on the four-bar cookbook
+fixture. The user-facing MCP entry point is `verify` with
+`check: 'swept-collision'`. The `verification.json` result records a local
+in-process replay: the capture script calls `checkSweptCollisionTool` directly
+against an actual BREP sweep.
 
 The MP4 uses a 2D closed-form pose illustration to show the solved four-bar
 path. The reported overlap interval, cutoff, worst volume, and unknown count
@@ -17,7 +19,7 @@ From the repository root:
 sh docs/demos/closed-loop-swept-collision/render-demo.sh
 ```
 
-The capture runs `check_swept_collision` on
+The capture calls `checkSweptCollisionTool` on
 `src/agent/skills/kernelcad-kinematic/cookbook/09-four-bar-loop-swept.kcad.ts`
 with `joint: crank`, `range: [120, 200, 2]`, and the default 0.01 mm³ cutoff.
 The renderer reads `verification.json` and creates the H.264 video at 1280×720,

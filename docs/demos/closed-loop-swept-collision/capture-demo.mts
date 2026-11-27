@@ -34,7 +34,8 @@ const evidence = {
     sha256: createHash('sha256').update(source).digest('hex'),
   },
   request: {
-    tool: 'check_swept_collision',
+    kind: 'local_source_wrapper',
+    entrypoint: 'checkSweptCollisionTool',
     joint: 'crank',
     range: [120, 200, 2],
   },
