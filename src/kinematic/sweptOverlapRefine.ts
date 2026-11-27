@@ -52,6 +52,7 @@ export interface WalkSample<S> extends PairState {
 export type MeasureAt<S> = (value: number, seed: S) => Promise<{ state: PairState; seed: S } | undefined>;
 
 export const DEFAULT_REFINE_ROUNDS = 6;
+export const DEFAULT_COLLISION_TOLERANCE_MM3 = 0.01;
 
 export function pairKey(a: string, b: string): string {
   return a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`;
@@ -80,6 +81,7 @@ export async function refineWalk<S>(
   samples: ReadonlyArray<WalkSample<S>>,
   measure: MeasureAt<S>,
   rounds: number = DEFAULT_REFINE_ROUNDS,
+  collisionToleranceMm3: number = DEFAULT_COLLISION_TOLERANCE_MM3,
 ): Promise<SweptWalkReport> {
   const fixed = fixedPairs(samples);
   if (fixed.keys.size > 0) samples = samples.map((s) => withoutPairs(s, fixed.keys));
@@ -122,6 +124,7 @@ export async function refineWalk<S>(
     from: values[0] ?? Number.NaN,
     to: values[values.length - 1] ?? Number.NaN,
     step,
+    collisionToleranceMm3,
     samples: samples.length,
     refineRounds: rounds,
     refinementSamples,
@@ -129,7 +132,8 @@ export async function refineWalk<S>(
     overlaps,
     unknown,
     clearNote:
-      `Pairs not listed in overlaps were clear at every position checked (step ${step}). ` +
+      `Overlap state uses volume > ${collisionToleranceMm3} mm³; reported resolution is the final bisection bracket at that threshold, not a bound on sub-threshold geometric slivers. ` +
+      `Pairs not listed in overlaps did not exceed the cutoff at any position checked (step ${step}). ` +
       'An overlap shorter than one step with no state change at a sample can be missed; ' +
       'positions in unknown were not measured.' +
       (fixed.keys.size > 0
