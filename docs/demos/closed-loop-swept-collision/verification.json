@@ -1,0 +1,279 @@
+{
+  "evidenceKind": "local_in_process_engine_replay",
+  "createdAt": "2026-11-27T03:28:20.058Z",
+  "repoHead": "996b3e001ab073aab414b23a82d916bd623d13f4",
+  "source": {
+    "path": "src/agent/skills/kernelcad-kinematic/cookbook/09-four-bar-loop-swept.kcad.ts",
+    "sha256": "d05cc83b70361ffd02b9e8b600e1465c4aa8d5b5aa5907579da16e6d1720e7b4"
+  },
+  "request": {
+    "tool": "check_swept_collision",
+    "joint": "crank",
+    "range": [
+      120,
+      200,
+      2
+    ]
+  },
+  "result": {
+    "ok": false,
+    "source": "local",
+    "posesSampled": 41,
+    "collidingPoses": [
+      {
+        "pose": {
+          "crank": 138
+        },
+        "contacts": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "volumeMm3": 6.118235866560262
+          }
+        ]
+      },
+      {
+        "pose": {
+          "crank": 140
+        },
+        "contacts": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "volumeMm3": 39.356000649241366
+          }
+        ]
+      },
+      {
+        "pose": {
+          "crank": 142
+        },
+        "contacts": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "volumeMm3": 74.06854964768077
+          }
+        ]
+      },
+      {
+        "pose": {
+          "crank": 144
+        },
+        "contacts": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "volumeMm3": 105.1352320967892
+          }
+        ]
+      },
+      {
+        "pose": {
+          "crank": 146
+        },
+        "contacts": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "volumeMm3": 132.65604645119578
+          }
+        ]
+      },
+      {
+        "pose": {
+          "crank": 148
+        },
+        "contacts": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "volumeMm3": 156.7339272491184
+          }
+        ]
+      },
+      {
+        "pose": {
+          "crank": 150
+        },
+        "contacts": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "volumeMm3": 177.04837143755074
+          }
+        ]
+      },
+      {
+        "pose": {
+          "crank": 152
+        },
+        "contacts": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "volumeMm3": 173.81356901093392
+          }
+        ]
+      },
+      {
+        "pose": {
+          "crank": 154
+        },
+        "contacts": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "volumeMm3": 142.6112516269357
+          }
+        ]
+      },
+      {
+        "pose": {
+          "crank": 156
+        },
+        "contacts": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "volumeMm3": 111.76944468829508
+          }
+        ]
+      },
+      {
+        "pose": {
+          "crank": 158
+        },
+        "contacts": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "volumeMm3": 84.07936831216463
+          }
+        ]
+      },
+      {
+        "pose": {
+          "crank": 160
+        },
+        "contacts": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "volumeMm3": 59.42619399702252
+          }
+        ]
+      },
+      {
+        "pose": {
+          "crank": 162
+        },
+        "contacts": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "volumeMm3": 37.692149652833805
+          }
+        ]
+      },
+      {
+        "pose": {
+          "crank": 164
+        },
+        "contacts": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "volumeMm3": 18.756519694735506
+          }
+        ]
+      },
+      {
+        "pose": {
+          "crank": 166
+        },
+        "contacts": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "volumeMm3": 3.526549366452705
+          }
+        ]
+      }
+    ],
+    "walks": [
+      {
+        "joint": "crank",
+        "from": 120,
+        "to": 200,
+        "step": 2,
+        "collisionToleranceMm3": 0.01,
+        "samples": 41,
+        "refineRounds": 6,
+        "refinementSamples": 12,
+        "movingPairs": 9,
+        "fixedPairs": 1,
+        "overlaps": [
+          {
+            "partA": "rocker",
+            "partB": "stop",
+            "stretches": [
+              {
+                "start": 136.90625,
+                "end": 167.34375,
+                "startResolution": 0.03125,
+                "endResolution": 0.03125,
+                "startsAtFirstSample": false,
+                "endsAtLastSample": false
+              }
+            ],
+            "worstVolumeMm3": 177.04837143755074,
+            "worstPose": {
+              "crank": 150
+            },
+            "witness": [
+              72.14442730920254,
+              -3,
+              73.67589494380047
+            ],
+            "overlapBounds": {
+              "min": [
+                68.28885461840508,
+                -6,
+                71
+              ],
+              "max": [
+                76,
+                0,
+                76.35178988760093
+              ]
+            }
+          }
+        ],
+        "unknown": [],
+        "clearNote": "Overlap state uses volume > 0.01 mm³; reported resolution is the final bisection bracket at that threshold, not a bound on sub-threshold geometric slivers. Pairs not listed in overlaps did not exceed the cutoff at any position checked (step 2). An overlap shorter than one step with no state change at a sample can be missed; positions in unknown were not measured. 1 pair(s) keep their relative pose along the walk and are left to the static interference check."
+      }
+    ],
+    "diagnostics": [
+      {
+        "code": "kinematic.collision.swept",
+        "severity": "error",
+        "message": "Swept-collision sweep found 15 pose(s) at which two parts interpenetrate (first: rocker ↔ stop at crank=138). Inspect result.collidingPoses for the full list.",
+        "hint": "Swept-collision found one or more poses at which two parts interpenetrate. Inspect result.collidingPoses[] for (pose, contacts[]) pairs; narrow joint limits, reshape the colliding parts, or insert clearance and re-run checkSweptCollision.",
+        "nextAction": {
+          "kind": "rewrite-feature",
+          "guidance": "narrow joint limits or reshape parts to eliminate the listed colliding poses"
+        },
+        "source": "local",
+        "poseContext": {
+          "crank": 138
+        },
+        "element": "crank"
+      }
+    ]
+  },
+  "scope": {
+    "deployedBehaviorVerified": false,
+    "hardwareAcceptance": false
+  }
+}
