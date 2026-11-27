@@ -1,0 +1,15 @@
+{
+  "video": "review-demo.mp4",
+  "codec": "h264",
+  "pixelFormat": "yuv420p",
+  "width": 1280,
+  "height": 720,
+  "durationSeconds": 15.042,
+  "representativeFramesSeconds": [
+    1,
+    6,
+    11
+  ],
+  "contactSheet": "contact-sheet.png",
+  "passed": true
+}

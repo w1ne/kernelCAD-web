@@ -1,0 +1,21 @@
+{
+  "asset": "medical/examination-light",
+  "sourceBefore": "before/examination-light.kcad.ts",
+  "sourceAfter": "after/examination-light.kcad.ts",
+  "renderedBefore": "before/examination-light.png",
+  "renderedAfter": "after/examination-light.png",
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts examination-light",
+  "indexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "geometryTest": "npx vitest run tests/integration/catalog/examinationLightConnectivity.test.ts",
+  "inspectionCommand": "PW_CDP_URL=http://127.0.0.1:9223 timeout 180s npx tsx src/agent/cli/index.ts render inspect <source> <outDir> --channels rgb --views front,right,top,iso --no-watermark --screenshot-timeout 45000",
+  "inspectionResult": "Playwright timed out attaching to both existing CDP sessions; no new browser was launched.",
+  "videoCommand": "python3 artifacts/catalog-demos/medical-examination-light-supports-review-20261127/video/make_demo.py",
+  "video": {
+    "size": "1280x720",
+    "fps": 24,
+    "durationSeconds": 15,
+    "codec": "H.264 / yuv420p",
+    "slides": ["Before and after previews", "Support geometry changes", "Local verification and limits"]
+  },
+  "claimBoundary": "Local CAD source and software preview evidence only; not deployed or hardware-accepted."
+}
