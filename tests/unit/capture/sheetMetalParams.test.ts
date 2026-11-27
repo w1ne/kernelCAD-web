@@ -6,6 +6,7 @@ import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { flattenPatternWithHoles } from '../../../src/modeling/sheetMetalFlatPattern';
+import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
 import type { FeatureRecord } from '../../../src/shared/intent/featureRecord';
 import type { ParamTable } from '../../../src/shared/runtime/paramTable';
 
@@ -247,5 +248,26 @@ describe('param-driven sheet-metal parts lower and re-validate', () => {
     const moved = await lower(run.records, run.session.paramTable);
     const movedRegion = await flattenPatternWithHoles(run.records, undefined, moved.shapes, run.session.paramTable);
     expect(movedRegion.bendLines[0]!.start[0]).toBeCloseTo(20, 6);
+  }, 120000);
+
+  it('evaluates Shape.bend with param() for radius via evaluateScriptTool (#1818)', async () => {
+    const build = (radiusMm: number) => `
+      const thickness = param('thickness', 2.5, { min: 1.0, max: 5.0, step: 0.5 });
+      const bendAngle = param('bendAngle', 90, { min: 30, max: 135, step: 5 });
+      const bendRadius = param('bendRadius', ${radiusMm}, { min: 1.0, max: 6.0, step: 0.5 });
+      const profile = path().moveTo(0, 0).lineTo(130, 0).lineTo(130, 84).lineTo(0, 84).close();
+      const blank = sheetMetal(profile, { thickness, kFactor: 0.38 });
+      return blank.bend({ atX: 50 }, bendAngle, bendRadius);
+    `;
+    const r3 = await evaluateScriptTool({ code: build(3.0) });
+    expect(r3.ok).toBe(true);
+    expect(r3.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+
+    const r6 = await evaluateScriptTool({ code: build(6.0) });
+    expect(r6.ok).toBe(true);
+    expect(r6.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    expect(r3.sceneSummary.size).not.toBeNull();
+    expect(r6.sceneSummary.size).not.toBeNull();
+    expect(r6.sceneSummary.size).not.toEqual(r3.sceneSummary.size);
   }, 120000);
 });
