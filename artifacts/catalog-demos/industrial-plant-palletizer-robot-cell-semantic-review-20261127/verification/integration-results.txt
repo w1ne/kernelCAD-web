@@ -1,0 +1,28 @@
+Catalog asset verification — 2026-11-27
+
+Focused target regression
+Command: KCAD_PALLETIZER_EVIDENCE_DIR=<bundle>/verification npx vitest run tests/integration/catalog/palletizerRobotCellFloorMaterial.test.ts
+Result: 1 file / 1 test passed.
+
+Full catalog integration, default concurrency
+Command: npx vitest run tests/integration/catalog/
+Result: 223 files / 375 tests passed; 2 files / 2 tests timed out at 60 seconds.
+Timed-out preview checks: dinRailEndStopFidelity.test.ts and hoseBarbFidelity.test.ts.
+
+Isolated recheck
+Command: npx vitest run tests/integration/catalog/dinRailEndStopFidelity.test.ts tests/integration/catalog/hoseBarbFidelity.test.ts
+Result: 2 files / 10 tests passed in 12.99 seconds.
+
+Full catalog integration, four workers
+Command: npx vitest run tests/integration/catalog/ --maxWorkers=4
+Result: 225 files / 377 tests passed. catalogIndex.test.ts passed in 680.648 seconds.
+
+Other checks
+- ESLint: npx eslint catalog/kits/industrial-plant/ tests/integration/catalog/palletizerRobotCellFloorMaterial.test.ts — exit 0.
+- Preview: npx tsx scripts/renderCatalogPreviews.ts palletizer-robot-cell — 7,777 triangles.
+- Index: npx tsx scripts/buildAssetCatalog.ts; verifier found 2,402 fresh source hashes and preview references, unchanged IDs/count, and one changed row.
+- Quality gate: selected asset passes with four material-named controls and one presets block. Six other failing sources match origin/develop; catalog rate is 2,396/2,402 (99.75%).
+- Local pages: 2,402 asset pages generated; palletizer detail page and preview verification passed.
+- Demo: H.264, 1280x720, 18 seconds, six decoded frames; contact sheet and full-size frames visually inspected.
+
+The first full-suite attempt and isolated recheck are retained here because the default run's timeouts are part of the evidence. The full four-worker run passed all catalog integration files and tests.

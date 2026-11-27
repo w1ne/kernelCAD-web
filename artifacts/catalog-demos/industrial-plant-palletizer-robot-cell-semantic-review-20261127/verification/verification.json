@@ -1,0 +1,31 @@
+{
+  "targetChecksPass": true,
+  "assetIdsAndCountsUnchanged": true,
+  "asset": {
+    "id": "industrial-plant/palletizer-robot-cell",
+    "triangles": 7777,
+    "triangleBudget": 12000,
+    "materialNamedControls": ["concrete", "steel", "safetyPaint", "carton"],
+    "presets": ["weathered", "highVisibility"]
+  },
+  "checks": {
+    "focusedTest": "1 file / 1 test passed",
+    "integration": "225 files / 377 tests passed with --maxWorkers=4; catalogIndex.test.ts passed",
+    "integrationDefaultAttempt": "223 files passed; DIN rail end stop and hose barb preview checks timed out at 60 seconds",
+    "isolatedSlowPreviewRecheck": "2 files / 10 tests passed",
+    "eslint": "passed",
+    "catalogQuality": "target passes; 2396/2402 (99.75%); all six remaining failing sources match origin/develop",
+    "catalogIndex": "2402 source hashes and preview references passed; 2402 IDs unchanged; one row changed",
+    "localPage": "passed; rendered preview matches source render"
+  },
+  "qualityGate": {
+    "targetPass": true,
+    "industrialPlant": "59/60; roller-conveyor-line is the unchanged pre-existing failure",
+    "catalog": "2396/2402 (99.75%); six thin assets match origin/develop"
+  },
+  "limits": [
+    "The model is a static display pose.",
+    "The local branch is not deployed.",
+    "No motion simulation, engineering performance, manufacturing suitability, or physical acceptance is claimed."
+  ]
+}

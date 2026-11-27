@@ -85,12 +85,17 @@ records the five-preview ledger, before/after source and preview, GLB regression
 catalog index refresh, local checks, and inspected MP4. No geometry or asset
 count changed, and the branch is not deployed.
 
-The Nov 17 palletizer-cell review gives the floor slab its own concrete color
-control; structural steel and safety paint remain separate. Geometry is
-unchanged at 254 triangles under a 1,400-triangle budget. The
-[palletizer-cell handoff](../../../artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/README.md)
-records the five-preview ledger, before/after images, GLB regression, catalog
-index refresh, local checks, and inspected MP4. The branch is not deployed.
+The Nov 27 palletizer-cell review replaces the original slab-like scene with a
+static guarded work cell: posed six-axis robot, open mesh fencing and gate,
+crosswise roller infeed, loaded timber pallet, and cartons. Concrete, steel,
+safety paint, and carton colors have separate controls, with weathered and
+high-visibility presets. The model uses a 12,000-triangle budget; it does not
+claim motion, reach, safety, or manufacturing validation. The
+[palletizer-cell handoff](../../../artifacts/catalog-demos/palletizer-robot-cell-semantic-review-20261127/README.md)
+records the five-preview audit, before/after snapshots, GLB regression, catalog
+index refresh, local checks, and inspected MP4. The earlier
+[floor-material review](../../../artifacts/catalog-demos/palletizer-robot-cell-floor-material-review-20261117/README.md)
+is superseded. The branch is not deployed.
 
 The Nov 19 air-compressor review assigns the twelve cooling fins on the two
 finned pump cylinders to the existing cast-iron control, matching the barrel
@@ -140,7 +145,7 @@ fresh catalog index and inspected MP4. The branch is not deployed.
 | `vibratory-feeder` | Vibratory feeder | Vibratory feeder with a wide feed pan, coil supports, drive unit and hopper transition. | scale · steel · safety paint |
 | `weigh-hopper` | Weigh hopper | Batch weigh hopper with a broad upper bin, load-cell supports, tapered rectangular discharge chute and outlet gate. | scale · steel · safety paint · wear liner |
 | `bulk-loading-spout` | Bulk loading spout | Bulk loading spout with a telescoping-looking outlet, overhead frame and dust skirt. | scale · steel · safety paint |
-| `palletizer-robot-cell` | Palletizer robot cell | Palletizing robot cell with a concrete floor slab, six-axis arm, pallet table, access gate and safety fence. | scale · concrete · steel · safety paint |
+| `palletizer-robot-cell` | Palletizer robot cell | Guarded static palletizing cell with an articulated robot, mesh fence and gate, roller infeed, and timber pallet loaded with cartons. | scale · concrete · steel · safety paint · carton |
 | `bridge-crane` | Bridge crane | Double-girder top-running bridge crane in one runway bay at about real size: columns with corbels, runway beams and rails, end trucks, box girders, walkway, crab trolley with hoist drum, rope falls, hook block and pendant. | scale · girder · building · hoist · hook |
 | `gantry-crane` | Gantry crane | Mobile gantry crane with paired portal frames, caster trucks, crossbeam and chain hoist. | scale · steel · safety paint · rubber |
 | `jib-crane` | Jib crane | Floor-mounted jib crane with a base plate, mast, cantilevered boom, brace and chain block. | scale · steel · safety paint |
