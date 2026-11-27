@@ -27,11 +27,14 @@ export function forEachSubShape(oc: any, shape: unknown, type: SubShapeType, vis
     try {
       for (; exp.More(); exp.Next()) {
         const current = exp.Current();
-        const sub = oc.TopoDS[DOWNCAST[type]](current);
         try {
-          if (visit(sub) === false) return;
+          const sub = oc.TopoDS[DOWNCAST[type]](current);
+          try {
+            if (visit(sub) === false) return;
+          } finally {
+            sub.delete();
+          }
         } finally {
-          sub.delete();
           current.delete();
         }
       }
