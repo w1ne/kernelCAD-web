@@ -43,9 +43,15 @@ for (const side of [-1, 1]) {
   p.part('base-leg-y-' + side, b(0, side * 58, 6, 20, 126, 12).color(powderCoatedSteel).scale(overallScale));
   p.part('caster-' + side, c(side * 112, 0, 0, 22, 14, 8).color(rubber).scale(overallScale));
 }
-p.part('column', c(0, 0, 14, 780, 12, 10).color(powderCoatedSteel).scale(overallScale));
+// The column enters the arm instead of ending 7 mm below it.
+p.part('column', c(0, 0, 14, 804, 12, 10).color(powderCoatedSteel).scale(overallScale));
 p.part('arm', b(115, 0, 810, 250, 18, 18).color(powderCoatedSteel).scale(overallScale));
-p.part('lamp-neck', c(0, 0, 0, 80, 10, 10).rotate([0, 1, 0], 65).translate(240, 0, 810).color(powderCoatedSteel).scale(overallScale));
+// Aim the neck from the arm end into the centre of the lamp housing.
+const neckRun = 30;
+const neckRise = 57;
+const neckLength = Math.hypot(neckRun, neckRise);
+const neckAngle = Math.atan2(neckRun, neckRise) * 180 / Math.PI;
+p.part('lamp-neck', c(0, 0, 0, neckLength, 10, 10).rotate([0, 1, 0], neckAngle).translate(240, 0, 810).color(powderCoatedSteel).scale(overallScale));
 p.part('head', c(270, 0, 855, 24, 76, 12).color(anodizedAluminum).scale(overallScale));
 p.part('light-face', c(270, 0, 855, 4, 58, 12).color(opalGlass).scale(overallScale));
 
