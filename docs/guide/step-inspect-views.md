@@ -4,7 +4,7 @@
 
 Each image labels the largest visible faces and the longest visible edges. The legend band under the model names at most 18 remaining face ids and 18 remaining edge ids, then a `+N` count. `height` is the model viewport in pixels (default 260). The PNG is 56 px taller than `height`. `width` defaults to 360.
 
-The reply is compact: image paths, a face list, and an edge list. `detail: true` inlines label placements and edge direction. `report.json` stores that full report. A later call with `report_id` or `report_path` and no `file` returns the compact reply unless `detail: true`.
+The reply is compact: image paths, a face list, and an edge list. `detail: true` inlines label placements and edge direction. `report.json` stores that full report. A later call with `report_id` or `report_path` and no `file` returns the compact reply unless `detail: true`. Report retrieval reads the saved inspection snapshot and does not re-import the source file; its `importGeneration` stays tied to the bytes used for that inspection even if the source path has since changed.
 
 ## Selectors belong to this import
 

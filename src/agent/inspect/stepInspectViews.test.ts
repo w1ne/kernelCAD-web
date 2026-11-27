@@ -268,10 +268,12 @@ describe('inspect_step_views on a 30×20×10 box', () => {
     const unknown = await callMcpTool('inspect_step_views', { report_id: 'no-such-report' }) as InspectStepViewsResult;
     expect(unknown.ok).toBe(false);
     expect(unknown.errorCode).toBe('feature.invalid-args');
+    writeFileSync(boxPath, await OcctBackend.box(50, 10, 5, false).exportSTEPAsync());
     const compact = await callMcpTool('inspect_step_views', { report_id: boxViews.report_id }) as InspectStepViewsResult;
     expect(compact.ok).toBe(true);
     expect(compact.full).toBeUndefined();
     expect(compact.faces?.length).toBe(6);
+    expect(compact.importGeneration).toBe(boxViews.importGeneration);
     const detailed = await callMcpTool('inspect_step_views', {
       report_path: boxViews.report_path,
       detail: true,
@@ -280,6 +282,7 @@ describe('inspect_step_views on a 30×20×10 box', () => {
     const fromFile = await callMcpTool('inspect_step_views', { report_path: boxViews.report_path }) as InspectStepViewsResult;
     expect(fromFile.full).toBeUndefined();
     expect(fromFile.images?.length).toBe(4);
+    expect(fromFile.importGeneration).toBe(boxViews.importGeneration);
   });
 });
 
