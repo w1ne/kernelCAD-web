@@ -230422,7 +230422,7 @@
       "id": "maintenance-railcar",
       "kit": "railway",
       "title": "Rail maintenance car",
-      "description": "Compact maintenance railcar with an open service deck, tool cabinet, roof beacon and inspection wheels. Editable material controls: rail and running gear steel, high-visibility paint, painted steel, amber signal glass. Includes weathered and fresh service presets.",
+      "description": "Two-axle track maintenance railcar: a glazed driving cab with windscreen, rear and side windows, side doors with steps and a roof beacon; an open working deck with a tool cabinet, a folded jib crane and handrails; horn guides, a final drive, buffers and coupler hooks at each end, and wheels on both rails. Editable material controls: rail and running gear steel, high-visibility paint, painted steel, amber signal glass, glazing. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -230443,8 +230443,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/maintenance-railcar.kcad.ts",
       "preview": "/assets/railway-maintenance-railcar.png",
-      "sourceSha256": "7a703256b86ad0fb7a934dc84bd168d938f6d1feb8c0ee5161b1722b543c1325",
-      "triangleBudget": 1800,
+      "sourceSha256": "01075c8c58693cf63adfaa0b973e6c6163c3d99e69055a5350f2172a4f20ac6e",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -230458,7 +230458,7 @@
         {
           "name": "railSteel",
           "type": "color",
-          "default": "#626b70",
+          "default": "#3c4245",
           "label": "Rail and running gear steel"
         },
         {
@@ -230478,6 +230478,12 @@
           "type": "color",
           "default": "#efb438",
           "label": "Amber signal glass"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#54a6bb",
+          "label": "Glazing"
         }
       ],
       "presets": {
@@ -230485,55 +230491,148 @@
           "railSteel": "#666a6a",
           "safetyPaint": "#c7a13f",
           "paintedSteel": "#5b6567",
-          "signalAmberGlass": "#d6a53f"
+          "signalAmberGlass": "#d6a53f",
+          "glass": "#5a8f99"
         },
         "freshService": {
           "railSteel": "#56636a",
           "safetyPaint": "#f5c521",
           "paintedSteel": "#b74734",
-          "signalAmberGlass": "#ffc12f"
+          "signalAmberGlass": "#ffc12f",
+          "glass": "#68b9ca"
         }
       },
       "stats": {
-        "triangles": 280,
+        "triangles": 2472,
         "sizeM": [
-          0.95,
-          0.692,
-          0.35
+          1.068,
+          0.654,
+          0.338
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "railSteel",
-          "color": "#626b70",
-          "parts": [
-            "frame",
-            "wheel-left-a",
-            "wheel-left-b",
-            "wheel-right-a",
-            "wheel-right-b"
-          ],
-          "param": "railSteel"
-        },
-        {
           "name": "safetyPaint",
           "color": "#e7b735",
           "parts": [
-            "deck",
+            "solebar-front",
+            "solebar-back",
+            "deck-edge-front",
+            "deck-edge-back",
+            "buffer-beam-a",
+            "buffer-beam-b",
+            "horn-guide-a-front",
+            "horn-guide-a-back",
+            "horn-guide-b-front",
+            "horn-guide-b-back",
             "cab",
-            "cab-roof"
+            "windscreen-pillar",
+            "cab-door-front",
+            "cab-door-back",
+            "crane-pedestal",
+            "crane-boom",
+            "crane-boom-rest",
+            "handrail-post-front--130",
+            "handrail-post-front-50",
+            "handrail-post-front-250",
+            "handrail-post-front-450",
+            "handrail-top-front",
+            "handrail-mid-front",
+            "handrail-post-back--130",
+            "handrail-post-back-50",
+            "handrail-post-back-250",
+            "handrail-post-back-450",
+            "handrail-top-back",
+            "handrail-mid-back",
+            "end-rail-top",
+            "end-rail-mid"
           ],
           "param": "safetyPaint"
+        },
+        {
+          "name": "railSteel",
+          "color": "#3c4245",
+          "parts": [
+            "cross-member--120",
+            "cross-member-120",
+            "deck",
+            "buffer-a-front",
+            "buffer-head-a-front",
+            "buffer-a-back",
+            "buffer-head-a-back",
+            "coupler-hook-a",
+            "buffer-b-front",
+            "buffer-head-b-front",
+            "buffer-b-back",
+            "buffer-head-b-back",
+            "coupler-hook-b",
+            "axle-a",
+            "wheel-a-front",
+            "flange-a-front",
+            "journal-box-a-front",
+            "horn-keeper-a-front",
+            "wheel-a-back",
+            "flange-a-back",
+            "journal-box-a-back",
+            "horn-keeper-a-back",
+            "axle-b",
+            "wheel-b-front",
+            "flange-b-front",
+            "journal-box-b-front",
+            "horn-keeper-b-front",
+            "wheel-b-back",
+            "flange-b-back",
+            "journal-box-b-back",
+            "horn-keeper-b-back",
+            "final-drive-torque-arm",
+            "cab-door-handle-front",
+            "cab-grab-rail-front",
+            "cab-step-front",
+            "cab-step-hanger-front--44",
+            "cab-step-hanger-front-44",
+            "cab-door-handle-back",
+            "cab-grab-rail-back",
+            "cab-step-back",
+            "cab-step-hanger-back--44",
+            "cab-step-hanger-back-44",
+            "beacon-base",
+            "beacon-cap",
+            "tool-cabinet-door-seam",
+            "tool-cabinet-handle--14",
+            "tool-cabinet-handle-14",
+            "crane-slew-ring",
+            "crane-hook-block",
+            "crane-ram"
+          ],
+          "param": "railSteel"
         },
         {
           "name": "paintedSteel",
           "color": "#53646c",
           "parts": [
-            "tool-box"
+            "final-drive",
+            "cab-roof",
+            "cab-gutter",
+            "tool-cabinet"
           ],
           "param": "paintedSteel"
+        },
+        {
+          "name": "glass",
+          "color": "#54a6bb",
+          "parts": [
+            "windscreen",
+            "rear-window",
+            "side-window-front",
+            "cab-door-window-front",
+            "side-window-back",
+            "cab-door-window-back",
+            "headlight-front",
+            "headlight-back"
+          ],
+          "param": "glass"
         },
         {
           "name": "signalAmberGlass",
