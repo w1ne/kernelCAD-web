@@ -228593,7 +228593,7 @@
       "id": "dining-car",
       "kit": "railway",
       "title": "Dining car",
-      "description": "Passenger dining car with window rows, a central galley vent, end doors and wheel bogies. Editable material controls: rail and running gear steel, painted steel, glazing, stainless steel. Includes weathered and fresh service presets.",
+      "description": "Passenger dining car: saloon windows on both sides, a galley end with small high windows, a stainless roof exhaust hood and flue stacks, an arched roof with ventilators, a side entrance door on each side, a glazed end door at each end, a water tank, couplers at sill height and two bogies with wheels on both rails. Editable material controls: rail and running gear steel, painted steel, glazing, stainless steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228614,8 +228614,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/dining-car.kcad.ts",
       "preview": "/assets/railway-dining-car.png",
-      "sourceSha256": "0485e94487a467be8ab11581bf72fc6505bcbbe5353f1f3b15fafb2ce98d82fe",
-      "triangleBudget": 1800,
+      "sourceSha256": "45f100ea90a116fc64b1c6b0afe62d55abde9b6ce0ab99dec843b692c9564af5",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -228629,7 +228629,7 @@
         {
           "name": "railSteel",
           "type": "color",
-          "default": "#626b70",
+          "default": "#3c4245",
           "label": "Rail and running gear steel"
         },
         {
@@ -228666,57 +228666,148 @@
         }
       },
       "stats": {
-        "triangles": 296,
+        "triangles": 2292,
         "sizeM": [
-          1.48,
-          0.736,
-          0.37
+          1.66,
+          0.732,
+          0.36
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "railSteel",
-          "color": "#626b70",
-          "parts": [
-            "underframe",
-            "wheel-left-a",
-            "wheel-left-b",
-            "wheel-right-a",
-            "wheel-right-b"
-          ],
-          "param": "railSteel"
-        },
-        {
           "name": "paintedSteel",
           "color": "#8c7650",
           "parts": [
             "body",
-            "roof"
+            "roof",
+            "skirt-front",
+            "skirt-back",
+            "side-door-front",
+            "side-door-back",
+            "end-door-a",
+            "end-door-b"
           ],
           "param": "paintedSteel"
-        },
-        {
-          "name": "glass",
-          "color": "#54a6bb",
-          "parts": [
-            "window-1",
-            "window-2",
-            "window-3",
-            "window-4",
-            "window-5",
-            "window-6"
-          ],
-          "param": "glass"
         },
         {
           "name": "stainlessSteel",
           "color": "#b8c1c2",
           "parts": [
-            "galley-vent"
+            "belt-moulding-front",
+            "letterboard-moulding-front",
+            "belt-moulding-back",
+            "letterboard-moulding-back",
+            "galley-vent",
+            "galley-vent-cap",
+            "galley-flue-360",
+            "galley-flue-cap-360",
+            "galley-flue-640",
+            "galley-flue-cap-640",
+            "roof-ventilator--560",
+            "roof-ventilator--380",
+            "roof-ventilator--200",
+            "roof-ventilator--20",
+            "roof-ventilator-160",
+            "side-door-grab-front--48",
+            "side-door-grab-front-48",
+            "side-door-grab-back--48",
+            "side-door-grab-back-48",
+            "end-grab-rail-a--70",
+            "end-grab-rail-a-70",
+            "end-grab-rail-b--70",
+            "end-grab-rail-b-70"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "glass",
+          "color": "#54a6bb",
+          "parts": [
+            "saloon-window-front--520",
+            "saloon-window-front--380",
+            "saloon-window-front--240",
+            "saloon-window-front--100",
+            "saloon-window-front-40",
+            "saloon-window-front-180",
+            "galley-window-front-420",
+            "galley-window-front-560",
+            "saloon-window-back--520",
+            "saloon-window-back--380",
+            "saloon-window-back--240",
+            "saloon-window-back--100",
+            "saloon-window-back-40",
+            "saloon-window-back-180",
+            "galley-window-back-420",
+            "galley-window-back-560",
+            "side-door-window-front",
+            "side-door-window-back",
+            "end-door-window-a",
+            "end-door-window-b"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "railSteel",
+          "color": "#3c4245",
+          "parts": [
+            "side-door-step-front",
+            "side-door-step-hanger-front--42",
+            "side-door-step-hanger-front-42",
+            "side-door-step-back",
+            "side-door-step-hanger-back--42",
+            "side-door-step-hanger-back-42",
+            "centre-sill",
+            "side-sill-front",
+            "side-sill-back",
+            "body-bolster-a",
+            "end-sill-a",
+            "coupler-shank-a",
+            "coupler-knuckle-a",
+            "body-bolster-b",
+            "end-sill-b",
+            "coupler-shank-b",
+            "coupler-knuckle-b",
+            "water-tank",
+            "water-tank-strap--200",
+            "water-tank-strap-40",
+            "axle-a--85",
+            "wheel-a--85-front",
+            "flange-a--85-front",
+            "journal-box-a--85-front",
+            "wheel-a--85-back",
+            "flange-a--85-back",
+            "journal-box-a--85-back",
+            "axle-a-85",
+            "wheel-a-85-front",
+            "flange-a-85-front",
+            "journal-box-a-85-front",
+            "wheel-a-85-back",
+            "flange-a-85-back",
+            "journal-box-a-85-back",
+            "side-frame-a-front",
+            "side-frame-a-back",
+            "bogie-bolster-a",
+            "axle-b--85",
+            "wheel-b--85-front",
+            "flange-b--85-front",
+            "journal-box-b--85-front",
+            "wheel-b--85-back",
+            "flange-b--85-back",
+            "journal-box-b--85-back",
+            "axle-b-85",
+            "wheel-b-85-front",
+            "flange-b-85-front",
+            "journal-box-b-85-front",
+            "wheel-b-85-back",
+            "flange-b-85-back",
+            "journal-box-b-85-back",
+            "side-frame-b-front",
+            "side-frame-b-back",
+            "bogie-bolster-b"
+          ],
+          "param": "railSteel"
         }
       ]
     },
