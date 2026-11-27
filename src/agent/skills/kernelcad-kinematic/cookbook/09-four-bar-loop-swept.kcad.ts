@@ -2,13 +2,14 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // expected: ['kinematic.collision.swept']
 //
-// Snippet 9 — closed-loop four-bar swept against a stop. Four revolute mates
+// Snippet 9 — closed-loop four-bar swept past a stop. Four revolute mates
 // make one loop (crank 40, coupler 120, rocker 80, ground 100: a Grashof
 // crank-rocker). Drive ONLY the crank: the loop solver poses coupler and
 // rocker at each sample, continuing from the previous pose so the linkage
 // stays in its modeled assembly mode. checkSweptCollision reports the first
-// crank angle at which the rocker hits the stop; the script checks it
-// against the closed-form rocker angle. Full version with a 0–200° sweep:
+// crank angles where the rocker enters and exits a small stop block; the
+// script checks both refined ends against the closed-form rocker motion.
+// Full version with a 0–200° sweep:
 // examples/kinematic/four-bar-swept.kcad.ts.
 //
 // Author the as-built pose closed (here via mate `pose` values computed
@@ -67,17 +68,23 @@ const ground = arm.part(
 const crank = arm.part('crank', box(a, 6, 8, true).translate(a / 2, -3, 0));
 const coupler = arm.part('coupler', box(b, 6, 8, true).translate(b / 2, 3, 0));
 const rocker = arm.part('rocker', box(c, 6, 8, true).translate(c / 2, -3, 0));
-// Stop block in the rocker's layer, seated on the ground bar face just left
-// of the rocker pivot: the rocker leans onto it past the mate limits; the
-// crank stays well clear of it.
-const stopX: [number, number] = [72, 88];
-const stopZ: [number, number] = [GROUND_Z[0], 16];
+// Small collision-test block in the rocker's layer near its tip path. The
+// rocker crosses it around crank 137–168° and clears it before the walk ends.
+const stopX: [number, number] = [68, 76];
+const stopZ: [number, number] = [71, 80];
+const stopShape = box(76, 6, 8, true).translate(142, -3, -8)
+  .union(box(4, 6, 104, true).translate(180, -3, 48))
+  .union(box(108, 6, 5, true).translate(126, -3, 97.5))
+  .union(box(4, 6, 20, true).translate(74, -3, 89))
+  .union(box(stopX[1] - stopX[0], 6, stopZ[1] - stopZ[0], true)
+    .translate((stopX[0] + stopX[1]) / 2, -3, (stopZ[0] + stopZ[1]) / 2));
 const stop = arm.part(
   'stop',
-  box(stopX[1] - stopX[0], 6, stopZ[1] - stopZ[0], true).translate((stopX[0] + stopX[1]) / 2, -3, (stopZ[0] + stopZ[1]) / 2),
+  stopShape,
 );
-// Stop seat: a point on the face the stop shares with the ground bar.
-const stopSeat = { type: 'frame' as const, origin: { kind: 'vec3' as const, value: [(stopX[0] + stopX[1]) / 2, 0, (GROUND_Z[0] + GROUND_Z[1]) / 2] as [number, number, number] } };
+// The bracket runs above the moving linkage and joins the ground bar at a
+// shared face, so the test block is a real fixed part of the assembly.
+const stopSeat = { type: 'frame' as const, origin: { kind: 'vec3' as const, value: [106, 0, -8] as [number, number, number] } };
 
 ground.connector('o2', pivot(0));
 ground.connector('o4', pivot(d));
@@ -109,9 +116,11 @@ if (!first.contacts.some((x) => [x.partA, x.partB].includes('rocker') && [x.part
 }
 const sweepAngle = first.pose.crank as number;
 
-// Closed form: first crank sample where the rocker rectangle (length c,
-// width 8, on the closed-form rocker angle) overlaps the stop rectangle in
-// the mechanism plane — separating-axis test on the four edge normals.
+// Closed form: whether the rocker rectangle (length c, width 8, on the
+// closed-form rocker angle) overlaps the test block in the mechanism plane —
+// separating-axis test on the four edge normals. Because the report's default
+// cutoff ignores tiny intersection volumes, the geometric onset lies inside
+// the neighboring coarse step, while `resolution` bounds the cutoff bracket.
 function rockerHitsStop(t2deg: number): boolean {
   const t4 = rockerAngle(rad(t2deg));
   const u = [Math.cos(t4), Math.sin(t4)];
@@ -125,6 +134,16 @@ function rockerHitsStop(t2deg: number): boolean {
   }
   return true;
 }
+
+function contactBoundary(lo: number, hi: number, loHits: boolean): number {
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2;
+    if (rockerHitsStop(mid) === loHits) lo = mid;
+    else hi = mid;
+  }
+  return (lo + hi) / 2;
+}
+
 let closedForm = NaN;
 for (let t = 120; t <= 200; t += STEP) {
   if (rockerHitsStop(t)) { closedForm = t; break; }
@@ -133,6 +152,39 @@ console.log(`[four-bar] first contact: sweep crank=${sweepAngle}°, closed form 
 if (!(Math.abs(sweepAngle - closedForm) <= STEP)) {
   throw new Error(`sweep first contact ${sweepAngle}° disagrees with the closed form ${closedForm}°`);
 }
+
+// The overlap report must refine both sides of this finite collision window
+// while continuing the same closed-loop branch as the coarse sweep.
+const walk = sweep.walks?.find((w) => w.joint === 'crank');
+const pair = walk?.overlaps.find((p) => [p.partA, p.partB].includes('rocker') && [p.partA, p.partB].includes('stop'));
+const stretch = pair?.stretches[0];
+const closedFormStart = contactBoundary(136, 138, false);
+const closedFormEnd = contactBoundary(166, 168, true);
+if (walk === undefined || pair === undefined || stretch === undefined) {
+  throw new Error('closed-loop swept report omitted the rocker/test-block overlap');
+}
+if (walk.unknown.length > 0 || pair.stretches.length !== 1 || stretch.startsAtFirstSample || stretch.endsAtLastSample) {
+  throw new Error(`expected one measured, bounded overlap stretch: ${JSON.stringify({ unknown: walk.unknown, stretches: pair.stretches })}`);
+}
+if (walk.collisionToleranceMm3 !== 0.01) {
+  throw new Error(`expected the default 0.01 mm³ overlap cutoff, got ${walk.collisionToleranceMm3}`);
+}
+if (walk.refinementSamples !== 12) {
+  throw new Error(`expected 12 loop-continuing boundary probes, got ${walk.refinementSamples}`);
+}
+if (Math.abs(stretch.startResolution - STEP / 64) > 1e-9 || Math.abs(stretch.endResolution - STEP / 64) > 1e-9) {
+  throw new Error(`expected both loop overlap ends refined to ${STEP / 64}°: ${JSON.stringify(stretch)}`);
+}
+if (!(stretch.start > closedFormStart && stretch.start - closedFormStart < STEP)) {
+  throw new Error(`thresholded overlap start ${stretch.start}° is outside the closed-form entry step at ${closedFormStart}°`);
+}
+if (!(stretch.end < closedFormEnd && closedFormEnd - stretch.end < STEP)) {
+  throw new Error(`thresholded overlap end ${stretch.end}° is outside the closed-form exit step at ${closedFormEnd}°`);
+}
+if (!(pair.worstVolumeMm3 > 0) || pair.worstPose.crank < stretch.start || pair.worstPose.crank > stretch.end) {
+  throw new Error(`invalid worst overlap pose/volume: ${JSON.stringify(pair)}`);
+}
+console.log(`[four-bar] rocker/test-block overlap: ${stretch.start}°–${stretch.end}° (closed form ${closedFormStart.toFixed(3)}°–${closedFormEnd.toFixed(3)}°, volume cutoff ${walk.collisionToleranceMm3} mm³, bisection ${stretch.startResolution}°)`);
 const loopDiags = sweep.diagnostics.filter((x) => x.code.startsWith('kinematic.loop.'));
 console.log(`[four-bar] sampled ${sweep.posesSampled} poses; loop diagnostics: ${loopDiags.map((x) => x.code).join(', ') || 'none'}`);
 if (sweep.posesSampled !== 80 / STEP + 1) throw new Error('the crank-rocker should sweep the range without a loop stop');

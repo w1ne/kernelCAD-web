@@ -41,7 +41,8 @@ export type CheckSweptCollisionOutput =
 
 /**
  * `check_swept_collision` MCP tool. Sweeps the declared joint range(s) and
- * reports every pose at which two parts share a non-empty BREP intersection.
+ * reports every sampled pose at which pair intersection volume exceeds the
+ * configured cutoff; overlap-walk boundaries expose that same cutoff.
  * Local in-process compute; no network round-trip.
  */
 export async function checkSweptCollisionTool(

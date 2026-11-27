@@ -127,9 +127,8 @@ export interface SweptCollidingPose {
 }
 
 /** One overlap stretch of a pair along a swept joint, in the joint's unit
- *  (deg or mm). Ends between two samples are bisected; the resolution is
- *  the bracket width left after refinement (0 at the first or last sampled
- *  position, one step where a neighbour could not be measured). */
+ *  (deg or mm). Ends between two samples are bisected at the walk's volume
+ *  cutoff; resolution is the remaining bracket width at that threshold. */
 export interface SweptOverlapStretch {
   readonly start: number;
   readonly end: number;
@@ -168,6 +167,8 @@ export interface SweptWalkReport {
   readonly from: number;
   readonly to: number;
   readonly step: number;
+  /** Volume cutoff used to classify a pair as overlapping (mm³). */
+  readonly collisionToleranceMm3: number;
   readonly samples: number;
   readonly refineRounds: number;
   readonly refinementSamples: number;

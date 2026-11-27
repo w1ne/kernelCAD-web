@@ -73,6 +73,8 @@ describe('refineWalk (#1680)', () => {
     expect(report.refinementSamples).toBe(12);
     expect(report.samples).toBe(6);
     expect(report.unknown).toEqual([]);
+    expect(report.collisionToleranceMm3).toBe(0.01);
+    expect(report.clearNote).toContain('resolution is the final bisection bracket at that threshold');
   });
 
   it('keeps the largest measured overlap, its pose and a witness point', async () => {
@@ -138,12 +140,21 @@ describe('refineWalk (#1680)', () => {
     expect(s.startResolution).toBe(10);
   });
 
-  it('states that pairs not listed were clear at every position checked', async () => {
+  it('states that pairs not listed stayed below the overlap-volume cutoff', async () => {
     const state = (): PairState => ({ hits: new Map(), unknownPairs: new Map() });
     const { measure } = measureFor(state);
     const report = await refineWalk('slide', 2.5, walk([0, 2.5, 5], state), measure);
     expect(report.overlaps).toEqual([]);
-    expect(report.clearNote).toContain('clear at every position checked (step 2.5)');
+    expect(report.clearNote).toContain('did not exceed the cutoff at any position checked (step 2.5)');
+  });
+
+  it('reports a caller-provided overlap-volume cutoff', async () => {
+    const state = (): PairState => ({ hits: new Map(), unknownPairs: new Map() });
+    const { measure } = measureFor(state);
+    const report = await refineWalk('slide', 2.5, walk([0, 2.5], state), measure, 6, 0.025);
+
+    expect(report.collisionToleranceMm3).toBe(0.025);
+    expect(report.clearNote).toContain('volume > 0.025 mm³');
   });
 
   it('counts pairs with a constant relative pose and leaves their overlap out', async () => {

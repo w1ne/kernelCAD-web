@@ -44,7 +44,7 @@ script. The same surface is reachable from host code via `import * as kinematic 
 | Call | Question answered | Key diagnostics |
 |------|-------------------|-----------------|
 | `kinematic.checkMountingHoleConsistency(arm)` | Do fastener holes match across all mates? | `kinematic.mounting-hole.diameter-mismatch` (K9) |
-| `kinematic.checkSweptCollision(arm, opts)` | Does any link pair penetrate across the swept range? Where does each overlap start and end? | `kinematic.collision.swept` (K1), `kinematic.collision.swept.sample-density-warning` (K2), `kinematic.collision.swept.unmeasured`; `result.walks[]` gives per-pair overlap stretches bisected between samples (`opts.refineRounds`, default 6 = step/64), the worst overlap volume, pose and witness point, and `unknown` positions (never read as clear); pairs that keep their relative pose are counted in `fixedPairs` and left to the static check |
+| `kinematic.checkSweptCollision(arm, opts)` | Does any link pair penetrate across the swept range? Where does each overlap start and end? | `kinematic.collision.swept` (K1), `kinematic.collision.swept.sample-density-warning` (K2), `kinematic.collision.swept.unmeasured`; `result.walks[]` gives the `collisionToleranceMm3` volume cutoff and per-pair overlap stretches bisected between samples (`opts.refineRounds`, default 6 = step/64); each end's resolution is the remaining bracket width at that cutoff, not a bound on geometric slivers below it; reports also give the worst overlap volume, pose and witness point, and `unknown` positions (never read as clear); pairs that keep their relative pose are counted in `fixedPairs` and left to the static check |
 | `kinematic.suggestJointRanges(arm, opts)` | Where should this revolute or prismatic stop so non-exempt parts keep the clearance? | no diagnostic code; the reported stop is the clear side of the bracket; `no-stop` means the sampled poses found no crossing, not a continuous proof; an unmeasured side is `unknown`, never `no-stop` |
 | `kinematic.checkReachable(arm, opts)` | Can the end-effector reach this target? | `kinematic.unreachable` (K3, axis-discriminated), `kinematic.reachability.iteration-cap-hit` (K4), `kinematic.solver.unsupported-config` (K5, analytical IK on a chain that is not closed-form solvable) |
 | `kinematic.checkLoadCapacity(arm, loads, opts)` | Will a beam exceed yield, or will a legacy mate limit be exceeded? | Beam: `kinematic.load-exceeds-yield` (K6), `kinematic.load.beam-not-applicable` (K7), `kinematic.no-material-declared` (K8); `mode: 'stub'`: `assembly.joint.load-exceeded`, `assembly.joint.load-unverified` |
@@ -365,6 +365,6 @@ self-contained `.kcad.ts` files that build their own fixture, run one or two
    the interference gate flips pass→fail past the closing threshold
 9. `09-four-bar-loop-swept.kcad.ts` — closed-loop four-bar driven by the
    crank only, mated parts sharing a face on the pin plane and the mate
-   limits set to the crank travel short of the stop; a sweep run past the
-   limits gives the first crank angle where the rocker hits the stop, which
-   matches the closed form
+   limits set to the crank travel short of the test block; the sweep reports
+   the rocker’s bounded overlap stretch with both ends refined to step/64,
+   matching closed-form motion

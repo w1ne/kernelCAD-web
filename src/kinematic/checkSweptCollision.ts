@@ -54,6 +54,7 @@ import { LoopContinuation } from './loopContinuation';
 import { forwardKinematics, jointGraphHasLoops, type NumericPoses as FullPoses } from '../modeling/capture/forwardKinematics';
 import {
   DEFAULT_REFINE_ROUNDS,
+  DEFAULT_COLLISION_TOLERANCE_MM3,
   pairKey,
   refineWalk,
   type MeasureAt,
@@ -116,7 +117,7 @@ export async function checkSweptCollision(
     };
   }
 
-  const epsilon = opts?.collisionToleranceMm3 ?? 0.01;
+  const epsilon = opts?.collisionToleranceMm3 ?? DEFAULT_COLLISION_TOLERANCE_MM3;
   const { collidingPoses, posesSampled, loopDiagnostics, reports, unknownPoses } =
     await sweepWalks(arm, walks, epsilon, refineOptions(opts));
   diagnostics.push(...loopDiagnostics);
@@ -275,7 +276,7 @@ async function refineSweptWalk(
     const sample = await sampleSweepPose(ctx, { [joint]: value }, next);
     return sample.state === undefined ? undefined : { state: sample.state, seed: next };
   };
-  return refineWalk(joint, step, samples, measure, refine.rounds);
+  return refineWalk(joint, step, samples, measure, refine.rounds, ctx.epsilon);
 }
 
 /** The one joint a walk varies, or undefined for an explicit pose list. */
