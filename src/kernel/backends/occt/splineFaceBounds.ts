@@ -26,6 +26,7 @@ import {
   type HPoint,
   type SplineSurface,
 } from '../../geometry/rationalPatchBounds';
+import { forEachSubShape } from './subShapeWalk';
 
 /** Patch tightening tolerance (mm). Face tolerances are added on top.
  *  1e-4 mm doubles the cost on an M6 rod (about 10 k splits, not 5 k). */
@@ -72,35 +73,29 @@ function readSplineFaceBounds(shape: unknown): { min: Vec3; max: Vec3 } | undefi
   const inner = vertexBox(oc, shape);
   const budget = { splits: SPLIT_BUDGET };
   const out = emptyBox();
-  const exp = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
-  try {
-    for (; exp.More(); exp.Next()) {
-      const face = oc.TopoDS.Face_1(exp.Current());
-      const box = defaultFaceBox(oc, face);
-      const adaptor = new oc.BRepAdaptor_Surface_2(face, false);
-      try {
-        const spline = adaptor.GetType() === splineType;
-        if (exceeds(box, inner, REFINE_TOL)) {
-          // Other faces (e.g. extruded splines, the planar end caps of a
-          // thread or prism, or trimmed analytic faces) are bounded by the
-          // pole hulls of their edges or by their full iso-line range; their
-          // exact box is cheap.
-          const tight = spline ? refinedFaceBox(oc, adaptor, face, inner, budget) : exactFaceBox(face);
-          if (tight) {
-            for (let a = 0; a < 3; a++) {
-              box[a] = Math.max(box[a], tight[a]);
-              box[a + 3] = Math.min(box[a + 3], tight[a + 3]);
-            }
+  forEachSubShape(oc, shape, 'FACE', (face) => {
+    const box = defaultFaceBox(oc, face);
+    const adaptor = new oc.BRepAdaptor_Surface_2(face, false);
+    try {
+      const spline = adaptor.GetType() === splineType;
+      if (exceeds(box, inner, REFINE_TOL)) {
+        // Other faces (e.g. extruded splines, the planar end caps of a
+        // thread or prism, or trimmed analytic faces) are bounded by the
+        // pole hulls of their edges or by their full iso-line range; their
+        // exact box is cheap.
+        const tight = spline ? refinedFaceBox(oc, adaptor, face, inner, budget) : exactFaceBox(face);
+        if (tight) {
+          for (let a = 0; a < 3; a++) {
+            box[a] = Math.max(box[a], tight[a]);
+            box[a + 3] = Math.min(box[a + 3], tight[a + 3]);
           }
         }
-      } finally {
-        adaptor.delete();
       }
-      unionBox(out, box);
+    } finally {
+      adaptor.delete();
     }
-  } finally {
-    exp.delete();
-  }
+    unionBox(out, box);
+  });
   const min: Vec3 = [out[0], out[1], out[2]];
   const max: Vec3 = [out[3], out[4], out[5]];
   for (let a = 0; a < 3; a++) {
@@ -141,19 +136,14 @@ function readBox(box: any): Box6 {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function vertexBox(oc: any, shape: unknown): Box6 {
   const box = emptyBox();
-  const exp = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_VERTEX, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
-  try {
-    for (; exp.More(); exp.Next()) {
-      const p = oc.BRep_Tool.Pnt(oc.TopoDS.Vertex_1(exp.Current()));
-      try {
-        unionBox(box, [p.X(), p.Y(), p.Z(), p.X(), p.Y(), p.Z()]);
-      } finally {
-        p.delete();
-      }
+  forEachSubShape(oc, shape, 'VERTEX', (vertex) => {
+    const p = oc.BRep_Tool.Pnt(vertex);
+    try {
+      unionBox(box, [p.X(), p.Y(), p.Z(), p.X(), p.Y(), p.Z()]);
+    } finally {
+      p.delete();
     }
-  } finally {
-    exp.delete();
-  }
+  });
   return box;
 }
 

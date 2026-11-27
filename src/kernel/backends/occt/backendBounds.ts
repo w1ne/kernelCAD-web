@@ -7,6 +7,7 @@
 
 import { getOC } from 'replicad';
 import type { Vec3 } from '../../../shared/intent/types';
+import { forEachSubShape } from './subShapeWalk';
 import { hasStronglyRationalFace } from './volumeIntegration';
 
 /** Optimal AABB of a raw TopoDS shape, or undefined when OCCT cannot build
@@ -48,22 +49,20 @@ export function prunedExactBounds(shape: unknown): { min: Vec3; max: Vec3 } | un
   const min: Vec3 = [Infinity, Infinity, Infinity];
   const max: Vec3 = [-Infinity, -Infinity, -Infinity];
   const pad = seedVertexBox(oc, shape, min, max);
-  const exp = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
-  try {
-    for (; exp.More(); exp.Next()) {
-      const face = oc.TopoDS.Face_1(exp.Current());
-      if (defaultBoxInside(oc, face, pad, min, max)) continue;
-      const box = toleranceInclusiveBounds(face);
-      if (!box) return undefined;
-      for (let a = 0; a < 3; a++) {
-        min[a] = Math.min(min[a], box.min[a]);
-        max[a] = Math.max(max[a], box.max[a]);
-      }
+  let failed = false;
+  forEachSubShape(oc, shape, 'FACE', (face) => {
+    if (defaultBoxInside(oc, face, pad, min, max)) return;
+    const box = toleranceInclusiveBounds(face);
+    if (!box) {
+      failed = true;
+      return false;
     }
-  } finally {
-    exp.delete();
-  }
-  return finiteBox(min, max) ? { min, max } : undefined;
+    for (let a = 0; a < 3; a++) {
+      min[a] = Math.min(min[a], box.min[a]);
+      max[a] = Math.max(max[a], box.max[a]);
+    }
+  });
+  return !failed && finiteBox(min, max) ? { min, max } : undefined;
 }
 
 /** Grow `min`/`max` over every vertex of `shape`, enlarged by its tolerance.
@@ -71,32 +70,23 @@ export function prunedExactBounds(shape: unknown): { min: Vec3; max: Vec3 } | un
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function seedVertexBox(oc: any, shape: unknown, min: Vec3, max: Vec3): number {
   let pad = 0;
-  const vertices = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_VERTEX, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
-  try {
-    for (; vertices.More(); vertices.Next()) {
-      const vertex = oc.TopoDS.Vertex_1(vertices.Current());
-      const tol = oc.BRep_Tool.Tolerance_3(vertex);
-      pad = Math.max(pad, tol);
-      const p = oc.BRep_Tool.Pnt(vertex);
-      try {
-        const c = [p.X(), p.Y(), p.Z()];
-        for (let a = 0; a < 3; a++) {
-          min[a] = Math.min(min[a], c[a] - tol);
-          max[a] = Math.max(max[a], c[a] + tol);
-        }
-      } finally {
-        p.delete();
+  forEachSubShape(oc, shape, 'VERTEX', (vertex) => {
+    const tol = oc.BRep_Tool.Tolerance_3(vertex);
+    pad = Math.max(pad, tol);
+    const p = oc.BRep_Tool.Pnt(vertex);
+    try {
+      const c = [p.X(), p.Y(), p.Z()];
+      for (let a = 0; a < 3; a++) {
+        min[a] = Math.min(min[a], c[a] - tol);
+        max[a] = Math.max(max[a], c[a] + tol);
       }
+    } finally {
+      p.delete();
     }
-  } finally {
-    vertices.delete();
-  }
-  const edges = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_EDGE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
-  try {
-    for (; edges.More(); edges.Next()) pad = Math.max(pad, oc.BRep_Tool.Tolerance_2(oc.TopoDS.Edge_1(edges.Current())));
-  } finally {
-    edges.delete();
-  }
+  });
+  forEachSubShape(oc, shape, 'EDGE', (edge) => {
+    pad = Math.max(pad, oc.BRep_Tool.Tolerance_2(edge));
+  });
   return pad;
 }
 
@@ -146,29 +136,27 @@ function readOffsetFaceBounds(shape: unknown): { min: Vec3; max: Vec3 } | undefi
   const min: Vec3 = [Infinity, Infinity, Infinity];
   const max: Vec3 = [-Infinity, -Infinity, -Infinity];
   let sawOffset = false;
-  const exp = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
-  try {
-    for (; exp.More(); exp.Next()) {
-      const face = oc.TopoDS.Face_1(exp.Current());
-      const surface = new oc.BRepAdaptor_Surface_2(face, false);
-      let offset: boolean;
-      try {
-        offset = surface.GetType() === offsetType;
-      } finally {
-        surface.delete();
-      }
-      sawOffset ||= offset;
-      const box = offset ? toleranceInclusiveBounds(face) : gapFreeBounds(oc, face);
-      if (!box) return undefined;
-      for (let a = 0; a < 3; a++) {
-        min[a] = Math.min(min[a], box.min[a]);
-        max[a] = Math.max(max[a], box.max[a]);
-      }
+  let failed = false;
+  forEachSubShape(oc, shape, 'FACE', (face) => {
+    const surface = new oc.BRepAdaptor_Surface_2(face, false);
+    let offset: boolean;
+    try {
+      offset = surface.GetType() === offsetType;
+    } finally {
+      surface.delete();
     }
-  } finally {
-    exp.delete();
-  }
-  return sawOffset && finiteBox(min, max) ? { min, max } : undefined;
+    sawOffset ||= offset;
+    const box = offset ? toleranceInclusiveBounds(face) : gapFreeBounds(oc, face);
+    if (!box) {
+      failed = true;
+      return false;
+    }
+    for (let a = 0; a < 3; a++) {
+      min[a] = Math.min(min[a], box.min[a]);
+      max[a] = Math.max(max[a], box.max[a]);
+    }
+  });
+  return !failed && sawOffset && finiteBox(min, max) ? { min, max } : undefined;
 }
 
 /** Default `Bnd_Box` of a non-offset face without its tolerance gap. */
