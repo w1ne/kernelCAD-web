@@ -354936,7 +354936,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/vertical-turbine-pump.kcad.ts",
       "preview": "/assets/water-treatment-vertical-turbine-pump.png",
-      "sourceSha256": "cd6b62238fa8ec4d91dac4df74b6818606759b34a4a13217b31b35249d37243c",
+      "sourceSha256": "7c03ae22163ba3aea3d7406b8034c58e1892dc404627a2b4dbcbc12878649b69",
       "triangleBudget": 2800,
       "params": [
         {
@@ -355019,12 +355019,6 @@
             "head-lower-flange",
             "outlet-flange",
             "motor-pedestal",
-            "motor-cooling-rib-1",
-            "motor-cooling-rib-2",
-            "motor-cooling-rib-3",
-            "motor-cooling-rib-4",
-            "motor-cooling-rib-5",
-            "motor-cooling-rib-6",
             "terminal-cover"
           ],
           "param": "structuralSteel"
@@ -355068,6 +355062,12 @@
           "color": "#477d9b",
           "parts": [
             "motor-housing",
+            "motor-cooling-rib-1",
+            "motor-cooling-rib-2",
+            "motor-cooling-rib-3",
+            "motor-cooling-rib-4",
+            "motor-cooling-rib-5",
+            "motor-cooling-rib-6",
             "motor-fan-cowl",
             "terminal-box"
           ],

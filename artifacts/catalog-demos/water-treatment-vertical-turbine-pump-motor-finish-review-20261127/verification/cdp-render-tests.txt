@@ -1,0 +1,59 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/hoseBarbFidelity.test.ts (5 tests | 1 failed) 31361ms
+     × committed source-backed 4:3 preview matches the native CAD publishing preset 30622ms
+     ✓ standard: three tapered retention lips, one through-bored connected body and hex wrench 114ms
+     ✓ compact: three tapered retention lips, one through-bored connected body and hex wrench 120ms
+     ✓ large: three tapered retention lips, one through-bored connected body and hex wrench 175ms
+     ✓ original source has three separate cylindrical collars, not tapered connected barbs 78ms
+ ❯ tests/integration/catalog/dinRailEndStopFidelity.test.ts (5 tests | 1 failed) 32261ms
+     × committed source-backed 4:3 preview matches the native CAD publishing preset 30848ms
+     ✓ has under-lip geometry, actual open channel, transverse stop and separate slotted screw  403ms
+     ✓ rejects a solid foot presented as a clip 183ms
+     ✓ rejects missing opposite retaining hooks 176ms
+     ✓ preserves rail envelope features across both scale presets  373ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/dinRailEndStopFidelity.test.ts > illustrative TH35 DIN rail end stop geometry > committed source-backed 4:3 preview matches the native CAD publishing preset
+Error: Manufacturing preview failed for /data/worktrees/legacy-migrated/kernelcad-catalog-2000/catalog/kits/standard-components/din-rail-end-stop.kcad.ts: render_preview: browserType.connectOverCDP: Timeout 30000ms exceeded.
+Call log:
+[2m  - <ws preparing> retrieving websocket url from http://127.0.0.1:9222[22m
+[2m  - <ws connecting> ws://127.0.0.1:9222/devtools/browser/75ce1287-6a14-44a8-a9f7-a328e0f983fc[22m
+[2m  - <ws connected> ws://127.0.0.1:9222/devtools/browser/75ce1287-6a14-44a8-a9f7-a328e0f983fc[22m
+
+ ❯ renderManufacturingCatalogPreview scripts/lib/manufacturingCatalogPreview.ts:35:13
+     33|     const hero = result.images.find(image => image.name === 'hero');
+     34|     if (!result.ok || result.mechanism === 'broken' || !hero) {
+     35|       throw new Error(`Manufacturing preview failed for ${source}: ${r…
+       |             ^
+     36|     }
+     37|     const png = readFileSync(hero.path);
+ ❯ tests/integration/catalog/dinRailEndStopFidelity.test.ts:65:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/catalog/hoseBarbFidelity.test.ts > illustrative hose barb adapter real tapered lips and bore > committed source-backed 4:3 preview matches the native CAD publishing preset
+Error: Manufacturing preview failed for /data/worktrees/legacy-migrated/kernelcad-catalog-2000/catalog/kits/standard-components/hose-barb-adapter.kcad.ts: render_preview: browserType.connectOverCDP: Timeout 30000ms exceeded.
+Call log:
+[2m  - <ws preparing> retrieving websocket url from http://127.0.0.1:9222[22m
+[2m  - <ws connecting> ws://127.0.0.1:9222/devtools/browser/75ce1287-6a14-44a8-a9f7-a328e0f983fc[22m
+[2m  - <ws connected> ws://127.0.0.1:9222/devtools/browser/75ce1287-6a14-44a8-a9f7-a328e0f983fc[22m
+
+ ❯ renderManufacturingCatalogPreview scripts/lib/manufacturingCatalogPreview.ts:35:13
+     33|     const hero = result.images.find(image => image.name === 'hero');
+     34|     if (!result.ok || result.mechanism === 'broken' || !hero) {
+     35|       throw new Error(`Manufacturing preview failed for ${source}: ${r…
+       |             ^
+     36|     }
+     37|     const png = readFileSync(hero.path);
+ ❯ tests/integration/catalog/hoseBarbFidelity.test.ts:93:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 8 passed (10)
+   Start at  21:47:45
+   Duration  38.22s (transform 9.20s, setup 147ms, import 11.53s, tests 63.62s, environment 0ms)

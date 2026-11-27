@@ -1,0 +1,6 @@
+catalog/kits/grid-substation/substation-fire-suppression-cylinder-bank.kcad.ts
+catalog/kits/industrial-plant/roller-conveyor-line.kcad.ts
+catalog/kits/standard-components/beam-coupling.kcad.ts
+catalog/kits/standard-components/din-rail.kcad.ts
+catalog/kits/standard-components/hose-barb-adapter.kcad.ts
+catalog/kits/standard-components/retaining-ring.kcad.ts

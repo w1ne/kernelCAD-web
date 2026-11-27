@@ -1,0 +1,53 @@
+{
+  "checkedAt": "2026-11-27T21:29:09.885542+00:00",
+  "repository": "w1ne/kernelCAD-web",
+  "baseline": "origin/develop at 7fce1daef",
+  "openPullRequestCount": 0,
+  "candidateAssets": [
+    {
+      "asset": "recycling-facility/eddy-current-separator",
+      "sourcePath": "catalog/kits/recycling-facility/eddy-current-separator.kcad.ts",
+      "previewPath": "catalog/kits/recycling-facility/previews/eddy-current-separator.png",
+      "openIssueMatches": [],
+      "openPullRequestMatches": [],
+      "knownFixPullRequestMatches": [],
+      "clearForSelection": true
+    },
+    {
+      "asset": "grid-substation/substation-main-power-transformer",
+      "sourcePath": "catalog/kits/grid-substation/substation-main-power-transformer.kcad.ts",
+      "previewPath": "catalog/kits/grid-substation/previews/substation-main-power-transformer.png",
+      "openIssueMatches": [],
+      "openPullRequestMatches": [],
+      "knownFixPullRequestMatches": [],
+      "clearForSelection": true
+    },
+    {
+      "asset": "water-treatment/vertical-turbine-pump",
+      "sourcePath": "catalog/kits/water-treatment/vertical-turbine-pump.kcad.ts",
+      "previewPath": "catalog/kits/water-treatment/previews/vertical-turbine-pump.png",
+      "openIssueMatches": [],
+      "openPullRequestMatches": [],
+      "knownFixPullRequestMatches": [],
+      "clearForSelection": true
+    },
+    {
+      "asset": "wind-energy/offshore-wind-turbine",
+      "sourcePath": "catalog/kits/wind-energy/offshore-wind-turbine.kcad.ts",
+      "previewPath": "catalog/kits/wind-energy/previews/offshore-wind-turbine.png",
+      "openIssueMatches": [],
+      "openPullRequestMatches": [],
+      "knownFixPullRequestMatches": [],
+      "clearForSelection": true
+    },
+    {
+      "asset": "industrial-plant/centrifugal-pump",
+      "sourcePath": "catalog/kits/industrial-plant/centrifugal-pump.kcad.ts",
+      "previewPath": "catalog/kits/industrial-plant/previews/centrifugal-pump.png",
+      "openIssueMatches": [],
+      "openPullRequestMatches": [],
+      "knownFixPullRequestMatches": [],
+      "clearForSelection": true
+    }
+  ]
+}

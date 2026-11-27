@@ -1,0 +1,22 @@
+{
+  "assetCount": 2402,
+  "kitCount": 50,
+  "target": {
+    "sourceSha256": "7c03ae22163ba3aea3d7406b8034c58e1892dc404627a2b4dbcbc12878649b69",
+    "sourceSha256MatchesFile": true,
+    "preview": "/assets/water-treatment-vertical-turbine-pump.png",
+    "previewExists": true,
+    "triangleCount": 2276,
+    "triangleBudget": 2800,
+    "changedFieldsFromBaseline": [
+      "palette",
+      "sourceSha256"
+    ]
+  },
+  "otherReviewedRowsUnchanged": [
+    "grid-substation/substation-main-power-transformer",
+    "industrial-plant/centrifugal-pump",
+    "recycling-facility/eddy-current-separator",
+    "wind-energy/offshore-wind-turbine"
+  ]
+}

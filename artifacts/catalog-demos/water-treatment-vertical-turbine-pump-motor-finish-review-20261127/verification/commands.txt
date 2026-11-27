@@ -1,0 +1,24 @@
+All commands run from the kernelCAD-web repository root.
+
+Selection and baseline:
+  python artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/check_open_targets.py
+  python artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/fetch_public_baseline.py
+
+Regression and source checks:
+  npx vitest run tests/integration/catalog/verticalTurbinePumpMotorFinishMaterial.test.ts
+  npx eslint catalog/kits/water-treatment/ tests/integration/catalog/verticalTurbinePumpMotorFinishMaterial.test.ts
+  python scripts/checkCatalogQuality.py --kit water-treatment
+  python scripts/checkCatalogQuality.py
+
+Preview and index:
+  npx tsx scripts/renderCatalogPreviews.ts vertical-turbine-pump
+  npx tsx scripts/buildAssetCatalog.ts
+  python artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/verification/verify_index_row.py
+
+Full catalog integration suite:
+  npx playwright install chromium  # local verification runtime; installed after the first run reported the missing Playwright browser
+  npx vitest run tests/integration/catalog/
+
+Demo generation and inspection:
+  python artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/make_demo.py
+  python artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/inspect_video.py

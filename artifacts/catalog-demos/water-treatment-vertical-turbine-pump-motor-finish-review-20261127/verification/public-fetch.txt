@@ -1,0 +1,5 @@
+recycling-facility/eddy-current-separator: page=200 preview=200 source=200 source-match=True preview-match=True
+grid-substation/substation-main-power-transformer: page=200 preview=200 source=200 source-match=True preview-match=True
+water-treatment/vertical-turbine-pump: page=200 preview=200 source=200 source-match=True preview-match=True
+wind-energy/offshore-wind-turbine: page=200 preview=200 source=200 source-match=True preview-match=True
+industrial-plant/centrifugal-pump: page=200 preview=200 source=200 source-match=True preview-match=True
