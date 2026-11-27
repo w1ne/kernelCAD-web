@@ -1,13 +1,14 @@
 {
   "evidenceKind": "local_in_process_engine_replay",
-  "createdAt": "2026-11-27T03:28:20.058Z",
-  "repoHead": "996b3e001ab073aab414b23a82d916bd623d13f4",
+  "createdAt": "2026-11-27T03:43:59.763Z",
+  "repoHead": "f85307930822a626b36f01b799e76a0b7e5dc24d",
   "source": {
     "path": "src/agent/skills/kernelcad-kinematic/cookbook/09-four-bar-loop-swept.kcad.ts",
     "sha256": "d05cc83b70361ffd02b9e8b600e1465c4aa8d5b5aa5907579da16e6d1720e7b4"
   },
   "request": {
-    "tool": "check_swept_collision",
+    "kind": "local_source_wrapper",
+    "entrypoint": "checkSweptCollisionTool",
     "joint": "crank",
     "range": [
       120,
