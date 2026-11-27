@@ -52,7 +52,6 @@ import type {
   SweepBoundary,
   SweepComboResult,
   SweepCoverage,
-  SweepEvaluation,
   SweepEvaluationModel,
   SweepEvaluationResult,
   SweepEvaluator,
@@ -95,11 +94,12 @@ type NumericValue = number;
  * still evaluated (the first 64 in enumeration order); the caller should
  * narrow the sweep to get full coverage.
  *
- * Every emitted diagnostic in `result.results[].diagnostics` carries the
- * gate name it came from. `result.firstFailure[gateName]` is the fast-scan
- * entry point — the first combo (in enumeration order) at which that gate
- * failed. `result.firstRequirementFailure[requirementName]` is the same for
- * the ledger.
+ * Every gate diagnostic in `result.results[].diagnostics` carries the gate
+ * name it came from. A combo that could not produce a usable model carries a
+ * single `evaluation` diagnostic instead of copying that error to every gate.
+ * `result.firstFailure[gateName]` is the fast-scan entry point — the first
+ * combo (in enumeration order) at which that gate failed.
+ * `result.firstRequirementFailure[requirementName]` is the same for the ledger.
  */
 export async function sweepTolerance(
   input: SweepToleranceInput,
@@ -211,24 +211,9 @@ async function assertParamsAreSweepable(
   params: SweepParamsDeclaration,
   evaluator: SweepEvaluator | undefined,
 ): Promise<Map<string, string>> {
-  // Same env-var save/restore dance as `runComboEvaluation` below: the agent
-  // evaluator calls `evaluateAndBuildScript`, which runs
-  // `applyEvaluateDefaults()`, setting `KERNELCAD_VALIDATE_DEFAULT` to
-  // `'error'` the first time it's read and leaving it set for the process.
-  // Without restoring it here, this pre-check call would permanently flip
-  // validation to `'error'` and silently disable `runComboEvaluation`'s own
-  // 'warn' override for the entire sweep — every combo's `solvedModel()`
-  // would then throw on the first mechanism-invalid combo instead of
-  // surfacing through this function's own gate classification.
-  const hadValidateDefault = process.env.KERNELCAD_VALIDATE_DEFAULT !== undefined;
-  let built: SweepEvaluation;
-  try {
-    built = await requireEvaluator(evaluator).evaluate(baseCode);
-  } finally {
-    if (!hadValidateDefault) delete process.env.KERNELCAD_VALIDATE_DEFAULT;
-  }
+  const built = await runComboEvaluation(baseCode, evaluator);
   const types = new Map<string, string>();
-  if (built.evaluation.exitCode !== 0 || !built.model) return types; // let the normal per-combo path surface the eval error.
+  if (!built.model) return types; // let the normal per-combo path surface the eval error.
   const table = built.model.session.paramTable;
   for (const name of paramNames) {
     if (!table.has(name)) continue; // unknown-name errors surface per-combo via set_param.
@@ -389,7 +374,7 @@ async function collectComboResult(
   evaluator: SweepEvaluator | undefined,
 ): Promise<SweepComboResult> {
   const { evaluation, model } = await runComboEvaluation(code, evaluator);
-  if (evaluation.exitCode !== 0 || !model) {
+  if (!model) {
     return failedEvaluationResult(evaluation, combo, gates);
   }
 
@@ -456,17 +441,18 @@ type AssemblyDiagnostic = Awaited<ReturnType<typeof validateAssemblyWithMates>>[
  * KERNELCAD_VALIDATE_DEFAULT to 'error' (see applyEvaluateDefaults) and
  * makes an in-script `arm.solvedModel({})` call THROW on a mechanism-invalid
  * combo before sweepTolerance's own gates ever run — the sweep exists to
- * survey the envelope, not stop at the first broken combo. Default to 'warn'
- * (only when the caller hasn't set an explicit value) so the script still
- * evaluates and this function's own gate classification below is the
- * source of truth for pass/fail.
+ * survey the envelope, not stop at the first broken combo. Temporarily set
+ * the default to 'warn' so the script still evaluates and this function's
+ * own gate classification below is the source of truth for pass/fail. This
+ * override applies even when a prior evaluate_script call left the process
+ * default at 'error'.
  */
 async function runComboEvaluation(
   code: string,
   evaluator: SweepEvaluator | undefined,
 ): Promise<{ evaluation: SweepEvaluationResult; model: SweepEvaluationModel | undefined }> {
-  const hadValidateDefault = process.env.KERNELCAD_VALIDATE_DEFAULT !== undefined;
-  if (!hadValidateDefault) process.env.KERNELCAD_VALIDATE_DEFAULT = 'warn';
+  const previousValidateDefault = process.env.KERNELCAD_VALIDATE_DEFAULT;
+  process.env.KERNELCAD_VALIDATE_DEFAULT = 'warn';
   let evaluation: SweepEvaluationResult;
   let model: SweepEvaluationModel | undefined;
   try {
@@ -474,7 +460,8 @@ async function runComboEvaluation(
     evaluation = built.evaluation;
     model = built.model;
   } finally {
-    if (!hadValidateDefault) delete process.env.KERNELCAD_VALIDATE_DEFAULT;
+    if (previousValidateDefault === undefined) delete process.env.KERNELCAD_VALIDATE_DEFAULT;
+    else process.env.KERNELCAD_VALIDATE_DEFAULT = previousValidateDefault;
   }
   return { evaluation, model };
 }
@@ -509,12 +496,12 @@ function failedEvaluationResult(
     gates: Object.fromEntries(names.map((g) => [g, 'fail' as const])),
     requirements: [],
     verdict: 'fail',
-    diagnostics: (names.length > 0 ? names : ['evaluation']).map((g) => ({
-      gate: g,
+    diagnostics: [{
+      gate: 'evaluation',
       code: evaluation.diagnostics[0]?.code ?? 'feature.invalid-args',
       severity: 'error',
       message,
-    })),
+    }],
   };
 }
 
