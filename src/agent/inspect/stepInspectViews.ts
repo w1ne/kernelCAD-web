@@ -5,7 +5,7 @@
 // Selectors belong to this import generation only.
 
 import { createHash, randomBytes } from 'node:crypto';
-import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { mkdtempSync } from 'node:fs';
@@ -112,6 +112,10 @@ interface LoadedImport {
   edgeDetails: EdgeSummary[];
 }
 
+type CapturedImportResult =
+  | { ok: true; script: Extract<Awaited<ReturnType<typeof runMcpScript>>, { ok: true }> }
+  | { ok: false; result: InspectStepViewsResult };
+
 const VIEW_TEXT: Record<InspectViewName, string> = {
   front: 'Front view. Camera on -Y, looking toward +Y. kernelCAD is Z-up.',
   right: 'Right view. Camera on +X, looking toward -X. kernelCAD is Z-up.',
@@ -193,23 +197,71 @@ function toEdgeRow(edge: EdgeSummary): InspectEdgeRow {
   };
 }
 
-async function fileDigest(file: string): Promise<string> {
-  const bytes = await readFile(file);
-  return createHash('sha256').update(bytes).digest('hex').slice(0, 16);
+async function importCapturedStep(abs: string, bytes: Buffer): Promise<CapturedImportResult> {
+  let script: Awaited<ReturnType<typeof runMcpScript>> | undefined;
+  let snapshotDir: string | undefined;
+  let snapshotPath: string | undefined;
+  let importError: unknown;
+  let cleanupError: unknown;
+  try {
+    snapshotDir = await mkdtemp(join(tmpdir(), 'kernelcad-step-inspect-'));
+    snapshotPath = join(snapshotDir, basename(abs));
+    await writeFile(snapshotPath, bytes);
+    script = await runMcpScript({
+      code: `return await lib.fromSTEP(${JSON.stringify(snapshotPath)});`,
+    });
+  } catch (e) {
+    importError = e;
+  } finally {
+    if (snapshotDir) {
+      try {
+        await rm(snapshotDir, { recursive: true, force: true });
+      } catch (e) {
+        cleanupError = e;
+      }
+    }
+  }
+  if (importError) {
+    const message = importError instanceof Error ? importError.message : String(importError);
+    return {
+      ok: false,
+      result: fail(`inspect_step_views: cannot import captured STEP bytes. ${message}`, 'feature.kernel-failed'),
+    };
+  }
+  if (cleanupError) {
+    const message = cleanupError instanceof Error ? cleanupError.message : String(cleanupError);
+    return {
+      ok: false,
+      result: fail(`inspect_step_views: cannot clean up captured STEP bytes. ${message}`, 'feature.kernel-failed'),
+    };
+  }
+  if (!script) {
+    return {
+      ok: false,
+      result: fail('inspect_step_views: captured STEP import did not run.', 'feature.kernel-failed'),
+    };
+  }
+  if (!script.ok) {
+    const error = snapshotPath ? script.error.replaceAll(snapshotPath, abs) : script.error;
+    return { ok: false, result: fail(error, script.errorCode ?? 'feature.kernel-failed') };
+  }
+  return { ok: true, script };
 }
 
 export async function loadImportedStep(file: string): Promise<LoadedImport | InspectStepViewsResult> {
   const abs = resolve(file);
+  let bytes: Buffer;
   try {
     await access(abs);
+    bytes = await readFile(abs);
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     return fail(`inspect_step_views: cannot read ${abs}. ${message}`, 'feature.invalid-args');
   }
-  const script = await runMcpScript({
-    code: `return await lib.fromSTEP(${JSON.stringify(abs)});`,
-  });
-  if (!script.ok) return fail(script.error, script.errorCode ?? 'feature.kernel-failed');
+  const digest = createHash('sha256').update(bytes).digest('hex').slice(0, 16);
+  const capturedImport = await importCapturedStep(abs, bytes);
+  if (!capturedImport.ok) return capturedImport.result;
+  const { script } = capturedImport;
   if (script.run.records.length === 0) return fail('Script returned no features.', 'feature.kernel-failed');
   const engine = new RecomputeEngine(createOcctLowerer(script.run.session));
   const lowered = await engine.run(script.run.records, { paramTable: script.run.paramTable });
@@ -219,7 +271,6 @@ export async function loadImportedStep(file: string): Promise<LoadedImport | Ins
     const fatal = lowered.diagnostics.find((d) => d.featureId === owner && d.severity === 'error');
     return fail(fatal?.message ?? `Feature '${owner}' has no lowered solid.`, fatal?.code ?? 'feature.kernel-failed');
   }
-  const digest = await fileDigest(abs);
   const importGeneration = `${owner}@${digest}`;
   const listed = summarizeOcctFaces(shape, script.run.records, owner);
   const edgeDetails = summarizeOcctEdges(shape, owner);
