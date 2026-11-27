@@ -6,11 +6,11 @@ import { forEachSubShape } from './subShapeWalk';
 
 function fakeWalker(downcast: (current: FakeHandle) => FakeHandle) {
   const current = new FakeHandle();
-  let explorer!: FakeExplorer;
+  const explorers: FakeExplorer[] = [];
   class ExplorerConstructor extends FakeExplorer {
     constructor() {
       super(current);
-      explorer = this;
+      explorers.push(this);
     }
   }
   const oc = {
@@ -18,7 +18,7 @@ function fakeWalker(downcast: (current: FakeHandle) => FakeHandle) {
     TopExp_Explorer_2: ExplorerConstructor,
     TopoDS: { Face_1: vi.fn(downcast) },
   };
-  return { oc, current, get explorer() { return explorer; } };
+  return { oc, current, get explorer() { return explorers[0]; } };
 }
 
 class FakeHandle {
