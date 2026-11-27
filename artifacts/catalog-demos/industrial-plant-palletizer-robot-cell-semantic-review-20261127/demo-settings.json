@@ -1,0 +1,17 @@
+{
+  "workflow": "five-preview audit -> in-place source correction -> software preview -> regenerated index -> local checks",
+  "video": "artifacts/catalog-demos/industrial-plant-palletizer-robot-cell-semantic-review-20261127/industrial-plant-palletizer-robot-cell-semantic-review.mp4",
+  "canvas": {
+    "width": 1280,
+    "height": 720
+  },
+  "frames": 6,
+  "durationSeconds": 18,
+  "ffmpeg": "ffmpeg -framerate 1/3 -c:v libx264 -r 24 -pix_fmt yuv420p -crf 24 -movflags +faststart",
+  "invocation": "python3 artifacts/catalog-demos/industrial-plant-palletizer-robot-cell-semantic-review-20261127/capture_demo.py",
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts palletizer-robot-cell",
+  "indexInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "inspectionInvocation": "python3 artifacts/catalog-demos/industrial-plant-palletizer-robot-cell-semantic-review-20261127/inspect_video.py",
+  "inspection": "video-review/inspection.json and video-review/contact-sheet.png",
+  "provenance": "Local kernelCAD source and local software-rendered preview. The branch is not deployed; the demo shows no motion simulation, manufacturing validation, or physical acceptance."
+}

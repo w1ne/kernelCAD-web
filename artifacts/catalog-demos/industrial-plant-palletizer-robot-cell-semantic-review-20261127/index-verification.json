@@ -1,0 +1,33 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/industrial-plant-palletizer-robot-cell-semantic-review-20261127/verify_asset_index.py",
+  "baseline": "origin/develop:catalog/index.json",
+  "assetCountBefore": 2402,
+  "assetCountAfter": 2402,
+  "assetIdsUnchanged": true,
+  "changedIndexRows": [
+    "industrial-plant/palletizer-robot-cell"
+  ],
+  "sourceShaMismatches": [],
+  "badPreviewPaths": [],
+  "missingPreviewFiles": [],
+  "changedAsset": {
+    "id": "industrial-plant/palletizer-robot-cell",
+    "sourceSha256": "49cc057b831b1017f094990458ea7d62f284729b21cdc0c290f05d8255fe42c8",
+    "previewSha256": "299c73f5a771abf6509b6f48d6e63d918df391eb1f349eb0a4b66aafde08b850",
+    "preview": "/assets/industrial-plant-palletizer-robot-cell.png",
+    "triangles": 7777,
+    "triangleBudget": 12000,
+    "params": [
+      "scale",
+      "concrete",
+      "steel",
+      "safetyPaint",
+      "carton"
+    ],
+    "presets": [
+      "highVisibility",
+      "weathered"
+    ]
+  },
+  "pass": true
+}

@@ -1,0 +1,17 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/industrial-plant-palletizer-robot-cell-semantic-review-20261127/verify_local_page.py /tmp/kernelcad-palletizer-robot-cell-pages-20261127",
+  "page": "/tmp/kernelcad-palletizer-robot-cell-pages-20261127/catalog/industrial-plant/palletizer-robot-cell/index.html",
+  "previewSha256": "299c73f5a771abf6509b6f48d6e63d918df391eb1f349eb0a4b66aafde08b850",
+  "checks": {
+    "title": true,
+    "updatedDescription": true,
+    "concreteControl": true,
+    "steelControl": true,
+    "safetyPaintControl": true,
+    "cartonControl": true,
+    "weatheredPreset": true,
+    "highVisibilityPreset": true,
+    "previewMatchesGeneratedSource": true
+  },
+  "pass": true
+}

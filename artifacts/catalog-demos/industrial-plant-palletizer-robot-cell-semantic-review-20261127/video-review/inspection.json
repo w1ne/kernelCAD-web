@@ -1,0 +1,22 @@
+{
+  "invocation": "python3 artifacts/catalog-demos/industrial-plant-palletizer-robot-cell-semantic-review-20261127/inspect_video.py",
+  "video": "artifacts/catalog-demos/industrial-plant-palletizer-robot-cell-semantic-review-20261127/industrial-plant-palletizer-robot-cell-semantic-review.mp4",
+  "codec": "h264",
+  "dimensions": [
+    1280,
+    720
+  ],
+  "pixelFormat": "yuv420p",
+  "durationSeconds": 18.0,
+  "decodedFrames": 6,
+  "sampleSeconds": [
+    0.8,
+    3.8,
+    6.8,
+    9.8,
+    12.8,
+    15.8
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "manualReview": "Inspected the decoded contact sheet and full-size key frames; text is legible, the before/after is clear, and local-only limits are visible."
+}

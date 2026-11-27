@@ -1,0 +1,62 @@
+{
+  "snapshotDate": "2026-11-27",
+  "baseline": "origin/develop at work start",
+  "sources": {
+    "palletizer-robot-cell": {
+      "sha256": "ed5a1f70836696f10ca7dbcf936e3e5dfc298fd8f874f9e73792ff0b28091c1b",
+      "snapshot": "before/palletizer-robot-cell.kcad.ts"
+    },
+    "centrifugal-pump": {
+      "sha256": "8bf1d5846b374fd4a2e750bfbbd9d43e60967e88278b5f6576ec28f58414382c",
+      "baselineRef": "origin/develop:catalog/kits/industrial-plant/centrifugal-pump.kcad.ts",
+      "matchesBaseline": true
+    },
+    "industrial-boiler": {
+      "sha256": "67d21d8075844cdea2d1804622d2562045bd4aee47c14a5ca55f2dbaac907a49",
+      "baselineRef": "origin/develop:catalog/kits/industrial-plant/industrial-boiler.kcad.ts",
+      "matchesBaseline": true
+    },
+    "forklift-truck": {
+      "sha256": "2b3513bf26b526d5f017469e6d1cf6013e9f063a60e8b866df502277bc22ebfe",
+      "baselineRef": "origin/develop:catalog/kits/industrial-plant/forklift-truck.kcad.ts",
+      "matchesBaseline": true
+    },
+    "distillation-column": {
+      "sha256": "15756775fb30666864eaca37a084ff0c425ed2546a2ab042a113089ade4d6654",
+      "baselineRef": "origin/develop:catalog/kits/industrial-plant/distillation-column.kcad.ts",
+      "matchesBaseline": true
+    }
+  },
+  "beforePreviews": {
+    "palletizer-robot-cell": {
+      "sha256": "2dd861002944c210aeafd68b82dce15e8c40115ee09aaba440f06288adf1a905",
+      "snapshot": "before/palletizer-robot-cell.png"
+    },
+    "centrifugal-pump": {
+      "sha256": "da9557684325eefa26e584d7226f7d3285e92af44d39353550ce7af88dd8b9be",
+      "snapshot": "preview-review/centrifugal-pump.png"
+    },
+    "industrial-boiler": {
+      "sha256": "7e720ce1bf84c9c0581561b05028809d5a5686e6f97db7d4c038ab403a8bc62f",
+      "snapshot": "preview-review/industrial-boiler.png"
+    },
+    "forklift-truck": {
+      "sha256": "a9bec1aa7dfd806d7a521537e3cc4d44f56464408defa02e80cf02eec141dd90",
+      "snapshot": "preview-review/forklift-truck.png"
+    },
+    "distillation-column": {
+      "sha256": "3955729ffc266f97e5de7105cc75dfa5034905ab5286cd56e74ab90e841a52f3",
+      "snapshot": "preview-review/distillation-column.png"
+    }
+  },
+  "after": {
+    "source": {
+      "sha256": "49cc057b831b1017f094990458ea7d62f284729b21cdc0c290f05d8255fe42c8",
+      "snapshot": "after/palletizer-robot-cell.kcad.ts"
+    },
+    "preview": {
+      "sha256": "299c73f5a771abf6509b6f48d6e63d918df391eb1f349eb0a4b66aafde08b850",
+      "snapshot": "after/palletizer-robot-cell.png"
+    }
+  }
+}

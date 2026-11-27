@@ -146061,7 +146061,7 @@
       "id": "palletizer-robot-cell",
       "kit": "industrial-plant",
       "title": "Palletizer robot cell",
-      "description": "Palletizing robot cell with a concrete floor slab, six-axis arm, pallet table, access gate and safety fence. Controls: overall scale, concrete, steel, safety paint.",
+      "description": "Compact guarded palletizing cell with an articulated robot, roller infeed, a carton-loaded timber pallet, mesh fencing and an access gate. Controls: overall scale, concrete, structural steel, safety paint, cartons; weathered and highVisibility presets.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -146080,8 +146080,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/palletizer-robot-cell.kcad.ts",
       "preview": "/assets/industrial-plant-palletizer-robot-cell.png",
-      "sourceSha256": "ed5a1f70836696f10ca7dbcf936e3e5dfc298fd8f874f9e73792ff0b28091c1b",
-      "triangleBudget": 1400,
+      "sourceSha256": "49cc057b831b1017f094990458ea7d62f284729b21cdc0c290f05d8255fe42c8",
+      "triangleBudget": 12000,
       "params": [
         {
           "name": "scale",
@@ -146093,10 +146093,16 @@
           "step": 0.05
         },
         {
+          "name": "concrete",
+          "type": "color",
+          "default": "#8a8e89",
+          "label": "Concrete floor"
+        },
+        {
           "name": "steel",
           "type": "color",
-          "default": "#6b7d84",
-          "label": "Structural steel"
+          "default": "#53636a",
+          "label": "Structural and roller steel"
         },
         {
           "name": "safetyPaint",
@@ -146105,29 +146111,32 @@
           "label": "Safety paint"
         },
         {
-          "name": "concrete",
+          "name": "carton",
           "type": "color",
-          "default": "#8a8e89",
-          "label": "Concrete floor"
+          "default": "#b47a4e",
+          "label": "Corrugated cartons"
         }
       ],
       "presets": {
         "weathered": {
           "concrete": "#777a75",
           "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "safetyPaint": "#9e722f",
+          "carton": "#805239"
         },
         "highVisibility": {
           "concrete": "#b5b8b3",
-          "safetyPaint": "#f5c640"
+          "steel": "#4b565a",
+          "safetyPaint": "#f5c640",
+          "carton": "#c58a55"
         }
       },
       "stats": {
-        "triangles": 254,
+        "triangles": 7777,
         "sizeM": [
-          0.957105,
-          0.7546,
-          0.74
+          4.2,
+          1.9,
+          3.9
         ],
         "minUpM": 0,
         "materials": 1
@@ -146142,30 +146151,90 @@
           "param": "concrete"
         },
         {
-          "name": "steel",
-          "color": "#6b7d84",
+          "name": "safetyPaint",
+          "color": "#e9a43b",
           "parts": [
-            "pallet-table",
-            "fence-panel--1",
-            "fence-panel-1",
-            "robot-waist",
-            "elbow-joint",
-            "gripper"
+            "safety-fence-frame",
+            "infeed-foot-left-1",
+            "infeed-foot-left-2",
+            "infeed-foot-left-3",
+            "infeed-foot-right-1",
+            "infeed-foot-right-2",
+            "infeed-foot-right-3",
+            "robot-arm"
+          ],
+          "param": "safetyPaint"
+        },
+        {
+          "name": "steel",
+          "color": "#53636a",
+          "parts": [
+            "rear-guard-west",
+            "rear-guard-center",
+            "rear-guard-east",
+            "rear-guard-end",
+            "entry-guard-west",
+            "access-gate",
+            "entry-guard-east",
+            "west-guard-rear",
+            "west-guard-entry",
+            "east-guard-rear",
+            "east-guard-entry",
+            "infeed-frame-left",
+            "infeed-frame-right",
+            "infeed-roller-1",
+            "infeed-roller-2",
+            "infeed-roller-3",
+            "infeed-roller-4",
+            "infeed-roller-5",
+            "infeed-roller-6",
+            "infeed-roller-7",
+            "infeed-roller-8",
+            "infeed-roller-9",
+            "infeed-roller-10",
+            "infeed-roller-11",
+            "pallet-frame",
+            "robot-base"
           ],
           "param": "steel"
         },
         {
-          "name": "safetyPaint",
-          "color": "#e9a43b",
+          "name": "carton",
+          "color": "#b47a4e",
           "parts": [
-            "fence-post--1",
-            "fence-post-1",
-            "robot-pedestal",
-            "robot-upper-arm",
-            "robot-forearm",
-            "gate-leaf"
+            "infeed-carton",
+            "pallet-carton-1-1-1",
+            "pallet-carton-1-1-2",
+            "pallet-carton-1-2-1",
+            "pallet-carton-1-2-2",
+            "pallet-carton-2-1-1",
+            "pallet-carton-2-1-2",
+            "pallet-carton-2-2-1",
+            "pallet-carton-2-2-2"
           ],
-          "param": "safetyPaint"
+          "param": "carton"
+        },
+        {
+          "name": "pallet-timber-runner-1",
+          "color": "#9d7446",
+          "parts": [
+            "pallet-timber-runner-1",
+            "pallet-timber-runner-2",
+            "pallet-timber-runner-3"
+          ]
+        },
+        {
+          "name": "pallet-timber-slat-1",
+          "color": "#b28a55",
+          "parts": [
+            "pallet-timber-slat-1",
+            "pallet-timber-slat-2",
+            "pallet-timber-slat-3",
+            "pallet-timber-slat-4",
+            "pallet-timber-slat-5",
+            "pallet-timber-slat-6",
+            "pallet-timber-slat-7"
+          ]
         }
       ]
     },

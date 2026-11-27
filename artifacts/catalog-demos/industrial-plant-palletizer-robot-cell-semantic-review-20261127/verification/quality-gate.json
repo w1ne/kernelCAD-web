@@ -1,0 +1,26 @@
+{
+  "invocations": {
+    "target": "python3 scripts/checkCatalogQuality.py --kit industrial-plant --fix-list",
+    "kit": "python3 scripts/checkCatalogQuality.py --kit industrial-plant",
+    "catalog": "python3 scripts/checkCatalogQuality.py"
+  },
+  "target": {
+    "path": "catalog/kits/industrial-plant/palletizer-robot-cell.kcad.ts",
+    "materialNamedControls": 4,
+    "presetsBlocks": 1,
+    "passes": true
+  },
+  "kitExitCode": 1,
+  "catalogExitCode": 1,
+  "failingAssets": {
+    "catalog/kits/grid-substation/substation-fire-suppression-cylinder-bank.kcad.ts": true,
+    "catalog/kits/industrial-plant/roller-conveyor-line.kcad.ts": true,
+    "catalog/kits/standard-components/beam-coupling.kcad.ts": true,
+    "catalog/kits/standard-components/din-rail.kcad.ts": true,
+    "catalog/kits/standard-components/hose-barb-adapter.kcad.ts": true,
+    "catalog/kits/standard-components/retaining-ring.kcad.ts": true
+  },
+  "allReportedFailuresMatchOriginDevelop": true,
+  "summary": "The selected asset passes. Other gate failures are retained from origin/develop and are outside this change.",
+  "pass": true
+}
