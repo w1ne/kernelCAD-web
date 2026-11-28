@@ -233176,7 +233176,7 @@
       "id": "turnout-track",
       "kit": "railway",
       "title": "Railway turnout track",
-      "description": "Rail switch turnout with a straight route, diverging branch, crossing frog and six sleepers. Editable material controls: track ballast, rail and running gear steel, concrete. Includes weathered and fresh service presets.",
+      "description": "Railway turnout with two running rails on both the straight and the diverging route: tapered switch blades with stretcher bars and a point machine, closure rails, a cast frog with wing rails, check rails opposite the frog, and long timbers on a ballast bed that follows the diverging track. Editable material controls: track ballast, rail steel, concrete timbers, point machine paint. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -233197,8 +233197,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/turnout-track.kcad.ts",
       "preview": "/assets/railway-turnout-track.png",
-      "sourceSha256": "6b2ccaa57e02551f1ed261179baf35b16b6225d0d2eb2faed9952019b1cae1dd",
-      "triangleBudget": 1800,
+      "sourceSha256": "6b2916df46699c50a4187b8382db93950d3603fa5dada68fba5ba0d5d846386a",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -233226,26 +233226,34 @@
           "type": "color",
           "default": "#aaa79c",
           "label": "Concrete"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#4f6b4c",
+          "label": "Point machine paint"
         }
       ],
       "presets": {
         "weathered": {
           "ballast": "#706a60",
           "railSteel": "#666a6a",
-          "concrete": "#9a968a"
+          "concrete": "#9a968a",
+          "paintedSteel": "#5d6a55"
         },
         "freshService": {
           "ballast": "#797367",
           "railSteel": "#56636a",
-          "concrete": "#b8b4a8"
+          "concrete": "#b8b4a8",
+          "paintedSteel": "#d0a32a"
         }
       },
       "stats": {
-        "triangles": 132,
+        "triangles": 2508,
         "sizeM": [
           1.5,
-          0.08,
-          0.613188
+          0.14,
+          0.958611
         ],
         "minUpM": 0,
         "materials": 1
@@ -233255,33 +233263,60 @@
           "name": "ballast",
           "color": "#706b62",
           "parts": [
-            "ballast"
+            "ballast-bed",
+            "ballast-shoulder"
           ],
           "param": "ballast"
-        },
-        {
-          "name": "railSteel",
-          "color": "#626b70",
-          "parts": [
-            "main-left",
-            "main-right",
-            "branch-rail",
-            "frog"
-          ],
-          "param": "railSteel"
         },
         {
           "name": "concrete",
           "color": "#aaa79c",
           "parts": [
-            "tie-1",
-            "tie-2",
-            "tie-3",
-            "tie-4",
-            "tie-5",
-            "tie-6"
+            "timber-1",
+            "timber-2",
+            "timber-3",
+            "timber-4",
+            "timber-5",
+            "timber-6",
+            "timber-7",
+            "timber-8",
+            "timber-9",
+            "timber-10",
+            "timber-11",
+            "timber-12",
+            "timber-13"
           ],
           "param": "concrete"
+        },
+        {
+          "name": "railSteel",
+          "color": "#626b70",
+          "parts": [
+            "stock-rail-straight",
+            "stock-rail-diverging",
+            "switch-blade-straight",
+            "switch-blade-curved",
+            "stretcher-bar-1",
+            "stretcher-bar-2",
+            "drive-rod",
+            "closure-rail-straight",
+            "closure-rail-curved",
+            "frog-nose",
+            "exit-rail-straight",
+            "exit-rail-diverging",
+            "check-rail-straight",
+            "check-rail-diverging"
+          ],
+          "param": "railSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#4f6b4c",
+          "parts": [
+            "point-machine",
+            "point-machine-lid"
+          ],
+          "param": "paintedSteel"
         }
       ]
     },

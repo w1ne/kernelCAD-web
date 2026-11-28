@@ -1,0 +1,11 @@
+file 'slide-01-six-preview-audit.png'
+duration 4
+file 'slide-02-before-after.png'
+duration 4
+file 'slide-03-inspection.png'
+duration 4
+file 'slide-04-part-map.png'
+duration 4
+file 'slide-05-verification.png'
+duration 4
+file 'slide-05-verification.png'

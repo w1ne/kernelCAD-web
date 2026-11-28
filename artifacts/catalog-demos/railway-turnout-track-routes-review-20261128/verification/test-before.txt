@@ -1,0 +1,5 @@
+Original source (temporary copy of the kit under /tmp; repository file not swapped).
+Run 1, full test: AssertionError: expected [ 'scale', 'ballast', …(2) ] to deeply equal [ 'scale', 'ballast', …(3) ] (no paintedSteel control)
+Run 2, control assertion removed: AssertionError: part stock-rail-straight: expected undefined to be defined
+ Test Files  1 failed (1)
+      Tests  1 failed (1)

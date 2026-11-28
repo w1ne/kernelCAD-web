@@ -1,0 +1,1 @@
+railway/turnout-track: 2508 tris (preview label; npx tsx scripts/renderCatalogPreviews.ts turnout-track; console line printed 132 from the index row before rebuild)
