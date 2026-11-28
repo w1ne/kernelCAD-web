@@ -8,6 +8,23 @@ import { parse3mfMesh, ThreeMfImportError } from './import3mf';
 
 const fixture = resolve(process.cwd(), 'docs/demos/3mf-resource-ids/generic-cube.3mf');
 const componentFixture = resolve(process.cwd(), 'docs/demos/from3mf-component-assembly/two-block-assembly.3mf');
+// lib3mf 2.5.0 output (make-fixture.py): root components object, meshes in /3D/Objects via p:path.
+const productionFixture = resolve(process.cwd(), 'examples/interoperability/3mf-production/standoff-plate.3mf');
+const ROOT_MODEL = '3D/3dmodel.model';
+const OBJECTS_MODEL = '3D/Objects/standoff_plate.model';
+
+function productionArchive(rewrite: (files: Record<string, string>) => void): Uint8Array {
+  const files = unzipSync(readFileSync(productionFixture));
+  const text: Record<string, string> = {};
+  for (const [name, data] of Object.entries(files)) text[name] = new TextDecoder().decode(data);
+  rewrite(text);
+  return zipSync(Object.fromEntries(Object.entries(text).map(([name, xml]) => [name, new TextEncoder().encode(xml)])));
+}
+
+function axisRange(positions: ArrayLike<number>, axis: number): [number, number] {
+  const values = Array.from(positions).filter((_coordinate, index) => index % 3 === axis);
+  return [Math.min(...values), Math.max(...values)];
+}
 
 function cubeArchive(rewrite: (xml: string) => string): Uint8Array {
   const files = unzipSync(readFileSync(fixture));
@@ -86,5 +103,79 @@ describe('core 3MF triangle mesh import', () => {
         '<triangle v1="10" v2="8" v3="11" />',
       ].join('')}</triangles>`));
     expect(() => parse3mfMesh(secondTetrahedron)).toThrow(/multiple mesh shells/);
+  });
+});
+
+describe('3MF Production extension (p:path model parts)', () => {
+  it('resolves components that reference objects in a separate model part', () => {
+    const mesh = parse3mfMesh(new Uint8Array(readFileSync(productionFixture)));
+
+    expect(mesh.unit).toBe('millimeter');
+    expect(mesh.bodies).toHaveLength(3);
+    expect(mesh.triangleCount).toBe(12 + 2 * 20);
+    expect(axisRange(mesh.positions, 0)).toEqual([0, 60]);
+    expect(axisRange(mesh.positions, 1)).toEqual([0, 40]);
+    expect(axisRange(mesh.positions, 2)).toEqual([0, 11]);
+    // The second standoff is turned 90 degrees: its flats face X, so it spans 50 +/- 3.464101 in X.
+    expect(axisRange(mesh.bodies[2], 0).map((value) => Number(value.toFixed(6)))).toEqual([46.535899, 53.464101]);
+    expect(axisRange(mesh.bodies[2], 1)).toEqual([16, 24]);
+  });
+
+  it('accepts the production prefix in requiredextensions, under any declared prefix', () => {
+    const required = productionArchive((files) => {
+      files[ROOT_MODEL] = files[ROOT_MODEL].replace('<model ', '<model requiredextensions="p" ');
+    });
+    expect(parse3mfMesh(required).bodies).toHaveLength(3);
+
+    const renamed = productionArchive((files) => {
+      files[ROOT_MODEL] = files[ROOT_MODEL]
+        .replace('xmlns:p=', 'xmlns:prod=')
+        .replace('<model ', '<model requiredextensions="prod" ')
+        .replaceAll('p:path=', 'prod:path=')
+        .replaceAll('p:UUID=', 'prod:UUID=');
+    });
+    expect(parse3mfMesh(renamed).bodies).toHaveLength(3);
+  });
+
+  it('finds the root model part from the package start-part relationship', () => {
+    const moved = productionArchive((files) => {
+      files['3D/main.model'] = files[ROOT_MODEL];
+      delete files[ROOT_MODEL];
+      files['_rels/.rels'] = files['_rels/.rels'].replace('Target="/3D/3dmodel.model"', 'Target="/3D/main.model"');
+    });
+    expect(parse3mfMesh(moved).bodies).toHaveLength(3);
+  });
+
+  it('refuses unresolved, nested and unit-mismatched model-part references', () => {
+    const missingPart = productionArchive((files) => {
+      delete files[OBJECTS_MODEL];
+    });
+    expect(() => parse3mfMesh(missingPart)).toThrow(/model part '\/3D\/Objects\/standoff_plate.model' is missing/);
+
+    const missingObject = productionArchive((files) => {
+      files[ROOT_MODEL] = files[ROOT_MODEL].replace('component objectid="1"', 'component objectid="9"');
+    });
+    expect(() => parse3mfMesh(missingObject)).toThrow(/references missing object '9' in '\/3D\/Objects\/standoff_plate.model'/);
+
+    const nested = productionArchive((files) => {
+      files[OBJECTS_MODEL] = files[OBJECTS_MODEL].replace(
+        '</resources>',
+        '<object id="7" type="model"><components><component objectid="1" p:path="/3D/Objects/standoff_plate.model" /></components></object></resources>',
+      );
+      files[ROOT_MODEL] = files[ROOT_MODEL].replace('component objectid="1"', 'component objectid="7"');
+    });
+    expect(() => parse3mfMesh(nested)).toThrow(/only the root model part may reference other model parts/);
+
+    const inches = productionArchive((files) => {
+      files[OBJECTS_MODEL] = files[OBJECTS_MODEL].replace('unit="millimeter"', 'unit="inch"');
+    });
+    expect(() => parse3mfMesh(inches)).toThrow(/unit 'inch' differs from the root model unit 'millimeter'/);
+  });
+
+  it('still refuses other required extensions next to the production extension', () => {
+    const slice = productionArchive((files) => {
+      files[ROOT_MODEL] = files[ROOT_MODEL].replace('<model ', '<model requiredextensions="p s" ');
+    });
+    expect(() => parse3mfMesh(slice)).toThrow(/unsupported extensions: s\./);
   });
 });

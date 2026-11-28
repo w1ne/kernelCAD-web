@@ -141,9 +141,10 @@ export type From3MFOptions = Import3mfOptions;
  * transforms and build-item transforms are applied, and each mesh instance is
  * preserved as a separate solid. Declared units are converted to mm. The
  * resulting faces are planar triangles; analytic CAD surfaces and feature
- * history are not present.
+ * history are not present. Production-extension (`p:path`) components that
+ * live in other model parts of the package are resolved.
  *
- * Required extensions, non-mesh object resources, multi-shell objects, and
+ * Other required extensions, non-mesh object resources, multi-shell objects, and
  * open or non-manifold meshes are refused so geometry is never silently
  * omitted or reinterpreted. Every imported mesh instance must become a
  * BRepCheck-valid solid.

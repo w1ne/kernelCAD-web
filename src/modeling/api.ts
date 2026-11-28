@@ -133,8 +133,9 @@ export interface PartsLib {
    * Import core 3MF mesh objects, including nested component instances made
    * from mesh leaves. Applies component/build transforms and converts declared
    * units to mm, preserving each mesh instance as a separate validated
-   * faceted B-rep solid. Required extensions, non-mesh resources, multi-shell
-   * objects, and open or non-manifold meshes are refused.
+   * faceted B-rep solid. Production-extension (`p:path`) components in other
+   * model parts are resolved. Other required extensions, non-mesh resources,
+   * multi-shell objects, and open or non-manifold meshes are refused.
    */
   from3MF(path: string, opts?: From3MFOptions): Promise<Shape>;
   /** Import full-detail STL triangles as a display-only body, without BRep sewing. */
