@@ -4,6 +4,7 @@
 import * as replicad from 'replicad';
 import { OcctBackend } from './occtBackend';
 import { buildManifoldShells, manifoldTopology, weldTriangles, type TriangleSoup } from './stlTopology';
+import { multiShellGeometryIssue } from './import3mfShells';
 import { getOC } from 'replicad';
 import { promoteClosedShell } from './surfaceSewLowerer';
 import { STL_DEFAULT_MAX_TRIANGLES } from '../../../shared/mesh/stlInfo';
@@ -64,30 +65,6 @@ type ObjectResource = { kind: 'mesh'; mesh: ObjectMesh } | { kind: 'components';
 
 const MAX_COMPONENT_DEPTH = 64;
 
-function meshShellCount(triangles: readonly [number, number, number][]): number {
-  const parent = triangles.map((_triangle, index) => index);
-  const root = (index: number): number => {
-    let current = index;
-    while (parent[current] !== current) current = parent[current];
-    while (parent[index] !== current) {
-      const next = parent[index];
-      parent[index] = current;
-      index = next;
-    }
-    return current;
-  };
-  const owner = new Map<string, number>();
-  triangles.forEach(([a, b, c], index) => {
-    for (const [p, q] of [[a, b], [b, c], [c, a]]) {
-      const key = p < q ? `${p}_${q}` : `${q}_${p}`;
-      const first = owner.get(key);
-      if (first === undefined) owner.set(key, index);
-      else parent[root(index)] = root(first);
-    }
-  });
-  return new Set(triangles.map((_triangle, index) => root(index))).size;
-}
-
 function parseObjectVertices(verticesXml: string, objectId: string): number[] {
   const vertices: number[] = [];
   const vertexRe = /<vertex\b([^>]*)\/?\s*>/gi;
@@ -120,9 +97,6 @@ function parseObjectTriangles(trianglesXml: string, vertexCount: number, objectI
     }
   }
   if (triangles.length === 0) throw new ThreeMfImportError(`3MF object ${objectId} has no triangles.`);
-  if (meshShellCount(triangles) > 1) {
-    throw new ThreeMfImportError(`3MF object ${objectId} contains multiple mesh shells; import each closed body as a separate object.`);
-  }
   return triangles;
 }
 
@@ -162,6 +136,8 @@ function parseObjectMesh(objectId: string, body: string, maxTriangles: number, p
   }
   const vertices = parseObjectVertices(verticesXml, objectId);
   const triangles = parseObjectTriangles(trianglesXml, vertices.length / 3, objectId, maxTriangles);
+  const shellIssue = multiShellGeometryIssue(vertices, triangles);
+  if (shellIssue !== undefined) throw new ThreeMfImportError(`3MF object ${objectId} ${shellIssue}`);
   return { kind: 'mesh', mesh: { vertices, triangles } };
 }
 
