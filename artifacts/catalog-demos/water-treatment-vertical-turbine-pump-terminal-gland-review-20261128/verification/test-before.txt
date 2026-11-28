@@ -1,0 +1,72 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ❯ tests/integration/catalog/verticalTurbinePumpTerminalGland.test.ts (3 tests | 3 failed) 2196ms
+     × seats the cable gland on the terminal box underside 817ms
+     × rejects the original gland that floated beside the terminal cover 1ms
+     × keeps the gland seated at both scale limits 668ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/verticalTurbinePumpTerminalGland.test.ts > water-treatment/vertical-turbine-pump terminal gland > seats the cable gland on the terminal box underside
+AssertionError: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "terminal-gland: not seated on the box underside",
++   "terminal-gland: outside the box footprint",
++ ]
+
+ ❯ tests/integration/catalog/verticalTurbinePumpTerminalGland.test.ts:78:51
+     76|     expect(asset.stats.triangles).toBeLessThanOrEqual(asset.triangleBu…
+     77|     expect(asset.palette.find((zone) => zone.name === 'stainlessSteel'…
+     78|     expect(glandFailures(await namedBounds(glb))).toEqual([]);
+       |                                                   ^
+     79|   }, 120_000);
+     80| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/integration/catalog/verticalTurbinePumpTerminalGland.test.ts > water-treatment/vertical-turbine-pump terminal gland > rejects the original gland that floated beside the terminal cover
+AssertionError: expected '// Vertical-turbine pump head: a long…' not to be '// Vertical-turbine pump head: a long…' // Object.is equality
+ ❯ tests/integration/catalog/verticalTurbinePumpTerminalGland.test.ts:83:22
+     81|   it('rejects the original gland that floated beside the terminal cove…
+     82|     const code = source.replace(/^pump\.part\('terminal-gland'.*$/m, o…
+     83|     expect(code).not.toBe(source);
+       |                      ^
+     84|     expect(glandFailures(await variant(code))).toEqual(expect.arrayCon…
+     85|       'terminal-gland: not seated on the box underside',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/integration/catalog/verticalTurbinePumpTerminalGland.test.ts > water-treatment/vertical-turbine-pump terminal gland > keeps the gland seated at both scale limits
+AssertionError: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "terminal-gland: not seated on the box underside",
++   "terminal-gland: outside the box footprint",
++ ]
+
+ ❯ tests/integration/catalog/verticalTurbinePumpTerminalGland.test.ts:94:50
+     92|       const code = source.replace("param('scale', 1,", `param('scale',…
+     93|       expect(code).not.toBe(source);
+     94|       expect(glandFailures(await variant(code))).toEqual([]);
+       |                                                  ^
+     95|     }
+     96|   }, 120_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  00:47:38
+   Duration  16.21s (transform 4.45s, setup 93ms, import 13.36s, tests 2.20s, environment 0ms)
+

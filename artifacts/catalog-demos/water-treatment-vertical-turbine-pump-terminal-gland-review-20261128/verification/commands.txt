@@ -1,0 +1,10 @@
+All commands run from the kernelCAD-web repository root.
+  npx eslint catalog/kits/water-treatment/ tests/integration/catalog/verticalTurbinePumpTerminalGland.test.ts
+  npx vitest run tests/integration/catalog/verticalTurbinePumpTerminalGland.test.ts   # before (original source) and after
+  node dist/cli/index.js render inspect <copy>/vertical-turbine-pump.kcad.ts <out>      # before and after
+  npx tsx scripts/renderCatalogPreviews.ts vertical-turbine-pump
+  npx tsx scripts/buildAssetCatalog.ts
+  python3 scripts/checkCatalogQuality.py --kit water-treatment
+  python3 scripts/checkCatalogQuality.py
+  npx vitest run tests/integration/catalog/
+  python3 artifacts/catalog-demos/water-treatment-vertical-turbine-pump-terminal-gland-review-20261128/make_demo.py

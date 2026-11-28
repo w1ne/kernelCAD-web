@@ -1,0 +1,5 @@
+
+  50/50 assets pass (100.00%; 1 rich kits, 0 thin kits)
+
+  2396/2402 assets pass (99.75%; 47 rich kits, 0 thin kits)
+  6 thin assets = 0.25% of the catalog
