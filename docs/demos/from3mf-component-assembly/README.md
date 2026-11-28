@@ -26,8 +26,11 @@ transforms place the two cubes apart.
 
 This is local API and OCCT recompute replay. It does not show solver simulation,
 deployed behavior, slicer acceptance, or hardware acceptance. Import is limited
-to core component trees made from closed, consistently oriented, single-shell
-triangle meshes. Required extensions, unresolved or cyclic references,
-non-mesh resources, multi-shell objects, open meshes, non-manifold meshes, and
-material appearance are not imported. The result has planar triangle faces,
-without analytic source surfaces or feature history.
+to core component trees made from closed, consistently oriented triangle meshes.
+Required extensions, unresolved or cyclic references, non-mesh resources, open
+meshes, non-manifold meshes, and material appearance are not imported. A mesh
+object can contain separate outward-facing shells when their axis-aligned bounds
+are pairwise disjoint; touching, overlapping, nested, inward-facing, or
+zero-volume shells are refused. See the
+[disconnected shells demo](../from3mf-disconnected-shells/README.md). The result
+has planar triangle faces, without analytic source surfaces or feature history.

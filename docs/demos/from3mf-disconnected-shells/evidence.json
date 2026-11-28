@@ -1,0 +1,79 @@
+{
+  "scope": "Local .kcad.ts API capture and OCCT B-rep recompute; no deployed behavior or hardware acceptance.",
+  "invocation": "node --import tsx docs/demos/from3mf-disconnected-shells/capture-demo.mts",
+  "script": "import-two-shells.kcad.ts",
+  "sourceSha256": "80b0c6b07ec09eadbb01ffad9937b0aef02073bc440b7684a2172077fc2049fa",
+  "implementation": {
+    "src/modeling/api.ts": "8e424cbe528c8e4c91cbb87bdd0438e473942a542a14f3b33a5c5030bae3ac13",
+    "src/modeling/parts/fromMeshFormats.ts": "cf0d12ba9dbd50c1dbc438d85fce05d06d5b6f35e24b1a9a6bb0cd8d61b9c9b4",
+    "src/kernel/backends/occt/import3mf.ts": "a09e2aa864495a926489a4bfc96acca91aedd7d732a638b847a5217ac3875e60",
+    "src/kernel/backends/occt/import3mfShells.ts": "602f4e4a4fa747715f43b9172460bed3109c85cfa6db181e7c3101cde18c071f",
+    "src/kernel/backends/occt/stlTopology.ts": "816ab360d88bdd38589db40a35084474d34f345a2c18d581bcc0ef508d65b5b6"
+  },
+  "fixture": "two-disconnected-solids.3mf",
+  "fixtureSha256": "aa4796a74a684c12e13dfe18a320b54e2bdf888130e3ae1d79513afc8678bba1",
+  "environment": {
+    "node": "v22.23.4",
+    "meshing": {
+      "toleranceMm": 0.05,
+      "angularToleranceRadians": 0.3
+    }
+  },
+  "input": {
+    "format": "3mf",
+    "unit": "millimeter",
+    "triangleCount": 16,
+    "meshObjects": 1,
+    "disconnectedShells": 2
+  },
+  "assembly": {
+    "volumeMm3": 1020.8333333333334,
+    "boundsMm": {
+      "min": [
+        0,
+        0,
+        0
+      ],
+      "max": [
+        25,
+        10,
+        10
+      ]
+    },
+    "solidCount": 2,
+    "brepCheckValid": true
+  },
+  "boolean": {
+    "operation": "subtract a radius 2 mm through-cylinder from the cube shell",
+    "volumeMm3": 895.1696271897418,
+    "removedVolumeMm3": 125.66370614359153,
+    "expectedRemovedVolumeMm3": 125.66370614359172,
+    "boundsMm": {
+      "min": [
+        0,
+        0,
+        0
+      ],
+      "max": [
+        25,
+        10,
+        10
+      ]
+    },
+    "solidCount": 2,
+    "brepCheckValid": true
+  },
+  "checks": {
+    "oneMeshObject": true,
+    "twoIndependentSolids": true,
+    "assemblyBrepValid": true,
+    "booleanBrepValid": true,
+    "noErrorDiagnostics": true,
+    "volumeMatches": true
+  },
+  "diagnostics": [],
+  "geometryFile": "geometry.json",
+  "deployed": false,
+  "simulationRun": false,
+  "hardwareAccepted": false
+}
