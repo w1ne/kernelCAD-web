@@ -111,6 +111,7 @@ pump.part('motor-fan-cowl', c(0, 0, 1370, 58, 149, 12).color(motorFinish));
 pump.part('motor-fan-cap', c(0, 0, 1422, 22, 94, 12).color(stainlessSteel));
 pump.part('terminal-box', b(130, 0, 1158, 155, 132, 120).color(motorFinish));
 pump.part('terminal-cover', b(209, 0, 1177, 10, 106, 82).color(structuralSteel));
-pump.part('terminal-gland', loftCylinder(36, 22, 8).rotateY(90).translate(280, 0, 1188).scale(scale).color(stainlessSteel));
+// The cable gland enters through the underside of the terminal box, the usual drip-safe entry on an outdoor motor.
+pump.part('terminal-gland', c(180, 0, 1122, 36, 22, 8).color(stainlessSteel));
 
 return pump.model();

@@ -1,0 +1,7 @@
+file 'slide-01-preview.png'
+duration 4
+file 'slide-02-inspect.png'
+duration 4
+file 'slide-03-verification.png'
+duration 4
+file 'slide-03-verification.png'
