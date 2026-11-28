@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Plate whose cut-outs are <symbol> elements with their own viewBox, as
+     Illustrator writes symbols, placed by <use> with x/y/width/height, for
+     lib.fromSVG. Plate: 90 x 40 mm.
+     Holes: symbol "m3" (viewBox -50 -50 100 100, r 17 circle) used at
+       10 x 10 mm, so each hole is r 1.7 mm (M3 clearance), centred at
+       (10, 10), (80, 10), (10, 30) and (80, 30).
+     Slot: symbol "slot" (viewBox 0 0 20 4, fully-rounded 20 x 4 rect) used
+       in a 30 x 12 mm viewport with the default xMidYMid meet: scale 1.5,
+       centred vertically, so the slot is 30 x 6 mm at x 30..60, y 11..17.
+     Vent: symbol "vent" (viewBox 0 0 4 10, preserveAspectRatio none,
+       right triangle) stretched to 8 x 15 mm at x 40, y 22.
+     Area: 3600 - 4 (2.89 pi) - (180 - 36 + 9 pi) - 60
+         = 3396 - 20.56 pi mm^2. -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="90mm" height="40mm" viewBox="0 0 90 40">
+  <defs>
+    <symbol id="m3" viewBox="-50 -50 100 100">
+      <circle r="17" fill="#fff"/>
+    </symbol>
+    <symbol id="slot" viewBox="0 0 20 4">
+      <rect width="20" height="4" rx="2" fill="#fff"/>
+    </symbol>
+    <symbol id="vent" viewBox="0 0 4 10" preserveAspectRatio="none">
+      <polygon points="0,0 4,0 0,10" fill="#fff"/>
+    </symbol>
+  </defs>
+  <rect x="0" y="0" width="90" height="40" fill="#888"/>
+  <use xlink:href="#m3" x="5" y="5" width="10" height="10"/>
+  <use xlink:href="#m3" x="75" y="5" width="10" height="10"/>
+  <use xlink:href="#m3" x="5" y="25" width="10" height="10"/>
+  <use xlink:href="#m3" x="75" y="25" width="10" height="10"/>
+  <use href="#slot" x="30" y="8" width="30" height="12"/>
+  <use href="#vent" x="40" y="22" width="8" height="15"/>
+</svg>

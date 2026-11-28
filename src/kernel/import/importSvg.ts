@@ -76,6 +76,7 @@ import {
   isSimilarity,
   lengthToMm,
   parseViewBox,
+  parsePreserveAspectRatio,
   scanNumberAt,
   scanTags,
   type Matrix,
@@ -862,37 +863,6 @@ interface SvgPlacement {
   scale: number;
   unitSource: string;
   flippedAboutViewBox: boolean;
-}
-
-interface AspectRatio {
-  /** 0 = Min, 0.5 = Mid, 1 = Max. */
-  alignX: number;
-  alignY: number;
-  mode: 'meet' | 'slice' | 'none';
-  token: string;
-}
-
-const DEFAULT_ASPECT_RATIO: AspectRatio = { alignX: 0.5, alignY: 0.5, mode: 'meet', token: 'xMidYMid' };
-
-/** SVG `preserveAspectRatio`: an alignment token plus `meet`/`slice`, or
- *  `none`. Missing or invalid values use the spec default `xMidYMid meet`. */
-function parsePreserveAspectRatio(raw: string | undefined): AspectRatio {
-  if (raw === undefined) return DEFAULT_ASPECT_RATIO;
-  const tokens = raw.trim().split(/\s+/).filter(token => token.length > 0 && token !== 'defer');
-  const align = tokens[0];
-  if (align === 'none') return { alignX: 0, alignY: 0, mode: 'none', token: 'none' };
-  const match = align === undefined ? null : /^x(Min|Mid|Max)Y(Min|Mid|Max)$/.exec(align);
-  if (match === null) return DEFAULT_ASPECT_RATIO;
-  return {
-    alignX: axisFraction(match[1]),
-    alignY: axisFraction(match[2]),
-    mode: tokens[1] === 'slice' ? 'slice' : 'meet',
-    token: align,
-  };
-}
-
-function axisFraction(token: string | undefined): number {
-  return token === 'Min' ? 0 : token === 'Max' ? 1 : 0.5;
 }
 
 /** A `height` with a known length: an absolute unit or a unitless CSS pixel
