@@ -1,0 +1,121 @@
+{
+  "scope": "Local .kcad.ts API capture and OCCT B-rep recompute; no deployed behavior or hardware acceptance.",
+  "invocation": "node --import tsx docs/demos/fromstl-sealed-cavity/capture-demo.mts",
+  "script": "port-sealed-float.kcad.ts",
+  "sourceSha256": "20dd71317f8806f80f7d8a949862121a8bce48718dee65924ad4bb994fd6b7d1",
+  "implementation": {
+    "src/modeling/parts/fromMeshFormats.ts": "2cbd1050cdd27cc0f186481ab839f9536352d0d15ac930cae6d8a545f3dc8f00",
+    "src/kernel/backends/occt/importStl.ts": "9c68ec1706f992831d891918b0a77e87a31e9847fe3d37ef153954d54b36d4ce",
+    "src/kernel/backends/occt/stlCavities.ts": "31103c5ef8d0d96f71d730f6014a071dddbfea7748b0a5acc74e8602d49276d7",
+    "src/kernel/backends/occt/stlTopology.ts": "816ab360d88bdd38589db40a35084474d34f345a2c18d581bcc0ef508d65b5b6"
+  },
+  "fixture": "sealed-float.stl",
+  "fixtureSha256": "e5804350aba46e4f0cd44d16f38eedd9b5efaf2017faa16d962ecc7c45afa0cf",
+  "fixtureWriter": "Blender 4.0.2 (examples/interoperability/stl-sealed-cavity/make-fixture.py)",
+  "environment": {
+    "node": "v22.23.4",
+    "meshing": {
+      "toleranceMm": 0.05,
+      "angularToleranceRadians": 0.3
+    }
+  },
+  "input": {
+    "format": "stl",
+    "triangleCount": 248,
+    "meshShells": 2,
+    "inwardFacingShells": 1
+  },
+  "expected": {
+    "volumeMm3": 12810.410904867047,
+    "portRemovedVolumeMm3": 169.64600329384882
+  },
+  "beforeChange": {
+    "note": "Measured on origin/develop 6347a295f with the same fixture and port.",
+    "float": {
+      "volumeMm3": 12810.410946030353,
+      "solidCount": 2
+    },
+    "ported": {
+      "volumeMm3": 1413.7166941154428,
+      "solidCount": 3
+    }
+  },
+  "float": {
+    "volumeMm3": 12810.410946030353,
+    "boundsMm": {
+      "min": [
+        -15,
+        -15,
+        0
+      ],
+      "max": [
+        15,
+        15,
+        40
+      ]
+    },
+    "solidCount": 1,
+    "shellCount": 2,
+    "brepCheckValid": true
+  },
+  "ported": {
+    "volumeMm3": 12640.764942736498,
+    "boundsMm": {
+      "min": [
+        -15,
+        -15,
+        0
+      ],
+      "max": [
+        15,
+        15,
+        40
+      ]
+    },
+    "solidCount": 1,
+    "shellCount": 1,
+    "brepCheckValid": true,
+    "removedVolumeMm3": 169.64600329385576
+  },
+  "floatSection": {
+    "volumeMm3": 6405.2054730151585,
+    "boundsMm": {
+      "min": [
+        -15,
+        -3.552713678800501e-15,
+        0
+      ],
+      "max": [
+        15,
+        15,
+        40
+      ]
+    },
+    "solidCount": 1,
+    "shellCount": 1,
+    "brepCheckValid": true
+  },
+  "portedSection": {
+    "volumeMm3": 6320.382471368248,
+    "boundsMm": {
+      "min": [
+        -15,
+        -3.552713678800501e-15,
+        0
+      ],
+      "max": [
+        15,
+        15,
+        40
+      ]
+    },
+    "solidCount": 1,
+    "shellCount": 1,
+    "brepCheckValid": true
+  },
+  "diagnostics": [],
+  "geometryFile": "geometry.json",
+  "deployed": false,
+  "simulationRun": false,
+  "hardwareAccepted": false
+}

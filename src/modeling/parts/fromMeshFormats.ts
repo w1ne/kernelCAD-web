@@ -288,6 +288,9 @@ export async function meshFromGLB(
  *
  * A mesh that does not close into a valid solid is refused by default rather
  * than returned as an open shell; see `opts.allowOpen`.
+ *
+ * A hollow part's sealed void (an inward-facing shell inside an outward-facing
+ * one) is imported as an inner shell of the solid around it.
  */
 export async function fromSTL(
   ctx: FromFileContext,

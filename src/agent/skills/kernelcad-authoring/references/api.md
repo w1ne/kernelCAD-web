@@ -232,6 +232,9 @@ lib.fromBREP(path: string): Promise<Shape>;
 // fromSTEP/fromBREP whenever the source is available.
 // A non-watertight mesh is REFUSED by default rather than silently returned as
 // an open shell whose volume and booleans would be meaningless.
+// Separate closed bodies import as a compound of solids. A sealed void (an
+// inward-facing shell inside an outward-facing one) stays a void of that solid,
+// so a cut through a hollow part removes wall material only.
 lib.fromSTL(path: string, opts?: {
   tolerance?: number;     // vertex-merge distance, mm (default 1e-6); raise for
                           // third-party meshes with non-bit-identical vertices
