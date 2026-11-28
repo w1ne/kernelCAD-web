@@ -18,6 +18,7 @@ import { encodeBinaryStlBytes } from './exportStlBinary';
 import { verifyWatertight, type WatertightReport } from './meshHeal';
 import { isOcctInitialized } from './backendInit';
 import { meshShapeForExport, type ExportMeshDeflection } from './backendMesh';
+import { analysisMesh } from './analysisMesh';
 import { sharedAnalysisMesh } from './analysisMeshScope';
 import { completeLoftFromLifted } from './polyhedralRuledLoft';
 import { planeSplitCutters } from '../../geometry/planeSplitCutters';
@@ -1267,14 +1268,7 @@ export class OcctBackend implements ShapeBackend {
     // plausibility suites.
     //
     // angularTolerance is RADIANS (see meshing.ts MeshOptions): 0.3 rad ~ 17°.
-    return sharedAnalysisMesh(this, () => {
-      const meshed = this.shape.mesh({ tolerance: 0.05, angularTolerance: 0.3 });
-      return {
-        positions: new Float32Array(meshed.vertices),
-        normals: new Float32Array(meshed.normals ?? new Array(meshed.vertices.length).fill(0)),
-        indices: new Uint32Array(meshed.triangles),
-      };
-    });
+    return sharedAnalysisMesh(this, () => analysisMesh(this.shape, { tolerance: 0.05, angularTolerance: 0.3 }));
   }
 
   exportSTL(): Uint8Array {
