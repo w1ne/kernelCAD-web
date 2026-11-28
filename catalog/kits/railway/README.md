@@ -45,7 +45,7 @@ The [quality-promotion demo bundle](../../../artifacts/catalog-demos/railway-qua
 | `ticket-barrier` | Railway ticket barrier | Station ticket gate with a pedestal reader, swing flap, card sensor and side rail. | scale · painted steel · display glass · bare aluminum | weathered · freshService | 116 |
 | `timetable-board` | Station timetable board | Freestanding station timetable board with a framed display panel, roof cap and twin post supports. | scale · railway enamel · brass · painted steel | weathered · freshService | 84 |
 | `track-switch-lever` | Track switch lever | Manual track switch lever with a weighted base, upright handle, counterweight and connecting rod. | scale · painted steel · galvanized steel · rubber | weathered · freshService | 136 |
-| `turnout-track` | Railway turnout track | Rail switch turnout with a straight route, diverging branch, crossing frog and six sleepers. | scale · track ballast · rail and running gear steel · concrete | weathered · freshService | 132 |
+| `turnout-track` | Railway turnout track | Railway turnout with two running rails on both the straight and the diverging route: tapered switch blades with stretcher bars and a point machine, closure rails, a cast frog with wing rails, check rails opposite the frog, and long timbers on a ballast bed that follows the diverging track. | scale · track ballast · rail and running gear steel · concrete · point machine paint | weathered · freshService | 2508 |
 
 ## Rebuild and verify
 

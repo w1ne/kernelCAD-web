@@ -1,0 +1,4 @@
+npx vitest run tests/integration/catalog/ --maxWorkers=2
+ Test Files  231 passed (231)
+      Tests  388 passed (388)
+exit 0
