@@ -15,7 +15,7 @@ are unchanged.
 
 `tests/integration/catalog/verticalTurbinePumpTerminalGland.test.ts` reads
 exported-GLB part bounds. It requires the gland to sit on the box underside,
-inside the box footprint, and clear of the motor housing, first cooling rib and
+inside the box footprint, and clear of the motor housing, all six cooling ribs and
 pedestal, at scale 1, 0.7 and 1.3. On the original source it reports
 `not seated on the box underside` and `outside the box footprint`; on the fixed
 source it passes 3/3. Logs and before/after renders are in the

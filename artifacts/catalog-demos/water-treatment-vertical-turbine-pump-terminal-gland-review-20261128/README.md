@@ -24,9 +24,9 @@ and [after](after/vertical-turbine-pump.kcad.ts) sources.
   underside` and `outside the box footprint`
   ([raw log](verification/test-before.txt)). On the fixed source it passes 3/3
   ([raw log](verification/test-after.txt)), including scale 0.7 and 1.3.
-- `npx eslint catalog/kits/water-treatment/` and the new test: clean (exit 0).
+- `npx eslint catalog/kits/water-treatment/` and the new test: clean ([log](verification/eslint.txt)).
 - `python3 scripts/checkCatalogQuality.py --kit water-treatment`: 50/50 (100%);
-  global 2,396/2,402 (99.75%), unchanged.
+  global 2,396/2,402 (99.75%), unchanged ([log](verification/quality.txt)).
 - Preview re-rendered; `catalog/index.json` regenerated. Only the pump row's
   `sourceSha256` changed; it matches the committed source.
 - `npx vitest run tests/integration/catalog/`: 230/230 files, 387/387 tests
@@ -37,7 +37,7 @@ and [after](after/vertical-turbine-pump.kcad.ts) sources.
 `kernelcad render inspect` shows a `mechanism.interpenetration` badge on this
 asset before and after the change (see the uncropped `inspect-*.png` files). It
 is pre-existing and not addressed here; the demo slide 2 crop omits it. The test
-checks that the gland itself is clear of the motor housing, first rib and
+checks that the gland itself is clear of the motor housing, all six ribs and
 pedestal. These are local software renders and GLB bounds checks only; nothing
 is deployed and no equipment performance or hardware acceptance is shown.
 

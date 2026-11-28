@@ -1,13 +1,13 @@
 
  RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
 
- ✓ tests/integration/catalog/verticalTurbinePumpTerminalGland.test.ts (3 tests) 3070ms
-     ✓ seats the cable gland on the terminal box underside  888ms
-     ✓ rejects the original gland that floated beside the terminal cover  618ms
-     ✓ keeps the gland seated at both scale limits  1290ms
+ ✓ tests/integration/catalog/verticalTurbinePumpTerminalGland.test.ts (3 tests) 2898ms
+     ✓ seats the cable gland on the terminal box underside  834ms
+     ✓ rejects the original gland that floated beside the terminal cover  597ms
+     ✓ keeps the gland seated at both scale limits  1218ms
 
  Test Files  1 passed (1)
       Tests  3 passed (3)
-   Start at  00:47:54
-   Duration  8.18s (transform 3.94s, setup 77ms, import 4.92s, tests 3.07s, environment 0ms)
+   Start at  01:13:41
+   Duration  7.78s (transform 3.78s, setup 72ms, import 4.70s, tests 2.90s, environment 0ms)
 

@@ -53,7 +53,7 @@ function glandFailures(parts: Map<string, Bounds>): string[] {
   if (Math.abs(gland.max[1]! - box.min[1]!) > tolerance) failures.push('terminal-gland: not seated on the box underside');
   if ([0, 2].some((axis) => gland.min[axis]! < box.min[axis]! - tolerance || gland.max[axis]! > box.max[axis]! + tolerance))
     failures.push('terminal-gland: outside the box footprint');
-  for (const name of ['motor-housing', 'motor-cooling-rib-1', 'motor-pedestal']) {
+  for (const name of ['motor-housing', ...Array.from({ length: 6 }, (_, i) => `motor-cooling-rib-${i + 1}`), 'motor-pedestal']) {
     const other = parts.get(name)!;
     if ([0, 1, 2].every((axis) => overlaps(gland, other, axis))) failures.push(`terminal-gland: intersects ${name}`);
   }
