@@ -1,0 +1,16 @@
+
+ RUN  v4.0.18 /data/worktrees/hermes-kernelcad-web-qa-20261110
+
+stdout | tests/integration/export/stlExportPeakMemory1585.test.ts > STL export peak memory (#1585) > exports a 600k-triangle part within 300 MB of extra peak RSS
+STL_MEMORY_STAGE after-mesh=413.66 MB
+STL_MEMORY_STAGE after-verify=421.78 MB
+STL_MEMORY_STAGE after-encode=453.41 MB
+STL_MEMORY_EVIDENCE baseline=171.53 MB peak=453.41 MB delta=281.88 MB triangles=644040
+
+ ↓ tests/integration/export/stlExportPeakMemory1585.test.ts > STL export peak memory (#1585) > meshes a moved, drilled part to the same vertices and triangles as the replicad read-back
+ ✓ tests/integration/export/stlExportPeakMemory1585.test.ts > STL export peak memory (#1585) > exports a 600k-triangle part within 300 MB of extra peak RSS 8254ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 1 skipped (2)
+   Start at  11:33:43
+   Duration  9.25s (transform 494ms, setup 68ms, import 548ms, tests 8.53s, environment 0ms)

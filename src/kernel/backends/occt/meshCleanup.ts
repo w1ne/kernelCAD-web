@@ -68,10 +68,12 @@ const MAX_FLIPS_PER_TRIANGLE = 16;
 export function cleanupExportMesh(
   mesh: CleanupMesh,
   tolerance: number = MESH_CLEANUP_TOLERANCE_MM,
+  /** Set after the caller has validated this exact triangle array. */
+  manifoldAlreadyChecked = false,
 ): MeshCleanupStats {
   const trianglesBefore = mesh.triangles.length / 3;
   const stats: MeshCleanupStats = { applied: false, collapsed: 0, flipped: 0, trianglesBefore, trianglesAfter: trianglesBefore };
-  if (trianglesBefore < 4 || !isClosedEdgeManifold(mesh.triangles)) return stats;
+  if (trianglesBefore < 4 || (!manifoldAlreadyChecked && !isClosedEdgeManifold(mesh.triangles))) return stats;
 
   const state = new CleanupState(mesh);
   const collapseTolerance = Math.min(tolerance, COLLAPSE_PLANE_TOLERANCE_MM * Math.max(1, state.scale));
@@ -80,12 +82,6 @@ export function cleanupExportMesh(
   if (stats.collapsed > 0) {
     // Collapsed vertices must be remapped; compact the existing arrays in place.
     state.writeBack(mesh);
-  } else if (stats.flipped > 0) {
-    // Edge flips only change face indices. Keep the original vertex array,
-    // including geometric extrema that the tessellator has not referenced.
-    // Recompacting vertices after a flip once lifted the boat fender's
-    // published lower bound from Z=0 to Z=2 mm.
-    for (let i = 0; i < mesh.triangles.length; i++) mesh.triangles[i] = state.T[i];
   }
   stats.applied = true;
   stats.trianglesAfter = mesh.triangles.length / 3;
@@ -123,7 +119,7 @@ function sortedDirectedEdges(triangles: ArrayLike<number>, stride: number): Floa
   return edges;
 }
 
-function isClosedEdgeManifold(triangles: ArrayLike<number>): boolean {
+export function isClosedEdgeManifold(triangles: ArrayLike<number>): boolean {
   const n = triangles.length;
   if (n % 3 !== 0) return false;
   const maxIndex = maxReferencedIndex(triangles);
@@ -144,8 +140,10 @@ function isClosedEdgeManifold(triangles: ArrayLike<number>): boolean {
 }
 
 class CleanupState {
-  readonly V: Float64Array;
-  readonly T: Int32Array;
+  /** Input vertices are read-only; snapshot only if a collapse compacts them. */
+  readonly V: readonly number[];
+  /** Topology edits are applied in place; no full second index buffer. */
+  readonly T: number[];
   readonly alive: Uint8Array;
   /** Triangles around each vertex (may hold dead entries; filtered on read),
    *  in flat CSR form: vertex v owns starData[starStart[v], starStart[v + 1])
@@ -156,20 +154,26 @@ class CleanupState {
   readonly starLen: Int32Array;
   readonly starData: Int32Array;
   readonly starOverflow = new Map<number, number[]>();
+  /** Reusable 1-ring storage avoids one short-lived Set per visited vertex. */
+  readonly ringSeen: Uint32Array;
+  readonly ringVertices: Int32Array;
+  private ringGeneration = 0;
   readonly scale: number;
   /** Preserve the exact mesh envelope when merging vertices. */
   readonly min: Float64Array;
   readonly max: Float64Array;
 
   constructor(mesh: CleanupMesh) {
-    this.V = Float64Array.from(mesh.vertices);
-    this.T = Int32Array.from(mesh.triangles);
+    this.V = mesh.vertices;
+    this.T = mesh.triangles;
     const nt = this.T.length / 3;
     this.alive = new Uint8Array(nt).fill(1);
     const nv = this.V.length / 3;
     this.starStart = new Int32Array(nv + 1);
     this.starLen = new Int32Array(nv);
     this.starData = new Int32Array(this.T.length);
+    this.ringSeen = new Uint32Array(nv);
+    this.ringVertices = new Int32Array(nv);
     for (let i = 0; i < this.T.length; i++) this.starStart[this.T[i] + 1]++;
     for (let v = 0; v < nv; v++) this.starStart[v + 1] += this.starStart[v];
     for (let t = 0; t < nt; t++) {
@@ -299,10 +303,23 @@ class CleanupState {
     return dx * dx + dy * dy + dz * dz;
   }
 
-  ring(v: number, star: Star): Set<number> {
-    const r = new Set<number>();
-    for (const t of star) for (let k = 0; k < 3; k++) { const x = this.T[3 * t + k]; if (x !== v) r.add(x); }
-    return r;
+  ring(v: number, star: Star): number {
+    this.ringGeneration = (this.ringGeneration + 1) >>> 0;
+    if (this.ringGeneration === 0) {
+      this.ringSeen.fill(0);
+      this.ringGeneration = 1;
+    }
+    const generation = this.ringGeneration;
+    let count = 0;
+    for (const t of star) {
+      for (let k = 0; k < 3; k++) {
+        const x = this.T[3 * t + k];
+        if (x === v || this.ringSeen[x] === generation) continue;
+        this.ringSeen[x] = generation;
+        this.ringVertices[count++] = x;
+      }
+    }
+    return count;
   }
 
   /**
@@ -313,41 +330,45 @@ class CleanupState {
   collapseFlatVertices(planeTolerance: number): number {
     let collapsed = 0;
     const nv = this.V.length / 3;
-    const queue: number[] = [];
-    for (let v = 0; v < nv; v++) queue.push(v);
+    const queue = new Int32Array(nv);
+    for (let v = 0; v < nv; v++) queue[v] = v;
+    let queueLength = nv;
     const queued = new Uint8Array(nv).fill(1);
     const nOld = new Float64Array(3);
     const nNew = new Float64Array(3);
-    while (queue.length > 0) {
-      const v = queue.pop()!;
+    while (queueLength > 0) {
+      const v = queue[--queueLength];
       queued[v] = 0;
       const star = this.liveStar(v);
       if (star.length < 3) continue;
-      const ringV = this.ring(v, star);
+      const ringCount = this.ring(v, star);
       let target = -1;
-      for (const u of ringV) {
-        if (this.canCollapse(v, u, star, ringV, planeTolerance, nOld, nNew)) { target = u; break; }
+      for (let i = 0; i < ringCount; i++) {
+        const u = this.ringVertices[i];
+        if (this.canCollapse(v, u, star, ringCount, planeTolerance, nOld, nNew)) { target = u; break; }
       }
       if (target < 0) continue;
       this.collapse(v, target, star);
       collapsed++;
-      for (const x of this.ring(target, this.liveStar(target))) {
-        if (!queued[x]) { queued[x] = 1; queue.push(x); }
+      const targetRingCount = this.ring(target, this.liveStar(target));
+      for (let i = 0; i < targetRingCount; i++) {
+        const x = this.ringVertices[i];
+        if (!queued[x]) { queued[x] = 1; queue[queueLength++] = x; }
       }
-      if (!queued[target]) { queued[target] = 1; queue.push(target); }
+      if (!queued[target]) { queued[target] = 1; queue[queueLength++] = target; }
     }
     return collapsed;
   }
 
   canCollapse(
-    v: number, u: number, star: Star, ringV: Set<number>, planeTolerance: number,
+    v: number, u: number, star: Star, ringCount: number, planeTolerance: number,
     nOld: Float64Array, nNew: Float64Array,
   ): boolean {
     // A topological collapse must not erase an extreme tip and shrink the
     // part's envelope. This protects grounded CAD assets (boat-fender) and
     // hard dimensional interfaces even when all adjacent faces are planar.
     if (!this.preservesEnvelope(v, u)) return false;
-    if (!this.linkConditionHolds(u, ringV)) return false;
+    if (!this.linkConditionHolds(u, ringCount)) return false;
     let removed = 0;
     for (const t of star) {
       const a = this.T[3 * t], b = this.T[3 * t + 1], c = this.T[3 * t + 2];
@@ -375,10 +396,11 @@ class CleanupState {
   /** v and u share exactly the two vertices opposite edge uv.
    *  Search the short incident-star list directly. Building a fresh Set for
    *  every candidate edge generated substantial garbage on dense meshes. */
-  linkConditionHolds(u: number, ringV: Set<number>): boolean {
+  linkConditionHolds(u: number, ringCount: number): boolean {
     const starU = this.liveStar(u);
     let common = 0;
-    for (const x of ringV) {
+    for (let i = 0; i < ringCount; i++) {
+      const x = this.ringVertices[i];
       if (x === u) continue; // ring(u) excludes the center vertex itself.
       for (let i = 0; i < starU.length; i++) {
         if (!this.hasVertex(starU[i], x)) continue;
@@ -441,13 +463,19 @@ class CleanupState {
   flipEdges(tolerance: number, flatTolerance: number): number {
     let flipped = 0;
     const nt = this.T.length / 3;
-    const queue: number[] = [];
+    const queue = new Int32Array(nt);
     const queued = new Uint8Array(nt);
-    const enqueue = (x: number) => { if (x >= 0 && !queued[x]) { queued[x] = 1; queue.push(x); } };
+    let queueLength = 0;
+    const enqueue = (x: number) => {
+      if (x >= 0 && !queued[x]) {
+        queued[x] = 1;
+        queue[queueLength++] = x;
+      }
+    };
     for (let t = nt - 1; t >= 0; t--) if (this.alive[t]) enqueue(t);
     let budget = MAX_FLIPS_PER_TRIANGLE * nt;
-    while (queue.length > 0 && budget > 0) {
-      const t = queue.pop()!;
+    while (queueLength > 0 && budget > 0) {
+      const t = queue[--queueLength];
       queued[t] = 0;
       if (!this.alive[t]) continue;
       for (let k = 0; k < 3; k++) {
@@ -484,8 +512,8 @@ class CleanupState {
     // edge (two faces meeting at a grazing angle) another sheet of the
     // surface can be closer than that, so check the neighbourhood.
     if (plane.cap && this.crossesNeighbourhood(t, s, [a, b, c, q])) {
-      this.T.set(oldT, i);
-      this.T.set(oldS, j);
+      this.T[i] = oldT[0]; this.T[i + 1] = oldT[1]; this.T[i + 2] = oldT[2];
+      this.T[j] = oldS[0]; this.T[j + 1] = oldS[1]; this.T[j + 2] = oldS[2];
       return null;
     }
     // Star bookkeeping: t gains q, s gains c (stale entries are skipped on read).
@@ -548,7 +576,10 @@ class CleanupState {
   /** True when triangle t or s crosses a live triangle within two rings of `seeds`. */
   crossesNeighbourhood(t: number, s: number, seeds: number[]): boolean {
     const verts = new Set<number>(seeds);
-    for (const v of seeds) for (const x of this.ring(v, this.liveStar(v))) verts.add(x);
+    for (const v of seeds) {
+      const ringCount = this.ring(v, this.liveStar(v));
+      for (let i = 0; i < ringCount; i++) verts.add(this.ringVertices[i]);
+    }
     const tris = new Set<number>();
     for (const v of verts) for (const x of this.liveStar(v)) tris.add(x);
     tris.delete(t);
@@ -602,10 +633,11 @@ class CleanupState {
   writeBack(mesh: CleanupMesh): void {
     const nt = this.T.length / 3;
     const used = new Int32Array(this.V.length / 3).fill(-1);
-    // Reuse the input arrays. Allocating new JS arrays for all triangle
-    // indices doubles peak memory on dense STL exports; the source vertices
-    // and faces are already copied into V and T, so it is safe to compact
-    // those original arrays in place.
+    // Snapshot geometry before writing compacted vertices into the
+    // caller-owned array; the dense no-change path keeps this copy off-heap.
+    const sourceVertices = Float64Array.from(this.V);
+    // Reuse the input arrays. Topology edits already live in the caller-owned
+    // triangle buffer, which can be compacted in place.
     const vertices = mesh.vertices;
     const triangles = mesh.triangles;
     let vertexCount = 0;
@@ -616,9 +648,9 @@ class CleanupState {
         const v = this.T[3 * t + k];
         if (used[v] < 0) {
           used[v] = vertexCount / 3;
-          vertices[vertexCount++] = this.V[3 * v];
-          vertices[vertexCount++] = this.V[3 * v + 1];
-          vertices[vertexCount++] = this.V[3 * v + 2];
+          vertices[vertexCount++] = sourceVertices[3 * v];
+          vertices[vertexCount++] = sourceVertices[3 * v + 1];
+          vertices[vertexCount++] = sourceVertices[3 * v + 2];
         }
         triangles[triangleIndexCount++] = used[v];
       }
@@ -647,7 +679,7 @@ function dot3(a: Float64Array, b: Float64Array): number {
 }
 
 /** Distance between segments ab and cq (vertex indices into V). */
-function segmentDistance(V: Float64Array, a: number, b: number, c: number, q: number): number {
+function segmentDistance(V: ArrayLike<number>, a: number, b: number, c: number, q: number): number {
   const px = V[3 * a], py = V[3 * a + 1], pz = V[3 * a + 2];
   const d1x = V[3 * b] - px, d1y = V[3 * b + 1] - py, d1z = V[3 * b + 2] - pz;
   const qx = V[3 * c], qy = V[3 * c + 1], qz = V[3 * c + 2];

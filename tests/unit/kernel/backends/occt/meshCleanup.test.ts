@@ -49,6 +49,13 @@ describe('cleanupExportMesh', () => {
     expect(stats.collapsed).toBe(39 * 4);
     expect(mesh.triangles.length / 3).toBe(12);
     expect(mesh.vertices.length / 3).toBe(8);
+    const coarse = splitWallBox(1);
+    cleanupExportMesh(coarse);
+    const sortedPoints = (vertices: number[]) => Array.from(
+      { length: vertices.length / 3 },
+      (_, i) => vertices.slice(3 * i, 3 * i + 3).join(','),
+    ).sort();
+    expect(sortedPoints(mesh.vertices)).toEqual(sortedPoints(coarse.vertices));
     const zs = new Set<number>();
     for (let i = 2; i < mesh.vertices.length; i += 3) zs.add(mesh.vertices[i]);
     expect([...zs].sort((a, b) => a - b)).toEqual([0, 10]);
@@ -60,10 +67,12 @@ describe('cleanupExportMesh', () => {
     // its coarse triangle fan does not reference that point.
     mesh.vertices.push(0, 0, -2);
     const originalVertices = mesh.vertices.slice();
+    const originalTriangles = mesh.triangles.slice();
     const stats = cleanupExportMesh(mesh);
     expect(stats.applied).toBe(true);
     expect(stats.collapsed).toBe(0);
     expect(mesh.vertices).toEqual(originalVertices);
+    expect(mesh.triangles).toEqual(originalTriangles);
   });
 
   it('leaves an open mesh untouched', () => {
