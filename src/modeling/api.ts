@@ -126,7 +126,9 @@ export interface PartsLib {
    * refs, hole detection) will not behave as they do on STEP/BREP input.
    * Prefer `fromSTEP`/`fromBREP` when the source is available.
    *
-   * A non-watertight mesh is refused unless `opts.allowOpen` is set.
+   * A non-watertight mesh is refused unless `opts.allowOpen` is set. A sealed
+   * void (an inward-facing shell inside an outward-facing one) stays a void of
+   * the solid around it.
    */
   fromSTL(path: string, opts?: FromSTLOptions): Promise<Shape>;
   /**

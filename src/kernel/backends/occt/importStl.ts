@@ -57,6 +57,7 @@ import { getOC } from 'replicad';
 import { OcctBackend } from './occtBackend';
 import { lowerSurfaceSew, promoteClosedShell } from './surfaceSewLowerer';
 import { buildManifoldShells, manifoldTopology, readStlTriangles, weldTriangles } from './stlTopology';
+import { promoteShellsWithCavities } from './stlCavities';
 import { countStlTriangles, STL_DEFAULT_MAX_TRIANGLES } from '../../../shared/mesh/stlInfo';
 
 /** Why an STL byte payload could not be turned into geometry. */
@@ -168,8 +169,8 @@ function readStlShell(bytes: Uint8Array): unknown | null {
  * oriented 2-manifold is built with shared topology directly, skipping
  * `StlAPI_Reader` and sewing. One connected component is promoted to a solid
  * under the same MakeSolid + BRepCheck rule as the sewing path; several
- * components come back as a compound of closed shells, which is what sewing
- * returns for them. Null when the mesh needs the sewing path.
+ * components come back as a compound, with each sealed void attached to the
+ * solid around it (stlCavities.ts). Null when the mesh needs the sewing path.
  */
 function importManifoldStl(
   bytes: Uint8Array,
@@ -194,22 +195,23 @@ function importManifoldStl(
     return { backend: new OcctBackend(wrapped), isSolid: solid !== null };
   }
   // Several components: a part exported body by body. Each closed shell is promoted on its
-  // own; when every one becomes a valid solid the file IS solid (volume and booleans are
-  // well-defined), returned as a compound of solids. If any shell fails, keep the shells.
-  const solids = built.shells.map((shell) => promoteClosedShell(shell));
-  const allSolid = solids.every((s) => s !== null);
-  const compound = new oc.TopoDS_Compound();
-  const builder = new oc.TopoDS_Builder();
-  builder.MakeCompound(compound);
-  built.shells.forEach((shell, i) => {
-    builder.Add(compound, allSolid ? solids[i] : shell);
-    (shell as { delete?: () => void }).delete?.();
-  });
-  if (!allSolid) for (const s of solids) (s as { delete?: () => void } | null)?.delete?.();
-  builder.delete?.();
+  // own, with a sealed void joined to the solid around it (stlCavities.ts); when every one
+  // becomes a valid solid the file IS solid (volume and booleans are well-defined), returned
+  // as one solid or a compound of solids. If any shell fails, keep the shells.
+  const solids = promoteShellsWithCavities(mesh, topo, built.shells);
+  const members = solids ?? built.shells;
+  let shape = members[0];
+  if (members.length > 1) {
+    shape = new oc.TopoDS_Compound();
+    const builder = new oc.TopoDS_Builder();
+    builder.MakeCompound(shape);
+    for (const member of members) builder.Add(shape, member);
+    builder.delete?.();
+  }
+  for (const shell of built.shells) (shell as { delete?: () => void }).delete?.();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const wrapped = replicad.cast(compound as any) as replicad.Shape3D;
-  return { backend: new OcctBackend(wrapped), isSolid: allSolid };
+  const wrapped = replicad.cast(shape as any) as replicad.Shape3D;
+  return { backend: new OcctBackend(wrapped), isSolid: solids !== null };
 }
 
 /**

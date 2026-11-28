@@ -1,0 +1,39 @@
+{
+  "invocation": "node --import tsx docs/demos/fromstl-sealed-cavity/make-video.mts",
+  "source": "make-video.mts",
+  "settings": {
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "secondsPerScene": 4,
+    "scenes": 2,
+    "codec": "H.264 libx264",
+    "crf": 26,
+    "pixelFormat": "yuv420p",
+    "audio": false
+  },
+  "media": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "8.000000",
+      "size": "104603"
+    }
+  },
+  "poster": "poster.png",
+  "posterSha256": "add52bcaae3cf266024b3597dfcc9d16fc7084278053dc30c9ef400f79413eca",
+  "videoSha256": "75ba1d140818d90378bc2915f25e11f9078c2bb3bcdf6ed32dc33220fb96a5f2",
+  "inspection": "The first-scene source frame and final-scene poster extracted from the MP4 were visually reviewed after generation.",
+  "scope": "Local .kcad.ts API capture and OCCT B-rep recompute; no deployed behavior or hardware acceptance.",
+  "simulationRun": false,
+  "deployed": false,
+  "hardwareAccepted": false
+}
