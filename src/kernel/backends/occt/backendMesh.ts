@@ -3,8 +3,8 @@
 // src/kernel/backends/occt/backendMesh.ts
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
-import { stitchCracks, dropDegenerateTriangles } from './meshHeal';
-import { cleanupExportMesh } from './meshCleanup';
+import { stitchCracks } from './meshHeal';
+import { cleanupExportMesh, isClosedEdgeManifold } from './meshCleanup';
 
 /**
  * Tessellation tolerances for {@link meshShapeForExport}, honoured by both
@@ -125,11 +125,50 @@ export function meshShapeForExport(
     meshFacesIndividually(oc, shape, deflection);
   }
   try {
-    const { rawTriangles, rawVertices } = readFaceTriangulations(oc, shape, deflection);
-    return weldVertices(rawVertices, rawTriangles);
+    // Weld faces as they are read so the raw geometry buffers never overlap
+    // with the final mesh buffers.
+    const welded = readAndWeld(oc, shape, deflection);
+    const manifold = isClosedEdgeManifold(welded.triangles);
+    if (!manifold) {
+      stitchCracks(welded, 0.05);
+      compactDegenerateTriangles(welded.triangles);
+    }
+    cleanupExportMesh(welded, undefined, manifold);
+    return welded;
   } finally {
     if (mesher) mesher.delete();
   }
+}
+
+function readAndWeld(
+  oc: ReturnType<typeof getOC>,
+  shape: replicad.Shape3D,
+  deflection?: ExportMeshDeflection,
+): { vertices: number[]; triangles: number[] } {
+  const size = countFaceTriangulations(oc, shape);
+  const builder = new WeldedMeshBuilder(size.nodes, size.triangles);
+  for (const face of shape.faces) {
+    if (appendFaceTriangulation(oc, face, builder)) continue;
+    // The whole-shape relative-deflection pass can leave faces untriangulated.
+    // Retry those faces alone in absolute-deflection mode; their boundaries
+    // are stitched after the complete welded mesh is assembled.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const fw = (face as any).wrapped;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (oc as any).BRepTools.Clean(fw, true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const faceMesher = new (oc as any).BRepMesh_IncrementalMesh_2(
+      fw,
+      deflection?.linear ?? 0.02,
+      deflection?.relative ?? false,
+      deflection?.angularRad ?? 0.1,
+      false,
+    );
+    faceMesher.delete();
+    appendFaceTriangulation(oc, face, builder);
+  }
+  const welded = builder.finish();
+  return welded;
 }
 
 /**
@@ -229,54 +268,112 @@ function meshFacesIndividually(
   }
 }
 
-/** Append-only typed buffer: export meshes run to millions of entries, and a
- *  boxed `number[]` grown by `push` plus its doubling copies dominated the
- *  evaluator's peak memory on dense parts. */
-class GrowableFloat64 {
-  data: Float64Array;
-  length = 0;
-  constructor(capacity = 3 * 1024) {
-    this.data = new Float64Array(capacity);
-  }
-  reserve(extra: number): void {
-    const need = this.length + extra;
-    if (need <= this.data.length) return;
-    const next = new Float64Array(Math.max(need, this.data.length * 2));
-    next.set(this.data.subarray(0, this.length));
-    this.data = next;
-  }
-}
+/** Builds the welded mesh directly from each face's nodes and indices. */
+class WeldedMeshBuilder {
+  readonly vertices: number[];
+  readonly triangles: number[];
+  faceRemap: Int32Array;
+  private slots: Int32Array;
+  private mask: number;
+  private vertexLength = 0;
+  private triangleLength = 0;
+  /** Quantization is well below the export's geometric tolerance. */
+  private static readonly Q = 1e7;
 
-class GrowableUint32 {
-  data: Uint32Array;
-  length = 0;
-  constructor(capacity = 3 * 1024) {
-    this.data = new Uint32Array(capacity);
+  constructor(estimatedNodes: number, estimatedTriangles: number) {
+    let capacity = 1024;
+    while (capacity < estimatedNodes * 2) capacity *= 2;
+    this.slots = new Int32Array(capacity).fill(-1);
+    this.mask = capacity - 1;
+    const nodeCapacity = Math.max(1024, estimatedNodes);
+    this.vertices = new Array<number>(nodeCapacity * 3);
+    this.triangles = new Array<number>(Math.max(1024, estimatedTriangles) * 3);
+    this.faceRemap = new Int32Array(nodeCapacity);
   }
-  reserve(extra: number): void {
-    const need = this.length + extra;
-    if (need <= this.data.length) return;
-    const next = new Uint32Array(Math.max(need, this.data.length * 2));
-    next.set(this.data.subarray(0, this.length));
-    this.data = next;
+
+  weldVertex(x: number, y: number, z: number): number {
+    const Q = WeldedMeshBuilder.Q;
+    const qx = Math.round(x * Q), qy = Math.round(y * Q), qz = Math.round(z * Q);
+    let h = this.hash(qx, qy, qz);
+    for (;;) {
+      const candidate = this.slots[h];
+      if (candidate === -1) {
+        if ((this.vertexLength / 3 + 1) * 2 > this.slots.length) {
+          this.growSlots();
+          h = this.hash(qx, qy, qz);
+          while (this.slots[h] !== -1) h = (h + 1) & this.mask;
+        }
+        const index = this.vertexLength / 3;
+        if (this.vertexLength + 3 > this.vertices.length) this.vertices.length = Math.max(this.vertexLength + 3, this.vertices.length * 2);
+        this.vertices[this.vertexLength++] = x;
+        this.vertices[this.vertexLength++] = y;
+        this.vertices[this.vertexLength++] = z;
+        this.slots[h] = index;
+        return index;
+      }
+      if (
+        sameKeyPart(Math.round(this.vertices[candidate * 3] * Q), qx) &&
+        sameKeyPart(Math.round(this.vertices[candidate * 3 + 1] * Q), qy) &&
+        sameKeyPart(Math.round(this.vertices[candidate * 3 + 2] * Q), qz)
+      ) return candidate;
+      h = (h + 1) & this.mask;
+    }
+  }
+
+  ensureFaceRemap(nodes: number): void {
+    if (nodes <= this.faceRemap.length) return;
+    const next = new Int32Array(Math.max(nodes, this.faceRemap.length * 2));
+    next.set(this.faceRemap);
+    this.faceRemap = next;
+  }
+
+  private hash(qx: number, qy: number, qz: number): number {
+    const hash = Math.imul(qx | 0, 0x9e3779b1) ^ Math.imul(qy | 0, 0x85ebca77) ^ Math.imul(qz | 0, 0xc2b2ae3d);
+    return (hash ^ (hash >>> 15)) & this.mask;
+  }
+
+  private growSlots(): void {
+    const slots = new Int32Array(this.slots.length * 2).fill(-1);
+    const mask = slots.length - 1;
+    const Q = WeldedMeshBuilder.Q;
+    for (let index = 0; index < this.vertexLength / 3; index++) {
+      const qx = Math.round(this.vertices[index * 3] * Q);
+      const qy = Math.round(this.vertices[index * 3 + 1] * Q);
+      const qz = Math.round(this.vertices[index * 3 + 2] * Q);
+      const hash = Math.imul(qx | 0, 0x9e3779b1) ^ Math.imul(qy | 0, 0x85ebca77) ^ Math.imul(qz | 0, 0xc2b2ae3d);
+      let h = (hash ^ (hash >>> 15)) & mask;
+      while (slots[h] !== -1) h = (h + 1) & mask;
+      slots[h] = index;
+    }
+    this.slots = slots;
+    this.mask = mask;
+  }
+
+  finish(): { vertices: number[]; triangles: number[] } {
+    this.vertices.length = this.vertexLength;
+    this.triangles.length = this.triangleLength;
+    return { vertices: this.vertices, triangles: this.triangles };
+  }
+
+  addTriangle(a: number, b: number, c: number): void {
+    if (a === b || b === c || c === a) return;
+    if (this.triangleLength + 3 > this.triangles.length) this.triangles.length = Math.max(this.triangleLength + 3, this.triangles.length * 2);
+    this.triangles[this.triangleLength++] = a;
+    this.triangles[this.triangleLength++] = b;
+    this.triangles[this.triangleLength++] = c;
   }
 }
 
 /**
- * Append one face's cached triangulation to the raw buffers. Returns false
- * when the face carries no triangulation (or an empty one).
- *
- * Same node transform, orientation flip and index order as replicad's
- * `Face.triangulation()`, with two differences that matter only for memory:
- * every OCCT handle is deleted as soon as it is read instead of being parked
- * on a FinalizationRegistry until the next GC, and vertex normals (two more
- * handles per node) are not computed because no export reads them.
+ * Append one face's cached triangulation directly into the welded mesh.
+ * Returns false when the face carries no triangulation (or is empty).
+ * Every OCCT handle is deleted immediately, and export does not compute
+ * vertex normals.
  */
 function appendFaceTriangulation(
   oc: ReturnType<typeof getOC>,
   face: replicad.Face,
-  rawVertices: GrowableFloat64,
-  rawTriangles: GrowableUint32,
+  builder: WeldedMeshBuilder,
 ): boolean {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const o = oc as any;
@@ -292,36 +389,29 @@ function appendFaceTriangulation(
     // An identity location (the common case) leaves the node as it is, so the
     // transformed copy, and its handle, is skipped.
     if (!location.IsIdentity()) transformation = location.Transformation();
-    const index0 = rawVertices.length / 3;
-    rawVertices.reserve(nbNodes * 3);
-    const V = rawVertices.data;
-    let vi = rawVertices.length;
+    builder.ensureFaceRemap(nbNodes);
+    const remap = builder.faceRemap;
     for (let i = 1; i <= nbNodes; i++) {
       const node = tri.Node(i);
       const p = transformation === undefined ? node : node.Transformed(transformation);
-      V[vi++] = p.X();
-      V[vi++] = p.Y();
-      V[vi++] = p.Z();
+      remap[i - 1] = builder.weldVertex(p.X(), p.Y(), p.Z());
       if (p !== node) p.delete();
       node.delete();
     }
-    rawVertices.length = vi;
     const backward = face.orientation === 'backward';
     const nbTriangles = tri.NbTriangles() as number;
-    rawTriangles.reserve(nbTriangles * 3);
-    const T = rawTriangles.data;
-    let ti = rawTriangles.length;
     for (let nt = 1; nt <= nbTriangles; nt++) {
       const t = tri.Triangle(nt);
       const n1 = t.Value(1) as number;
       const n2 = t.Value(2) as number;
       const n3 = t.Value(3) as number;
       t.delete();
-      T[ti++] = (backward ? n2 : n1) - 1 + index0;
-      T[ti++] = (backward ? n1 : n2) - 1 + index0;
-      T[ti++] = n3 - 1 + index0;
+      builder.addTriangle(
+        remap[(backward ? n2 : n1) - 1],
+        remap[(backward ? n1 : n2) - 1],
+        remap[n3 - 1],
+      );
     }
-    rawTriangles.length = ti;
     return true;
   } finally {
     transformation?.delete();
@@ -354,129 +444,20 @@ function countFaceTriangulations(
   return { nodes, triangles };
 }
 
-function readFaceTriangulations(
-  oc: ReturnType<typeof getOC>,
-  shape: replicad.Shape3D,
-  deflection?: ExportMeshDeflection,
-): { rawTriangles: Uint32Array; rawVertices: Float64Array } {
-  // Read per-face triangulation directly. This is the same loop as
-  // replicad's `Shape3D.mesh()` minus the redundant _mesh() call that
-  // would overwrite our relative-mode triangulation with the absolute-mode
-  // default.
-  // Size the buffers from the cached triangulations first. Doubling from a
-  // small buffer left ~50 MB of dead typed arrays awaiting GC on a
-  // 644k-triangle part, against ~16 MB of data (#1773). Faces re-meshed
-  // below still grow the buffers.
-  const size = countFaceTriangulations(oc, shape);
-  const rawTriangles = new GrowableUint32(Math.max(3 * 1024, 3 * size.triangles));
-  const rawVertices = new GrowableFloat64(Math.max(3 * 1024, 3 * size.nodes));
-  for (const face of shape.faces) {
-    if (appendFaceTriangulation(oc, face, rawVertices, rawTriangles)) continue;
-    // The whole-shape relative-deflection pass can leave individual faces
-    // untriangulated (boolean leftovers at exact tangencies) — silently
-    // skipping them leaves the entire face boundary as an open ring in
-    // the STL. Retry the face alone in ABSOLUTE-deflection mode (the
-    // relative-mode retry stays null on the regression corpus). The
-    // fallback boundary won't match the neighbors' discretization;
-    // the crack-stitch pass below makes the seam conformal.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const fw = (face as any).wrapped;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (oc as any).BRepTools.Clean(fw, true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const faceMesher = new (oc as any).BRepMesh_IncrementalMesh_2(
-      fw,
-      deflection?.linear ?? 0.02,
-      deflection?.relative ?? false,
-      deflection?.angularRad ?? 0.1,
-      false,
-    );
-    faceMesher.delete();
-    // Still empty: the watertight verify will report the hole.
-    appendFaceTriangulation(oc, face, rawVertices, rawTriangles);
-  }
-  return {
-    rawTriangles: rawTriangles.data.subarray(0, rawTriangles.length),
-    rawVertices: rawVertices.data.subarray(0, rawVertices.length),
-  };
-}
-
 /** Same equality as comparing the two numbers' decimal strings. */
 function sameKeyPart(a: number, b: number): boolean {
   return a === b || (a !== a && b !== b);
 }
 
-function weldVertices(
-  rawVertices: Float64Array,
-  rawTriangles: Uint32Array,
-): { vertices: number[]; triangles: number[] } {
-  // Weld coincident vertices across face boundaries. OCCT's shape-level
-  // mesher emits matching points on shared edges, but the per-face
-  // read-back appends each face's vertex array independently — so a shared
-  // edge ends up with two index sequences referring to coordinate-equal
-  // but index-distinct vertices. open3d's `is_watertight()` requires each
-  // edge to be shared by exactly two triangles via the *same* indices, so
-  // without welding it reports the mesh as non-manifold (every shared edge
-  // looks like four boundary edges instead of one shared edge).
-  //
-  // Quantize to 1e-7 mm — well below any geometric tolerance — to absorb
-  // any floating-point drift between the per-face coordinate reads.
-  //
-  // The lookup is an open-addressing table of welded vertex indices keyed by
-  // the quantized triple. A `Map` keyed by the triple's string cost a string
-  // and a map entry per raw vertex.
-  const Q = 1e7;
-  const rawCount = rawVertices.length / 3;
-  let capacity = 1024;
-  while (capacity < rawCount * 2) capacity *= 2;
-  const mask = capacity - 1;
-  const slots = new Int32Array(capacity).fill(-1);
-  const vertices: number[] = [];
-  const remap = new Int32Array(rawCount);
-  for (let i = 0; i < rawVertices.length; i += 3) {
-    const x = rawVertices[i];
-    const y = rawVertices[i + 1];
-    const z = rawVertices[i + 2];
-    const qx = Math.round(x * Q);
-    const qy = Math.round(y * Q);
-    const qz = Math.round(z * Q);
-    let h = Math.imul(qx | 0, 0x9e3779b1) ^ Math.imul(qy | 0, 0x85ebca77) ^ Math.imul(qz | 0, 0xc2b2ae3d);
-    h = (h ^ (h >>> 15)) & mask;
-    let idx = -1;
-    for (;;) {
-      const candidate = slots[h];
-      if (candidate === -1) break;
-      if (
-        sameKeyPart(Math.round(vertices[candidate * 3] * Q), qx) &&
-        sameKeyPart(Math.round(vertices[candidate * 3 + 1] * Q), qy) &&
-        sameKeyPart(Math.round(vertices[candidate * 3 + 2] * Q), qz)
-      ) {
-        idx = candidate;
-        break;
-      }
-      h = (h + 1) & mask;
-    }
-    if (idx === -1) {
-      idx = vertices.length / 3;
-      vertices.push(x, y, z);
-      slots[h] = idx;
-    }
-    remap[i / 3] = idx;
+/** Remove welding artifacts without allocating a second triangle array. */
+function compactDegenerateTriangles(triangles: number[]): void {
+  let write = 0;
+  for (let read = 0; read < triangles.length; read += 3) {
+    const a = triangles[read], b = triangles[read + 1], c = triangles[read + 2];
+    if (a === b || b === c || c === a) continue;
+    triangles[write++] = a;
+    triangles[write++] = b;
+    triangles[write++] = c;
   }
-  const triangles: number[] = new Array(rawTriangles.length);
-  for (let i = 0; i < rawTriangles.length; i++) triangles[i] = remap[rawTriangles[i]];
-  const welded: { vertices: number[]; triangles: number[] } = {
-    vertices,
-    triangles: dropDegenerateTriangles(triangles),
-  };
-  // Heal T-junction cracks born at tangent junctions and along
-  // fallback-face seams. No-op (0 splits) on conformal meshes.
-  stitchCracks(welded, 0.05);
-  welded.triangles = dropDegenerateTriangles(welded.triangles);
-  // Remove coplanar triangle rows and caps. Both are valid geometry but
-  // fail float-precision self-intersection tests (open3d `is_watertight`)
-  // once the STL rounds vertices to float32. Surface moves by < 1 micron;
-  // a mesh that is not closed and manifold is left untouched.
-  cleanupExportMesh(welded);
-  return welded;
+  triangles.length = write;
 }

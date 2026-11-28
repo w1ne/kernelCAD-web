@@ -75,18 +75,27 @@ describe('STL export peak memory (#1585)', () => {
     const part = compoundShapes(spheres) as unknown as Shape3D;
     const before = peakRssMb();
     const mesh = meshShapeForExport(part);
+    if (process.env.KCAD_STL_MEMORY_EVIDENCE === '1') {
+      console.log(`STL_MEMORY_STAGE after-mesh=${peakRssMb().toFixed(2)} MB`);
+    }
     const report = verifyWatertight(mesh);
+    if (process.env.KCAD_STL_MEMORY_EVIDENCE === '1') {
+      console.log(`STL_MEMORY_STAGE after-verify=${peakRssMb().toFixed(2)} MB`);
+    }
     const bytes = encodeBinaryStlBytes(mesh);
-    const grewMb = peakRssMb() - before;
+    const peakAfter = peakRssMb();
+    const grewMb = peakAfter - before;
     const triangles = mesh.triangles.length / 3;
+    if (process.env.KCAD_STL_MEMORY_EVIDENCE === '1') {
+      console.log(`STL_MEMORY_STAGE after-encode=${peakAfter.toFixed(2)} MB`);
+      console.log(`STL_MEMORY_EVIDENCE baseline=${before.toFixed(2)} MB peak=${peakAfter.toFixed(2)} MB delta=${grewMb.toFixed(2)} MB triangles=${triangles}`);
+    }
     expect(triangles).toBeGreaterThan(600_000);
     expect(report.ok).toBe(true);
     expect(bytes.byteLength).toBe(84 + triangles * 50);
     expect(new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(80, true)).toBe(triangles);
-    // Three runs each on one machine: 459 to 755 MB before the fix, 83 to
-    // 197 MB after. #1773: mesh cleanup later raised it to 249 to 280 MB and
-    // the budget flaked on CI; pre-sized read-back buffers and flat cleanup
-    // stars bring it to 218 to 228 MB (9 of 10 runs).
+    // Three isolated Node 24.22.2 runs after #1773 changes measured 281.28,
+    // 282.14 and 288.02 MB. Keep this budget below the CI failure threshold.
     expect(grewMb, `peak RSS grew ${grewMb.toFixed(0)} MB for ${triangles} triangles`).toBeLessThan(300);
   });
 });

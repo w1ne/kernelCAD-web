@@ -1,0 +1,36 @@
+{
+  "scope": "Local engine replay; no deployed, slicer, or hardware acceptance",
+  "invocation": "node --import tsx docs/demos/stl-cleanup-memory-20261128/demo.ts",
+  "settings": {
+    "shape": "20 sphere compound",
+    "radiusMm": 10,
+    "gridSpacingMm": 25
+  },
+  "nodeVersion": "v24.22.2",
+  "fixtureSource": "tests/integration/export/stlExportPeakMemory1585.test.ts",
+  "fixtureSourceSha256": "8e5ceed930c23e511477b2b168c6c5fdce90ccb32af989b302bf3d0f32e7a9ae",
+  "baseline": {
+    "base": "origin/develop at 8412efb1ceb9bf752cefaaf84baa63336a78b571",
+    "incrementalPeakRssMb": 318.64,
+    "result": "failed the 300 MB regression budget"
+  },
+  "current": {
+    "memoryTestCommand": "KCAD_STL_MEMORY_EVIDENCE=1 vitest run tests/integration/export/stlExportPeakMemory1585.test.ts -t \"600k-triangle part\" --reporter=verbose --pool=forks --maxWorkers=1",
+    "incrementalPeakRssMb": 281.88,
+    "triangleCount": 644040,
+    "outputBytes": 32202084,
+    "outputSha256": "f0f973e3d1541ae38dc825390ef0b5881b58e8eed09b2d4271531519ed9e6bde",
+    "watertight": true,
+    "openEdges": 0,
+    "nonManifoldEdges": 0
+  },
+  "checks": {
+    "expectedTriangleCount": true,
+    "outputByteCountMatchesBinaryStlHeader": true,
+    "watertight": true,
+    "below300MbBudget": true
+  },
+  "deployed": false,
+  "slicerAccepted": false,
+  "hardwareAccepted": false
+}

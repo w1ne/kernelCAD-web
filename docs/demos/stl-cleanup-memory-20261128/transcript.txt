@@ -1,0 +1,10 @@
+$ node --import tsx docs/demos/stl-cleanup-memory-20261128/demo.ts
+Local engine replay; no deployed, slicer, or hardware acceptance
+FIXTURE 20 spheres, radius 10 mm, arranged on a 25 mm grid
+PATH    meshShapeForExport -> weld -> cleanup -> binary STL
+WRITE   export-output.stl (32,202,084 bytes; 644,040 triangles)
+CHECK   watertight=true; openEdges=0; nonManifoldEdges=0
+MEASURE integration test peak RSS=281.88 MB (limit 300 MB)
+BASE    origin/develop replay: 318.64 MB; failed the regression budget
+RESULT  local engine replay passed; verification.json retains output hash and checks
+LIMIT   not a deployed export, slicer acceptance, or hardware acceptance
