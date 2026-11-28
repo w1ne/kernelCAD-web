@@ -10,7 +10,10 @@ import { resolve } from 'node:path';
 import { unzipSync, zipSync } from 'fflate';
 
 const source = resolve('docs/demos/3mf-resource-ids/generic-cube.3mf');
-const target = resolve('examples/interoperability/3mf-disconnected-shells/two-disconnected-solids.3mf');
+const targets = [
+  resolve('examples/interoperability/3mf-disconnected-shells/two-disconnected-solids.3mf'),
+  resolve('docs/demos/from3mf-disconnected-shells/two-disconnected-solids.3mf'),
+];
 const parts = unzipSync(readFileSync(source));
 const modelPath = Object.keys(parts).find((path) => path.toLowerCase() === '3d/3dmodel.model');
 if (modelPath === undefined) throw new Error('The source 3MF has no root model part.');
@@ -18,9 +21,9 @@ if (modelPath === undefined) throw new Error('The source 3MF has no root model p
 const xml = new TextDecoder().decode(parts[modelPath]);
 const vertices = [
   '<vertex x="20" y="0" z="0" />',
-  '<vertex x="21" y="0" z="0" />',
-  '<vertex x="20" y="1" z="0" />',
-  '<vertex x="20" y="0" z="1" />',
+  '<vertex x="25" y="0" z="0" />',
+  '<vertex x="20" y="5" z="0" />',
+  '<vertex x="20" y="0" z="5" />',
 ].join('');
 const triangles = [
   '<triangle v1="8" v2="10" v3="9" />',
@@ -36,4 +39,5 @@ parts[modelPath] = new TextEncoder().encode(
   xml.replace('</vertices>', `${vertices}</vertices>`)
     .replace('</triangles>', `${triangles}</triangles>`),
 );
-writeFileSync(target, zipSync(parts));
+const fixture = zipSync(parts);
+for (const target of targets) writeFileSync(target, fixture);

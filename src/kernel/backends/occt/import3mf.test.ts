@@ -33,6 +33,32 @@ function cubeArchive(rewrite: (xml: string) => string): Uint8Array {
   return zipSync({ [modelPath]: new TextEncoder().encode(rewrite(xml)) });
 }
 
+const TETRAHEDRON_TRIANGLES: ReadonlyArray<readonly [number, number, number]> = [
+  [8, 10, 9],
+  [8, 9, 11],
+  [9, 10, 11],
+  [10, 8, 11],
+];
+
+function cubeWithTetrahedron(
+  xOffset: number,
+  triangles: ReadonlyArray<readonly [number, number, number]> = TETRAHEDRON_TRIANGLES,
+  flat = false,
+): Uint8Array {
+  const vertices = [
+    `<vertex x="${xOffset}" y="0" z="0" />`,
+    `<vertex x="${xOffset + 1}" y="0" z="0" />`,
+    `<vertex x="${xOffset}" y="1" z="0" />`,
+    `<vertex x="${flat ? xOffset + 1 : xOffset}" y="${flat ? 1 : 0}" z="${flat ? 0 : 1}" />`,
+  ].join('');
+  const tetrahedron = triangles
+    .map(([a, b, c]) => `<triangle v1="${a}" v2="${b}" v3="${c}" />`)
+    .join('');
+  return cubeArchive((xml) => xml
+    .replace('</vertices>', `${vertices}</vertices>`)
+    .replace('</triangles>', `${tetrahedron}</triangles>`));
+}
+
 describe('core 3MF triangle mesh import', () => {
   it('applies model units and build-item transforms in double precision', () => {
     const bytes = cubeArchive((xml) => xml
@@ -88,21 +114,26 @@ describe('core 3MF triangle mesh import', () => {
     expect(() => parse3mfMesh(bytes, 23)).toThrow(/23 import budget/);
   });
 
-  it('refuses disconnected shells in one mesh object instead of assuming independent solids', () => {
-    const secondTetrahedron = cubeArchive((xml) => xml
-      .replace('</vertices>', `${[
-        '<vertex x="20" y="0" z="0" />',
-        '<vertex x="21" y="0" z="0" />',
-        '<vertex x="20" y="1" z="0" />',
-        '<vertex x="20" y="0" z="1" />',
-      ].join('')}</vertices>`)
-      .replace('</triangles>', `${[
-        '<triangle v1="8" v2="10" v3="9" />',
-        '<triangle v1="8" v2="9" v3="11" />',
-        '<triangle v1="9" v2="10" v3="11" />',
-        '<triangle v1="10" v2="8" v3="11" />',
-      ].join('')}</triangles>`));
-    expect(() => parse3mfMesh(secondTetrahedron)).toThrow(/multiple mesh shells/);
+  it('keeps separated outward shells in one mesh object', () => {
+    const mesh = parse3mfMesh(cubeWithTetrahedron(20));
+
+    expect(mesh.triangleCount).toBe(16);
+    expect(mesh.bodies).toHaveLength(1);
+    expect(axisRange(mesh.bodies[0]!, 0)).toEqual([0, 21]);
+  });
+
+  it('measures translated shells relative to each shell origin', () => {
+    const mesh = parse3mfMesh(cubeWithTetrahedron(1_000_000_000));
+    expect(mesh.triangleCount).toBe(16);
+    expect(axisRange(mesh.bodies[0]!, 0)).toEqual([0, 1_000_000_001]);
+  });
+
+  it('refuses inward or touching multi-shell bounds to preserve the Positive fill rule', () => {
+    const inward = TETRAHEDRON_TRIANGLES.map(([a, b, c]) => [a, c, b] as const);
+    expect(() => parse3mfMesh(cubeWithTetrahedron(20, inward))).toThrow(/inward-facing or zero-volume shell/);
+    expect(() => parse3mfMesh(cubeWithTetrahedron(20, TETRAHEDRON_TRIANGLES, true))).toThrow(/inward-facing or zero-volume shell/);
+    expect(() => parse3mfMesh(cubeWithTetrahedron(10))).toThrow(/touching, overlapping, or nested shell bounds/);
+    expect(() => parse3mfMesh(cubeWithTetrahedron(4))).toThrow(/touching, overlapping, or nested shell bounds/);
   });
 });
 

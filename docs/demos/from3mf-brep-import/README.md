@@ -26,6 +26,10 @@ This capture uses one core mesh object placed in `<build>`. The importer also
 resolves nested component references made from core mesh leaves, applies their
 component/build transforms in the declared model units, and preserves each
 instance as a separate solid; see the [component assembly demo](../from3mf-component-assembly/README.md).
-Required extensions, non-mesh resources, multi-shell objects, open meshes,
-non-manifold meshes, and material appearance are not imported. The result is
-faceted B-rep geometry, without analytic source surfaces or feature history.
+Required extensions, non-mesh resources, open meshes, non-manifold meshes, and
+material appearance are not imported. A mesh object can contain separate
+outward-facing shells when their axis-aligned bounds are pairwise disjoint;
+touching, overlapping, nested, inward-facing, or zero-volume shells are
+refused. See the [disconnected shells demo](../from3mf-disconnected-shells/README.md).
+The result is faceted B-rep geometry, without analytic source surfaces or
+feature history.

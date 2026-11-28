@@ -138,7 +138,7 @@ describe('lib.from3MF', () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session, scriptDir: dirname(disconnectedShellFixture) });
     const imported = await api.lib.from3MF(basename(disconnectedShellFixture));
-    const cut = imported.subtract(api.cylinder(2, 2).translate(5, 5, -1));
+    const cut = imported.subtract(api.cylinder(12, 2).translate(5, 5, -1));
     const result = await new RecomputeEngine(createOcctLowerer(session)).run(
       session.getRecords(),
       { paramTable: session.paramTable },
@@ -146,11 +146,11 @@ describe('lib.from3MF', () => {
     const sourceBackend = result.shapes.get(imported.id)!;
     const cutBackend = result.shapes.get(cut.id)!;
 
-    expect(sourceBackend.volume()).toBeCloseTo(1000 + 1 / 6, 6);
-    expect(sourceBackend.boundingBox()).toEqual({ min: [0, 0, 0], max: [21, 10, 10] });
+    expect(sourceBackend.volume()).toBeCloseTo(1000 + 125 / 6, 6);
+    expect(sourceBackend.boundingBox()).toEqual({ min: [0, 0, 0], max: [25, 10, 10] });
     expect(solidCount(sourceBackend as OcctBackend)).toBe(2);
     expect(validBrep(sourceBackend as OcctBackend)).toBe(true);
-    expect(cutBackend.volume()).toBeCloseTo(1000 + 1 / 6 - 4 * Math.PI, 5);
+    expect(cutBackend.volume()).toBeCloseTo(1000 + 125 / 6 - 40 * Math.PI, 5);
     expect(solidCount(cutBackend as OcctBackend)).toBe(2);
     expect(validBrep(cutBackend as OcctBackend)).toBe(true);
     expect(result.diagnostics.filter(diagnostic => diagnostic.severity === 'error')).toHaveLength(0);

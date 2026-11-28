@@ -144,10 +144,12 @@ export type From3MFOptions = Import3mfOptions;
  * history are not present. Production-extension (`p:path`) components that
  * live in other model parts of the package are resolved.
  *
- * Other required extensions, non-mesh object resources, multi-shell objects, and
- * open or non-manifold meshes are refused so geometry is never silently
- * omitted or reinterpreted. Every imported mesh instance must become a
- * BRepCheck-valid solid.
+ * Other required extensions, non-mesh object resources, and open or
+ * non-manifold meshes are refused so geometry is never silently omitted or
+ * reinterpreted. A mesh object may contain multiple outward-facing shells
+ * only when their axis-aligned bounds are pairwise disjoint; touching,
+ * overlapping, nested, inward-facing, or zero-volume shells are refused.
+ * Every imported mesh instance must become a BRepCheck-valid solid.
  */
 export async function from3MF(
   ctx: FromFileContext,
@@ -166,7 +168,7 @@ export async function from3MF(
     const detail = e instanceof Error ? e.message : String(e);
     const hint = e instanceof ThreeMfImportError && /import budget/.test(e.message)
       ? 'kernel-failed.lib.from3MF.too-many-triangles — decimate the mesh or pass { maxTriangles } to permit a slower import.'
-      : 'kernel-failed.lib.from3MF — provide a valid core 3MF file with closed, consistently oriented single-shell mesh objects; required extensions, non-mesh resources, multi-shell objects, open meshes and non-manifold meshes are not supported.';
+      : 'kernel-failed.lib.from3MF — provide a valid core 3MF file with closed, consistently oriented mesh objects; required extensions, non-mesh resources, open meshes and non-manifold meshes are not supported. Multi-shell objects require outward-facing shells with pairwise disjoint bounds.';
     throw new KernelError(
       'feature.kernel-failed',
       `lib.from3MF: could not import ${absPath}: ${detail}`,

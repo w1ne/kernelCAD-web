@@ -245,8 +245,10 @@ lib.fromSTL(path: string, opts?: {
 // model unit to mm. Production-extension (p:path) components in other model
 // parts, as Bambu Studio and OrcaSlicer projects write them, are resolved.
 // Faces remain planar facets; analytic surfaces and feature history are not
-// present. Other required extensions, non-mesh resources, multi-shell
-// objects, open meshes and non-manifold meshes are refused.
+// present. Other required extensions, non-mesh resources, open meshes and
+// non-manifold meshes are refused. Multi-shell objects require outward-facing
+// shells with pairwise disjoint bounds; touching or overlapping bounds are
+// refused to preserve the 3MF Positive fill rule.
 lib.from3MF(path: string, opts?: {
   tolerance?: number;     // vertex-merge distance, mm (default 1e-6)
   maxTriangles?: number;  // import cost cap (default 200000)
