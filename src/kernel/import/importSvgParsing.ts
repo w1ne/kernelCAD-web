@@ -316,22 +316,53 @@ export function scanNumberAt(d: string, start: number): number {
 
 export interface ViewBox { minX: number; minY: number; width: number; height: number }
 
-export function parseViewBox(raw: string | undefined): ViewBox | null {
+export function parseViewBox(raw: string | undefined, where = '<svg>'): ViewBox | null {
   if (raw === undefined) return null;
   const parts = raw.trim().split(/[\s,]+/).map(Number);
   if (parts.length !== 4 || parts.some(v => !Number.isFinite(v))) {
     throw new SvgParseError(
       'malformed-attribute',
-      `<svg>: viewBox='${raw}' must be four numbers (min-x min-y width height).`,
+      `${where}: viewBox='${raw}' must be four numbers (min-x min-y width height).`,
     );
   }
   if (parts[2] <= 0 || parts[3] <= 0) {
     throw new SvgParseError(
       'malformed-attribute',
-      `<svg>: viewBox width and height must be positive, got ${parts[2]} x ${parts[3]}.`,
+      `${where}: viewBox width and height must be positive, got ${parts[2]} x ${parts[3]}.`,
     );
   }
   return { minX: parts[0], minY: parts[1], width: parts[2], height: parts[3] };
+}
+
+export interface AspectRatio {
+  /** 0 = Min, 0.5 = Mid, 1 = Max. */
+  alignX: number;
+  alignY: number;
+  mode: 'meet' | 'slice' | 'none';
+  token: string;
+}
+
+const DEFAULT_ASPECT_RATIO: AspectRatio = { alignX: 0.5, alignY: 0.5, mode: 'meet', token: 'xMidYMid' };
+
+/** SVG `preserveAspectRatio`: an alignment token plus `meet`/`slice`, or
+ *  `none`. Missing or invalid values use the spec default `xMidYMid meet`. */
+export function parsePreserveAspectRatio(raw: string | undefined): AspectRatio {
+  if (raw === undefined) return DEFAULT_ASPECT_RATIO;
+  const tokens = raw.trim().split(/\s+/).filter(token => token.length > 0 && token !== 'defer');
+  const align = tokens[0];
+  if (align === 'none') return { alignX: 0, alignY: 0, mode: 'none', token: 'none' };
+  const match = align === undefined ? null : /^x(Min|Mid|Max)Y(Min|Mid|Max)$/.exec(align);
+  if (match === null) return DEFAULT_ASPECT_RATIO;
+  return {
+    alignX: axisFraction(match[1]),
+    alignY: axisFraction(match[2]),
+    mode: tokens[1] === 'slice' ? 'slice' : 'meet',
+    token: align,
+  };
+}
+
+function axisFraction(token: string | undefined): number {
+  return token === 'Min' ? 0 : token === 'Max' ? 1 : 0.5;
 }
 
 // ---------------------------------------------------------------------------

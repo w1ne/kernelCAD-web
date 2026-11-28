@@ -354,6 +354,67 @@ describe('importSvgText — <use> references', () => {
     expect(centres).toEqual(expect.arrayContaining([[10, 20], [30, 25], [36, 25], [62, 8.5]]));
     expect(centres).toHaveLength(4);
   });
+
+  it('maps a <symbol> viewBox into the <use> viewport with the default xMidYMid meet', () => {
+    // viewBox 0 0 20 4 into 30 x 12: scale min(1.5, 3) = 1.5, so the 20 x 4
+    // rect is 30 x 6, centred in the 12-tall viewport at SVG y 11..17 (Y 23..29
+    // after the flip about 40).
+    const r = importSvgText(svg(
+      '<defs><symbol id="s" viewBox="0 0 20 4"><rect width="20" height="4"/></symbol></defs>' +
+      '<use href="#s" x="30" y="8" width="30" height="12"/>',
+    ));
+    expect(r.regions.map(x => x.areaMm2)).toEqual([expect.closeTo(180, 9)]);
+    expect(extent(r.regions[0].commands)).toEqual([30, 23, 60, 29]);
+  });
+
+  it('honours the symbol viewBox origin and its preserveAspectRatio alignment', () => {
+    // viewBox -10 -10 20 20 into a 40 x 10 viewport: scale 0.5. xMinYMid
+    // puts the 10 x 10 box at the left; xMaxYMid at the right. The square's
+    // corner (-10, -10) maps to the viewport corner, so (0, 0) .. (10, 10)
+    // covers SVG x 5..10 then 30+5..30+10.
+    const r = importSvgText(svg(
+      '<defs><symbol id="a" viewBox="-10 -10 20 20" preserveAspectRatio="xMinYMid meet">' +
+      '<rect width="10" height="10"/></symbol>' +
+      '<symbol id="b" viewBox="-10 -10 20 20" preserveAspectRatio="xMaxYMid"><rect width="10" height="10"/></symbol></defs>' +
+      '<use href="#a" width="40" height="10"/><use href="#b" y="20" width="40" height="10"/>',
+    ));
+    expect(r.regions.map(x => extent(x.commands))).toEqual(expect.arrayContaining([
+      [5, 30, 10, 35], [35, 10, 40, 15],
+    ]));
+    expect(r.regions).toHaveLength(2);
+  });
+
+  it('stretches each axis independently under preserveAspectRatio="none"', () => {
+    // Right triangle with its right angle at the SVG top-left, so the
+    // orientation is visible: viewBox 0 0 4 10 into 8 x 15 is scale 2 x 1.5.
+    const r = importSvgText(svg(
+      '<defs><symbol id="v" viewBox="0 0 4 10" preserveAspectRatio="none">' +
+      '<polygon points="0,0 4,0 0,10"/></symbol></defs><use href="#v" x="40" y="22" width="8" height="15"/>',
+    ));
+    expect(r.regions[0].areaMm2).toBeCloseTo(60, 9);
+    expect(points(r.regions[0].commands)).toEqual(expect.arrayContaining([[40, 18], [48, 18], [40, 3]]));
+  });
+
+  it('takes the viewport size from the <symbol> when the <use> omits it, and the <use> size wins', () => {
+    const r = importSvgText(svg(
+      '<defs><symbol id="s" viewBox="0 0 1 1" width="4" height="4"><rect width="1" height="1"/></symbol></defs>' +
+      '<use href="#s"/><use href="#s" x="20" width="8" height="8"/>',
+    ));
+    expect(r.regions.map(x => x.areaMm2)).toEqual([expect.closeTo(64, 9), expect.closeTo(16, 9)]);
+  });
+
+  it('applies the <use> transform outside the symbol viewport, and nests symbol uses', () => {
+    // The inner symbol scales its 4 x 4 rect x0.5 and the outer one x2, so
+    // it is 4 x 4 in the <use> space; x=10 then scale(2) puts it at SVG
+    // x 20..28, y 0..8 (Y 32..40 after the flip).
+    const r = importSvgText(svg(
+      '<defs><symbol id="inner" viewBox="0 0 4 4"><rect width="4" height="4"/></symbol>' +
+      '<symbol id="outer" viewBox="0 0 5 5"><use href="#inner" width="2" height="2"/></symbol></defs>' +
+      '<use href="#outer" transform="scale(2)" x="10" width="10" height="10"/>',
+    ));
+    expect(r.regions[0].areaMm2).toBeCloseTo(64, 9);
+    expect(extent(r.regions[0].commands)).toEqual([20, 32, 28, 40]);
+  });
 });
 
 describe('importSvgText — path data', () => {
@@ -657,13 +718,41 @@ describe('importSvgText — failure paths name what went wrong', () => {
     expect(self.message).toMatch(/circular reference #g -> #g\.$/);
   });
 
-  it('a <use> of a <symbol> with its own viewBox is refused, not rescaled by guess', () => {
+  it('a <use> of a viewBox <symbol> with no viewport size is refused, not sized by guess', () => {
+    // The SVG default is 100% of the enclosing viewport, which a CAD import
+    // cannot resolve to a length without guessing.
     const e = failure(() => importSvgText(svg(
-      '<defs><symbol id="s" viewBox="0 0 1 1"><rect width="1" height="1"/></symbol></defs>' +
-      '<use href="#s" width="10" height="10"/>',
+      '<defs><symbol id="s" viewBox="0 0 1 1"><rect width="1" height="1"/></symbol></defs><use href="#s"/>',
     )));
     expect(e.reason).toBe('unsupported-element');
-    expect(e.message).toMatch(/^<symbol> at offset \d+ \(via <use> at offset \d+\): .*own viewport/);
+    expect(e.message).toMatch(/^<symbol> at offset \d+ \(via <use> at offset \d+\): .*neither the <use> nor the <symbol> sets width/);
+    const pct = failure(() => importSvgText(svg(
+      '<defs><symbol id="s" viewBox="0 0 1 1"><rect width="1" height="1"/></symbol></defs>' +
+      '<use href="#s" width="50%" height="10"/>',
+    )));
+    expect(pct.message).toMatch(/width='50%'/);
+  });
+
+  it('a viewBox <symbol> that would be clipped or offset is refused', () => {
+    const slice = failure(() => importSvgText(svg(
+      '<defs><symbol id="s" viewBox="0 0 1 2" preserveAspectRatio="xMidYMid slice"><rect width="1" height="2"/></symbol></defs>' +
+      '<use href="#s" width="10" height="10"/>',
+    )));
+    expect(slice.reason).toBe('unsupported-element');
+    expect(slice.message).toMatch(/slice/);
+    const offset = failure(() => importSvgText(svg(
+      '<defs><symbol id="s" viewBox="0 0 1 1" refX="0.5"><rect width="1" height="1"/></symbol></defs>' +
+      '<use href="#s" width="10" height="10"/>',
+    )));
+    expect(offset.message).toMatch(/refX/);
+  });
+
+  it('a <use> of a nested <svg> is still refused', () => {
+    const e = failure(() => importSvgText(svg(
+      '<defs><svg id="s" viewBox="0 0 1 1"><rect width="1" height="1"/></svg></defs><use href="#s" width="10" height="10"/>',
+    )));
+    expect(e.reason).toBe('unsupported-element');
+    expect(e.message).toMatch(/^<svg> at offset \d+ \(via <use> at offset \d+\): .*nested <svg>/);
   });
 
   it('an unrecognised element is refused, not skipped', () => {

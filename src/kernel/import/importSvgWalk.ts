@@ -3,11 +3,21 @@
 // src/kernel/import/importSvgWalk.ts
 //
 // The SVG element walk: group transforms, skipped non-rendering subtrees and
-// same-document `<use>` expansion. It hands each geometry element, with its
+// same-document `<use>` expansion, including `<symbol>` viewports. It hands each geometry element, with its
 // final user-space-to-mm matrix, to the emitter that importSvg.ts supplies,
 // so this module never needs to know how a <rect> or <path> becomes contours.
 
-import { SvgParseError, IDENTITY, attrNum, mul, parseTransform, type Matrix, type Tag } from './importSvgParsing';
+import {
+  SvgParseError,
+  IDENTITY,
+  attrNum,
+  mul,
+  parsePreserveAspectRatio,
+  parseTransform,
+  parseViewBox,
+  type Matrix,
+  type Tag,
+} from './importSvgParsing';
 
 /** Draws one geometry element (`lower` is its lower-cased name) under `m`. */
 export type GeometryEmitter = (lower: string, tag: Tag, m: Matrix) => void;
@@ -122,20 +132,22 @@ function expandUse(ctx: WalkContext, tag: Tag, m: Matrix): void {
   const lower = target.name.toLowerCase();
   const placed = mul(m, [1, 0, 0, 1, attrNum(tag, 'x', 0), attrNum(tag, 'y', 0)]);
   const targetWhere = `<${target.name}> at offset ${target.offset} (via ${where})`;
-  if (lower === 'svg' || (lower === 'symbol' && target.attrs.viewBox !== undefined)) {
-    // These establish a new viewport: the use's width/height and the
-    // target's viewBox/preserveAspectRatio would set the scale, and getting
-    // that wrong silently resizes every instance.
+  if (lower === 'svg') {
+    // A nested <svg> brings its own x/y, overflow and percentage lengths;
+    // getting any of them wrong silently moves or resizes every instance.
     throw new SvgParseError(
       'unsupported-element',
-      `${targetWhere}: a referenced <${target.name}> with its own viewport (viewBox) is not supported. ` +
-        'Reference a <g> or a viewBox-free <symbol>, or convert the clones to paths in the source tool ' +
+      `${targetWhere}: a <use> of a nested <svg> is not supported. ` +
+        'Reference a <g> or a <symbol>, or convert the clones to paths in the source tool ' +
         '(Inkscape: Edit > Clone > Unlink Clone).',
     );
   }
 
   ctx.useChain.push(id);
-  const tm = mul(placed, localTransform(target));
+  let tm = mul(placed, localTransform(target));
+  if (lower === 'symbol' && target.attrs.viewBox !== undefined) {
+    tm = mul(tm, symbolViewportTransform(tag, target, targetWhere));
+  }
   if (lower === 'g' || lower === 'symbol') {
     if (!target.selfClosing) walkTags(ctx, index + 1, matchingClose(ctx.tags, index, targetWhere), tm);
   } else if (lower === 'use') {
@@ -149,6 +161,70 @@ function expandUse(ctx: WalkContext, tag: Tag, m: Matrix): void {
     ctx.emit(lower, target, tm);
   }
   ctx.useChain.pop();
+}
+
+/**
+ * The viewBox-to-viewport transform of a `<symbol>` drawn by a `<use>`
+ * (SVG 2 §5.6 and §8.2): the viewport is `width` x `height` at the
+ * `<use>`'s x/y (already applied), with the `<use>` size overriding the
+ * symbol's, and the viewBox is fitted into it by `preserveAspectRatio`.
+ * Inputs the import cannot resolve exactly are refused: a missing or
+ * percentage size (relative to a viewport CAD has no size for), `slice`
+ * (which clips), and `refX`/`refY` or symbol `x`/`y` offsets.
+ */
+function symbolViewportTransform(use: Tag, symbol: Tag, where: string): Matrix {
+  const viewBox = parseViewBox(symbol.attrs.viewBox, where)!;
+  for (const name of ['x', 'y', 'refX', 'refY']) {
+    const raw = symbol.attrs[name]?.trim();
+    if (raw !== undefined && raw !== '' && Number(raw) !== 0) {
+      throw new SvgParseError(
+        'unsupported-element',
+        `${where}: ${name}='${raw}' on a <symbol> with a viewBox is not supported; ` +
+          'place the symbol with the <use> x/y or a transform instead.',
+      );
+    }
+  }
+  const width = viewportLength(use, symbol, 'width', where);
+  const height = viewportLength(use, symbol, 'height', where);
+  const aspect = parsePreserveAspectRatio(symbol.attrs.preserveAspectRatio);
+  const sx = width / viewBox.width;
+  const sy = height / viewBox.height;
+  if (aspect.mode === 'none') return [sx, 0, 0, sy, -sx * viewBox.minX, -sy * viewBox.minY];
+  if (aspect.mode === 'slice') {
+    throw new SvgParseError(
+      'unsupported-element',
+      `${where}: preserveAspectRatio='${symbol.attrs.preserveAspectRatio!.trim()}' clips the symbol to its ` +
+        'viewport, and the import does not clip geometry. Use meet or none, or expand the symbol in the source tool.',
+    );
+  }
+  const s = Math.min(sx, sy);
+  return [
+    s, 0, 0, s,
+    (width - s * viewBox.width) * aspect.alignX - s * viewBox.minX,
+    (height - s * viewBox.height) * aspect.alignY - s * viewBox.minY,
+  ];
+}
+
+/** A symbol viewport `width`/`height` in user units: the `<use>` value
+ *  wins over the `<symbol>` one, and a plain or `px` number is required. */
+function viewportLength(use: Tag, symbol: Tag, name: 'width' | 'height', where: string): number {
+  const raw = (use.attrs[name] ?? symbol.attrs[name])?.trim();
+  if (raw === undefined || raw === '' || raw === 'auto') {
+    throw new SvgParseError(
+      'unsupported-element',
+      `${where}: a <symbol> with a viewBox needs a viewport size, but neither the <use> nor the <symbol> ` +
+        `sets ${name}, and the SVG default (100% of the enclosing viewport) has no size in a CAD import. ` +
+        `Set ${name} on the <use>.`,
+    );
+  }
+  const value = Number(raw.replace(/px$/, ''));
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new SvgParseError(
+      'unsupported-element',
+      `${where}: viewport ${name}='${raw}' must be a positive number of user units.`,
+    );
+  }
+  return value;
 }
 
 /** The `#id` a `<use>` points at, from `href` (SVG 2) or `xlink:href` (SVG 1.1). */

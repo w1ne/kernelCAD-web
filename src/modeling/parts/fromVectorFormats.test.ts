@@ -672,6 +672,33 @@ describe('lib.fromSVG — round trip to a solid', () => {
     });
   });
 
+  it('places viewBox <symbol> cut-outs through each <use> viewport', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: process.cwd() });
+
+    const [outline, ...holes] = await api.lib.fromSVG('examples/interoperability/svg-symbol-viewbox/symbol-vent-plate.svg');
+    // Four scaled M3 holes, one meet-fitted slot and one stretched vent.
+    expect(holes).toHaveLength(4 + 1 + 1);
+    let solid = outline.extrude(3);
+    for (const hole of holes) solid = solid.subtract(hole.extrude(3));
+    const backend = await lower(session, solid.id);
+    expect(isValidShape(getOC(), backend.getReplicadShape().wrapped)).toBe(true);
+    // 90 x 40 plate less four r 1.7 holes, a 30 x 6 fully-rounded slot and
+    // an 8 x 15 right triangle.
+    const exact = (3396 - 20.56 * Math.PI) * 3;
+    expect(Math.abs(backend.volume() - exact) / exact).toBeLessThan(1e-9);
+    expect(backend.boundingBox()).toMatchObject({
+      min: [expect.closeTo(0, 6), expect.closeTo(0, 6), expect.closeTo(0, 6)],
+      max: [expect.closeTo(90, 6), expect.closeTo(40, 6), expect.closeTo(3, 6)],
+    });
+    // The vent's right angle is at SVG (40, 22), Y 18 after the flip, and its
+    // long leg runs down to Y 3: material remains right of the hypotenuse.
+    const inVent = OcctBackend.box(1, 1, 3, false).translate(40.5, 15, 0);
+    expect(backend.intersect(inVent).volume()).toBeLessThan(1e-6);
+    const pastVent = OcctBackend.box(1, 1, 3, false).translate(45, 5, 0);
+    expect(backend.intersect(pastVent).volume()).toBeCloseTo(3, 6);
+  });
+
   it('imports skewX / skewY cut-outs as the sheared parallelogram and oblique ellipse', async () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session, scriptDir: process.cwd() });
