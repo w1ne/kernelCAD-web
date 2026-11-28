@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-27",
+  "target": "water-treatment/vertical-turbine-pump",
+  "workflow": "Inspect five rendered catalog assets, correct a source-level motor material assignment, render the target preview, and verify the exported GLB and generated index.",
+  "renderSource": "scripts/renderCatalogPreviews.ts",
+  "renderMode": "local software render of the source-generated GLB",
+  "canvas": {
+    "width": 1280,
+    "height": 720,
+    "fps": 30
+  },
+  "slides": 4,
+  "secondsPerSlide": 3.75,
+  "encoding": {
+    "container": "MP4",
+    "videoCodec": "H.264",
+    "pixelFormat": "yuv420p",
+    "crf": 23,
+    "preset": "medium"
+  },
+  "script": "make_demo.py",
+  "output": "review-demo.mp4",
+  "provenance": "Local kernelCAD source, five catalog previews, exported-GLB regression, regenerated index and passing full catalog integration suite. No deployment, equipment performance, process simulation or hardware acceptance is shown."
+}

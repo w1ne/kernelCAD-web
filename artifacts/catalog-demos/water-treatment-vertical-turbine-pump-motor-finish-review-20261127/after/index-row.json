@@ -1,0 +1,162 @@
+{
+  "id": "vertical-turbine-pump",
+  "kit": "water-treatment",
+  "title": "Vertical turbine pump head",
+  "description": "Vertical turbine pump head with a long column, cardinally selectable flanged discharge, motor support, finned drive motor and terminal box. Parameters: overall scale, discharge orientation, coated equipment steel, structural steel, stainless steel and motor finish; weathered and highVisibility presets.",
+  "category": "prop",
+  "origin": "base",
+  "tags": [
+    "water treatment",
+    "water utility",
+    "infrastructure",
+    "low poly",
+    "scene prop"
+  ],
+  "compat": [
+    "water-treatment",
+    "utility",
+    "industrial",
+    "scene"
+  ],
+  "license": "CC0-1.0",
+  "source": "catalog/kits/water-treatment/vertical-turbine-pump.kcad.ts",
+  "preview": "/assets/water-treatment-vertical-turbine-pump.png",
+  "sourceSha256": "7c03ae22163ba3aea3d7406b8034c58e1892dc404627a2b4dbcbc12878649b69",
+  "triangleBudget": 2800,
+  "params": [
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 1,
+      "label": "Overall scale",
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    {
+      "name": "outletOrientation",
+      "type": "choice",
+      "default": "front",
+      "label": "Discharge direction",
+      "choices": [
+        "front",
+        "right",
+        "rear",
+        "left"
+      ]
+    },
+    {
+      "name": "coatedSteel",
+      "type": "color",
+      "default": "#287c82",
+      "label": "Coated equipment steel"
+    },
+    {
+      "name": "structuralSteel",
+      "type": "color",
+      "default": "#59676b",
+      "label": "Structural steel"
+    },
+    {
+      "name": "stainlessSteel",
+      "type": "color",
+      "default": "#c0c8c9",
+      "label": "Stainless steel"
+    },
+    {
+      "name": "motorFinish",
+      "type": "color",
+      "default": "#477d9b",
+      "label": "Motor finish"
+    }
+  ],
+  "presets": {
+    "weathered": {
+      "coatedSteel": "#687b78",
+      "structuralSteel": "#625f59",
+      "stainlessSteel": "#9ca7a6",
+      "motorFinish": "#536d79"
+    },
+    "highVisibility": {
+      "coatedSteel": "#e5682d",
+      "structuralSteel": "#505b60",
+      "stainlessSteel": "#e1ddd0",
+      "motorFinish": "#386b87"
+    }
+  },
+  "stats": {
+    "triangles": 2276,
+    "sizeM": [
+      0.65,
+      1.444,
+      0.769
+    ],
+    "minUpM": 0,
+    "materials": 1
+  },
+  "palette": [
+    {
+      "name": "structuralSteel",
+      "color": "#59676b",
+      "parts": [
+        "base-plate",
+        "column-foot-flange",
+        "head-lower-flange",
+        "outlet-flange",
+        "motor-pedestal",
+        "terminal-cover"
+      ],
+      "param": "structuralSteel"
+    },
+    {
+      "name": "stainlessSteel",
+      "color": "#c0c8c9",
+      "parts": [
+        "base-anchor-1",
+        "base-anchor-2",
+        "base-anchor-3",
+        "base-anchor-4",
+        "head-top-rim",
+        "discharge-neck",
+        "outlet-flange-bolt-1",
+        "outlet-flange-bolt-2",
+        "outlet-flange-bolt-3",
+        "outlet-flange-bolt-4",
+        "outlet-flange-bolt-5",
+        "outlet-flange-bolt-6",
+        "outlet-flange-bolt-7",
+        "outlet-flange-bolt-8",
+        "shaft-coupling",
+        "motor-fan-cap",
+        "terminal-gland"
+      ],
+      "param": "stainlessSteel"
+    },
+    {
+      "name": "coatedSteel",
+      "color": "#287c82",
+      "parts": [
+        "column",
+        "discharge-head-body",
+        "outlet-face"
+      ],
+      "param": "coatedSteel"
+    },
+    {
+      "name": "motorFinish",
+      "color": "#477d9b",
+      "parts": [
+        "motor-housing",
+        "motor-cooling-rib-1",
+        "motor-cooling-rib-2",
+        "motor-cooling-rib-3",
+        "motor-cooling-rib-4",
+        "motor-cooling-rib-5",
+        "motor-cooling-rib-6",
+        "motor-fan-cowl",
+        "terminal-box"
+      ],
+      "param": "motorFinish"
+    }
+  ]
+}

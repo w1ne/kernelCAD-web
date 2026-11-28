@@ -1,0 +1,7 @@
+Command: npx playwright install chromium
+Result: Chrome for Testing 145.0.7632.6 (Playwright Chromium v1208) and Chrome Headless Shell 145.0.7632.6 downloaded successfully.
+Install cache: /data/cache/andrii/xdg/ms-playwright/chromium-1208 and /data/cache/andrii/xdg/ms-playwright/chromium_headless_shell-1208
+
+The first catalog integration run and a CDP attach attempt are retained as
+initial environment diagnostics. The supported Playwright runtime was then
+used for the successful two-file preview retry and the passing full suite.

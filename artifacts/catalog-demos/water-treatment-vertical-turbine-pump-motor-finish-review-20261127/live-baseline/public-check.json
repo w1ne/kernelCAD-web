@@ -1,0 +1,80 @@
+{
+  "checkedAt": "2026-11-27",
+  "assets": [
+    {
+      "asset": "recycling-facility/eddy-current-separator",
+      "pageUrl": "https://kernelcad.com/catalog/recycling-facility/eddy-current-separator/",
+      "previewUrl": "https://kernelcad.com/catalog/recycling-facility/eddy-current-separator/preview.png",
+      "sourceUrl": "https://kernelcad.com/assets/recycling-facility-eddy-current-separator.kcad.ts",
+      "pageHttp": 200,
+      "previewHttp": 200,
+      "sourceHttp": 200,
+      "localSourceSha256": "4fe06cbf7a1abee3a6ec6be31828e3aacc800eb43ebb81f48112317a4cc0e0fb",
+      "publicSourceSha256": "4fe06cbf7a1abee3a6ec6be31828e3aacc800eb43ebb81f48112317a4cc0e0fb",
+      "sourceMatchesLocal": true,
+      "localPreviewSha256": "db6f85d093c57d912ea43c12696825379e42c339c9943f94e86221d15001ec9b",
+      "publicPreviewSha256": "db6f85d093c57d912ea43c12696825379e42c339c9943f94e86221d15001ec9b",
+      "previewMatchesLocal": true
+    },
+    {
+      "asset": "grid-substation/substation-main-power-transformer",
+      "pageUrl": "https://kernelcad.com/catalog/grid-substation/substation-main-power-transformer/",
+      "previewUrl": "https://kernelcad.com/catalog/grid-substation/substation-main-power-transformer/preview.png",
+      "sourceUrl": "https://kernelcad.com/assets/grid-substation-substation-main-power-transformer.kcad.ts",
+      "pageHttp": 200,
+      "previewHttp": 200,
+      "sourceHttp": 200,
+      "localSourceSha256": "54aa4058f017a70cac8ef8c771a7b547839313676d528fa4fc0109091e14ab28",
+      "publicSourceSha256": "54aa4058f017a70cac8ef8c771a7b547839313676d528fa4fc0109091e14ab28",
+      "sourceMatchesLocal": true,
+      "localPreviewSha256": "c1e1429a73ed7a598d74b4fecdea9e998367716dcc656667d7cf565db652bf88",
+      "publicPreviewSha256": "c1e1429a73ed7a598d74b4fecdea9e998367716dcc656667d7cf565db652bf88",
+      "previewMatchesLocal": true
+    },
+    {
+      "asset": "water-treatment/vertical-turbine-pump",
+      "pageUrl": "https://kernelcad.com/catalog/water-treatment/vertical-turbine-pump/",
+      "previewUrl": "https://kernelcad.com/catalog/water-treatment/vertical-turbine-pump/preview.png",
+      "sourceUrl": "https://kernelcad.com/assets/water-treatment-vertical-turbine-pump.kcad.ts",
+      "pageHttp": 200,
+      "previewHttp": 200,
+      "sourceHttp": 200,
+      "localSourceSha256": "cd6b62238fa8ec4d91dac4df74b6818606759b34a4a13217b31b35249d37243c",
+      "publicSourceSha256": "cd6b62238fa8ec4d91dac4df74b6818606759b34a4a13217b31b35249d37243c",
+      "sourceMatchesLocal": true,
+      "localPreviewSha256": "125f385f0439a611d73651c04b41fd1a75192776e9bcef9c600070abfc5c144d",
+      "publicPreviewSha256": "125f385f0439a611d73651c04b41fd1a75192776e9bcef9c600070abfc5c144d",
+      "previewMatchesLocal": true
+    },
+    {
+      "asset": "wind-energy/offshore-wind-turbine",
+      "pageUrl": "https://kernelcad.com/catalog/wind-energy/offshore-wind-turbine/",
+      "previewUrl": "https://kernelcad.com/catalog/wind-energy/offshore-wind-turbine/preview.png",
+      "sourceUrl": "https://kernelcad.com/assets/wind-energy-offshore-wind-turbine.kcad.ts",
+      "pageHttp": 200,
+      "previewHttp": 200,
+      "sourceHttp": 200,
+      "localSourceSha256": "b969b5cf20b3726333c88f9b05e772f394bade1153596e936249bdff58328f2f",
+      "publicSourceSha256": "b969b5cf20b3726333c88f9b05e772f394bade1153596e936249bdff58328f2f",
+      "sourceMatchesLocal": true,
+      "localPreviewSha256": "6f5c21157fe8fcf852e67e3bcc79b8824aedc246e15b81b1eac0a7c254071726",
+      "publicPreviewSha256": "6f5c21157fe8fcf852e67e3bcc79b8824aedc246e15b81b1eac0a7c254071726",
+      "previewMatchesLocal": true
+    },
+    {
+      "asset": "industrial-plant/centrifugal-pump",
+      "pageUrl": "https://kernelcad.com/catalog/industrial-plant/centrifugal-pump/",
+      "previewUrl": "https://kernelcad.com/catalog/industrial-plant/centrifugal-pump/preview.png",
+      "sourceUrl": "https://kernelcad.com/assets/industrial-plant-centrifugal-pump.kcad.ts",
+      "pageHttp": 200,
+      "previewHttp": 200,
+      "sourceHttp": 200,
+      "localSourceSha256": "8bf1d5846b374fd4a2e750bfbbd9d43e60967e88278b5f6576ec28f58414382c",
+      "publicSourceSha256": "8bf1d5846b374fd4a2e750bfbbd9d43e60967e88278b5f6576ec28f58414382c",
+      "sourceMatchesLocal": true,
+      "localPreviewSha256": "da9557684325eefa26e584d7226f7d3285e92af44d39353550ce7af88dd8b9be",
+      "publicPreviewSha256": "da9557684325eefa26e584d7226f7d3285e92af44d39353550ce7af88dd8b9be",
+      "previewMatchesLocal": true
+    }
+  ]
+}

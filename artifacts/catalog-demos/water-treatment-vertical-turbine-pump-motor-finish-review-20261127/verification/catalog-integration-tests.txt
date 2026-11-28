@@ -1,0 +1,13 @@
+Initial full catalog integration attempt before Playwright Chromium was available.
+Command: npx vitest run tests/integration/catalog/
+
+Result: 227/229 test files passed; 382/384 tests passed. The exhaustive
+catalogIndex source/export/triangle-budget/index-freshness test passed (2/2).
+The two failed preview tests were:
+- tests/integration/catalog/dinRailEndStopFidelity.test.ts
+- tests/integration/catalog/hoseBarbFidelity.test.ts
+
+Both failures reported that Playwright Chromium was missing. The successful
+retry and full rerun after installing the supported Playwright browser are
+recorded in playwright-render-tests.txt and catalog-integration-tests-final.txt.
+Initial run duration: 705.52 seconds.

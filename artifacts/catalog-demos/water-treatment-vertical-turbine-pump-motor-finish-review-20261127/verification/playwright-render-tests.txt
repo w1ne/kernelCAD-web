@@ -1,0 +1,13 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+ ✓ tests/integration/catalog/hoseBarbFidelity.test.ts (5 tests) 9927ms
+     ✓ committed source-backed 4:3 preview matches the native CAD publishing preset  9262ms
+ ✓ tests/integration/catalog/dinRailEndStopFidelity.test.ts (5 tests) 10604ms
+     ✓ committed source-backed 4:3 preview matches the native CAD publishing preset  9335ms
+     ✓ preserves rail envelope features across both scale presets  363ms
+
+ Test Files  2 passed (2)
+      Tests  10 passed (10)
+   Start at  21:49:04
+   Duration  17.58s (transform 10.76s, setup 218ms, import 13.38s, tests 20.53s, environment 0ms)

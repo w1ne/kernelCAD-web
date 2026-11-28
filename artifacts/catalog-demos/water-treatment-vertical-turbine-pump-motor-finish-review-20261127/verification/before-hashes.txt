@@ -1,0 +1,12 @@
+cd6b62238fa8ec4d91dac4df74b6818606759b34a4a13217b31b35249d37243c  artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/before/vertical-turbine-pump.kcad.ts
+125f385f0439a611d73651c04b41fd1a75192776e9bcef9c600070abfc5c144d  artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/before/vertical-turbine-pump.png
+8bf1d5846b374fd4a2e750bfbbd9d43e60967e88278b5f6576ec28f58414382c  artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/samples/sources/centrifugal-pump.kcad.ts
+4fe06cbf7a1abee3a6ec6be31828e3aacc800eb43ebb81f48112317a4cc0e0fb  artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/samples/sources/eddy-current-separator.kcad.ts
+b969b5cf20b3726333c88f9b05e772f394bade1153596e936249bdff58328f2f  artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/samples/sources/offshore-wind-turbine.kcad.ts
+54aa4058f017a70cac8ef8c771a7b547839313676d528fa4fc0109091e14ab28  artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/samples/sources/substation-main-power-transformer.kcad.ts
+cd6b62238fa8ec4d91dac4df74b6818606759b34a4a13217b31b35249d37243c  artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/samples/sources/vertical-turbine-pump.kcad.ts
+da9557684325eefa26e584d7226f7d3285e92af44d39353550ce7af88dd8b9be  artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/samples/previews/centrifugal-pump.png
+db6f85d093c57d912ea43c12696825379e42c339c9943f94e86221d15001ec9b  artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/samples/previews/eddy-current-separator.png
+6f5c21157fe8fcf852e67e3bcc79b8824aedc246e15b81b1eac0a7c254071726  artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/samples/previews/offshore-wind-turbine.png
+c1e1429a73ed7a598d74b4fecdea9e998367716dcc656667d7cf565db652bf88  artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/samples/previews/substation-main-power-transformer.png
+125f385f0439a611d73651c04b41fd1a75192776e9bcef9c600070abfc5c144d  artifacts/catalog-demos/water-treatment-vertical-turbine-pump-motor-finish-review-20261127/samples/previews/vertical-turbine-pump.png

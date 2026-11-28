@@ -1,0 +1,9 @@
+Command: npx vitest run tests/integration/catalog/verticalTurbinePumpMotorFinishMaterial.test.ts
+Result: expected baseline failure
+
+The test failed at the motorFinish palette membership assertion. Before the
+source correction, the exported motorFinish palette contained only
+motor-housing, motor-fan-cowl, and terminal-box; all six
+motor-cooling-rib-* parts were incorrectly assigned to structuralSteel.
+
+Vitest: 1 test failed. Duration: 26.98 seconds.

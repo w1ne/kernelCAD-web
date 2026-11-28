@@ -1,0 +1,1460 @@
+
+ RUN  v4.0.18 /data/worktrees/legacy-migrated/kernelcad-catalog-2000
+
+stdout | tests/integration/catalog/airfieldAssetFidelity.test.ts > airfield assets retain real-scale geometry and working controls > 'aircraft-fuel-truck': default, STEP, scale limits and both palettes
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+** WorkSession : Sending all data
+
+ Step File Name : kernelcad-assembly.step(7090 ents)  Write  Done
+
+
+ ✓ tests/integration/catalog/lowPolyTriangleBudget.test.ts (1 test) 8833ms
+     ✓ exports the listed kits inside their declared triangle budgets  8237ms
+ ✓ tests/integration/catalog/handheldPhMeter.test.ts (6 tests) 10638ms
+     ✓ shows 6.9 and a connected, resolved coil within the existing catalog budget  2013ms
+     ✓ shows the distinct acidic digits without changing the cable  1511ms
+     ✓ shows the distinct alkaline digits without changing the cable  1464ms
+     ✓ preserves the reading and end connections at scale 0.7  2006ms
+     ✓ preserves the reading and end connections at scale 1.3  1750ms
+     ✓ detects the original identical display and collapsed-coil defects in exported geometry  1389ms
+stdout | tests/integration/catalog/airfieldAssetFidelity.test.ts > airfield assets retain real-scale geometry and working controls > 'aircraft-hangar': default, STEP, scale limits and both palettes
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+** WorkSession : Sending all data
+
+ Step File Name : kernelcad-assembly.step(12603 ents)  Write  Done
+
+
+ ✓ tests/integration/catalog/uvChannelInstalledLamps.test.ts (2 tests) 11983ms
+     ✓ installs six lamps in each of the 16 in-flow modules within budget  6545ms
+     ✓ keeps the installed lamps submerged at a different overall scale  4857ms
+ ✓ tests/integration/catalog/beamCouplingFidelity.test.ts (2 tests) 15248ms
+     ✓ builds one valid 18×18×30 mm solid and preserves all three size choices  8782ms
+     ✓ has a material-removing helix and two real radial hub bores  5893ms
+stdout | tests/integration/catalog/airfieldAssetFidelity.test.ts > airfield assets retain real-scale geometry and working controls > 'aircraft-maintenance-lift': default, STEP, scale limits and both palettes
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******
+
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******
+
+******        Transferring Shape, ShapeType = 2                      ******
+
+** WorkSession : Sending all data
+
+ Step File Name : kernelcad-assembly.step(9425 ents)  Write  Done
+
+
+ ✓ tests/integration/catalog/dinRailEndStopFidelity.test.ts (5 tests) 16622ms
+     ✓ committed source-backed 4:3 preview matches the native CAD publishing preset  13676ms
+     ✓ has under-lip geometry, actual open channel, transverse stop and separate slotted screw  888ms
+     ✓ rejects a solid foot presented as a clip  341ms
+     ✓ preserves rail envelope features across both scale presets  698ms
+ ✓ tests/integration/catalog/doorHingeFidelity.test.ts (3 tests) 6985ms
+     ✓ standard: open pivot and mounting bores, connected leaves, separate pin  1637ms
+     ✓ compact: open pivot and mounting bores, connected leaves, separate pin  2114ms
+     ✓ large: open pivot and mounting bores, connected leaves, separate pin  2479ms
+ ✓ tests/integration/catalog/hoseBarbFidelity.test.ts (5 tests) 17666ms
+     ✓ committed source-backed 4:3 preview matches the native CAD publishing preset  15396ms
+     ✓ standard: three tapered retention lips, one through-bored connected body and hex wrench  400ms
+ ✓ tests/integration/catalog/palletizerRobotCellFloorMaterial.test.ts (1 test) 19362ms
+     ✓ shows a guarded work cell with a robot, roller infeed and loaded pallet  18703ms
+ ✓ tests/integration/catalog/airfieldAssetFidelity.test.ts (3 tests) 19600ms
+     ✓ 'aircraft-fuel-truck': default, STEP, scale limits and both palettes  8794ms
+     ✓ 'aircraft-hangar': default, STEP, scale limits and both palettes  6142ms
+     ✓ 'aircraft-maintenance-lift': default, STEP, scale limits and both palettes  3752ms
+ ✓ tests/integration/catalog/pipeSaddleClampFidelity.test.ts (4 tests) 6346ms
+     ✓ standard: open horizontal pipe bore, separate cap/liners, four foot holes and real bolt passages  1250ms
+     ✓ compact: open horizontal pipe bore, separate cap/liners, four foot holes and real bolt passages  2322ms
+     ✓ large: open horizontal pipe bore, separate cap/liners, four foot holes and real bolt passages  1786ms
+ ✓ tests/integration/catalog/standardComponentInterfaces.test.ts (4 tests) 6723ms
+     ✓ caster-wheel: connected supports and open interfaces at default and both size limits  2508ms
+     ✓ pillow-block-housing: connected supports and open interfaces at default and both size limits  376ms
+     ✓ piano-hinge: connected supports and open interfaces at default and both size limits  2822ms
+ ✓ tests/integration/catalog/plateHeatExchangerPorts.test.ts (6 tests) 3999ms
+     ✓ retains four seated, open ports at scale 0.65  907ms
+     ✓ retains four seated, open ports at scale 1  430ms
+     ✓ retains four seated, open ports at scale 1.35  643ms
+     ✓ rebuilds useful plate count and height controls while preserving the four connections  1075ms
+ ✓ tests/integration/catalog/assaySampleDividerContainerMaterial.test.ts (1 test) 2650ms
+     ✓ keeps rotary sample buckets on the stainless-steel palette  2254ms
+ ✓ tests/integration/catalog/miningTailingsCrawlerTrackMaterial.test.ts (1 test) 2660ms
+     ✓ keeps steel track bodies and grousers on the crawler-steel palette  2221ms
+ ✓ tests/integration/catalog/jawCrusherEccentricShaftMaterial.test.ts (1 test) 2869ms
+     ✓ keeps the eccentric shaft steel and reserves manganese for the jaw liners  2342ms
+ ✓ tests/integration/catalog/hpgrPressCylinderMaterials.test.ts (1 test) 2790ms
+     ✓ paints the press-cylinder barrels and keeps only the piston rods chrome  2243ms
+ ✓ tests/integration/catalog/storageArrayFidelity.test.ts (2 tests) 3317ms
+     ✓ is visibly distinct from the 8-bay compute chassis and includes 24 front carriers  1179ms
+     ✓ keeps the drive and service-module identities at both supported scale limits  1559ms
+ ✓ tests/integration/catalog/assetSupportContinuity.test.ts (7 tests) 3098ms
+     ✓ seats all five bottles within the rack and connects every valve to the manifold  532ms
+     ✓ supports the lift cradle over a grounded caster triangle  310ms
+     ✓ changes to three connected bottles at both scale limits without changing the rack  314ms
+     ✓ preserves support contacts at both declared scale limits  836ms
+ ✓ tests/integration/catalog/crusherDischargeConveyorIdlerMaterial.test.ts (1 test) 3466ms
+     ✓ uses frame steel for troughing and return rollers while keeping drive paint on equipment  2835ms
+ ✓ tests/integration/catalog/dinRailFidelity.test.ts (4 tests) 3080ms
+     ✓ has one connected top-hat section, 35 x 7.5 mm cross-section, 3 actual oblong slots  727ms
+     ✓ detects underside filled by a solid bar  564ms
+     ✓ preserves slots and open hat profile at both size variants  1004ms
+ ✓ tests/integration/catalog/rollerConveyorGeometry.test.ts (2 tests) 2151ms
+     ✓ exports transverse separated rollers on connected supports  911ms
+     ✓ keeps roller orientation and support contact at both scale limits  649ms
+ ✓ tests/integration/catalog/shaftHeadframeSkipMaterial.test.ts (1 test) 3672ms
+     ✓ paints the ore skip as steel, not as winder-house cladding  3135ms
+ ✓ tests/integration/catalog/portableHvDividerTripod.test.ts (4 tests) 29979ms
+     ✓ has three splayed ground contacts and supports the column at scale 0.65  13287ms
+     ✓ has three splayed ground contacts and supports the column at scale 1  6664ms
+     ✓ has three splayed ground contacts and supports the column at scale 1.35  4478ms
+     ✓ rejects a two-legged negative control even if its export succeeds  4911ms
+ ✓ tests/integration/catalog/longwallShearerPickMaterials.test.ts (1 test) 3771ms
+     ✓ assigns all cutter picks to the existing drum-and-pick steel control  3323ms
+ ✓ tests/integration/catalog/glassBreakerFlailsMaterial.test.ts (1 test) 3205ms
+     ✓ keeps all chain flails on the editable wear-steel control  2699ms
+ ✓ tests/integration/catalog/pineTreeCatalogReal.test.ts (4 tests) 3450ms
+     ✓ has no interpenetration with 2 foliage tiers  748ms
+     ✓ has no interpenetration with 3 foliage tiers  589ms
+     ✓ has no interpenetration with 4 foliage tiers  594ms
+     ✓ has no interpenetration with 5 foliage tiers  1111ms
+ ✓ tests/integration/catalog/transitMixerWheelMaterial.test.ts (1 test) 3957ms
+     ✓ keeps the six steel wheel rims on the structural-steel control  3367ms
+ ✓ tests/integration/catalog/substationCenterBreakDisconnectorFidelity.test.ts (1 test) 3839ms
+     ✓ seats paired aluminum arms on porcelain supports and exposes a real open/closed center gap  3371ms
+ ✓ tests/integration/catalog/verticalTurbinePumpMotorFinishMaterial.test.ts (1 test) 3061ms
+     ✓ keeps the motor cooling ribs on the motor finish control  2333ms
+ ✓ tests/integration/catalog/diningCarRunningGear.test.ts (1 test) 2828ms
+     ✓ rides on two bogies with wheels on both rails and has windows and doors on both sides  1899ms
+ ✓ tests/integration/catalog/glassCrusherMotorMaterial.test.ts (1 test) 2552ms
+     ✓ keeps the motor on the painted-steel finish, separate from the mill enamel  1895ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 37031ms
+     ✓ nature/pine-tree opens with its five knobs at their defaults  341ms
+     ✓ a kit-representative sample opens with exactly the knobs its index row lists  33419ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  1494ms
+ ✓ tests/integration/catalog/glassScreeningDeckMotorCapMaterial.test.ts (1 test) 4752ms
+     ✓ keeps motor end caps with the motor enamel, separate from polyurethane panels  4194ms
+ ✓ tests/integration/catalog/verticalCageLadderPassage.test.ts (4 tests) 3173ms
+     ✓ keeps a clear climbing corridor through four real cage hoops  807ms
+     ✓ detects the original solid cylinders blocking the same corridor  405ms
+     ✓ moves rungs and all cage straps when section height changes to either limit  523ms
+     ✓ keeps the opening and surrounding guard geometry at both scale limits  592ms
+ ✓ tests/integration/catalog/linearGuideCarriageFidelity.test.ts (4 tests) 3124ms
+     ✓ standard: open end-to-end rail channel with connected body and retained walls  978ms
+     ✓ compact: open end-to-end rail channel with connected body and retained walls  826ms
+     ✓ large: open end-to-end rail channel with connected body and retained walls  445ms
+ ✓ tests/integration/catalog/coolingTowerAccessDoorMaterial.test.ts (1 test) 2525ms
+     ✓ keeps the molded FRP door with the casing finish, separate from the fan stack  1751ms
+ ✓ tests/integration/catalog/recyclingTransferTowerRoofMaterial.test.ts (1 test) 3568ms
+     ✓ keeps the sheet roof on cladding and the access steel on structure  2910ms
+ ✓ tests/integration/catalog/retainingRingFidelity.test.ts (4 tests) 2423ms
+     ✓ standard: one continuous ring, both plier holes through, clear gap  561ms
+     ✓ compact: one continuous ring, both plier holes through, clear gap  563ms
+     ✓ large: one continuous ring, both plier holes through, clear gap  529ms
+ ✓ tests/integration/catalog/pipeRollerStandSupport.test.ts (4 tests) 2488ms
+     ✓ carries two parallel rollers on bored supports at scale 0.7  1111ms
+     ✓ carries two parallel rollers on bored supports at scale 1  342ms
+ ✓ tests/integration/catalog/tankWagonBogieSpringMaterial.test.ts (1 test) 2556ms
+     ✓ gives the freight-bogie springs the running-gear steel, not the stainless fittings finish  1965ms
+ ✓ tests/integration/catalog/miningGrizzlySpringMaterials.test.ts (1 test) 3475ms
+     ✓ renders the coil springs as support steel and keeps the vibrator covers safety yellow  2849ms
+ ✓ tests/integration/catalog/rebarCageFidelity.test.ts (2 tests) 2941ms
+     ✓ exports unique upper/lower bars, eight closed ties and seated supports  1286ms
+     ✓ preserves cage topology at both scale limits  915ms
+ ✓ tests/integration/catalog/recyclingFrictionWasherSprayHeaderMaterial.test.ts (1 test) 2779ms
+     ✓ makes the spray-water header pipe stainless like the washer tube  2132ms
+ ✓ tests/integration/catalog/fiveConnectionsGeometry.test.ts (33 tests) 43535ms
+     ✓ belt-magnet-separator.selfCleaning.scale-0.7  2667ms
+     ✓ belt-magnet-separator.default  1820ms
+     ✓ belt-magnet-separator.selfCleaning.scale-1.3  2320ms
+     ✓ belt-magnet-separator.plateMagnet.scale-0.7  2467ms
+     ✓ belt-magnet-separator.plateMagnet.scale-1  2139ms
+     ✓ belt-magnet-separator.plateMagnet.scale-1.3  1748ms
+     ✓ belt-magnet-separator.original  2030ms
+     ✓ inline-skate.base.scale-0.65  1666ms
+     ✓ inline-skate.default  592ms
+     ✓ inline-skate.base.scale-1.35  567ms
+     ✓ inline-skate.original  658ms
+     ✓ strip-light-battens.base.scale-0.7  482ms
+     ✓ strip-light-battens.default  533ms
+     ✓ strip-light-battens.base.scale-1.3  390ms
+     ✓ strip-light-battens.original  423ms
+     ✓ blackout-curtain-drive.half.scale-0.7  1036ms
+     ✓ blackout-curtain-drive.default  716ms
+     ✓ blackout-curtain-drive.half.scale-1.3  1006ms
+     ✓ blackout-curtain-drive.open.scale-0.7  1093ms
+     ✓ blackout-curtain-drive.open.scale-1  816ms
+     ✓ blackout-curtain-drive.open.scale-1.3  772ms
+     ✓ blackout-curtain-drive.closed.scale-0.7  854ms
+     ✓ blackout-curtain-drive.closed.scale-1  770ms
+     ✓ blackout-curtain-drive.closed.scale-1.3  1066ms
+     ✓ blackout-curtain-drive.original  1372ms
+     ✓ blackout-curtain-drive.original-closed  2192ms
+     ✓ roll-cage-trolley.shelf.scale-0.7  2366ms
+     ✓ roll-cage-trolley.default  1749ms
+     ✓ roll-cage-trolley.shelf.scale-1.3  1299ms
+     ✓ roll-cage-trolley.none.scale-0.7  945ms
+     ✓ roll-cage-trolley.none.scale-1  1278ms
+     ✓ roll-cage-trolley.none.scale-1.3  1053ms
+     ✓ roll-cage-trolley.original  1976ms
+ ✓ tests/integration/catalog/pelletizerAirKnifeMaterial.test.ts (1 test) 2483ms
+     ✓ gives the strand air knife bath steel, not the safety trim  1949ms
+ ✓ tests/integration/catalog/airCompressorPumpFinMaterial.test.ts (1 test) 2583ms
+     ✓ keeps the finned pump cylinders and heads on the cast-iron palette  2142ms
+ ✓ tests/integration/catalog/linearGuideRailFidelity.test.ts (4 tests) 1934ms
+     ✓ standard: four through passages, preserved continuous rail and foot  656ms
+     ✓ compact: four through passages, preserved continuous rail and foot  356ms
+     ✓ large: four through passages, preserved continuous rail and foot  368ms
+ ✓ tests/integration/catalog/twoRamBalerMotorMaterials.test.ts (1 test) 2213ms
+     ✓ paints the power-pack motors separately from the hydraulic cylinder steel  1613ms
+ ✓ tests/integration/catalog/cityStreetAssetGeometry.test.ts (3 tests) 2043ms
+     ✓ shows the default 10:10 clockwise on both clock faces  581ms
+     ✓ angles utility braces upward toward the outer crossarm  382ms
+     ✓ brings each scaffold brace into the post plane and each toe board into its deck  483ms
+ ✓ tests/integration/catalog/splitShaftCollarFidelity.test.ts (2 tests) 2281ms
+     ✓ has an open bore, split radial notch, two clamp lugs and a separate screw body  1077ms
+     ✓ retains the bore, split and screw over all size presets  417ms
+ ✓ tests/integration/catalog/trommelSprayPipeMaterial.test.ts (1 test) 3832ms
+     ✓ makes the spray bar, nozzles and supply one galvanized pipe run fed from a valved riser  3063ms
+ ✓ tests/integration/catalog/hydroponicGrowRackLowPoly.test.ts (10 tests) 45815ms
+     ✓ keeps the published six controls and four presets, named heads, extents and positive volumes  11720ms
+     ✓ preserves 'lettuce' geometry and the triangle budget at scale 0.7  6359ms
+     ✓ preserves 'lettuce' geometry and the triangle budget at scale 1  3737ms
+     ✓ preserves 'lettuce' geometry and the triangle budget at scale 1.3  4375ms
+     ✓ preserves 'empty' geometry and the triangle budget at scale 0.7  2964ms
+     ✓ preserves 'empty' geometry and the triangle budget at scale 1  3403ms
+     ✓ preserves 'empty' geometry and the triangle budget at scale 1.3  4052ms
+     ✓ preserves 'microgreens' geometry and the triangle budget at scale 0.7  3832ms
+     ✓ preserves 'microgreens' geometry and the triangle budget at scale 1  2079ms
+     ✓ preserves 'microgreens' geometry and the triangle budget at scale 1.3  2694ms
+ ✓ tests/integration/catalog/fireHoseNozzleFidelity.test.ts (5 tests) 2171ms
+     ✓ committed thumbnail is rendered from current CAD source with exact canonical caption  1039ms
+ ✓ tests/integration/catalog/miningSeparatorWashHeaderMaterial.test.ts (1 test) 1424ms
+     ✓ makes the wash-water riser the same frame steel as the spray pipe it feeds  1022ms
+ ✓ tests/integration/catalog/hopperWagonRunningGear.test.ts (1 test) 1458ms
+     ✓ rides on wheels on both rails and hangs two discharge pockets between the bogies  964ms
+ ✓ tests/integration/catalog/eddyCurrentSeparatorShellMaterials.test.ts (1 test) 1581ms
+     ✓ assigns the nonconductive composite finish to the outer head shell  1100ms
+ ✓ tests/integration/catalog/catalogFreshShapes.test.ts (1 test) 49829ms
+   ✓ no catalogue model derives several copies from one shape handle  49828ms
+ ✓ tests/integration/catalog/substationHvTerminationClampMaterial.test.ts (1 test) 1435ms
+     ✓ makes the cable clamp galvanized steel hardware, not cable jacket  1000ms
+ ✓ tests/integration/catalog/solarCarportChargerCableMaterial.test.ts (1 test) 1907ms
+     ✓ draws the EV charging cable as a polymer jacket, not galvanized steel  1435ms
+ ✓ tests/integration/catalog/freightBoxcarRunningGear.test.ts (1 test) 2358ms
+     ✓ rides on wheels on both rails, couples at sill height and keeps ladders above the sills  1996ms
+ ✓ tests/integration/catalog/reverseOsmosisSkidMaterials.test.ts (1 test) 2590ms
+     ✓ keeps FRP vessel shells distinct from stainless process piping  2157ms
+ ✓ tests/integration/catalog/floorGrinderFidelity.test.ts (2 tests) 2343ms
+     ✓ exports a circular open-bottom shroud, floor-contact disc and two rear wheels  890ms
+     ✓ retains floor contact, cavity, handle and wheel clearance at both scale limits  966ms
+ ✓ tests/integration/catalog/dutchBucketRow.test.ts (7 tests) 50947ms
+     ✓ seats all six buckets and siphons while keeping the cavities open  14089ms
+     ✓ keeps the named parts and crop geometry for pepper  7475ms
+     ✓ keeps the named parts and crop geometry for cucumber  6083ms
+     ✓ keeps the named parts and crop geometry for scale-min  8305ms
+     ✓ keeps the named parts and crop geometry for scale-max  6637ms
+     ✓ keeps the named parts and crop geometry for default-recovery  7661ms
+ ✓ tests/integration/catalog/mineSkipCappelMaterials.test.ts (1 test) 3101ms
+     ✓ assigns the steel rope termination to the structural-steel control  2525ms
+ ✓ tests/integration/catalog/cableClampFidelity.test.ts (4 tests) 3518ms
+     ✓ has two real mounting bores, connected frame, separate liner and clear cable bore  1096ms
+     ✓ rejects a plate that covers the two mounting holes  587ms
+     ✓ rejects a closed solid arch that plugs the cable path  523ms
+     ✓ preserves mount, steel arch and liner across compact and large variants  822ms
+ ✓ tests/integration/catalog/bridgeCraneHoistMotorMaterial.test.ts (1 test) 3516ms
+     ✓ uses the hoist machinery control for the hoist motor  3039ms
+ ✓ tests/integration/catalog/sanitaryLobePumpFidelity.test.ts (2 tests) 3051ms
+     ✓ has four actual cap-nut bodies on the visible removable cover  1424ms
+     ✓ keeps all four fasteners on the cover when port orientation changes  813ms
+ ✓ tests/integration/catalog/windOilCoolerHeaderMaterial.test.ts (1 test) 2205ms
+     ✓ makes the oil headers aluminium like the brazed core, not the copper pipework  1544ms
+ ✓ tests/integration/catalog/substationCableLadderFidelity.test.ts (2 tests) 2635ms
+     ✓ preserves every rung and its rail envelope at both supported scale limits  724ms
+ ✓ tests/integration/catalog/panelClampFidelity.test.ts (4 tests) 1801ms
+     ✓ exports three separate functional bodies, a bored bridge and a real open throat  482ms
+     ✓ scales all critical contact features on compact and large variants  408ms
+ ✓ tests/integration/catalog/rockBreakerBoomFidelity.test.ts (1 test) 3886ms
+     ✓ bolts both warning posts onto the top face of the grizzly wall  3193ms
+ ✓ tests/integration/catalog/capElevatorSemantic.test.ts (1 test) 3361ms
+     ✓ keeps its belt flights visible in the generated catalog preview  2440ms
+ ✓ tests/integration/catalog/maintenancePlatformFidelity.test.ts (1 test) 3144ms
+     ✓ keeps the platform guarded and connects its three-riser stair to the deck  2126ms
+ ✓ tests/integration/catalog/inductionConveyorBeltMaterial.test.ts (1 test) 2112ms
+     ✓ draws the induction belt as dark belt rubber, not painted steel  1559ms
+ ✓ tests/integration/catalog/jawCouplingFidelity.test.ts (3 tests) 2878ms
+     ✓ retains 6 metal jaws and 6 spider lobes without any material overlap  1105ms
+     ✓ detects all 6 collisions when the former co-rotated spider layout is restored  368ms
+     ✓ keeps the cleared interfaces in both scaled variants  652ms
+ ✓ tests/integration/catalog/postalCrossbeltSorterMaterial.test.ts (1 test) 2393ms
+     ✓ keeps rubber belt surfaces separate from the molded-polymer carriers  1564ms
+ ✓ tests/integration/catalog/batteryQuarantineDrumMaterials.test.ts (1 test) 2490ms
+     ✓ keeps the vermiculite sack kraft beige and separate from the alarm paint  1414ms
+ ✓ tests/integration/catalog/flangeBearingHousingFidelity.test.ts (1 test) 2496ms
+     ✓ has a through-shaft path, clear fastener bores and separate plain sleeve at all sizes  1341ms
+ ✓ tests/integration/catalog/pipeUnionFidelity.test.ts (2 tests) 3136ms
+     ✓ has four actual separate bodies, open bore and a six-sided coupling nut  1579ms
+     ✓ retains distinct interfaces for both size limits  550ms
+ ✓ tests/integration/catalog/examinationLightConnectivity.test.ts (4 tests) 3329ms
+     ✓ connects column, arm and head at scale 0.65  703ms
+     ✓ connects column, arm and head at scale 1  465ms
+     ✓ connects column, arm and head at scale 1.35  458ms
+     ✓ preserves both authored palettes without changing connections  759ms
+ ✓ tests/integration/catalog/maintenanceRailcarRunningGear.test.ts (1 test) 3024ms
+     ✓ runs on two axles with wheels on both rails and has a glazed cab and a railed deck  2229ms
+ ✓ tests/integration/catalog/evaporativeCoolingTowerFidelity.test.ts (1 test) 1506ms
+     ✓ exports eight broad, separately named fan blades around the two top-deck hubs  666ms
+ ✓ tests/integration/catalog/bucketElevatorSemantic.test.ts (1 test) 2374ms
+     ✓ keeps the bucket loop inside the casing and exposes distinct material controls  1510ms
+ ✓ tests/integration/catalog/slidingShoeSorterRailMaterial.test.ts (1 test) 2220ms
+     ✓ finishes the shoe guide rail as stainless steel, not the safety-amber marking  1611ms
+ ✓ tests/integration/catalog/handwheelFidelity.test.ts (4 tests) 1695ms
+     ✓ standard: exactly three radial spokes join the hub and rim  464ms
+ ✓ tests/integration/catalog/conduitRiserFrameMaterial.test.ts (1 test) 1467ms
+     ✓ makes both strut bridges galvanized and clamps each conduit to them with stainless pipe clamps  865ms
+ ✓ tests/integration/catalog/pedestalFiberTerminalMaterial.test.ts (1 test) 1778ms
+     ✓ makes the pedestal one powder-coated body and cover on a concrete pad with the door on the body front  1133ms
+ ✓ tests/integration/catalog/shipyardPanelLineStrongbackRailMaterial.test.ts (1 test) 1980ms
+     ✓ keeps both longitudinal rails on the shared yard finish  856ms
+ ✓ tests/integration/catalog/postageMeterPaperMaterial.test.ts (1 test) 1791ms
+     ✓ draws the label tape roll as paper, not painted steel  1073ms
+ ✓ tests/integration/catalog/liftPumpCableMaterial.test.ts (1 test) 2098ms
+     ✓ draws the power cable tail as a rubber jacket, not coated steel  916ms
+ ✓ tests/integration/catalog/vBeltPulleyFidelity.test.ts (4 tests) 1829ms
+     ✓ standard: two genuine tapered V grooves and coaxial open bore  371ms
+ ✓ tests/integration/catalog/pipeTeeFidelity.test.ts (2 tests) 2098ms
+     ✓ has two run ports, one side port and a closed back wall in actual exported geometry  657ms
+     ✓ preserves all three openings and closed fourth side at both size limits  625ms
+ ✓ tests/integration/catalog/cartonRollerConveyorFrameMaterial.test.ts (1 test) 1928ms
+     ✓ runs the rollers across the frame and paints the crossbars with the frame  802ms
+ ✓ tests/integration/catalog/fiberDropTerminalMaterial.test.ts (1 test) 1207ms
+     ✓ makes the drop terminal a moulded polymer housing with capped ports on a stainless pole bracket  576ms
+ ✓ tests/integration/catalog/guyWireMastAnchorMaterial.test.ts (1 test) 1664ms
+     ✓ sets the guys in concrete deadman blocks on a concrete pier, not on steel slabs  643ms
+ ✓ tests/integration/catalog/gussetBracketFidelity.test.ts (2 tests) 1104ms
+     ✓ exports a connected-looking right-angle assembly with 4 real bores at the default size  370ms
+ ✓ tests/integration/catalog/sludgeThickenerDriveMaterials.test.ts (1 test) 1005ms
+     ✓ exposes the cast-iron center drive above the well and uses steel for the scraper arm  420ms
+ ✓ tests/integration/catalog/mobileFastChargeCartTyreMaterial.test.ts (1 test) 1083ms
+     ✓ rolls on four rubber-tyred wheels with painted hubs and carries the enclosure on the chassis  573ms
+ ✓ tests/integration/catalog/asphaltDistributorSprayBarMaterial.test.ts (1 test) 1098ms
+     ✓ keeps the rear spray bar and nozzles in bare steel, separate from the enamel tank and cab  735ms
+ ✓ tests/integration/catalog/shipyardGasTrolleyValveMaterial.test.ts (1 test) 1127ms
+     ✓ makes the cylinder valves brass, not the trolley frame steel  520ms
+ ✓ tests/integration/catalog/coolantHeaderHangerMaterial.test.ts (1 test) 1440ms
+     ✓ builds both hanger brackets in painted steel and the valve lever grips in polymer  839ms
+ ✓ tests/integration/catalog/diverterBeltMaterial.test.ts (1 test) 1645ms
+     ✓ draws the diverter belt as dark belt rubber, not painted steel  955ms
+ ✓ tests/integration/catalog/hullBlockFabricationJigBaseRailMaterial.test.ts (1 test) 1736ms
+     ✓ keeps the equivalent base rails on the same yard finish  969ms
+ ✓ tests/integration/catalog/microwaveDishElevationNutMaterial.test.ts (1 test) 1870ms
+     ✓ keeps the elevation nut with the galvanized mount, not the radio-unit powder coat  1373ms
+ ✓ tests/integration/catalog/shaftCollarFidelity.test.ts (3 tests) 1470ms
+     ✓ exports a drilled, open shaft collar and separate contacting screw  514ms
+ ✓ tests/integration/catalog/ferricDosingTankPolymerMaterial.test.ts (1 test) 1569ms
+     ✓ draws a polyethylene tank and bund with PVC pipework and a seated sight tube  858ms
+ ✓ tests/integration/catalog/gritClassifierFidelity.test.ts (1 test) 1476ms
+     ✓ renders the inclined extraction screw between the trough and raised outlet  820ms
+ ✓ tests/integration/catalog/corrugatedCaseStackMaterial.test.ts (1 test) 1206ms
+     ✓ renders the corrugated cases as board, not stainless steel  593ms
+ ✓ tests/integration/catalog/barcodeTunnelScannerBeltMaterial.test.ts (1 test) 1350ms
+     ✓ renders the carrying belt in rubber and keeps the arch in painted steel  922ms
+ ✓ tests/integration/catalog/recyclingVehicleBarrierGatePhotoEyePlacement.test.ts (1 test) 1689ms
+     ✓ stands the photo-eye pair either side of the lane with the beam across it  1016ms
+ ✓ tests/integration/catalog/processWaterSiloNozzleMaterial.test.ts (1 test) 998ms
+     ✓ uses the steel finish on visible wetted parts and keeps safety paint on the shell band  554ms
+ ✓ tests/integration/catalog/gnssTimingAntennaRadome.test.ts (1 test) 798ms
+ ✓ tests/integration/catalog/positiveDisplacementPumpFidelity.test.ts (1 test) 1035ms
+     ✓ exports a recognizable gear-pump package with both ports, service cover and relief bypass  662ms
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 1313ms
+ ✓ tests/integration/catalog/knifeGateValveStemMaterial.test.ts (1 test) 917ms
+     ✓ draws a stainless rising stem and horizontal pipe stubs on a seated body  440ms
+ ✓ tests/integration/catalog/dataCenterOverheadCableLadderHangerCapMaterial.test.ts (1 test) 907ms
+     ✓ keeps both hanger caps on the shared engineering polymer  469ms
+ ✓ tests/integration/catalog/weldingCurtainVinylMaterial.test.ts (1 test) 862ms
+     ✓ draws the curtain panels as tinted welding vinyl, not a yard paint finish  416ms
+ ✓ tests/integration/catalog/sleeveShrinkTunnelPassage.test.ts (1 test) 1403ms
+     ✓ opens a bottle passage through the shell and carries sleeved bottles on the bed  748ms
+ ✓ tests/integration/catalog/wallMastBracketMaterial.test.ts (1 test) 1504ms
+     ✓ makes the welded bracket one galvanized finish that clamps a mast with stainless U-bolts  938ms
+ ✓ tests/integration/catalog/motorControlCenterBayMaterials.test.ts (1 test) 948ms
+     ✓ keeps all cabinet bays on steel and the plinth and operator panels on safety paint  428ms
+ ✓ tests/integration/catalog/substationCvtInsulationMaterials.test.ts (1 test) 764ms
+ ✓ tests/integration/catalog/mobileHullAccessPlatformDescription.test.ts (1 test) 1302ms
+     ✓ describes the fixed support posts without claiming a height adjustment  741ms
+ ✓ tests/integration/catalog/pressureSensitiveLabelerRollMaterial.test.ts (1 test) 829ms
+     ✓ renders the label rolls as paper label stock, not stainless steel  352ms
+ ✓ tests/integration/catalog/remotePowerShelfMaterial.test.ts (1 test) 1081ms
+     ✓ makes the shelf one powder-coated 19-inch chassis with rack ears and aluminium rectifier faces  585ms
+ ✓ tests/integration/catalog/surfacePrepDryingRackMaterial.test.ts (1 test) 846ms
+     ✓ gives all four floor pads the yard finish and keeps the rack steel  472ms
+ ✓ tests/integration/catalog/cipValveManifoldDrainLegMaterial.test.ts (1 test) 831ms
+     ✓ keeps the wetted drain leg stainless and the mounting feet powder-coated  342ms
+ ✓ tests/integration/catalog/windTowerBaseFlangeAnchorMaterial.test.ts (1 test) 790ms
+ ✓ tests/integration/catalog/hullPanelTurnoverCradleMaterials.test.ts (1 test) 1025ms
+     ✓ keeps the matching end frames on the same yard-finish control  645ms
+ ✓ tests/integration/catalog/windFarmPadMountTransformerMaterials.test.ts (1 test) 906ms
+     ✓ uses the coated-steel control for all radiator fins and keeps ceramic bushings separate  452ms
+ ✓ tests/integration/catalog/steamHeaderManifoldBranchMaterial.test.ts (1 test) 954ms
+     ✓ keeps branch pipe bodies steel while retaining safety-painted handles and skid  478ms
+ ✓ tests/integration/catalog/dualPortAcPedestalCableMaterial.test.ts (1 test) 1129ms
+     ✓ gives the hanging cable leads a cable-elastomer finish, distinct from the powder-coated enclosure  468ms
+ ✓ tests/integration/catalog/shipyardHullProfileTemplateRackDividerMaterial.test.ts (1 test) 935ms
+     ✓ keeps the five identical bay dividers on the shared structural steel finish  403ms
+ ✓ tests/integration/catalog/hullSurveyGridFrameMaterial.test.ts (1 test) 939ms
+     ✓ gives both mirrored sill rails the yard finish and keeps the frame steel  512ms
+ ✓ tests/integration/catalog/pipeRackBayCrossbeamMaterial.test.ts (1 test) 988ms
+     ✓ keeps the structural frame steel while retaining safety paint on the marked utility line  465ms
+ ✓ tests/integration/catalog/pressureReducingValveStemMaterial.test.ts (1 test) 942ms
+     ✓ draws a stainless adjusting stem on a body that lies on the pipe axis  469ms
+ ✓ tests/integration/catalog/antennaSectorFrameFinish.test.ts (1 test) 1010ms
+     ✓ builds a galvanized triangular frame whose top and bottom braces share one finish  455ms
+ ✓ tests/integration/catalog/emptyBottleDividerTrayMaterial.test.ts (1 test) 694ms
+ ✓ tests/integration/catalog/petBlowMolderEnclosureMaterial.test.ts (1 test) 784ms
+     ✓ separates the light enclosure finish from stainless tooling and the powder-coated base  397ms
+ ✓ tests/integration/catalog/processReactorVesselRingsMaterial.test.ts (1 test) 746ms
+     ✓ keeps the welded shell rings on the steel finish  374ms
+ ✓ tests/integration/catalog/bottleDateCoderScreenMaterial.test.ts (1 test) 569ms
+ ✓ tests/integration/catalog/raisedFloorTileMaterial.test.ts (1 test) 805ms
+     ✓ builds a painted-steel tile panel with polymer edge trim that sits on stringers above its pedestals  340ms
+ ✓ tests/integration/catalog/plateRollerConveyorSideFrameMaterials.test.ts (1 test) 848ms
+     ✓ uses one painted-steel finish for both mirrored side frames  483ms
+ ✓ tests/integration/catalog/windTowerSectionShellMaterial.test.ts (1 test) 612ms
+ ✓ tests/integration/catalog/perforatedFloorTileMaterial.test.ts (1 test) 957ms
+     ✓ builds a painted-steel tile panel with polymer edge trim that sits on its pedestals  421ms
+ ✓ tests/integration/catalog/solarPadMountTransformerRadiatorMaterial.test.ts (1 test) 1239ms
+     ✓ paints the radiator fins with the tank powder coat and keeps stainless steel on the bushing hardware  683ms
+ ✓ tests/integration/catalog/baghouseDustCollectorFidelity.test.ts (1 test) 1097ms
+     ✓ keeps filter media inside the plenum and tapers the dust hopper to its outlet  600ms
+ ✓ tests/integration/catalog/highPowerChargeDispenserBezelMaterial.test.ts (1 test) 984ms
+     ✓ frames the status screen in a black polymer bezel, not in display glass  518ms
+ ✓ tests/integration/catalog/compressedAirReceiverGaugeMaterial.test.ts (1 test) 796ms
+     ✓ renders the pressure gauge as a steel case with a glass lens, not a solid glass body  351ms
+ ✓ tests/integration/catalog/equalizationBasinFloorMaterial.test.ts (1 test) 910ms
+     ✓ uses concrete for the basin structure and stainless steel for the mixer  349ms
+ ✓ tests/integration/catalog/fiberDomeClosureShellMaterial.test.ts (1 test) 708ms
+ ✓ tests/integration/catalog/shipLiftCradleRailMaterial.test.ts (1 test) 912ms
+     ✓ uses the same yard finish on both paired guide rails  481ms
+ ✓ tests/integration/catalog/abrasiveBlastPotMaterials.test.ts (1 test) 921ms
+     ✓ uses structural steel for the rigid hose outlet and elastomer for both wheels  380ms
+ ✓ tests/integration/catalog/siteEnergyControllerAntennaMaterial.test.ts (1 test) 701ms
+     ✓ draws polymer antennas on steel connectors, a rear wall plate and a seated status button  338ms
+ ✓ tests/integration/catalog/roadReclaimerCuttingToothMaterial.test.ts (1 test) 935ms
+     ✓ uses structural steel for the cutter teeth while keeping the machine paint separate  626ms
+ ✓ tests/integration/catalog/hullBlockSpreaderContactPadMaterial.test.ts (1 test) 898ms
+     ✓ exports all four soft-contact shoes with their editable elastomer finish  343ms
+ ✓ tests/integration/catalog/grainCartAugerMaterial.test.ts (1 test) 768ms
+     ✓ paints the unloading auger with the cart, not the exposed-steel hub finish  342ms
+ ✓ tests/integration/catalog/radomeCylinderMaterial.test.ts (1 test) 723ms
+     ✓ makes the radome shell fibreglass, with no steel over the antenna  302ms
+ ✓ tests/integration/catalog/cycloneSeparatorMaterials.test.ts (1 test) 787ms
+     ✓ uses steel for the whole process shell and preserves the current size and mesh budget  346ms
+ ✓ tests/integration/catalog/uBracketPinEngagement.test.ts (3 tests) 969ms
+     ✓ has an X-axis GLB pin engaging both perforated ears  330ms
+ ✓ tests/integration/catalog/plcControlRackStatusLedsMaterial.test.ts (1 test) 1197ms
+     ✓ uses separate channel, RUN, and ERROR lens colors and steel module housings  694ms
+ ✓ tests/integration/catalog/windConverterCabinetMaterials.test.ts (1 test) 848ms
+     ✓ keeps the doors powder-coated and limits safety paint to warning labels  302ms
+ ✓ tests/integration/catalog/wallCabinetDoorGlassMaterial.test.ts (1 test) 821ms
+     ✓ builds the front door as a painted-steel frame around a tempered glass panel  338ms
+ ✓ tests/integration/catalog/chlorineDosingSkidTankMaterials.test.ts (1 test) 776ms
+     ✓ assigns the chemical day tank to polyethylene without changing geometry  442ms
+ ✓ tests/integration/catalog/fleetDepotDcDispenserBezelMaterial.test.ts (1 test) 894ms
+     ✓ frames the status screen in a black polymer bezel, not in display glass  494ms
+ ✓ tests/integration/catalog/scissorLiftTableMaterial.test.ts (1 test) 817ms
+     ✓ uses the structural-steel finish for all four scissor arms  368ms
+ ✓ tests/integration/catalog/packedScrubberWettedPartsMaterial.test.ts (1 test) 809ms
+     ✓ keeps the sump and process nozzles in the vessel finish while retaining safety paint on access parts  440ms
+ ✓ tests/integration/catalog/utilityInverterStationPlinthMaterial.test.ts (1 test) 727ms
+     ✓ renders the cable plinth as concrete, not stainless steel  364ms
+ ✓ tests/integration/catalog/caseLayerPalletizerPalletTimberMaterials.test.ts (1 test) 641ms
+     ✓ uses a pallet-timber control for the pallet deck and preserves the model envelope  304ms
+ ✓ tests/integration/catalog/boatFenderGround.test.ts (1 test) 792ms
+     ✓ keeps the bottom pole at ground level after mesh cleanup  326ms
+ ✓ tests/integration/catalog/cartonBottomSealerTapeHeadMaterial.test.ts (1 test) 613ms
+ ✓ tests/integration/catalog/cableTrayBridgeMaterial.test.ts (1 test) 856ms
+     ✓ keeps both tray rails on the same steel finish as its rungs  472ms
+ ✓ tests/integration/catalog/horizontalPressureVesselMaterials.test.ts (1 test) 827ms
+     ✓ uses steel for the heads and carbon-steel nozzle necks  312ms
+ ✓ tests/integration/catalog/hotAisleDoorGlazingMaterial.test.ts (1 test) 861ms
+     ✓ builds each door leaf as a painted-steel frame around a clear panel  374ms
+ ✓ tests/integration/catalog/cleanroomFanFilterMedia.test.ts (1 test) 764ms
+     ✓ shows a HEPA media face inside the steel flange instead of a solid steel plate  313ms
+ ✓ tests/integration/catalog/pushbackTugMaterials.test.ts (1 test) 673ms
+     ✓ uses steel for the rigid nose-wheel cradle and rubber only for the four tyres  328ms
+ ✓ tests/integration/catalog/cartridgeFilterNozzleMaterials.test.ts (1 test) 721ms
+     ✓ keeps the inlet and outlet nozzles in the same steel as the shell and flange  315ms
+ ✓ tests/integration/catalog/panelboardBreakerMaterial.test.ts (1 test) 614ms
+ ✓ tests/integration/catalog/parkingCableProtectionRampMaterial.test.ts (1 test) 749ms
+     ✓ draws a moulded rubber ramp with polymer lids and visible steel anchors  341ms
+ ✓ tests/integration/catalog/rotaryCapperHeadMaterial.test.ts (1 test) 946ms
+     ✓ renders the torque capping heads as stainless steel, not food-grade polymer  378ms
+ ✓ tests/integration/catalog/fillLevelInspectionLampDiffuserMaterial.test.ts (1 test) 690ms
+ ✓ tests/integration/catalog/substationConservatorNozzleMaterials.test.ts (1 test) 632ms
+ ✓ tests/integration/catalog/electricChainHoistMaterials.test.ts (1 test) 809ms
+     ✓ uses steel for the load chain and preserves the current size and mesh budget  380ms
+ ✓ tests/integration/catalog/dataCenterOverheadPowerBuswayMaterial.test.ts (1 test) 803ms
+     ✓ gives all four repeated sheet-steel joint covers the same finish  329ms
+ ✓ tests/integration/catalog/compressedAirReceiverMaterials.test.ts (1 test) 895ms
+     ✓ keeps the vessel heads and nozzle necks on the pressure-shell steel palette  364ms
+ ✓ tests/integration/catalog/pipeElbow45Fidelity.test.ts (1 test) 1233ms
+     ✓ has a continuous hollow centerline, actual annular walls and open terminal ports  725ms
+ ✓ tests/integration/catalog/labCleanroomSingleDoorPushPlateMaterial.test.ts (1 test) 920ms
+     ✓ draws a stainless push plate that lies on the door leaf face  434ms
+ ✓ tests/integration/catalog/wraparoundLabelerRollMaterial.test.ts (1 test) 1021ms
+     ✓ renders the label roll as paper label stock, not food-grade polymer  416ms
+ ✓ tests/integration/catalog/blastDustCollectorFilterMediaMaterial.test.ts (1 test) 1095ms
+     ✓ keeps exposed filter media separate from the painted steel collector  462ms
+ ✓ tests/integration/catalog/beverageBlendTankJacketMaterial.test.ts (1 test) 998ms
+     ✓ keeps the sanitary vessel and jacket stainless while the legs stay powder-coated  384ms
+ ✓ tests/integration/catalog/caseLabelerLabelRollMaterial.test.ts (1 test) 640ms
+ ✓ tests/integration/catalog/chargerStatusDisplayPostBezelMaterial.test.ts (1 test) 760ms
+     ✓ frames the status screen in a polymer bezel on a display head at wayfinding height  408ms
+ ✓ tests/integration/catalog/dataCenterEmergencyPowerOffActuatorMaterial.test.ts (1 test) 631ms
+ ✓ tests/integration/catalog/airRinseExhaustMaterial.test.ts (1 test) 794ms
+ ✓ tests/integration/catalog/gridSubstationYardBarrierFootMaterial.test.ts (1 test) 632ms
+ ✓ tests/integration/catalog/labelReelStandReelMaterial.test.ts (1 test) 642ms
+ ✓ tests/integration/catalog/valveManifoldFlangeFinish.test.ts (1 test) 778ms
+     ✓ uses the steel finish on branch flanges and retains safety paint on the support frame  403ms
+ ✓ tests/integration/catalog/shellAndTubeExchangerMaterials.test.ts (1 test) 818ms
+     ✓ keeps exposed tube sheets, nozzles and supports on a metal palette  422ms
+ ✓ tests/integration/catalog/pressureSandFilterVesselFidelity.test.ts (1 test) 768ms
+     ✓ exports two stainless side nozzles entering the vessel at separate heights  366ms
+ ✓ tests/integration/catalog/electricalControlCabinetMaterials.test.ts (1 test) 806ms
+ ✓ tests/integration/catalog/substationTransformerRadiatorBankManifoldMaterial.test.ts (1 test) 962ms
+     ✓ uses the radiator steel finish for both oil manifolds and keeps the source controls live  529ms
+ ✓ tests/integration/catalog/rearDoorHeatExchangerCopperMaterial.test.ts (1 test) 927ms
+     ✓ keeps the copper coil runs separate from the painted frame and polymer outlet  349ms
+ ✓ tests/integration/catalog/orchardSprayerTankMaterial.test.ts (1 test) 968ms
+     ✓ gives the polyethylene tank its own material control without changing geometry  460ms
+ ✓ tests/integration/catalog/splitCableDuctMaterial.test.ts (1 test) 1067ms
+     ✓ makes the split duct two HDPE half shells around the cables, not painted steel slabs  503ms
+ ✓ tests/integration/catalog/fiberSpliceClosureShellMaterial.test.ts (1 test) 955ms
+     ✓ renders the closure shell and lid as moulded thermoplastic, not powder-coated steel  367ms
+ ✓ tests/integration/catalog/dataCenterCondenserPumpSkidMaterials.test.ts (1 test) 939ms
+     ✓ renders the fabricated base skid as steel, not engineering polymer  398ms
+ ✓ tests/integration/catalog/weldInspectionLightLensMaterial.test.ts (1 test) 748ms
+ ✓ tests/integration/catalog/caseCheckweigherBeltMaterial.test.ts (1 test) 939ms
+     ✓ keeps the three polymer belts separate from the stainless support beds  372ms
+ ✓ tests/integration/catalog/liquidCoolingManifoldSupportMaterial.test.ts (1 test) 682ms
+ ✓ tests/integration/catalog/labGasManifoldHeaderMaterial.test.ts (1 test) 600ms
+ ✓ tests/integration/catalog/leakDetectionPuckMaterial.test.ts (1 test) 662ms
+ ✓ tests/integration/catalog/railBogieWheelMaterial.test.ts (1 test) 820ms
+ ✓ tests/integration/catalog/sanitaryFilterHousingMaterials.test.ts (1 test) 750ms
+     ✓ keeps the sanitary cartridge housings in stainless steel, not skid powder coat  374ms
+ ✓ tests/integration/catalog/caseTaperTapeRollMaterial.test.ts (1 test) 790ms
+     ✓ keeps the packing tape roll and metal tape head in their material roles  359ms
+ ✓ tests/integration/catalog/inlineFlowMeterFlangeMaterial.test.ts (1 test) 734ms
+ ✓ tests/integration/catalog/overheadPantographContactCopper.test.ts (1 test) 934ms
+     ✓ colours the current-carrying contact rail as copper, not engineering polymer  378ms
+ ✓ tests/integration/catalog/groundingBusbarCopper.test.ts (1 test) 745ms
+ ✓ tests/integration/catalog/kvmDisplayHousingMaterial.test.ts (1 test) 897ms
+     ✓ builds the display housing in painted steel with a glass screen  413ms
+ ✓ tests/integration/catalog/rooftopAirHandlerCabinetFinish.test.ts (1 test) 1040ms
+     ✓ keeps service casing and access doors on the steel finish  517ms
+ ✓ tests/integration/catalog/portableSiteWaterTankMaterials.test.ts (1 test) 838ms
+ ✓ tests/integration/catalog/coldAisleRoofPanelMaterial.test.ts (1 test) 740ms
+ ✓ tests/integration/catalog/compactDcFastChargerPlugMaterial.test.ts (1 test) 1068ms
+     ✓ moulds both charging plugs in polymer, not in the cabinet powder coat  514ms
+ ✓ tests/integration/catalog/portableCoreDrillStandMaterial.test.ts (1 test) 449ms
+ ✓ tests/integration/catalog/dataCenterDayFuelTankMaterials.test.ts (1 test) 462ms
+ ✓ tests/integration/catalog/processBlowerMotorMaterial.test.ts (1 test) 525ms
+ ✓ tests/integration/catalog/windSiteBollardReflectorBandMaterial.test.ts (1 test) 420ms
+ ✓ tests/integration/catalog/capDeliveryChuteMaterial.test.ts (1 test) 514ms
+ ✓ tests/integration/catalog/evChargingRfidAccessReaderStatusLampMaterial.test.ts (1 test) 450ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 350ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 709791ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  708997ms
+
+ Test Files  229 passed (229)
+      Tests  384 passed (384)
+   Start at  21:49:27
+   Duration  719.32s (transform 108.80s, setup 9.71s, import 669.78s, tests 1433.97s, environment 46ms)

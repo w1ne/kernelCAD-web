@@ -105,7 +105,7 @@ pump.part('motor-pedestal', b(0, 0, 988, 330, 330, 92).color(structuralSteel));
 pump.part('shaft-coupling', c(0, 0, 1074, 30, 76, 12).color(stainlessSteel));
 pump.part('motor-housing', c(0, 0, 1094, 282, 137, 12).color(motorFinish));
 for (let i = 0; i < 6; i += 1) {
-  pump.part(`motor-cooling-rib-${i + 1}`, c(0, 0, 1112 + i * 40, 10, 151, 12).color(structuralSteel));
+  pump.part(`motor-cooling-rib-${i + 1}`, c(0, 0, 1112 + i * 40, 10, 151, 12).color(motorFinish));
 }
 pump.part('motor-fan-cowl', c(0, 0, 1370, 58, 149, 12).color(motorFinish));
 pump.part('motor-fan-cap', c(0, 0, 1422, 22, 94, 12).color(stainlessSteel));
