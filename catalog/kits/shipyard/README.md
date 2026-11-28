@@ -36,12 +36,13 @@ gearbox and finned motor, power pack, console and a half-rolled plate),
 suspension units with twin tyres, a hung power pack unit, timber cribbing and
 beacons), `confined-space-rescue-tripod` (three splayed telescopic legs on a
 cast head over a tank-top manhole, hand winch and self-retracting lifeline
-reeved down to a hook), `plasma-cutting-gantry-head` (a CNC gantry on floor
-rails over a slat table, torch carriage with Z lifter and torch, drag chains
-and console) and `pipe-spool-rotator` (drive and idler turning rolls with twin
-polyurethane tyres carrying a flanged pipe spool, pendant and foot pedal).
-Each has four material-named controls and three presets; triangle budgets are
-3,000 to 9,500 (actual 2,108 to 8,928).
+reeved down to a hook), `plasma-cutting-gantry-head` (the cross-slide, local
+bridge segment, Z lifter, torch clamp, plasma torch and cable carrier) and
+`pipe-spool-rotator` (drive and idler turning rolls with twin polyurethane
+tyres carrying a flanged pipe spool, pendant and foot pedal). The cutting-head
+asset is a component view; the full cutting table, floor rails, extraction
+plant and operator station are outside its scope. Each signature asset has
+four material-named controls and three presets.
 
 ## Preview and verification
 
@@ -55,5 +56,9 @@ The [ship-lift cradle rail review](../../../artifacts/catalog-demos/shipyard-shi
 records the paired guide-rail finish correction, five-preview ledger,
 before/after renders, exported-GLB regression, generated-index check, and
 inspected local demo.
+
+The [plasma-head semantic review](../../../artifacts/catalog-demos/shipyard-plasma-cutting-gantry-head-semantic-review-20261128/README.md)
+records the five-preview audit and the correction from a full cutting machine
+to the named torch-head assembly, with its geometry regression and local demo.
 
 These are generic visualization props. They do not specify vessel structure, lift capacity, welding procedures, drydock certification, occupational-safety compliance, or repair instructions. Catalog validation does not establish shipyard or vessel safety, regulatory compliance, or operational acceptance.

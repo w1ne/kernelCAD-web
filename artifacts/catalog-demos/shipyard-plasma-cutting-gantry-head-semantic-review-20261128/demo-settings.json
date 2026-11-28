@@ -1,0 +1,25 @@
+{
+  "created": "2026-11-28",
+  "sourceWorkflow": "Render the target catalog asset, compare the original full-machine preview with the corrected torch-head preview, then show the local regression result.",
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts plasma-cutting-gantry-head",
+  "sourceFile": "catalog/kits/shipyard/plasma-cutting-gantry-head.kcad.ts",
+  "videoScript": "python3 artifacts/catalog-demos/shipyard-plasma-cutting-gantry-head-semantic-review-20261128/make_demo.py",
+  "video": "review-demo.mp4",
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "codec": "H.264 / libx264",
+  "crf": 24,
+  "slideDurationsSeconds": [3.0, 3.0, 3.5, 3.0],
+  "inputs": [
+    "before/plasma-cutting-gantry-head.png",
+    "after/plasma-cutting-gantry-head.png"
+  ],
+  "verificationClaims": {
+    "localGeometryRegression": "The exported-GLB test passes on the corrected source.",
+    "catalogIndex": "Generated from the updated source and existing preview path.",
+    "deployment": "Not performed.",
+    "cuttingProcessSimulation": "Not performed.",
+    "physicalMachineAcceptance": "Not performed."
+  }
+}
