@@ -242,9 +242,11 @@ lib.fromSTL(path: string, opts?: {
 // Core 3MF triangle mesh objects, including nested component instances made
 // from mesh leaves — imported as separate validated faceted B-rep solids.
 // Applies standard component/build-item transforms and converts the declared
-// model unit to mm. Faces remain planar facets; analytic surfaces and feature
-// history are not present. Required extensions, non-mesh resources,
-// multi-shell objects, open meshes and non-manifold meshes are refused.
+// model unit to mm. Production-extension (p:path) components in other model
+// parts, as Bambu Studio and OrcaSlicer projects write them, are resolved.
+// Faces remain planar facets; analytic surfaces and feature history are not
+// present. Other required extensions, non-mesh resources, multi-shell
+// objects, open meshes and non-manifold meshes are refused.
 lib.from3MF(path: string, opts?: {
   tolerance?: number;     // vertex-merge distance, mm (default 1e-6)
   maxTriangles?: number;  // import cost cap (default 200000)

@@ -1,13 +1,23 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 
-import { unzipSync } from 'fflate';
 import * as replicad from 'replicad';
 import { OcctBackend } from './occtBackend';
 import { buildManifoldShells, manifoldTopology, weldTriangles, type TriangleSoup } from './stlTopology';
 import { getOC } from 'replicad';
 import { promoteClosedShell } from './surfaceSewLowerer';
 import { STL_DEFAULT_MAX_TRIANGLES } from '../../../shared/mesh/stlInfo';
+import {
+  assertRequiredExtensions,
+  attribute,
+  partKey,
+  productionPrefix,
+  read3mfPackage,
+  ThreeMfImportError,
+  type ThreeMfPackage,
+} from './import3mfPackage';
+
+export { ThreeMfImportError } from './import3mfPackage';
 
 const UNIT_TO_MM: Record<string, number> = {
   micron: 0.001,
@@ -18,13 +28,6 @@ const UNIT_TO_MM: Record<string, number> = {
   meter: 1000,
 };
 
-export class ThreeMfImportError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ThreeMfImportError';
-  }
-}
-
 export interface ThreeMfMesh {
   /** Nine double-precision coordinates per triangle, already scaled to mm. */
   positions: TriangleSoup;
@@ -34,31 +37,9 @@ export interface ThreeMfMesh {
   triangleCount: number;
 }
 
-function attribute(tag: string, name: string): string | undefined {
-  const match = new RegExp(`(?:^|\\s)${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`).exec(tag);
-  return match?.[1] ?? match?.[2];
-}
-
 function numberAttribute(tag: string, name: string): number {
   const value = attribute(tag, name);
   return value === undefined || value.trim() === '' ? Number.NaN : Number(value);
-}
-
-function getModelXml(bytes: Uint8Array): string {
-  let files: Record<string, Uint8Array>;
-  try {
-    files = unzipSync(bytes);
-  } catch {
-    throw new ThreeMfImportError('3MF is not a readable ZIP archive.');
-  }
-  const names = Object.keys(files);
-  const canonical = names.find((name) => name.toLowerCase() === '3d/3dmodel.model');
-  const candidates = names.filter((name) => /^3d\/.+\.model$/i.test(name));
-  const modelName = canonical ?? (candidates.length === 1 ? candidates[0] : undefined);
-  if (!modelName || !files[modelName]) {
-    throw new ThreeMfImportError('3MF must contain one unambiguous 3D model part.');
-  }
-  return new TextDecoder().decode(files[modelName]);
 }
 
 interface ObjectMesh {
@@ -68,7 +49,15 @@ interface ObjectMesh {
 
 interface ObjectComponent {
   objectId: string;
+  /** Production extension `p:path`: the model part that holds `objectId`. */
+  path?: string;
   transform: number[];
+}
+
+/** How a model part's XML names the Production `path` attribute, and whether it may use it. */
+interface PartContext {
+  pathAttribute?: string;
+  isRoot: boolean;
 }
 
 type ObjectResource = { kind: 'mesh'; mesh: ObjectMesh } | { kind: 'components'; components: ObjectComponent[] };
@@ -137,7 +126,19 @@ function parseObjectTriangles(trianglesXml: string, vertexCount: number, objectI
   return triangles;
 }
 
-function parseObjectMesh(objectId: string, body: string, maxTriangles: number): ObjectResource {
+function parseComponent(tag: string, objectId: string, part: PartContext): ObjectComponent {
+  const childObjectId = attribute(tag, 'objectid');
+  if (!childObjectId) throw new ThreeMfImportError(`3MF component in object ${objectId} has no objectid.`);
+  const path = part.pathAttribute === undefined ? undefined : attribute(tag, part.pathAttribute);
+  if (path !== undefined && !part.isRoot) {
+    throw new ThreeMfImportError(
+      `3MF component in object ${objectId} references '${path}'; only the root model part may reference other model parts.`,
+    );
+  }
+  return { objectId: childObjectId, path, transform: parseTransform(attribute(tag, 'transform')) };
+}
+
+function parseObjectMesh(objectId: string, body: string, maxTriangles: number, part: PartContext): ObjectResource {
   const mesh = /<mesh\b[^>]*>([\s\S]*?)<\/mesh\s*>/i.exec(body)?.[1];
   const componentsXml = /<components\b[^>]*>([\s\S]*?)<\/components\s*>/i.exec(body)?.[1];
   if (mesh !== undefined && componentsXml !== undefined) {
@@ -148,9 +149,7 @@ function parseObjectMesh(objectId: string, body: string, maxTriangles: number): 
     const componentRe = /<component\b([^>]*)\/?\s*>/gi;
     let component: RegExpExecArray | null;
     while ((component = componentRe.exec(componentsXml)) !== null) {
-      const childObjectId = attribute(component[1], 'objectid');
-      if (!childObjectId) throw new ThreeMfImportError(`3MF component in object ${objectId} has no objectid.`);
-      components.push({ objectId: childObjectId, transform: parseTransform(attribute(component[1], 'transform')) });
+      components.push(parseComponent(component[1], objectId, part));
     }
     if (components.length === 0) throw new ThreeMfImportError(`3MF object ${objectId} has no components.`);
     return { kind: 'components', components };
@@ -166,14 +165,14 @@ function parseObjectMesh(objectId: string, body: string, maxTriangles: number): 
   return { kind: 'mesh', mesh: { vertices, triangles } };
 }
 
-function parseObjectMeshes(xml: string, maxTriangles: number): Map<string, ObjectResource> {
+function parseObjectMeshes(xml: string, maxTriangles: number, part: PartContext): Map<string, ObjectResource> {
   const objects = new Map<string, ObjectResource>();
   const re = /<object\b([^>]*)>([\s\S]*?)<\/object\s*>/gi;
   let object: RegExpExecArray | null;
   while ((object = re.exec(xml)) !== null) {
     const id = attribute(object[1], 'id');
     if (!id || objects.has(id)) throw new ThreeMfImportError('3MF contains an object with a missing or duplicate id.');
-    objects.set(id, parseObjectMesh(id, object[2], maxTriangles));
+    objects.set(id, parseObjectMesh(id, object[2], maxTriangles, part));
   }
   if (objects.size === 0) throw new ThreeMfImportError('3MF model has no core triangle mesh objects.');
   return objects;
@@ -217,28 +216,70 @@ function composeTransforms(parent: number[], child: number[]): number[] {
   return result;
 }
 
-interface ModelParts {
+interface ModelPart {
   unit: string;
-  unitScale: number;
   objects: Map<string, ObjectResource>;
-  buildXml: string;
+  buildXml?: string;
+  pathAttribute?: string;
 }
 
-function parseModelParts(xml: string, maxTriangles: number): ModelParts {
+function parseModelPart(xml: string, maxTriangles: number, isRoot: boolean): ModelPart {
   const modelTag = /<model\b([^>]*)>/i.exec(xml)?.[1];
   if (!modelTag) throw new ThreeMfImportError('3MF model part has no model element.');
-  const requiredExtensions = attribute(modelTag, 'requiredextensions');
-  if (requiredExtensions?.trim()) {
-    throw new ThreeMfImportError(`3MF requires unsupported extensions: ${requiredExtensions.trim()}.`);
-  }
+  const prefix = productionPrefix(modelTag);
+  assertRequiredExtensions(modelTag, prefix);
   const unit = attribute(modelTag, 'unit') ?? 'millimeter';
-  const unitScale = UNIT_TO_MM[unit];
-  if (unitScale === undefined) throw new ThreeMfImportError(`3MF unit '${unit}' is not supported.`);
+  if (UNIT_TO_MM[unit] === undefined) throw new ThreeMfImportError(`3MF unit '${unit}' is not supported.`);
   if (!/<resources\b/i.test(xml)) throw new ThreeMfImportError('3MF model part has no resources element.');
-  const objects = parseObjectMeshes(xml, maxTriangles);
+  const pathAttribute = prefix === undefined ? undefined : `${prefix}:path`;
+  const objects = parseObjectMeshes(xml, maxTriangles, { pathAttribute, isRoot });
   const buildXml = /<build\b[^>]*>([\s\S]*?)<\/build\s*>/i.exec(xml)?.[1];
-  if (buildXml === undefined) throw new ThreeMfImportError('3MF model part has no build element.');
-  return { unit, unitScale, objects, buildXml };
+  if (isRoot && buildXml === undefined) throw new ThreeMfImportError('3MF model part has no build element.');
+  return { unit, objects, buildXml, pathAttribute };
+}
+
+/** Model parts by part key: the root, plus each Production `p:path` target parsed on first use. */
+class ModelParts {
+  readonly root: ModelPart;
+  readonly unitScale: number;
+  private readonly parts = new Map<string, ModelPart>();
+  private readonly pkg: ThreeMfPackage;
+  private readonly maxTriangles: number;
+
+  constructor(pkg: ThreeMfPackage, maxTriangles: number) {
+    this.pkg = pkg;
+    this.maxTriangles = maxTriangles;
+    const xml = pkg.modelXml(pkg.rootPath)!;
+    this.root = parseModelPart(xml, maxTriangles, true);
+    this.unitScale = UNIT_TO_MM[this.root.unit];
+    this.parts.set(partKey(pkg.rootPath), this.root);
+  }
+
+  /** Resolve `objectId` in the root part, or in the part a Production path names. */
+  object(objectId: string, path: string | undefined): { key: string; object: ObjectResource } {
+    const key = partKey(path ?? this.pkg.rootPath);
+    const object = this.part(key, path).objects.get(objectId);
+    if (!object) {
+      const where = key === partKey(this.pkg.rootPath) ? '' : ` in '${path}'`;
+      throw new ThreeMfImportError(`3MF references missing object '${objectId}'${where}.`);
+    }
+    return { key: `${key}#${objectId}`, object };
+  }
+
+  private part(key: string, path: string | undefined): ModelPart {
+    const cached = this.parts.get(key);
+    if (cached) return cached;
+    const xml = this.pkg.modelXml(key);
+    if (xml === undefined) throw new ThreeMfImportError(`3MF model part '${path}' is missing from the package.`);
+    const part = parseModelPart(xml, this.maxTriangles, false);
+    if (part.unit !== this.root.unit) {
+      throw new ThreeMfImportError(
+        `3MF model part '${path}' unit '${part.unit}' differs from the root model unit '${this.root.unit}'.`,
+      );
+    }
+    this.parts.set(key, part);
+    return part;
+  }
 }
 
 function appendTransformedTriangle(
@@ -269,22 +310,21 @@ interface BuildMeshState {
 }
 
 function appendObjectInstances(
-  objectId: string,
-  objects: Map<string, ObjectResource>,
+  reference: { objectId: string; path?: string },
+  parts: ModelParts,
   transform: number[],
-  unitScale: number,
   maxTriangles: number,
   state: BuildMeshState,
   ancestry: Set<string>,
 ): void {
-  const object = objectId === undefined ? undefined : objects.get(objectId);
-  if (!object) throw new ThreeMfImportError(`3MF references missing object '${objectId}'.`);
-  if (ancestry.has(objectId)) throw new ThreeMfImportError(`3MF component reference cycle includes object '${objectId}'.`);
+  const { objectId } = reference;
+  const { key, object } = parts.object(objectId, reference.path);
+  if (ancestry.has(key)) throw new ThreeMfImportError(`3MF component reference cycle includes object '${objectId}'.`);
   if (ancestry.size >= MAX_COMPONENT_DEPTH) {
     throw new ThreeMfImportError(`3MF component nesting exceeds the ${MAX_COMPONENT_DEPTH} object depth limit.`);
   }
 
-  ancestry.add(objectId);
+  ancestry.add(key);
   try {
     if (object.kind === 'components') {
       for (const component of object.components) {
@@ -292,7 +332,7 @@ function appendObjectInstances(
         if (transformDeterminant(componentTransform) === 0) {
           throw new ThreeMfImportError(`3MF component in object '${objectId}' has a singular transform.`);
         }
-        appendObjectInstances(component.objectId, objects, componentTransform, unitScale, maxTriangles, state, ancestry);
+        appendObjectInstances(component, parts, componentTransform, maxTriangles, state, ancestry);
       }
       return;
     }
@@ -306,28 +346,33 @@ function appendObjectInstances(
     if (determinant === 0) throw new ThreeMfImportError(`3MF mesh instance '${objectId}' has a singular transform.`);
     const positions: number[] = [];
     for (const triangle of object.mesh.triangles) {
-      appendTransformedTriangle(positions, object.mesh.vertices, triangle, transform, unitScale, determinant < 0);
+      appendTransformedTriangle(positions, object.mesh.vertices, triangle, transform, parts.unitScale, determinant < 0);
     }
     state.bodyPositions.push(positions);
     state.triangleCount = totalTriangleCount;
   } finally {
-    ancestry.delete(objectId);
+    ancestry.delete(key);
   }
 }
 
-/** Parse core 3MF mesh objects and build items into a double-precision triangle soup in mm. */
+/**
+ * Parse core 3MF mesh objects and build items into a double-precision triangle
+ * soup in mm. Production-extension `p:path` components and build items are
+ * resolved into the model part they name.
+ */
 export function parse3mfMesh(bytes: Uint8Array, maxTriangles = STL_DEFAULT_MAX_TRIANGLES): ThreeMfMesh {
-  const xml = getModelXml(bytes);
-  const model = parseModelParts(xml, maxTriangles);
+  const parts = new ModelParts(read3mfPackage(bytes), maxTriangles);
+  const { root } = parts;
   const state: BuildMeshState = { bodyPositions: [], triangleCount: 0 };
   const itemRe = /<item\b([^>]*)\/?\s*>/gi;
   let item: RegExpExecArray | null;
-  while ((item = itemRe.exec(model.buildXml)) !== null) {
+  while ((item = itemRe.exec(root.buildXml!)) !== null) {
     const objectId = attribute(item[1], 'objectid');
     if (!objectId) throw new ThreeMfImportError('3MF build item has no objectid.');
+    const path = root.pathAttribute === undefined ? undefined : attribute(item[1], root.pathAttribute);
     const transform = parseTransform(attribute(item[1], 'transform'));
     if (transformDeterminant(transform) === 0) throw new ThreeMfImportError('3MF build item has a singular transform.');
-    appendObjectInstances(objectId, model.objects, transform, model.unitScale, maxTriangles, state, new Set());
+    appendObjectInstances({ objectId, path }, parts, transform, maxTriangles, state, new Set());
   }
   const positionCount = state.bodyPositions.reduce((total, positions) => total + positions.length, 0);
   const positions = new Float64Array(positionCount);
@@ -341,7 +386,7 @@ export function parse3mfMesh(bytes: Uint8Array, maxTriangles = STL_DEFAULT_MAX_T
   if (positions.length === 0 || positions.some((coordinate) => !Number.isFinite(coordinate))) {
     throw new ThreeMfImportError('3MF build contains no usable finite mesh triangles.');
   }
-  return { positions, bodies, unit: model.unit, triangleCount: state.triangleCount };
+  return { positions, bodies, unit: root.unit, triangleCount: state.triangleCount };
 }
 
 export interface Import3mfOptions {

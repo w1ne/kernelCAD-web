@@ -11,6 +11,9 @@ import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 
 const fixture = resolve(process.cwd(), 'docs/demos/3mf-resource-ids/generic-cube.3mf');
 const componentFixture = resolve(process.cwd(), 'docs/demos/from3mf-component-assembly/two-block-assembly.3mf');
+const productionFixture = resolve(process.cwd(), 'examples/interoperability/3mf-production/standoff-plate.3mf');
+// make-fixture.py: 60 x 40 x 3 plate + two 8 mm hex standoffs whose stored apothem is 3.464101 mm.
+const PRODUCTION_VOLUME = 60 * 40 * 3 + 2 * 8 * 12 * 3.464101;
 
 function validBrep(backend: OcctBackend): boolean {
   const oc = getOC() as any;
@@ -99,4 +102,32 @@ describe('lib.from3MF', () => {
     expect(validBrep(drilledBackend as OcctBackend)).toBe(true);
     expect(result.diagnostics.filter(diagnostic => diagnostic.severity === 'error')).toHaveLength(0);
   });
+
+  it('imports Production-extension model parts as valid solids that accept a boolean', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: dirname(productionFixture) });
+    const imported = await api.lib.from3MF(basename(productionFixture));
+    // A 3 mm plate hole at (30, 20) and a 4 mm deep blind bore in the turned standoff at (50, 20).
+    const bored = imported
+      .subtract(api.cylinder(5, 1.5).translate(30, 20, -1))
+      .subtract(api.cylinder(5, 1.5).translate(50, 20, 7));
+    const result = await new RecomputeEngine(createOcctLowerer(session)).run(
+      session.getRecords(),
+      { paramTable: session.paramTable },
+    );
+    const sourceBackend = result.shapes.get(imported.id)!;
+    const boredBackend = result.shapes.get(bored.id)!;
+
+    const record = session.getRecords().find(candidate => candidate.id === imported.id)!;
+    expect(record.metadata).toMatchObject({ sourceFormat: '3mf', triangleCount: 52, isSolid: true, unit: 'millimeter' });
+    expect(sourceBackend.volume()).toBeCloseTo(PRODUCTION_VOLUME, 6);
+    expect(sourceBackend.boundingBox()).toEqual({ min: [0, 0, 0], max: [60, 40, 11] });
+    expect(solidCount(sourceBackend as OcctBackend)).toBe(3);
+    expect(validBrep(sourceBackend as OcctBackend)).toBe(true);
+    expect(boredBackend.volume()).toBeCloseTo(PRODUCTION_VOLUME - 1.5 ** 2 * Math.PI * (3 + 4), 3);
+    expect(solidCount(boredBackend as OcctBackend)).toBe(3);
+    expect(validBrep(boredBackend as OcctBackend)).toBe(true);
+    expect(result.diagnostics.filter(diagnostic => diagnostic.severity === 'error')).toHaveLength(0);
+  });
 });
+
