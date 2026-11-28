@@ -1,7 +1,9 @@
 # Shipyard plasma cutting gantry head — semantic review
 
-Date: 2026-11-28  
-Base: fresh `origin/develop` at `929ce50d7`  
+Date: 2026-11-28
+
+Base: fresh `origin/develop` at `929ce50d7`
+
 Asset: `shipyard/plasma-cutting-gantry-head` (existing ID retained)
 
 ## Finding
