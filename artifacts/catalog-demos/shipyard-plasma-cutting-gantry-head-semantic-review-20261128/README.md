@@ -42,7 +42,7 @@ The visual inspection command used the already-running Chrome CDP session, with 
 - Shipyard structural gate: **70/70 pass (100.00%)**.
 - Global structural gate: **2,396/2,402 pass (99.75%)**. Six unrelated assets outside Shipyard fail the current script: one in Grid Substation, one in Industrial Plant and four in Standard Components. The target asset passes.
 - First full `tests/integration/catalog/` run: found that the asset's lowest point was 100 mm above the required base origin. The source was corrected to put the torch tip at Z=0, and the focused exported-GLB regression passed after the correction. See `verification/catalog-integration-first-run.txt`.
-- Full `npx vitest run tests/integration/catalog/` rerun: **232/232 files and 389/389 tests passed** in 746.83 seconds, including the exhaustive asset index freshness checks. Full output is in `verification/catalog-integration.txt`.
+- Full `npx vitest run tests/integration/catalog/` rerun: **232/232 files and 389/389 tests passed** in 801.39 seconds after merging `origin/develop` at `ad23deb70`, including the exhaustive asset index freshness checks. A summary is in `verification/catalog-integration.txt`.
 - `catalog/index.json` was regenerated from source. The target row has the refreshed source SHA-256, the existing preview URL, the new geometry statistics, four color params and three presets.
 
 ## Claim boundary
