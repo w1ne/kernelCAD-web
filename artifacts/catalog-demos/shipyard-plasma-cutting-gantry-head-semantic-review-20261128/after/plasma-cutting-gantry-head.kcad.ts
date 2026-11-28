@@ -2,7 +2,8 @@
 // carries the cross-slide and Z lifter; the torch, clamp and cable carrier are
 // the working head. It is a component view, without the full cutting table,
 // floor rails, extraction plant or operator station.
-// Millimetres, Z up; bridge runs along X and the torch faces the -Y side.
+// Millimetres, Z up; bridge runs along X. The torch mounts on its -Y face
+// and points down along -Z.
 meta({
   name: "plasma-cutting-gantry-head",
   license: 'CC0-1.0',
