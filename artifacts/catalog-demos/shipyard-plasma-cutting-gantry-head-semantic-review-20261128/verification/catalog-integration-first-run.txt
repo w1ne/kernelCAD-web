@@ -1,0 +1,5 @@
+Command: npx vitest run tests/integration/catalog/
+Result: 231 test files passed; catalogIndex.test.ts had 1 failed test. Aggregate: 388 passed / 389 tests, 1 failed.
+Duration: 749.54 seconds.
+Failure: plasma-cutting-gantry-head had stats.minUpM = 0.1 while origin "base" requires 0. The torch nozzle tip was 100 mm above Z=0.
+Correction: the source now translates the complete assembly down 100 mm before applying the scale parameter; the focused GLB regression asserts the lowest point is at Y-up 0 mm. The full catalog suite is being rerun against the regenerated index.

@@ -290879,8 +290879,8 @@
     {
       "id": "plasma-cutting-gantry-head",
       "kit": "shipyard",
-      "title": "CNC plasma cutting gantry",
-      "description": "CNC plasma cutting gantry at about real size: box-beam bridge on two driven end carriages with servo motors and rail wheels running on raised floor rails, a torch carriage with Z lifter and long plasma torch pointing down at a steel plate, drag chains along the rail and the bridge, a downdraft slat table with sawtooth slats, a fume extraction duct, a plate with cut-part outlines and an operator console with an angled screen. Material controls: gantry paint, machined steel, cutting table, cable carriers; fresh-coat, weathered-yard and blue-machine presets.",
+      "title": "Plasma cutting gantry head",
+      "description": "A CNC plasma torch-head assembly on a short local bridge section: profiled box beam, cross-slide guide rails and bearing blocks, a motorized Z lifter, torch clamp, down-facing plasma torch and segmented cable carrier. The editable finish controls cover painted steel, machined steel, polymer and the copper-alloy nozzle. Fresh-coat, weathered-yard and blue-machine presets are included. The full cutting table and machine are outside this asset.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -290888,10 +290888,9 @@
         "shipbuilding",
         "plasma cutting",
         "CNC",
-        "gantry",
-        "plate cutting",
-        "panel line",
-        "hull fabrication",
+        "gantry head",
+        "torch height control",
+        "torch carriage",
         "CC0"
       ],
       "compat": [
@@ -290903,8 +290902,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/plasma-cutting-gantry-head.kcad.ts",
       "preview": "/assets/shipyard-plasma-cutting-gantry-head.png",
-      "sourceSha256": "6908bf4c7ebabf079b961ef38b51fe107a61f4566453cd738004600432608835",
-      "triangleBudget": 3000,
+      "sourceSha256": "2634ce9304c167d472235c8e4c74b19d567cd26215749137f545a509a9a26dc3",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -290916,263 +290915,136 @@
           "step": 0.05
         },
         {
-          "name": "gantryPaint",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#e07a26",
-          "label": "Gantry paint"
+          "label": "Painted steel"
         },
         {
           "name": "machinedSteel",
           "type": "color",
           "default": "#a8b0b4",
-          "label": "Rails and machined steel"
+          "label": "Machined steel"
         },
         {
-          "name": "cuttingTable",
-          "type": "color",
-          "default": "#4d5458",
-          "label": "Cutting table and plate"
-        },
-        {
-          "name": "cableCarrier",
+          "name": "cablePolymer",
           "type": "color",
           "default": "#26292c",
-          "label": "Cable carriers and torch body"
+          "label": "Cable polymer"
+        },
+        {
+          "name": "copperAlloy",
+          "type": "color",
+          "default": "#c78a45",
+          "label": "Copper-alloy nozzle"
         }
       ],
       "presets": {
         "fresh-coat": {
-          "gantryPaint": "#f08a30",
+          "paintedSteel": "#f08a30",
           "machinedSteel": "#c2c9cc",
-          "cuttingTable": "#596165",
-          "cableCarrier": "#2c3033"
+          "cablePolymer": "#2c3033",
+          "copperAlloy": "#d59a53"
         },
         "weathered-yard": {
-          "gantryPaint": "#b5642c",
+          "paintedSteel": "#b5642c",
           "machinedSteel": "#8a8f90",
-          "cuttingTable": "#5d5048",
-          "cableCarrier": "#2a2a2a"
+          "cablePolymer": "#2a2a2a",
+          "copperAlloy": "#936b45"
         },
         "blue-machine": {
-          "gantryPaint": "#2f62a6",
-          "cableCarrier": "#e0a51f"
+          "paintedSteel": "#2f62a6",
+          "machinedSteel": "#b7c0c5",
+          "cablePolymer": "#30343a",
+          "copperAlloy": "#c78a45"
         }
       },
       "stats": {
-        "triangles": 2164,
+        "triangles": 1024,
         "sizeM": [
-          8.257,
-          2.05,
-          5.478
+          1.36,
+          1.158,
+          0.618
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "gantryPaint",
+          "name": "paintedSteel",
           "color": "#e07a26",
           "parts": [
-            "rail-beam--1",
-            "rail-stand--1--2700",
-            "rail-stand-foot--1--2700",
-            "rail-stand--1--1350",
-            "rail-stand-foot--1--1350",
-            "rail-stand--1-0",
-            "rail-stand-foot--1-0",
-            "rail-stand--1-1350",
-            "rail-stand-foot--1-1350",
-            "rail-stand--1-2700",
-            "rail-stand-foot--1-2700",
-            "rail-beam-1",
-            "rail-stand-1--2700",
-            "rail-stand-foot-1--2700",
-            "rail-stand-1--1350",
-            "rail-stand-foot-1--1350",
-            "rail-stand-1-0",
-            "rail-stand-foot-1-0",
-            "rail-stand-1-1350",
-            "rail-stand-foot-1-1350",
-            "rail-stand-1-2700",
-            "rail-stand-foot-1-2700",
-            "duct-riser",
-            "extraction-fan",
-            "end-carriage--1",
-            "end-carriage-skirt--1",
-            "end-carriage-1",
-            "end-carriage-skirt-1",
-            "bridge-beam",
+            "bridge-section",
             "torch-carriage-plate",
-            "lifter-slide",
-            "torch-holder",
-            "rail-chain-bracket",
-            "console-post",
-            "console-arm",
-            "console-box"
+            "lifter-slide-block--64",
+            "lifter-slide-block-64",
+            "lifter-slide-plate",
+            "lifter-top-cap",
+            "torch-holder-front",
+            "torch-holder-ear--98",
+            "torch-holder-ear-98",
+            "carrier-head-bracket"
           ],
-          "param": "gantryPaint"
+          "param": "paintedSteel"
         },
         {
           "name": "machinedSteel",
           "color": "#a8b0b4",
           "parts": [
-            "rail--1",
-            "gear-rack--1",
-            "rail-1",
-            "gear-rack-1",
-            "slat--2550",
-            "slat--2400",
-            "slat--2250",
-            "slat--2100",
-            "slat--1950",
-            "slat--1800",
-            "slat--1650",
-            "slat--1500",
-            "slat--1350",
-            "slat--1200",
-            "slat--1050",
-            "slat--900",
-            "slat--750",
-            "slat--600",
-            "slat--450",
-            "slat--300",
-            "slat--150",
-            "slat-0",
-            "slat-150",
-            "slat-300",
-            "slat-450",
-            "slat-600",
-            "slat-750",
-            "slat-900",
-            "slat-1050",
-            "slat-1200",
-            "slat-1350",
-            "slat-1500",
-            "slat-1650",
-            "slat-1800",
-            "slat-1950",
-            "slat-2100",
-            "slat-2250",
-            "slat-2400",
-            "slat-2550",
-            "extraction-duct",
-            "rail-wheel--1--50",
-            "rail-wheel--1-850",
-            "servo-gearhead--1",
-            "rail-wheel-1--50",
-            "rail-wheel-1-850",
-            "servo-gearhead-1",
-            "bridge-linear-rail-top",
-            "bridge-linear-rail-bottom",
-            "bridge-rack",
+            "bridge-end-cap--1",
+            "bridge-end-cap-1",
+            "cross-slide-guide-980",
+            "guide-bearing-980--500",
+            "guide-bearing-980--390",
+            "guide-bearing-980-390",
+            "guide-bearing-980-500",
+            "cross-slide-guide-1120",
+            "guide-bearing-1120--500",
+            "guide-bearing-1120--390",
+            "guide-bearing-1120-390",
+            "guide-bearing-1120-500",
+            "cross-slide-cover",
+            "cross-slide-gearbox",
             "lifter-column",
-            "rail-chain-tray",
-            "bridge-chain-tray"
+            "lifter-guide--64",
+            "lifter-guide-64",
+            "torch-holder-back",
+            "torch-holder-bolt--98",
+            "torch-holder-bolt-98",
+            "torch-shield-cup",
+            "carrier-tray"
           ],
           "param": "machinedSteel"
         },
         {
-          "name": "cuttingTable",
-          "color": "#4d5458",
-          "parts": [
-            "table-frame",
-            "plate"
-          ],
-          "param": "cuttingTable"
-        },
-        {
-          "name": "table-hopper",
-          "color": "#383d40",
-          "parts": [
-            "table-hopper"
-          ]
-        },
-        {
-          "name": "cut-bracket-1-a",
-          "color": "#1b1d1f",
-          "parts": [
-            "cut-bracket-1-a",
-            "cut-bracket-1-b",
-            "cut-bracket-1-c",
-            "cut-bracket-1-d",
-            "cut-bracket-2-a",
-            "cut-bracket-2-b",
-            "cut-bracket-2-c",
-            "cut-bracket-2-d",
-            "cut-floor-plate-a",
-            "cut-floor-plate-b",
-            "cut-floor-plate-c",
-            "cut-floor-plate-d",
-            "cut-lightening-hole"
-          ]
-        },
-        {
-          "name": "cableCarrier",
+          "name": "cablePolymer",
           "color": "#26292c",
           "parts": [
-            "extraction-fan-motor",
-            "servo-motor--1",
-            "servo-motor-1",
-            "torch-y-motor",
+            "cross-slide-drive-motor",
             "lifter-motor",
             "torch-body",
             "torch-lead",
-            "rail-chain-link-0",
-            "rail-chain-link-1",
-            "rail-chain-link-2",
-            "rail-chain-link-3",
-            "rail-chain-link-4",
-            "rail-chain-link-5",
-            "rail-chain-link-6",
-            "rail-chain-link-7",
-            "rail-chain-link-8",
-            "rail-chain-link-9",
-            "rail-chain-link-10",
-            "rail-chain-link-11",
-            "rail-chain-link-12",
-            "rail-chain-link-13",
-            "rail-chain-bend-0",
-            "rail-chain-bend-1",
-            "rail-chain-bend-2",
-            "rail-chain-bend-3",
-            "rail-chain-bend-4",
-            "rail-chain-bend-5",
-            "rail-chain-bend-6",
-            "rail-chain-upper-run",
-            "bridge-chain-run",
-            "bridge-chain-top",
-            "bridge-chain-bend",
-            "console-screen-housing"
+            "carrier-link-0",
+            "carrier-link-1",
+            "carrier-link-2",
+            "carrier-link-3",
+            "carrier-link-4",
+            "carrier-link-5",
+            "carrier-link-6",
+            "carrier-link-7",
+            "carrier-link-8",
+            "carrier-link-9",
+            "lead-guard"
           ],
-          "param": "cableCarrier"
+          "param": "cablePolymer"
         },
         {
-          "name": "torch-shield-cup",
-          "color": "#c7a46a",
+          "name": "copperAlloy",
+          "color": "#c78a45",
           "parts": [
-            "torch-shield-cup"
-          ]
-        },
-        {
-          "name": "arc-glow",
-          "color": "#9fd8ff",
-          "parts": [
-            "arc-glow"
-          ]
-        },
-        {
-          "name": "console-screen",
-          "color": "#3a6e8c",
-          "parts": [
-            "console-screen"
-          ]
-        },
-        {
-          "name": "console-estop",
-          "color": "#d1352a",
-          "parts": [
-            "console-estop"
-          ]
+            "torch-nozzle"
+          ],
+          "param": "copperAlloy"
         }
       ]
     },

@@ -1,0 +1,6 @@
+  MIXED  grid-substation              79/80   material-controls/asset=3.10
+  MIXED  industrial-plant             59/60   material-controls/asset=2.82
+  MIXED  standard-components          46/50   material-controls/asset=2.44
+
+  2396/2402 assets pass (99.75%; 47 rich kits, 0 thin kits)
+  6 thin assets = 0.25% of the catalog

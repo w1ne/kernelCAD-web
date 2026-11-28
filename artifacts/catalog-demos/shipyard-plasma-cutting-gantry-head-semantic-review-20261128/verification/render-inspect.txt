@@ -1,0 +1,4 @@
+Command:
+timeout --signal=TERM --kill-after=5 180s env PW_CDP_URL=http://127.0.0.1:9222 node dist/cli/index.js render inspect catalog/kits/shipyard/plasma-cutting-gantry-head.kcad.ts artifacts/catalog-demos/shipyard-plasma-cutting-gantry-head-semantic-review-20261128/inspect-after --width 512 --height 512 --channels rgb,mask,depth,normals --views front,right,top,iso --hide-reference-images --screenshot-timeout 60000
+
+Result: failed with `page.waitForFunction: Timeout 30000ms exceeded` while attached to the already-running Chrome CDP session. The renderer closed its temporary tab; no render-server process remained. The catalog preview was produced by the deterministic software renderer and visually inspected, and the before/after MP4 was sampled and inspected. No `render inspect` bundle was produced.
